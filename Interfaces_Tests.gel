@@ -1,0 +1,158 @@
+/*
+// TI File $Revision: /main/5 $
+// Checkin $Date: August 9, 2007   17:25:04 $
+//###########################################################################
+//
+// This .gel file can be used to help load and build the example project.
+// It should be unloaded from Code Composer Studio before loading another 
+/*******************************************************************
+ *
+ *    DESCRIPTION: 
+ * 		Esse arquivo .gel carrega o projeto HRPWM_Varredura, compila
+ *		e carrega no DSP. O módulo PWM1 é configurado para realizar
+ *		uma varredura de dutyMin a dutyMax, utilizando o HRPWM.
+ *
+ *    AUTHOR: Gabriel Oehlmeyer Brunheira
+ *
+ *    HISTORY:
+ *		v1 - 06/fev/2012
+ *
+ *******************************************************************/
+
+/** include files **/
+
+/** local definitions **/
+
+/** default settings **/
+
+/** external functions **/
+
+/** external data **/
+
+/** internal functions **/
+
+/** public data **/
+
+/** private data **/
+
+/** public functions **/
+
+/** private functions **/
+
+/* Adiciona linha horizontal para separação de menus */
+menuitem "---------------------------------------------------------";
+	hotmenu _() {}
+
+	/*
+menuitem "HRADC SPI Interface Test"
+
+	hotmenu Load_and_Build_Project()
+	{
+		GEL_ProjectLoad("DevelopmentKits_Test.pjt");
+		GEL_ProjectBuild("DevelopmentKits_Test.out.pjt");
+		Setup_WatchWindow();
+	}
+
+	hotmenu Load_Code()
+	{
+		GEL_Load(".\\FLASH\\DevelopmentKits_Test.out");
+		Setup_WatchWindow();
+	}
+
+	hotmenu Setup_WatchWindow()
+	{
+		GEL_WatchReset();
+		GEL_WatchAdd("command");
+		GEL_WatchAdd("SendCommand");
+		GEL_WatchAdd("SamplingEnable");
+		GEL_WatchAdd("HRADC_Status");
+		GEL_WatchAdd("i_rdata");
+		GEL_WatchAdd("rdata");
+	}*/
+
+menuitem "Read_RTC"
+	dialog Read_RTC(comm "Rtc:")
+	{
+		//command = comm;
+		read_rtc = 1;
+	}
+
+menuitem "Read_Status"
+	dialog Read_Status(samples "# status:")
+	{
+		//Nsamples = samples;
+		read_rtc_status = 1;
+	}
+
+menuitem "Read_RS485_Address"
+	dialog Read_RS485_Address( )
+	{  
+		read_add_rs485 = 1;
+	}
+
+menuitem "Set_RS485_Address"
+	dialog Set_RS485_Address(address485 "# address:")
+	{
+		add485 = address485;
+		set_add_rs485 = 1;
+	}
+
+menuitem "Read_IP_Address"
+	dialog Read_IP_Address( )
+	{
+		read_add_IP = 1;
+	}
+
+menuitem "Set_IP_Address"
+	dialog Set_IP_Address(addressIP "# address:")
+	{
+		addIP = addressIP;
+		set_add_IP = 1;
+	}
+
+menuitem "Read_Displ_Sts"
+	dialog Read_Displ_Sts( )
+	{
+		read_display_sts = 1;
+	}
+
+menuitem "Set_Displ_Pwr"
+	dialog Set_Displ_Pwr(DspPwrSts "# Power Sts:")
+	{
+		stsdisp = DspPwrSts;
+		set_display_sts = 1;
+	}
+
+menuitem "Read_ISO_DCDC_Sts"
+	dialog Read_ISO_DCDC_Sts( )
+	{
+		read_isodcdc_sts = 1;
+	}
+
+menuitem "Set_ISO_DCDC_Pwr"
+	dialog Set_ISO_DCDC_Pwr(DcdcPwrSts "# Power Sts:")
+	{
+		stsisodcdc = DcdcPwrSts;
+		set_isodcdc_sts = 1;
+	}
+
+/* Adiciona linha horizontal para separação de menus */
+menuitem "---------------------------------------------------------";
+	hotmenu __() {}
+	
+menuitem "Read_ADCP"
+	dialog Read_ADCP( )
+	{
+		read_adcp = 1;
+	}
+
+/* Adiciona linha horizontal para separação de menus */
+menuitem "---------------------------------------------------------";
+	hotmenu ___() {}
+	
+menuitem "Read_FLASH_SN"
+	dialog Read_FLASH_SN( )
+	{
+		read_flash_sn = 1;
+	}
+

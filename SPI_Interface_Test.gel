@@ -1,0 +1,85 @@
+/*
+// TI File $Revision: /main/5 $
+// Checkin $Date: August 9, 2007   17:25:04 $
+//###########################################################################
+//
+// This .gel file can be used to help load and build the example project.
+// It should be unloaded from Code Composer Studio before loading another 
+/*******************************************************************
+ *
+ *    DESCRIPTION: 
+ * 		Esse arquivo .gel carrega o projeto HRPWM_Varredura, compila
+ *		e carrega no DSP. O módulo PWM1 é configurado para realizar
+ *		uma varredura de dutyMin a dutyMax, utilizando o HRPWM.
+ *
+ *    AUTHOR: Gabriel Oehlmeyer Brunheira
+ *
+ *    HISTORY:
+ *		v1 - 06/fev/2012
+ *
+ *******************************************************************/
+
+/** include files **/
+
+/** local definitions **/
+
+/** default settings **/
+
+/** external functions **/
+
+/** external data **/
+
+/** internal functions **/
+
+/** public data **/
+
+/** private data **/
+
+/** public functions **/
+
+/** private functions **/
+
+/* Adiciona linha horizontal para separação de menus */
+menuitem "---------------------------------------------------------";
+	hotmenu _() {}
+
+menuitem "HRADC SPI Interface Test"
+
+	hotmenu Load_and_Build_Project()
+	{
+		GEL_ProjectLoad("DevelopmentKits_Test.pjt");
+		GEL_ProjectBuild("DevelopmentKits_Test.out.pjt");
+		Setup_WatchWindow();
+	}
+
+	hotmenu Load_Code()
+	{
+		GEL_Load(".\\FLASH\\DevelopmentKits_Test.out");
+		Setup_WatchWindow();
+	}
+
+	hotmenu Setup_WatchWindow()
+	{
+		GEL_WatchReset();
+		GEL_WatchAdd("command");
+		GEL_WatchAdd("SendCommand");
+		GEL_WatchAdd("SamplingEnable");
+		GEL_WatchAdd("HRADC_Status");
+		GEL_WatchAdd("i_rdata");
+		GEL_WatchAdd("rdata");
+	}
+
+menuitem "Send_Command"
+	dialog Send_Command(comm "Command:")
+	{
+		command = comm;
+		SendCommand = 1;
+	}
+
+menuitem "SamplingEnable"
+	dialog SamplingEnable(samples "# samples:")
+	{
+		Nsamples = samples;
+		SamplingEnable = 1;
+	}
+
