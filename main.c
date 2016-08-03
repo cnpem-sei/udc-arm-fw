@@ -129,6 +129,10 @@ int main(void) {
 	// in the c28 linker file.
 	RAMMReqSharedMemAccess((S1_ACCESS | S2_ACCESS | S4_ACCESS | S5_ACCESS),C28_MASTER);
 
+	SystemInit();
+
+	//IPC_MtoC_Msg.PSModule.Model.u16 = EepromReadPSModel();
+
     //  Send boot command to allow the C28 application to begin execution
     IPCMtoCBootControlSystem(CBROM_MTOC_BOOTMODE_BOOT_FROM_FLASH);
 
@@ -137,7 +141,7 @@ int main(void) {
 	//  Send boot command to allow the C28 application to begin execution
 	//  IPCMtoCBootControlSystem(CBROM_MTOC_BOOTMODE_BOOT_FROM_FLASH);
 
-	SystemInit();
+	//SystemInit();
 
 	Init_BSMP_var(0,DP_Framework.NetSignals[1].u8);
 	Init_BSMP_var(6,DP_Framework_MtoC.NetSignals[4].u8);
@@ -164,7 +168,7 @@ int main(void) {
 	Init_BSMP_var(37,IPC_MtoC_Msg.DPModule.ID.u8);
 	Init_BSMP_var(38,IPC_MtoC_Msg.DPModule.DPclass.u8);
 	Init_BSMP_var(39,IPC_MtoC_Msg.DPModule.Coeffs[0].u8);
-
+	Init_BSMP_var(40,IPC_MtoC_Msg.PSModule.Model.u8);
 
 	// Enable processor interrupts.
 	IntMasterEnable();
