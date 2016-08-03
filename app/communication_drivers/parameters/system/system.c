@@ -100,6 +100,11 @@ TestEepromMemory(void)
 
 		// Write default Ki gain 0.0
 		EepromWriteKd(0.0);
+
+		// Write default PS_Model as 0 (FBP)
+		EepromWritePSModel(0);
+
+
 	}
 }
 

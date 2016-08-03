@@ -11,6 +11,7 @@
  *
  *		TODO:
  */
+#include "../i2c_onboard/eeprom.h"
 
 #include "ipc_lib.h"
 
@@ -44,8 +45,8 @@ unsigned short IPCMtoCBusy (unsigned long ulFlags);
 void
 IPCInit(void)
 {
-	IPC_MtoC_Msg.PSModule.Model = FBP_100kHz;
-	IPC_MtoC_Msg.PSModule.OnOff.u16= 0;
+	IPC_MtoC_Msg.PSModule.Model.u16 = (uint16_t) EepromReadPSModel();
+	IPC_MtoC_Msg.PSModule.OnOff.u16 = 0;
 	IPC_MtoC_Msg.PSModule.OpMode.enu = SlowRef;
 	IPC_MtoC_Msg.PSModule.OpenLoop.u16 = 0;
 	IPC_MtoC_Msg.PSModule.SoftInterlocks.u32 = 0x00000000;

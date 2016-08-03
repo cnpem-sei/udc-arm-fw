@@ -10,6 +10,7 @@ app/communication_drivers/bsmp/bsmp_lib.obj: C:/ti/ccsv6/tools/compiler/ti-cgt-a
 app/communication_drivers/bsmp/bsmp_lib.obj: C:/ti/ccsv6/tools/compiler/ti-cgt-arm_5.2.7/include/linkage.h
 app/communication_drivers/bsmp/bsmp_lib.obj: C:/ti/ccsv6/tools/compiler/ti-cgt-arm_5.2.7/include/_lock.h
 app/communication_drivers/bsmp/bsmp_lib.obj: ../app/communication_drivers/bsmp/bsmp_lib.h
+app/communication_drivers/bsmp/bsmp_lib.obj: ../app/communication_drivers/bsmp/../i2c_onboard/eeprom.h
 app/communication_drivers/bsmp/bsmp_lib.obj: C:/ti/controlSUITE/device_support/f28m36x/v206/MWare/inc/hw_memmap.h
 app/communication_drivers/bsmp/bsmp_lib.obj: C:/ti/controlSUITE/device_support/f28m36x/v206/MWare/driverlib/ipc.h
 app/communication_drivers/bsmp/bsmp_lib.obj: C:/ti/controlSUITE/device_support/f28m36x/v206/MWare/inc/hw_ipc.h
@@ -33,6 +34,7 @@ C:/ti/ccsv6/tools/compiler/ti-cgt-arm_5.2.7/include/stdarg.h:
 C:/ti/ccsv6/tools/compiler/ti-cgt-arm_5.2.7/include/linkage.h: 
 C:/ti/ccsv6/tools/compiler/ti-cgt-arm_5.2.7/include/_lock.h: 
 ../app/communication_drivers/bsmp/bsmp_lib.h: 
+../app/communication_drivers/bsmp/../i2c_onboard/eeprom.h: 
 C:/ti/controlSUITE/device_support/f28m36x/v206/MWare/inc/hw_memmap.h: 
 C:/ti/controlSUITE/device_support/f28m36x/v206/MWare/driverlib/ipc.h: 
 C:/ti/controlSUITE/device_support/f28m36x/v206/MWare/inc/hw_ipc.h: 

@@ -48,6 +48,7 @@
 #define	GAIN_KI			0x0204
 #define	GAIN_KD			0x0208
 
+#define PSMODEL			0x0100
 
 
 uint8_t data_eeprom[32];
@@ -333,6 +334,40 @@ EepromWriteKd(float KD)
 	GPIOPinWrite(EEPROM_WP_BASE, EEPROM_WP_PIN, ON); // Enable Write protection
 
 }
+
+//***********************************************************************************
+//                            Power Supply Model
+//***********************************************************************************
+
+uint8_t
+EepromReadPSModel(void)
+{
+
+	data_eeprom[0] = PSMODEL >> 8; // Memory address MSB
+	data_eeprom[1] = PSMODEL; // Memory address LSB
+
+	ReadI2C(I2C_SLV_ADDR_EEPROM, DOUBLE_ADDRESS, 0x02, data_eeprom);
+
+	return data_eeprom[0];
+}
+
+void
+EepromWritePSModel(uint8_t ps_model)
+{
+	data_eeprom[0] = PSMODEL >> 8; // Memory address MSB
+	data_eeprom[1] = PSMODEL;      // Memory address LSB
+	data_eeprom[2] = ps_model;
+
+	GPIOPinWrite(EEPROM_WP_BASE, EEPROM_WP_PIN, OFF); // Disable Write protection
+
+	WriteI2C(I2C_SLV_ADDR_EEPROM, 0x03, data_eeprom);
+
+	for (ulLoop=0;ulLoop<100000;ulLoop++){}; // wait 5ms
+
+	GPIOPinWrite(EEPROM_WP_BASE, EEPROM_WP_PIN, ON); // Enable Write protection,
+
+}
+
 
 //***********************************************************************************
 

@@ -11,6 +11,8 @@
 #include "bsmp/include/server.h"
 #include "bsmp_lib.h"
 
+#include "../i2c_onboard/eeprom.h"
+
 //#!
 #include "inc/hw_memmap.h"
 #include "driverlib/ipc.h"
@@ -600,6 +602,23 @@ static struct bsmp_func wfmrefupdate_func = {
     .info.output_size = 1,      // command_ack
 };
 
+//*****************************************************************************
+// 							Model BSMP Function
+//*****************************************************************************
+uint16_t ConfigPSModel (uint8_t *input, uint8_t *output)
+{
+	EepromWritePSModel(input[0]);
+	*output = 0;
+	return *output;
+}
+
+static struct bsmp_func model_func = {
+    .func_p 		  = ConfigPSModel,
+    .info.input_size  = 2,      // Nothing is read from the input parameter
+    .info.output_size = 1,      // command_ack
+};
+
+
 
 //*****************************************************************************
 // 							Dummy BSMP Functions
@@ -891,11 +910,17 @@ static  struct bsmp_var dp_Class = {
 
 static  struct bsmp_var dp_Coeffs = {
 		.info.size     = (sizeof(dummy_float_memory)*DP_MODULE_MAX_COEFF), // 4 bytes (float)
-		.info.writable = true,      			                           // Read only
+		.info.writable = true,      			                           // Read-Write
 		.data          = dummy_float_memory,                               // Data pointer will be initialized
 		.value_ok      = NULL,
 };
 
+static  struct bsmp_var ps_Model = {
+		.info.size     = sizeof(dummy_u16_memory),                         // 2 bytes (uint16)
+		.info.writable = false,      			                           // Read only
+		.data          = dummy_u16_memory,                               // Data pointer will be initialized
+		.value_ok      = NULL,
+};
 
 
 //*****************************************************************************
@@ -926,7 +951,7 @@ BSMPInit(void)
 	bsmp_register_function(&bsmp, &configdpmodule_func);  // Function ID 11
 	bsmp_register_function(&bsmp, &wfmrefupdate_func);	  // Function ID 12
 	bsmp_register_function(&bsmp, &resetinterlocks_func); // Function ID 13
-
+	bsmp_register_function(&bsmp, &model_func);           // Function ID 14
 
 	//*****************************************************************************
 	// 						BSMP Variable Register
@@ -971,6 +996,7 @@ BSMPInit(void)
 	bsmp_register_variable(&bsmp, &dp_ID);   			 // Var ID 37
 	bsmp_register_variable(&bsmp, &dp_Class);   		 // Var ID 38
 	bsmp_register_variable(&bsmp, &dp_Coeffs);   	     // Var ID 39
+	bsmp_register_variable(&bsmp, &ps_Model);   	     // Var ID 40
 
 	//*****************************************************************************
 	// 						BSMP Curve Register
