@@ -70,9 +70,9 @@ void AdcChannelAppConfig(void)
 	{
 		case FBP_100kHz:
 
-			// VdcLink: 10V = 30V
+			// VdcLink: 10V = 20V
 			AnalogCh0.Enable = 1;
-			AnalogCh0.Gain = 30.0/2048.0;
+			AnalogCh0.Gain = 20.0/2048.0;
 			AnalogCh0.Value = &DP_Framework_MtoC.NetSignals[5].f;
 
 			// Temperature: 10V = 100°C
@@ -80,9 +80,9 @@ void AdcChannelAppConfig(void)
 			AnalogCh1.Gain = 100.0/2048.0;
 			AnalogCh1.Value = &DP_Framework_MtoC.NetSignals[13].f;
 
-			// Vload 10V: = 30V
+			// Vload 10V: = 20V
 			AnalogCh2.Enable = 1;
-			AnalogCh2.Gain = 30.0/2048.0;
+			AnalogCh2.Gain = 20.0/2048.0;
 			AnalogCh2.Value = &DP_Framework_MtoC.NetSignals[4].f;
 
 			AnalogCh3.Enable = 0;

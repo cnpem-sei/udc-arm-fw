@@ -61,9 +61,9 @@ OutputStsRead(void)
 }
 
 uint8_t
-InterlockSts(void)
+InterlockSts(uint8_t ch)
 {
-	return IPC_CtoM_Msg.PSModule.HardInterlocks.u8[0];
+	return IPC_CtoM_Msg.PSModule.HardInterlocks.u8[ch];
 }
 
 void

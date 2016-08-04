@@ -963,10 +963,12 @@ void ProcessCmd(){
 	 case 0xE0:
 		 	   Mensagem.CMD = 0xE0;
 			   Mensagem.PDADO = 0x00;
-			   Mensagem.NDADO = 0x01;
+			   Mensagem.NDADO = 0x04;
 
-			   Mensagem.DADO[0] = InterlockSts();
-			   //Mensagem.DADO[0] = 0;
+			   Mensagem.DADO[0] = InterlockSts(0);
+			   Mensagem.DADO[1] = InterlockSts(1);
+			   Mensagem.DADO[2] = InterlockSts(2);
+			   Mensagem.DADO[3] = InterlockSts(3);
 
 			   Mensagem.ACK = 0x00;
 			   SendDisplay(); // Envia mensagem para o Display

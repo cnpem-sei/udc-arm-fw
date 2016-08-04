@@ -174,7 +174,6 @@ int main(void) {
 				CanCheck();
 			}
 
-
 		IPC_MtoC_Msg.PSModule.LocalRemote.u16 = LocRemUpdate();
 
 		TaskCheck();
