@@ -4,7 +4,7 @@
 
 SHELL = cmd.exe
 
-CG_TOOL_ROOT := C:/ti/ccsv6/tools/compiler/ti-cgt-arm_5.2.7
+CG_TOOL_ROOT := C:/ti/ccsv6/tools/compiler/arm_5.1.11
 
 GEN_OPTS__FLAG := 
 GEN_CMDS__FLAG := 
@@ -232,13 +232,13 @@ all: M3_V2.0.out
 M3_V2.0.out: $(OBJS) $(CMD_SRCS) $(LIB_SRCS) $(GEN_CMDS)
 	@echo 'Building target: $@'
 	@echo 'Invoking: ARM Linker'
-	"C:/ti/ccsv6/tools/compiler/ti-cgt-arm_5.2.7/bin/armcl" --code_state=32 --abi=eabi -me -O2 --display_error_number --diag_warning=225 --diag_wrap=off -z -m"M3_V2.0.map" -i"C:/ti/ccsv6/tools/compiler/ti-cgt-arm_5.2.7/lib" -i"C:/ti/ccsv6/tools/compiler/ti-cgt-arm_5.2.7/include" --reread_libs --warn_sections --display_error_number --diag_wrap=off --xml_link_info="M3_V2.0_linkInfo.xml" --rom_model -o "M3_V2.0.out" $(ORDERED_OBJS)
+	"C:/ti/ccsv6/tools/compiler/arm_5.1.11/bin/armcl" --code_state=32 --abi=eabi -me -O2 --display_error_number --diag_warning=225 --diag_wrap=off -z -m"M3_V2.0.map" -i"C:/ti/ccsv6/tools/compiler/arm_5.1.11/lib" -i"C:/ti/ccsv6/tools/compiler/arm_5.1.11/include" --reread_libs --warn_sections --display_error_number --diag_wrap=off --xml_link_info="M3_V2.0_linkInfo.xml" --rom_model -o "M3_V2.0.out" $(ORDERED_OBJS)
 	@echo 'Finished building target: $@'
 	@echo ' '
 
 M3_V2.0.hex: $(EXE_OUTPUTS)
 	@echo 'Invoking: ARM Hex Utility'
-	"C:/ti/ccsv6/tools/compiler/ti-cgt-arm_5.2.7/bin/armhex"  -o "M3_V2.0.hex" $(EXE_OUTPUTS__QUOTED)
+	"C:/ti/ccsv6/tools/compiler/arm_5.1.11/bin/armhex"  -o "M3_V2.0.hex" $(EXE_OUTPUTS__QUOTED)
 	@echo 'Finished building: $@'
 	@echo ' '
 

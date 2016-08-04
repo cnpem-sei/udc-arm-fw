@@ -19,7 +19,7 @@ extern void OutputStsWrite(uint8_t sts);
 
 extern uint8_t OutputStsRead(void);
 
-extern uint8_t InterlockSts(void);
+extern uint8_t InterlockSts(uint8_t ch);
 
 extern void InterlockAlarmReset(void);
 
