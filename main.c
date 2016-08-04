@@ -131,17 +131,11 @@ int main(void) {
 
 	SystemInit();
 
-	//IPC_MtoC_Msg.PSModule.Model.u16 = EepromReadPSModel();
-
     //  Send boot command to allow the C28 application to begin execution
     IPCMtoCBootControlSystem(CBROM_MTOC_BOOTMODE_BOOT_FROM_FLASH);
 
 	// Delay
 	for (ulLoop=0;ulLoop<2000000;ulLoop++){};
-	//  Send boot command to allow the C28 application to begin execution
-	//  IPCMtoCBootControlSystem(CBROM_MTOC_BOOTMODE_BOOT_FROM_FLASH);
-
-	//SystemInit();
 
 	Init_BSMP_var(0,DP_Framework.NetSignals[1].u8);
 	Init_BSMP_var(6,DP_Framework_MtoC.NetSignals[4].u8);

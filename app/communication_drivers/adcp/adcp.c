@@ -29,6 +29,7 @@
 
 #include "set_pinout_udc_v2.0.h"
 
+#include "../ipc/ipc_lib.h"
 #include "../shared_memory/structs.h"
 
 // 1000Amps = 10V
@@ -65,38 +66,78 @@ adcp_ch_t AnalogCh7;
 void AdcChannelAppConfig(void)
 {
 	// Ler tipo de fonte e com isso configurar as variáveis
-	switch(0)
+	switch(IPC_MtoC_Msg.PSModule.Model.enu)
 	{
+		case FBP_100kHz:
 
-	// PSB
-	case 0:
+			// VdcLink: 10V = 30V
+			AnalogCh0.Enable = 1;
+			AnalogCh0.Gain = 30.0/2048.0;
+			AnalogCh0.Value = &DP_Framework_MtoC.NetSignals[5].f;
 
-		// VdcLink 10V = 30V
-		AnalogCh0.Enable = 1;
-		AnalogCh0.Gain = 30.0/2048.0;
-		AnalogCh0.Value = &DP_Framework_MtoC.NetSignals[5].f;
+			// Temperature: 10V = 100°C
+			AnalogCh1.Enable = 1;
+			AnalogCh1.Gain = 100.0/2048.0;
+			AnalogCh1.Value = &DP_Framework_MtoC.NetSignals[13].f;
 
-		// Temperature 10V = 100°C
-		AnalogCh1.Enable = 1;
-		AnalogCh1.Gain = 100.0/2048.0;
-		AnalogCh1.Value = &DP_Framework_MtoC.NetSignals[13].f;
+			// Vload 10V: = 30V
+			AnalogCh2.Enable = 1;
+			AnalogCh2.Gain = 30.0/2048.0;
+			AnalogCh2.Value = &DP_Framework_MtoC.NetSignals[4].f;
 
-		// Vload 10V = 30V
-		AnalogCh2.Enable = 1;
-		AnalogCh2.Gain = 30.0/2048.0;
-		AnalogCh2.Value = &DP_Framework_MtoC.NetSignals[4].f;
+			AnalogCh3.Enable = 0;
+			AnalogCh4.Enable = 0;
+			AnalogCh5.Enable = 0;
+			AnalogCh6.Enable = 0;
+			AnalogCh7.Enable = 0;
 
-		AnalogCh3.Enable = 0;
-		AnalogCh4.Enable = 0;
-		AnalogCh5.Enable = 0;
-		AnalogCh6.Enable = 0;
-		AnalogCh7.Enable = 0;
+			break;
 
-		break;
+		case FAC_Full_DCDC_20kHz:
 
-	default:
+			// Iout module 1: 10V = 1000A
+			AnalogCh0.Enable = 1;
+			AnalogCh0.Gain = 1000.0/2048.0;
+			AnalogCh0.Value = &DP_Framework_MtoC.NetSignals[0].f;
 
-		break;
+			// Iout module 2: 10V = 1000A
+			AnalogCh1.Enable = 1;
+			AnalogCh1.Gain = 1000.0/2048.0;
+			AnalogCh1.Value = &DP_Framework_MtoC.NetSignals[1].f;
+
+			AnalogCh2.Enable = 0;
+			AnalogCh3.Enable = 0;
+			AnalogCh4.Enable = 0;
+			AnalogCh5.Enable = 0;
+			AnalogCh6.Enable = 0;
+			AnalogCh7.Enable = 0;
+
+			break;
+
+		case FAP_ACDC:
+
+			// Vout Rectifier 1: 10V = 60V
+			AnalogCh0.Enable = 1;
+			AnalogCh0.Gain = 60.0/2048.0;
+			AnalogCh0.Value = &DP_Framework_MtoC.NetSignals[9].f;
+
+			// Vout Rectifier 2: 10V = 60V
+			AnalogCh1.Enable = 1;
+			AnalogCh1.Gain = 60.0/2048.0;
+			AnalogCh1.Value = &DP_Framework_MtoC.NetSignals[10].f;
+
+			AnalogCh2.Enable = 0;
+			AnalogCh3.Enable = 0;
+			AnalogCh4.Enable = 0;
+			AnalogCh5.Enable = 0;
+			AnalogCh6.Enable = 0;
+			AnalogCh7.Enable = 0;
+
+			break;
+
+		default:
+
+			break;
 
 	}
 }

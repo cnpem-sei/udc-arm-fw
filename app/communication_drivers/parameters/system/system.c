@@ -103,8 +103,6 @@ TestEepromMemory(void)
 
 		// Write default PS_Model as 0 (FBP)
 		EepromWritePSModel(0);
-
-
 	}
 }
 
@@ -116,6 +114,8 @@ SystemInit(void)
 	ExIOInit();
 
 	TestEepromMemory();
+
+	IPCInit();
 
 	FlashMemInit();
 
@@ -146,10 +146,6 @@ SystemInit(void)
 	PwmFiberCtrl(true);
 
 	PwmEletrCtrl(true);
-
-	//#!
-	IPCInit();
-	//#!
 
 	GlobalTimerInit();
 

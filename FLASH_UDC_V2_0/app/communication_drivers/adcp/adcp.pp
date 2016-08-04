@@ -16,6 +16,8 @@ app/communication_drivers/adcp/adcp.obj: C:/ti/ccsv6/tools/compiler/ti-cgt-arm_5
 app/communication_drivers/adcp/adcp.obj: ../app/communication_drivers/adcp/adcp.h
 app/communication_drivers/adcp/adcp.obj: C:/ti/ccsv6/tools/compiler/ti-cgt-arm_5.2.7/include/stdarg.h
 app/communication_drivers/adcp/adcp.obj: D:/ARQ/Projects/ARM/app/board_drivers/set_pinout_udc_v2.0.h
+app/communication_drivers/adcp/adcp.obj: ../app/communication_drivers/adcp/../ipc/ipc_lib.h
+app/communication_drivers/adcp/adcp.obj: ../app/communication_drivers/adcp/../ipc/../shared_memory/structs.h
 app/communication_drivers/adcp/adcp.obj: ../app/communication_drivers/adcp/../shared_memory/structs.h
 
 ../app/communication_drivers/adcp/adcp.c: 
@@ -34,4 +36,6 @@ C:/ti/ccsv6/tools/compiler/ti-cgt-arm_5.2.7/include/stdint.h:
 ../app/communication_drivers/adcp/adcp.h: 
 C:/ti/ccsv6/tools/compiler/ti-cgt-arm_5.2.7/include/stdarg.h: 
 D:/ARQ/Projects/ARM/app/board_drivers/set_pinout_udc_v2.0.h: 
+../app/communication_drivers/adcp/../ipc/ipc_lib.h: 
+../app/communication_drivers/adcp/../ipc/../shared_memory/structs.h: 
 ../app/communication_drivers/adcp/../shared_memory/structs.h: 
