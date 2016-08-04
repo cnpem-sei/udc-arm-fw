@@ -1005,6 +1005,77 @@ BSMPInit(void)
 	bsmp_register_curve(&bsmp, &sigGen_SweepAmp);        // Curve ID 1
 	bsmp_register_curve(&bsmp, &samples_buffer);         // Curve ID 2
 	//********************************************
+
+	//*****************************************************************************
+	// 					BSMP Variable Pointers Initialization
+	//*****************************************************************************
+	Init_BSMP_var(0,DP_Framework.NetSignals[1].u8);
+	Init_BSMP_var(1,DP_Framework.NetSignals[2].u8);
+	Init_BSMP_var(19,IPC_CtoM_Msg.PSModule.OnOff.u8);
+	Init_BSMP_var(20,IPC_CtoM_Msg.PSModule.OpMode.u8);
+	Init_BSMP_var(21,IPC_MtoC_Msg.PSModule.LocalRemote.u8);
+	Init_BSMP_var(22,IPC_CtoM_Msg.PSModule.OpenLoop.u8);
+	Init_BSMP_var(23,IPC_CtoM_Msg.PSModule.SoftInterlocks.u8);
+	Init_BSMP_var(24,IPC_CtoM_Msg.PSModule.HardInterlocks.u8);
+	Init_BSMP_var(25,IPC_CtoM_Msg.PSModule.IRef.u8);
+	Init_BSMP_var(26,IPC_CtoM_Msg.WfmRef.Gain.u8);
+	Init_BSMP_var(27,IPC_CtoM_Msg.WfmRef.Offset.u8);
+	Init_BSMP_var(28,IPC_MtoC_Msg.SigGen.Enable.u8);
+	Init_BSMP_var(29,IPC_MtoC_Msg.SigGen.Type.u8);
+	Init_BSMP_var(30,IPC_MtoC_Msg.SigGen.Ncycles.u8);
+	Init_BSMP_var(31,IPC_MtoC_Msg.SigGen.PhaseStart.u8);
+	Init_BSMP_var(32,IPC_MtoC_Msg.SigGen.PhaseEnd.u8);
+	Init_BSMP_var(33,IPC_MtoC_Msg.SigGen.Freq.u8);
+	Init_BSMP_var(34,IPC_MtoC_Msg.SigGen.Amplitude[0].u8);
+	Init_BSMP_var(35,IPC_MtoC_Msg.SigGen.Offset.u8);
+	Init_BSMP_var(36,IPC_MtoC_Msg.SigGen.Aux.u8);
+	Init_BSMP_var(37,IPC_MtoC_Msg.DPModule.ID.u8);
+	Init_BSMP_var(38,IPC_MtoC_Msg.DPModule.DPclass.u8);
+	Init_BSMP_var(39,IPC_MtoC_Msg.DPModule.Coeffs[0].u8);
+	Init_BSMP_var(40,IPC_MtoC_Msg.PSModule.Model.u8);
+
+	// Initialize BSMP variable pointers based on PS model
+	switch(IPC_MtoC_Msg.PSModule.Model.enu)
+	{
+		case FBP_100kHz:
+
+			Init_BSMP_var(6,DP_Framework_MtoC.NetSignals[4].u8);	// Vload
+			Init_BSMP_var(7,DP_Framework_MtoC.NetSignals[5].u8);	// Vdclink
+			Init_BSMP_var(15,DP_Framework_MtoC.NetSignals[13].u8);	// Temperature
+			break;
+
+		case FAC_Full_ACDC_10kHz:
+
+			Init_BSMP_var(2,DP_Framework.NetSignals[4].u8);			// Iin1
+			Init_BSMP_var(3,DP_Framework.NetSignals[5].u8);			// Iin2
+			Init_BSMP_var(11,DP_Framework.NetSignals[6].u8);		// Vout1
+			Init_BSMP_var(12,DP_Framework.NetSignals[7].u8);		// Vout2
+			break;
+
+		case FAC_Full_DCDC_20kHz:
+
+			Init_BSMP_var(2,DP_Framework_MtoC.NetSignals[0].u8);	// Iout1
+			Init_BSMP_var(3,DP_Framework_MtoC.NetSignals[1].u8);	// Iout2
+			break;
+
+		case FAP_ACDC:
+
+			Init_BSMP_var(11,DP_Framework_MtoC.NetSignals[9].u8);	// Vout1
+			Init_BSMP_var(12,DP_Framework_MtoC.NetSignals[10].u8);	// Vout2
+			break;
+
+		case FAP_DCDC_20kHz:
+			// TODO: Make this definition compatible with BSMP + IPC specs
+			Init_BSMP_var(2,DP_Framework_MtoC.NetSignals[2].u8);	// Iout1
+			Init_BSMP_var(3,DP_Framework_MtoC.NetSignals[3].u8);	// Iout2
+			Init_BSMP_var(7,DP_Framework_MtoC.NetSignals[5].u8);	// Vdclink
+			Init_BSMP_var(11,DP_Framework_MtoC.NetSignals[9].u8);	// Vout
+			break;
+
+		default:
+			break;
+	}
+	//*****************************************************************************
 }
 
 void

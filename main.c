@@ -91,12 +91,6 @@ int main(void) {
 	
 	volatile unsigned long ulLoop;
 
-	union
-	{
-	 uint8_t u8[2];
-	 uint16_t u16;
-	}LocalRemote;
-
 	// Disable Protection
 	HWREG(SYSCTL_MWRALLOW) =  0xA5A5A5A5;
 
@@ -137,7 +131,7 @@ int main(void) {
 	// Delay
 	for (ulLoop=0;ulLoop<2000000;ulLoop++){};
 
-	Init_BSMP_var(0,DP_Framework.NetSignals[1].u8);
+	/*Init_BSMP_var(0,DP_Framework.NetSignals[1].u8);
 	Init_BSMP_var(6,DP_Framework_MtoC.NetSignals[4].u8);
 	Init_BSMP_var(7,DP_Framework_MtoC.NetSignals[5].u8);
 	Init_BSMP_var(13,DP_Framework_MtoC.NetSignals[13].u8);
@@ -162,7 +156,7 @@ int main(void) {
 	Init_BSMP_var(37,IPC_MtoC_Msg.DPModule.ID.u8);
 	Init_BSMP_var(38,IPC_MtoC_Msg.DPModule.DPclass.u8);
 	Init_BSMP_var(39,IPC_MtoC_Msg.DPModule.Coeffs[0].u8);
-	Init_BSMP_var(40,IPC_MtoC_Msg.PSModule.Model.u8);
+	Init_BSMP_var(40,IPC_MtoC_Msg.PSModule.Model.u8);*/
 
 	// Enable processor interrupts.
 	IntMasterEnable();
@@ -181,7 +175,7 @@ int main(void) {
 			}
 
 
-		LocalRemote.u16 = LocRemUpdate();
+		IPC_MtoC_Msg.PSModule.LocalRemote.u16 = LocRemUpdate();
 
 		TaskCheck();
 

@@ -158,6 +158,11 @@ typedef struct
 	}OpenLoop;
 	union
 	{
+	 uint8_t u8[2];
+	 uint16_t u16;
+	}LocalRemote;
+	union
+	{
 	 uint8_t  u8[4];
 	 uint32_t u32;
 	}SoftInterlocks;
