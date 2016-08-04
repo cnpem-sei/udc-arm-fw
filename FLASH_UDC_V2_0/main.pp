@@ -18,7 +18,7 @@ main.obj: C:/ti/controlSUITE/device_support/f28m36x/v206/MWare/driverlib/flash.h
 main.obj: C:/ti/controlSUITE/device_support/f28m36x/v206/MWare/driverlib/timer.h
 main.obj: C:/ti/controlSUITE/device_support/f28m36x/v206/MWare/driverlib/ipc.h
 main.obj: C:/ti/controlSUITE/device_support/f28m36x/v206/MWare/driverlib/usb.h
-main.obj: D:/ARQ/Projects/ARM/app/board_drivers/set_pinout_udc_v2.0.h
+main.obj: C:/Users/joao.rosa/git/ARM/app/board_drivers/set_pinout_udc_v2.0.h
 main.obj: ../app/communication_drivers/signals_onboard/signals_onboard.h
 main.obj: ../app/communication_drivers/rs485/rs485.h
 main.obj: C:/ti/ccsv6/tools/compiler/ti-cgt-arm_5.2.7/include/stdint.h
@@ -75,7 +75,7 @@ C:/ti/controlSUITE/device_support/f28m36x/v206/MWare/driverlib/flash.h:
 C:/ti/controlSUITE/device_support/f28m36x/v206/MWare/driverlib/timer.h: 
 C:/ti/controlSUITE/device_support/f28m36x/v206/MWare/driverlib/ipc.h: 
 C:/ti/controlSUITE/device_support/f28m36x/v206/MWare/driverlib/usb.h: 
-D:/ARQ/Projects/ARM/app/board_drivers/set_pinout_udc_v2.0.h: 
+C:/Users/joao.rosa/git/ARM/app/board_drivers/set_pinout_udc_v2.0.h: 
 ../app/communication_drivers/signals_onboard/signals_onboard.h: 
 ../app/communication_drivers/rs485/rs485.h: 
 C:/ti/ccsv6/tools/compiler/ti-cgt-arm_5.2.7/include/stdint.h: 

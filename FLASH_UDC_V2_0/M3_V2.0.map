@@ -1,7 +1,11 @@
 ******************************************************************************
                   TI ARM Linker PC v5.2.7                      
 ******************************************************************************
+<<<<<<< HEAD
 >> Linked Thu Aug 04 15:49:39 2016
+=======
+>> Linked Thu Aug 04 15:09:54 2016
+>>>>>>> refs/remotes/origin/master
 
 OUTPUT FILE NAME:   <M3_V2.0.out>
 ENTRY POINT SYMBOL: "_c_int00"  address: 002171a5
@@ -685,7 +689,11 @@ LINKER GENERATED CRC TABLES
 
 AppCrc @ 00218710 records: 4, size/record: 24, table size: 104
 	ramfuncs: algorithm=CRC32_PRIME(ID=0), load addr=00201258, size=000000bc, CRC=000000004cce7c01
+<<<<<<< HEAD
 	.text: algorithm=CRC32_PRIME(ID=0), load addr=00208000, size=0000ff48, CRC=000000006ac40b70
+=======
+	.text: algorithm=CRC32_PRIME(ID=0), load addr=00208000, size=0000ff48, CRC=00000000187c4bfd
+>>>>>>> refs/remotes/origin/master
 	.const: algorithm=CRC32_PRIME(ID=0), load addr=00217f48, size=000002fc, CRC=00000000f270dea0
 	.cinit: algorithm=CRC32_PRIME(ID=0), load addr=00218248, size=000004c8, CRC=00000000a3e3b9c9
 
