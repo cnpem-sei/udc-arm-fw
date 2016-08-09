@@ -86,7 +86,8 @@ typedef enum
 	FAP_ACDC,
 	FAP_DCDC_20kHz,
 	TEST_HRPWM,
-	TEST_HRADC
+	TEST_HRADC,
+	JIGA_HRADC
 }ePSModel;
 
 typedef enum

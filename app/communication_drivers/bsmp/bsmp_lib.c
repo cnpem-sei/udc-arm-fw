@@ -1068,8 +1068,8 @@ BSMPInit(void)
 			// TODO: Make this definition compatible with BSMP + IPC specs
 			Init_BSMP_var(2,DP_Framework_MtoC.NetSignals[2].u8);	// Imod1
 			Init_BSMP_var(3,DP_Framework_MtoC.NetSignals[3].u8);	// Imod2
+			Init_BSMP_var(6,DP_Framework_MtoC.NetSignals[9].u8);	// Vload
 			Init_BSMP_var(7,DP_Framework_MtoC.NetSignals[5].u8);	// Vdclink
-			Init_BSMP_var(11,DP_Framework_MtoC.NetSignals[9].u8);	// Vout
 			break;
 
 		default:

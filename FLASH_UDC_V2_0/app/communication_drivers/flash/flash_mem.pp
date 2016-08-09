@@ -15,7 +15,7 @@ app/communication_drivers/flash/flash_mem.obj: C:/ti/controlSUITE/device_support
 app/communication_drivers/flash/flash_mem.obj: C:/ti/controlSUITE/device_support/f28m36x/v206/MWare/inc/hw_sysctl.h
 app/communication_drivers/flash/flash_mem.obj: C:/ti/controlSUITE/device_support/f28m36x/v206/MWare/driverlib/ssi.h
 app/communication_drivers/flash/flash_mem.obj: C:/ti/controlSUITE/device_support/f28m36x/v206/MWare/driverlib/sysctl.h
-app/communication_drivers/flash/flash_mem.obj: C:/Users/joao.rosa/git/ARM/app/board_drivers/set_pinout_udc_v2.0.h
+app/communication_drivers/flash/flash_mem.obj: D:/ARQ/Projects/ARM/app/board_drivers/set_pinout_udc_v2.0.h
 
 ../app/communication_drivers/flash/flash_mem.c: 
 ../app/communication_drivers/flash/flash_mem.h: 
@@ -32,4 +32,4 @@ C:/ti/controlSUITE/device_support/f28m36x/v206/MWare/inc/hw_types.h:
 C:/ti/controlSUITE/device_support/f28m36x/v206/MWare/inc/hw_sysctl.h: 
 C:/ti/controlSUITE/device_support/f28m36x/v206/MWare/driverlib/ssi.h: 
 C:/ti/controlSUITE/device_support/f28m36x/v206/MWare/driverlib/sysctl.h: 
-C:/Users/joao.rosa/git/ARM/app/board_drivers/set_pinout_udc_v2.0.h: 
+D:/ARQ/Projects/ARM/app/board_drivers/set_pinout_udc_v2.0.h: 
