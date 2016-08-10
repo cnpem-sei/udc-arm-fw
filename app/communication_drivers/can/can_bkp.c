@@ -101,36 +101,6 @@ static union
    char c[4];
 } floatNchars;
 
-typedef struct
-{
-	float Iout1;
-	float Iout2;
-	float Vin;
-	float Vout;
-	uint8_t TempChv1;
-	uint8_t TempChv2;
-	uint8_t TempL1;
-	uint8_t TempL2;
-	uint8_t DvrVolt;
-	uint8_t DvrCurr;
-	uint8_t RH;
-	uint8_t ErrAl;
-} Q1Module_t;
-
-typedef struct
-{
-	float Iout;
-	float Vin;
-	float Vout;
-	uint8_t TempChv1;
-	uint8_t TempChv2;
-	uint8_t TempL1;
-	uint8_t TempL2;
-	uint8_t DvrVolt;
-	uint8_t DvrCurr;
-	uint8_t RH;
-} Q4Module_t;
-
 
 Q1Module_t Mod1Q1;
 Q1Module_t Mod2Q1;
@@ -405,13 +375,15 @@ CanCheck(void)
 
 		CANMessageGet(CAN0_BASE, 3, &sCANMessage, 0);
 
-		Mod1Q1.TempChv1 = pui8MsgData[0];
-		Mod1Q1.TempChv2 = pui8MsgData[1];
-		Mod1Q1.TempL1 = pui8MsgData[2];
-		Mod1Q1.TempL2 = pui8MsgData[3];
+		Mod1Q1.TempChv1.f = pui8MsgData[0];
+		Mod1Q1.TempChv2.f = pui8MsgData[1];
+		Mod1Q1.TempL1.f = pui8MsgData[2];
+		Mod1Q1.TempL2.f = pui8MsgData[3];
 		Mod1Q1.DvrVolt = pui8MsgData[4];
 		Mod1Q1.DvrCurr = pui8MsgData[5];
 		Mod1Q1.RH = pui8MsgData[6];
+		Mod1Q1.DCLinkContactor = pui8MsgData[7];
+		DP_Framework_MtoC.NetSignals[17].f = pui8MsgData[7];
 		//Mod1Q1.ErrAl = pui8MsgData[7];
 
 		g_bRXFlag3 = 0;
@@ -488,13 +460,14 @@ CanCheck(void)
 
 		CANMessageGet(CAN0_BASE, 6, &sCANMessage, 0);
 
-		Mod2Q1.TempChv1 = pui8MsgData[0];
-		Mod2Q1.TempChv2 = pui8MsgData[1];
-		Mod2Q1.TempL1 = pui8MsgData[2];
-		Mod2Q1.TempL2 = pui8MsgData[3];
+		Mod2Q1.TempChv1.f = pui8MsgData[0];
+		Mod2Q1.TempChv2.f = pui8MsgData[1];
+		Mod2Q1.TempL1.f = pui8MsgData[2];
+		Mod2Q1.TempL2.f = pui8MsgData[3];
 		Mod2Q1.DvrVolt = pui8MsgData[4];
 		Mod2Q1.DvrCurr = pui8MsgData[5];
 		Mod2Q1.RH = pui8MsgData[6];
+		Mod2Q1.DCLinkContactor = pui8MsgData[7];
 		//Mod2Q1.ErrAl = pui8MsgData[7];
 
 		g_bRXFlag6 = 0;

@@ -1070,6 +1070,11 @@ BSMPInit(void)
 			Init_BSMP_var(3,DP_Framework_MtoC.NetSignals[3].u8);	// Imod2
 			Init_BSMP_var(6,DP_Framework_MtoC.NetSignals[9].u8);	// Vload
 			Init_BSMP_var(7,DP_Framework_MtoC.NetSignals[5].u8);	// Vdclink
+			Init_BSMP_var(15,Mod1Q1.TempChv1.u8);					// TempIGBT1
+			Init_BSMP_var(16,Mod1Q1.TempChv2.u8);					// TempIGBT2
+			Init_BSMP_var(17,Mod1Q1.TempL1.u8);						// TempL1
+			Init_BSMP_var(18,Mod1Q1.TempL2.u8);						// TempL2
+
 			break;
 
 		default:
