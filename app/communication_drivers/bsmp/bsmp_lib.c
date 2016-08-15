@@ -118,7 +118,7 @@ static bool curve_read_block (struct bsmp_curve *curve, uint16_t block,
     block_data = &wfm_curve_memory[block*block_size];
 
     //Check if any block is busy
-    if((IPC_CtoM_Msg.WfmRef.BufferInfo.BufferBusy.u16 == (block+2))||(IPC_CtoM_Msg.WfmRef.BufferInfo.BufferBusy.enu==Buffer_All))
+    if((IPC_CtoM_Msg.PSModule.OpMode.enu == WfmRef)&&((IPC_CtoM_Msg.WfmRef.BufferInfo.BufferBusy.u16 == (block+2))||(IPC_CtoM_Msg.WfmRef.BufferInfo.BufferBusy.enu==Buffer_All)))
     	return false;
     else
     {
@@ -142,12 +142,63 @@ static bool curve_write_block (struct bsmp_curve *curve, uint16_t block,
     block_data = &wfm_curve_memory[block*block_size];
 
     //Check if any block is busy
-    if((IPC_CtoM_Msg.WfmRef.BufferInfo.BufferBusy.u16 == (block+2))||(IPC_CtoM_Msg.WfmRef.BufferInfo.BufferBusy.enu==Buffer_All))
+    if((IPC_CtoM_Msg.PSModule.OpMode.enu == WfmRef)&&((IPC_CtoM_Msg.WfmRef.BufferInfo.BufferBusy.u16 == (block+2))||(IPC_CtoM_Msg.WfmRef.BufferInfo.BufferBusy.enu==Buffer_All)))
     	return false;
     else
     {
     	memcpy(block_data, data, len);
     	IPC_MtoC_Msg.WfmRef.BufferInfo.BufferBusy.u16 = block+2;
+    	IPC_MtoC_Msg.WfmRef.BufferInfo.PtrBufferStart = (float *) IPC_MtoC_Translate((unsigned long)block_data);
+    	IPC_MtoC_Msg.WfmRef.BufferInfo.PtrBufferEnd   = (float *) (IPC_MtoC_Translate((unsigned long)(block_data + len))-2);
+    	IPC_MtoC_Msg.WfmRef.BufferInfo.PtrBufferK     = IPC_MtoC_Msg.WfmRef.BufferInfo.PtrBufferStart;
+    	return true;
+    }
+}
+
+
+
+//*****************************************************************************
+// 			Function used to read block for BSMP Curve entity
+//*****************************************************************************
+static bool fullcurve_read_block (struct bsmp_curve *curve, uint16_t block,
+                              uint8_t *data, uint16_t *len)
+{
+    uint8_t *block_data;
+    uint16_t block_size = curve->info.block_size;
+
+    block_data = &wfm_curve_memory[block*block_size];
+
+    //Check if any block is busy
+    if((IPC_CtoM_Msg.PSModule.OpMode.enu == WfmRef)&&(IPC_CtoM_Msg.WfmRef.BufferInfo.BufferBusy.enu != Buffer_Idle))
+    	return false;
+    else
+    {
+    	memcpy(data, block_data, block_size);
+    	// We copied the whole requested block
+    	*len = block_size;
+    	return true;
+    }
+}
+
+
+//*****************************************************************************
+// 				Function used to write block for BSMP Curve entity
+//*****************************************************************************
+static bool fullcurve_write_block (struct bsmp_curve *curve, uint16_t block,
+                               uint8_t *data, uint16_t len)
+{
+    uint8_t *block_data;
+    uint16_t block_size = curve->info.block_size;
+
+    block_data = &wfm_curve_memory[block*block_size];
+
+    //Check if any block is busy
+    if((IPC_CtoM_Msg.PSModule.OpMode.enu == WfmRef)&&(IPC_CtoM_Msg.WfmRef.BufferInfo.BufferBusy.enu != Buffer_Idle))
+    	return false;
+    else
+    {
+    	memcpy(block_data, data, len);
+    	IPC_MtoC_Msg.WfmRef.BufferInfo.BufferBusy.enu = Buffer_All;
     	IPC_MtoC_Msg.WfmRef.BufferInfo.PtrBufferStart = (float *) IPC_MtoC_Translate((unsigned long)block_data);
     	IPC_MtoC_Msg.WfmRef.BufferInfo.PtrBufferEnd   = (float *) (IPC_MtoC_Translate((unsigned long)(block_data + len))-2);
     	IPC_MtoC_Msg.WfmRef.BufferInfo.PtrBufferK     = IPC_MtoC_Msg.WfmRef.BufferInfo.PtrBufferStart;
@@ -190,6 +241,17 @@ static struct bsmp_curve samples_buffer = {
     .user            = (void*) "SAMPLESBUFFER"
 };
 
+//*****************************************************************************
+// 					FullWaveformReference Curve Declaration
+//*****************************************************************************
+static struct bsmp_curve fullwfm_curve = {
+    .info.nblocks    = 1,                 // 2 blocks
+    .info.block_size = 2*8192,              // 8192 bytes per block
+    .info.writable   = true,              // The client can write to this Curve.
+    .read_block      = fullcurve_read_block,
+    .write_block     = fullcurve_write_block,
+    .user            = (void*) "FULLWAVEFORM"
+};
 
 //*****************************************************************************
 // 						TurnOn BSMP Function
@@ -324,6 +386,7 @@ static struct bsmp_func closedloop_func = {
 //*****************************************************************************
 uint8_t OpMode (uint8_t *input, uint8_t *output)
 {
+
 	ulTimeout=0;
 	if(IPCMtoCBusy(OPERATING_MODE))
 	{
@@ -1004,6 +1067,7 @@ BSMPInit(void)
 	bsmp_register_curve(&bsmp, &wfm_curve);       		 // Curve ID 0
 	bsmp_register_curve(&bsmp, &sigGen_SweepAmp);        // Curve ID 1
 	bsmp_register_curve(&bsmp, &samples_buffer);         // Curve ID 2
+	bsmp_register_curve(&bsmp, &fullwfm_curve);          // Curve ID 3
 	//********************************************
 
 	//*****************************************************************************

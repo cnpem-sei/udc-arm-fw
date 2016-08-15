@@ -123,7 +123,7 @@ void AdcChannelAppConfig(void)
 
 			// Vout Rectifier 2: 10V = 60V
 			AnalogCh1.Enable = 1;
-			AnalogCh1.Gain = 60.0/2048.0;
+			AnalogCh1.Gain = -60.0/2048.0;
 			AnalogCh1.Value = &DP_Framework_MtoC.NetSignals[10].f;
 
 			AnalogCh2.Enable = 0;
