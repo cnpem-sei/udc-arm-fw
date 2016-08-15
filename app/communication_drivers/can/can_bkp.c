@@ -104,6 +104,7 @@ static union
 
 Q1Module_t Mod1Q1;
 Q1Module_t Mod2Q1;
+RectModule_t Rectifier;
 
 
 //*****************************************************************************
@@ -293,7 +294,424 @@ CANIntHandler(void)
 void
 CanCheck(void)
 {
-    //
+    switch(IPC_MtoC_Msg.PSModule.Model.u16)
+    {
+    case FAP_DCDC_20kHz:
+    	//
+        // If the flag for message object 1 is set, that means that the RX
+        // interrupt occurred and there is a message ready to be read from
+        // this CAN message object.
+        //
+        if(g_bRXFlag1)
+        {
+
+        	sCANMessage.pucMsgData = pui8MsgData;
+
+    		CANMessageGet(CAN0_BASE, 1, &sCANMessage, 0);
+
+    		//  I Braço 1
+    		Mod1Q1.IoutA1.u8[0] = pui8MsgData[0];
+    		Mod1Q1.IoutA1.u8[1] = pui8MsgData[1];
+    		Mod1Q1.IoutA1.u8[2] = pui8MsgData[2];
+    		Mod1Q1.IoutA1.u8[3] = pui8MsgData[3];
+
+    		DP_Framework_MtoC.NetSignals[2].f = Mod1Q1.IoutA1.f;
+
+    		//  I Braço 2
+    		Mod1Q1.IoutA2.u8[0] = pui8MsgData[4];
+    		Mod1Q1.IoutA2.u8[1] = pui8MsgData[5];
+    		Mod1Q1.IoutA2.u8[2] = pui8MsgData[6];
+    		Mod1Q1.IoutA2.u8[3] = pui8MsgData[7];
+
+    		DP_Framework_MtoC.NetSignals[3].f = Mod1Q1.IoutA2.f;
+
+            g_bRXFlag1 = 0;
+
+        }
+
+        //
+        // Check for message received on message object 2.  If so then
+        // read message and print information.
+        //
+        if(g_bRXFlag2)
+        {
+
+        	sCANMessage.pucMsgData = pui8MsgData;
+
+    		CANMessageGet(CAN0_BASE, 2, &sCANMessage, 0);
+
+    		//  Vin
+    		Mod1Q1.Vin.u8[0] = pui8MsgData[0];
+    		Mod1Q1.Vin.u8[1] = pui8MsgData[1];
+    		Mod1Q1.Vin.u8[2] = pui8MsgData[2];
+    		Mod1Q1.Vin.u8[3] = pui8MsgData[3];
+
+    		DP_Framework_MtoC.NetSignals[5].f = Mod1Q1.Vin.f;
+
+    		//  Vout
+    		Mod1Q1.Vout.u8[0] = pui8MsgData[4];
+    		Mod1Q1.Vout.u8[1] = pui8MsgData[5];
+    		Mod1Q1.Vout.u8[2] = pui8MsgData[6];
+    		Mod1Q1.Vout.u8[3] = pui8MsgData[7];
+
+    		DP_Framework_MtoC.NetSignals[9].f = Mod1Q1.Vout.f;
+
+            g_bRXFlag2 = 0;
+        }
+
+        //
+    	// Check for message received on message object 2.  If so then
+    	// read message and print information.
+    	//
+    	if(g_bRXFlag3)
+    	{
+
+    		sCANMessage.pucMsgData = pui8MsgData;
+
+    		CANMessageGet(CAN0_BASE, 3, &sCANMessage, 0);
+
+    		Mod1Q1.TempHeatSink.f = (float) pui8MsgData[0];
+    		Mod1Q1.TempIGBT1.f = (float) pui8MsgData[1];
+    		Mod1Q1.TempIGBT2.f = (float) pui8MsgData[2];
+    		Mod1Q1.TempL1.f = (float) pui8MsgData[3];
+    		Mod1Q1.TempL2.f = (float) pui8MsgData[4];
+    		Mod1Q1.RelativeHumidity = pui8MsgData[5];
+
+    		if(pui8MsgData[6] & 0b00000001) Mod1Q1.ContactorSts = 1;
+    		else Mod1Q1.ContactorSts = 0;
+
+    		if(pui8MsgData[6] & 0b00000010) Mod1Q1.ExtItlk = 1;
+    		else Mod1Q1.ExtItlk = 0;
+
+    		if(pui8MsgData[6] & 0b00000100) Mod1Q1.Driver1Error = 1;
+    		else Mod1Q1.Driver1Error  = 0;
+
+    		if(pui8MsgData[6] & 0b00001000) Mod1Q1.Driver2Error = 1;
+    		else Mod1Q1.Driver2Error  = 0;
+
+    		DP_Framework_MtoC.NetSignals[17].f = Mod1Q1.ContactorSts;
+
+    		g_bRXFlag3 = 0;
+
+    	}
+
+    	//
+		// Check for message received on message object 3.  If so then
+		// read message and print information.
+		//
+		if(g_bRXFlag4)
+		{
+			sCANMessage.pucMsgData = pui8MsgData;
+
+			CANMessageGet(CAN0_BASE, 4, &sCANMessage, 0);
+
+			//Alarm
+			if(pui8MsgData[0] & 0b00000001)  Mod1Q1.VoutAlarmSts = 1;
+			else Mod1Q1.VoutAlarmSts = 0;
+			if(pui8MsgData[0] & 0b00000010) Mod1Q1.VinAlarmSts = 1;
+			else Mod1Q1.VinAlarmSts = 0;
+			if(pui8MsgData[0] & 0b00000100) Mod1Q1.IoutA1AlarmSts = 1;
+			else Mod1Q1.IoutA1AlarmSts = 0;
+			if(pui8MsgData[0] & 0b00001000) Mod1Q1.IoutA2AlarmSts = 1;
+			else Mod1Q1.IoutA2AlarmSts = 0;
+			if(pui8MsgData[0] & 0b00010000) Mod1Q1.IinAlarmSts = 1;
+			else Mod1Q1.IinAlarmSts = 0;
+			if(pui8MsgData[0] & 0b00100000) Mod1Q1.TempIGBT1AlarmSts = 1;
+			else Mod1Q1.TempIGBT1AlarmSts = 0;
+			if(pui8MsgData[0] & 0b01000000) Mod1Q1.TempIGBT2AlarmSts = 1;
+			else Mod1Q1.TempIGBT2AlarmSts = 0;
+			if(pui8MsgData[0] & 0b10000000) Mod1Q1.TempL1AlarmSts = 1;
+			else Mod1Q1.TempL1AlarmSts = 0;
+
+			if(pui8MsgData[1] & 0b00000001) Mod1Q1.TempL2AlarmSts = 1;
+			else Mod1Q1.TempL2AlarmSts = 0;
+			if(pui8MsgData[1] & 0b00000010) Mod1Q1.TempHeatSinkAlarmSts = 1;
+			else Mod1Q1.TempHeatSinkAlarmSts = 0;
+			if(pui8MsgData[1] & 0b00000100) Mod1Q1.RelativeHumidityAlarm = 1;
+			else Mod1Q1.RelativeHumidityAlarm = 0;
+
+
+			//Interlock
+			if(pui8MsgData[4] & 0b00000001) Mod1Q1.VoutItlkSts = 1;
+			else Mod1Q1.VoutItlkSts = 0;
+			if(pui8MsgData[4] & 0b00000010) Mod1Q1.VinItlkSts = 1;
+			else Mod1Q1.VinItlkSts = 0;
+			if(pui8MsgData[4] & 0b00000100) Mod1Q1.IoutA1ItlkSts = 1;
+			else Mod1Q1.IoutA1ItlkSts = 0;
+			if(pui8MsgData[4] & 0b00001000) Mod1Q1.IoutA2ItlkSts = 1;
+			else Mod1Q1.IoutA2ItlkSts = 0;
+			if(pui8MsgData[4] & 0b00010000) Mod1Q1.IinItlkSts = 1;
+			else Mod1Q1.IinItlkSts = 0;
+			if(pui8MsgData[4] & 0b00100000) Mod1Q1.TempIGBT1ItlkSts = 1;
+			else Mod1Q1.TempIGBT1ItlkSts = 0;
+			if(pui8MsgData[4] & 0b01000000) Mod1Q1.TempIGBT2ItlkSts = 1;
+			else Mod1Q1.TempIGBT2ItlkSts = 0;
+			if(pui8MsgData[4] & 0b10000000) Mod1Q1.TempL1ItlkSts = 1;
+			else Mod1Q1.TempL1ItlkSts = 0;
+
+			if(pui8MsgData[5] & 0b00000001) Mod1Q1.TempL2ItlkSts = 1;
+			else Mod1Q1.TempL2ItlkSts = 0;
+			if(pui8MsgData[5] & 0b00000010) Mod1Q1.TempHeatSinkItlkSts = 1;
+			else Mod1Q1.TempHeatSinkItlkSts = 0;
+			if(pui8MsgData[5] & 0b00000100) Mod1Q1.ExtItlkSts = 1;
+			else Mod1Q1.ExtItlkSts = 0;
+			if(pui8MsgData[5] & 0b00001000) Mod1Q1.Driver1ErrorItlk = 1;
+			else Mod1Q1.Driver1ErrorItlk = 0;
+			if(pui8MsgData[5] & 0b00010000) Mod1Q1.Driver2ErrorItlk = 1;
+			else Mod1Q1.Driver2ErrorItlk = 0;
+			if(pui8MsgData[5] & 0b00100000) Mod1Q1.RelativeHumidityItlk = 1;
+			else Mod1Q1.RelativeHumidityItlk = 0;
+
+
+			g_bRXFlag4 = 0;
+		}
+
+    	//
+    	// Check for message received on message object 2.  If so then
+    	// read message and print information.
+    	//
+    	if(g_bRXFlag5)
+    	{
+
+    		sCANMessage.pucMsgData = pui8MsgData;
+
+    		CANMessageGet(CAN0_BASE, 5, &sCANMessage, 0);
+
+    		Mod1Q1.Interlock = pui8MsgData[0];
+
+    		if(Mod1Q1.Interlock)
+    		{
+
+    			IPC_MtoC_Msg.PSModule.HardInterlocks.u32 = Mod1Q1.Interlock;
+    			SendIpcFlag(HARD_INTERLOCK);
+    		}
+
+
+    		g_bRXFlag5 = 0;
+    	}
+
+
+    	break;
+    case FAP_ACDC:
+    	//
+        // If the flag for message object 1 is set, that means that the RX
+        // interrupt occurred and there is a message ready to be read from
+        // this CAN message object.
+        //
+        if(g_bRXFlag1)
+        {
+        	sCANMessage.pucMsgData = pui8MsgData;
+
+    		CANMessageGet(CAN0_BASE, 1, &sCANMessage, 0);
+
+    		//  Iout Rectifier 1
+    		Rectifier.IoutRectf1.u8[0] = pui8MsgData[0];
+    		Rectifier.IoutRectf1.u8[1] = pui8MsgData[1];
+    		Rectifier.IoutRectf1.u8[2] = pui8MsgData[2];
+    		Rectifier.IoutRectf1.u8[3] = pui8MsgData[3];
+
+
+    		//  Iout Rectifier 2
+    		Rectifier.IoutRectf2.u8[0] = pui8MsgData[4];
+    		Rectifier.IoutRectf2.u8[1] = pui8MsgData[5];
+    		Rectifier.IoutRectf2.u8[2] = pui8MsgData[6];
+    		Rectifier.IoutRectf2.u8[3] = pui8MsgData[7];
+
+
+            //
+            // Clear the pending message flag so that the interrupt handler can
+            // set it again when the next message arrives.
+            //
+            g_bRXFlag1 = 0;
+
+        }
+
+        //
+        // Check for message received on message object 2.  If so then
+        // read message and print information.
+        //
+        if(g_bRXFlag2)
+        {
+        	sCANMessage.pucMsgData = pui8MsgData;
+
+    		CANMessageGet(CAN0_BASE, 2, &sCANMessage, 0);
+
+    		//  Vout Rectifier 1
+    		Rectifier.VoutRectf1.u8[0] = pui8MsgData[0];
+    		Rectifier.VoutRectf1.u8[1] = pui8MsgData[1];
+    		Rectifier.VoutRectf1.u8[2] = pui8MsgData[2];
+    		Rectifier.VoutRectf1.u8[3] = pui8MsgData[3];
+    		DP_Framework_MtoC.NetSignals[9].f = Rectifier.VoutRectf1.f;
+
+    		//  Vout Rectifier 2
+    		Rectifier.VoutRectf2.u8[0] = pui8MsgData[4];
+    		Rectifier.VoutRectf2.u8[1] = pui8MsgData[5];
+    		Rectifier.VoutRectf2.u8[2] = pui8MsgData[6];
+    		Rectifier.VoutRectf2.u8[3] = pui8MsgData[7];
+
+    		DP_Framework_MtoC.NetSignals[10].f = Rectifier.VoutRectf2.f;
+
+            g_bRXFlag2 = 0;
+        }
+
+        //
+    	// Check for message received on message object 2.  If so then
+    	// read message and print information.
+    	//
+    	if(g_bRXFlag3)
+    	{
+    		sCANMessage.pucMsgData = pui8MsgData;
+
+    		CANMessageGet(CAN0_BASE, 3, &sCANMessage, 0);
+
+    		//Leakage Current
+    		Rectifier.LeakageCurrent.u8[0] = pui8MsgData[0];
+    		Rectifier.LeakageCurrent.u8[1] = pui8MsgData[1];
+    		Rectifier.LeakageCurrent.u8[2] = pui8MsgData[2];
+    		Rectifier.LeakageCurrent.u8[3] = pui8MsgData[3];
+
+
+			if(pui8MsgData[4] & 0b00000001) Rectifier.AcPhaseFault = 1;
+			else Rectifier.AcPhaseFault = 0;
+			if(pui8MsgData[4] & 0b00000010) Rectifier.AcOverCurrent = 1;
+			else Rectifier.AcOverCurrent = 0;
+			if(pui8MsgData[4] & 0b00000100) Rectifier.AcTransformerOverTemp = 1;
+			else Rectifier.AcTransformerOverTemp = 0;
+			if(pui8MsgData[4] & 0b00001000) Rectifier.WaterFluxInterlock = 1;
+			else Rectifier.WaterFluxInterlock = 0;
+
+    		g_bRXFlag3 = 0;
+
+    	}
+
+    	//
+
+    	//
+    	// Check for message received on message object 2.  If so then
+    	// read message and print information.
+    	//
+    	if(g_bRXFlag4)
+    	{
+    		sCANMessage.pucMsgData = pui8MsgData;
+
+    		CANMessageGet(CAN0_BASE, 4, &sCANMessage, 0);
+
+    		Rectifier.TempHeatSink.f = pui8MsgData[0];
+    		Rectifier.TempWater.f = pui8MsgData[1];
+    		Rectifier.TempModule1.f = pui8MsgData[2];
+    		Rectifier.TempModule2.f = pui8MsgData[3];
+    		Rectifier.TempL1.f = pui8MsgData[4];
+    		Rectifier.TempL2.f = pui8MsgData[5];
+    		Rectifier.RelativeHumidity = pui8MsgData[6];
+
+    		g_bRXFlag4 = 0;
+    	}
+
+        //
+        // Check for message received on message object 3.  If so then
+        // read message and print information.
+        //
+        if(g_bRXFlag5)
+        {
+        	sCANMessage.pucMsgData = pui8MsgData;
+
+    		CANMessageGet(CAN0_BASE, 5, &sCANMessage, 0);
+
+    		//Alarm
+    		if(pui8MsgData[0] & 0b00000001) Rectifier.IoutRectf1Alarm = 1;
+    		else Rectifier.IoutRectf1Alarm = 0;
+		    if(pui8MsgData[0] & 0b00000010) Rectifier.IoutRectf2Alarm = 1;
+		    else Rectifier.IoutRectf2Alarm = 0;
+		    if(pui8MsgData[0] & 0b00000100) Rectifier.VoutRectf1Alarm = 1;
+		    else Rectifier.VoutRectf1Alarm = 0;
+		    if(pui8MsgData[0] & 0b00001000) Rectifier.VoutRectf2Alarm = 1;
+		    else Rectifier.VoutRectf2Alarm = 0;
+		    if(pui8MsgData[0] & 0b00010000) Rectifier.LeakageCurrentAlarm = 1;
+		    else Rectifier.LeakageCurrentAlarm = 0;
+		    if(pui8MsgData[0] & 0b00100000) Rectifier.TempHeatSinkAlarm = 1;
+		    else Rectifier.TempHeatSinkAlarm = 0;
+		    if(pui8MsgData[0] & 0b01000000) Rectifier.TempWaterAlarm = 1;
+		    else Rectifier.TempWaterAlarm = 0;
+		    if(pui8MsgData[0] & 0b10000000) Rectifier.TempModule1Alarm = 1;
+		    else Rectifier.TempModule1Alarm = 0;
+
+		    if(pui8MsgData[1] & 0b00000001) Rectifier.TempModule2Alarm = 1;
+		    else Rectifier.TempModule2Alarm = 0;
+		    if(pui8MsgData[1] & 0b00000010) Rectifier.TempL1Alarm = 1;
+		    else Rectifier.TempL1Alarm = 0;
+		    if(pui8MsgData[1] & 0b00000100) Rectifier.TempL2Alarm = 1;
+		    else Rectifier.TempL2Alarm = 0;
+		    if(pui8MsgData[1] & 0b00001000) Rectifier.RelativeHumidityAlarm = 1;
+		    else Rectifier.RelativeHumidityAlarm = 0;
+
+    		//Interlock
+    		if(pui8MsgData[4] & 0b00000001) Rectifier.IoutRectf1Itlk = 1;
+    		else Rectifier.IoutRectf1Itlk = 0;
+		    if(pui8MsgData[4] & 0b00000010) Rectifier.IoutRectf2Itlk = 1;
+		    else Rectifier.IoutRectf2Itlk = 0;
+		    if(pui8MsgData[4] & 0b00000100) Rectifier.VoutRectf1Itlk = 1;
+		    else Rectifier.VoutRectf1Itlk = 0;
+		    if(pui8MsgData[4] & 0b00001000) Rectifier.VoutRectf2Itlk = 1;
+		    else Rectifier.VoutRectf2Itlk = 0;
+		    if(pui8MsgData[4] & 0b00010000) Rectifier.LeakageCurrentItlk = 1;
+		    else Rectifier.LeakageCurrentItlk = 0;
+		    if(pui8MsgData[4] & 0b00100000) Rectifier.TempHeatSinkItlk = 1;
+		    else Rectifier.TempHeatSinkItlk = 0;
+		    if(pui8MsgData[4] & 0b01000000) Rectifier.TempWaterItlk = 1;
+		    else Rectifier.TempWaterItlk = 0;
+		    if(pui8MsgData[4] & 0b10000000) Rectifier.TempModule1Itlk = 1;
+		    else Rectifier.TempModule1Itlk = 0;
+
+		    if(pui8MsgData[5] & 0b00000001) Rectifier.TempModule2Itlk = 1;
+		    else Rectifier.TempModule2Itlk = 0;
+		    if(pui8MsgData[5] & 0b00000010) Rectifier.TempL1Itlk = 1;
+		    else Rectifier.TempL1Itlk = 0;
+		    if(pui8MsgData[5] & 0b00000100) Rectifier.TempL2Itlk = 1;
+		    else Rectifier.TempL2Itlk = 0;
+		    if(pui8MsgData[5] & 0b00001000) Rectifier.AcPhaseFaultItlk = 1;
+		    else Rectifier.AcPhaseFaultItlk = 0;
+		    if(pui8MsgData[5] & 0b00010000) Rectifier.AcOverCurrentItlk = 1;
+		    else Rectifier.AcOverCurrentItlk = 0;
+		    if(pui8MsgData[5] & 0b00100000) Rectifier.AcTransformerOverTempItlk = 1;
+		    else Rectifier.AcTransformerOverTempItlk = 0;
+		    if(pui8MsgData[5] & 0b01000000) Rectifier.WaterFluxInterlockItlk = 1;
+		    else Rectifier.WaterFluxInterlockItlk = 0;
+		    if(pui8MsgData[5] & 0b10000000) Rectifier.RelativeHumidityItlk = 1;
+		    else Rectifier.RelativeHumidityItlk = 0;
+
+            g_bRXFlag5 = 0;
+        }
+
+        //
+		// Check for message received on message object 2.  If so then
+		// read message and print information.
+		//
+		if(g_bRXFlag6)
+		{
+
+			sCANMessage.pucMsgData = pui8MsgData;
+
+			CANMessageGet(CAN0_BASE, 6, &sCANMessage, 0);
+
+			Rectifier.Interlock = pui8MsgData[0];
+
+			if(Rectifier.Interlock)
+			{
+				IPC_MtoC_Msg.PSModule.HardInterlocks.u32 = Rectifier.Interlock;
+				SendIpcFlag(HARD_INTERLOCK);
+			}
+
+
+			g_bRXFlag6 = 0;
+		}
+
+    	break;
+
+    }
+
+    /*
+
+	//
     // If the flag for message object 1 is set, that means that the RX
     // interrupt occurred and there is a message ready to be read from
     // this CAN message object.
@@ -525,6 +943,7 @@ CanCheck(void)
 		g_bRXFlag9 = 0;
 		Counter++;
 	}
+	*/
 }
 
 void SendCanMessage(unsigned char CanMess)
@@ -580,6 +999,123 @@ InitCanBkp(void)
     // Enable the CAN for operation.
     CANEnable(CAN0_BASE);
 
+    switch(IPC_MtoC_Msg.PSModule.Model.u16)
+    {
+    case FAP_DCDC_20kHz:
+    	//
+		// Initialize a message object to receive CAN messages with ID 0x010.
+		// The expected ID must be set along with the mask to indicate that all
+		// bits in the ID must match.
+		//
+		sCANMessage.ulMsgID = 0x010;
+		sCANMessage.ulMsgIDMask = 0x7FF;
+		sCANMessage.ulFlags = (MSG_OBJ_RX_INT_ENABLE | MSG_OBJ_USE_ID_FILTER);
+		sCANMessage.ulMsgLen = 8;
+
+		//
+		// Now load the message object into the CAN peripheral message object 1.
+		// Once loaded the CAN will receive any messages with this CAN ID into
+		// this message object, and an interrupt will occur.
+		//
+		CANMessageSet(CAN0_BASE, 1, &sCANMessage, MSG_OBJ_TYPE_RX);
+
+		//
+		// Change the ID to 0x011, and load into message object 2 which will be
+		// used for receiving any CAN messages with this ID.  Since only the CAN
+		// ID field changes, we don't need to reload all the other fields.
+		//
+		sCANMessage.ulMsgID = 0x011;
+		CANMessageSet(CAN0_BASE, 2, &sCANMessage, MSG_OBJ_TYPE_RX);
+
+		//
+		// Change the ID to 0x012, and load into message object 3 which will be
+		// used for receiving any CAN messages with this ID.  Since only the CAN
+		// ID field changes, we don't need to reload all the other fields.
+		//
+		sCANMessage.ulMsgID = 0x012;
+		CANMessageSet(CAN0_BASE, 3, &sCANMessage, MSG_OBJ_TYPE_RX);
+
+		//
+		// Change the ID to 0x012, and load into message object 3 which will be
+		// used for receiving any CAN messages with this ID.  Since only the CAN
+		// ID field changes, we don't need to reload all the other fields.
+		//
+		sCANMessage.ulMsgID = 0x013;
+		CANMessageSet(CAN0_BASE, 4, &sCANMessage, MSG_OBJ_TYPE_RX);
+
+
+		//
+		// Change the ID to 0x050, and load into message object 3 which will be
+		// used for receiving any CAN messages with this ID.  Since only the CAN
+		// ID field changes, we don't need to reload all the other fields.
+		//
+		sCANMessage.ulMsgID = 0x01F;
+		CANMessageSet(CAN0_BASE, 5, &sCANMessage, MSG_OBJ_TYPE_RX);
+
+    	break;
+
+    case FAP_ACDC:
+        //
+        // Initialize a message object to receive CAN messages with ID 0x010.
+        // The expected ID must be set along with the mask to indicate that all
+        // bits in the ID must match.
+        //
+        sCANMessage.ulMsgID = 0x010;
+        sCANMessage.ulMsgIDMask = 0x7FF;
+        sCANMessage.ulFlags = (MSG_OBJ_RX_INT_ENABLE | MSG_OBJ_USE_ID_FILTER);
+        sCANMessage.ulMsgLen = 8;
+
+        //
+        // Now load the message object into the CAN peripheral message object 1.
+        // Once loaded the CAN will receive any messages with this CAN ID into
+        // this message object, and an interrupt will occur.
+        //
+        CANMessageSet(CAN0_BASE, 1, &sCANMessage, MSG_OBJ_TYPE_RX);
+
+        //
+        // Change the ID to 0x011, and load into message object 2 which will be
+        // used for receiving any CAN messages with this ID.  Since only the CAN
+        // ID field changes, we don't need to reload all the other fields.
+        //
+        sCANMessage.ulMsgID = 0x011;
+        CANMessageSet(CAN0_BASE, 2, &sCANMessage, MSG_OBJ_TYPE_RX);
+
+        //
+        // Change the ID to 0x012, and load into message object 3 which will be
+        // used for receiving any CAN messages with this ID.  Since only the CAN
+        // ID field changes, we don't need to reload all the other fields.
+        //
+        sCANMessage.ulMsgID = 0x012;
+        CANMessageSet(CAN0_BASE, 3, &sCANMessage, MSG_OBJ_TYPE_RX);
+
+        //
+    	// Change the ID to 0x013, and load into message object 3 which will be
+    	// used for receiving any CAN messages with this ID.  Since only the CAN
+    	// ID field changes, we don't need to reload all the other fields.
+    	//
+    	sCANMessage.ulMsgID = 0x013;
+    	CANMessageSet(CAN0_BASE, 4, &sCANMessage, MSG_OBJ_TYPE_RX);
+
+    	//
+    	// Change the ID to 0x014, and load into message object 3 which will be
+    	// used for receiving any CAN messages with this ID.  Since only the CAN
+    	// ID field changes, we don't need to reload all the other fields.
+    	//
+    	sCANMessage.ulMsgID = 0x014;
+    	CANMessageSet(CAN0_BASE, 5, &sCANMessage, MSG_OBJ_TYPE_RX);
+
+    	//
+		// Change the ID to 0x01F, and load into message object 3 which will be
+		// used for receiving any CAN messages with this ID.  Since only the CAN
+		// ID field changes, we don't need to reload all the other fields.
+		//
+		sCANMessage.ulMsgID = 0x01F;
+		CANMessageSet(CAN0_BASE, 6, &sCANMessage, MSG_OBJ_TYPE_RX);
+
+    	break;
+
+    }
+
     //
 	// Initialize message object 1 to be able to send CAN message 1.  This
 	// message object is not shared so it only needs to be initialized one
@@ -591,6 +1127,7 @@ InitCanBkp(void)
     sCANMessageTx.ulMsgLen = 8;
     sCANMessageTx.pucMsgData = pui8MsgDataTx;
 
+    /*
 
     //
     // Initialize a message object to receive CAN messages with ID 0x010.
@@ -641,6 +1178,7 @@ InitCanBkp(void)
 	sCANMessage.ulMsgID = 0x021;
 	CANMessageSet(CAN0_BASE, 5, &sCANMessage, MSG_OBJ_TYPE_RX);
 
+
 	//
 	// Change the ID to 0x060, and load into message object 3 which will be
 	// used for receiving any CAN messages with this ID.  Since only the CAN
@@ -654,5 +1192,6 @@ InitCanBkp(void)
 
 	sCANMessage.ulMsgID = 0x02F;
 	CANMessageSet(CAN0_BASE, 9, &sCANMessage, MSG_OBJ_TYPE_RX);
+	*/
 
 }
