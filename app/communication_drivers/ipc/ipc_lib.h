@@ -72,6 +72,7 @@
 
 typedef enum {NO_ERROR_CTOM,ERROR1, ERROR2, ERROR3, ERROR4} 	eCTOMerror;
 typedef enum {NO_ERROR_MTOC,INVALID_SLOWREF_UPDATE, INVALID_DP_MODULE, ERROR7, ERROR8} 	eMTOCerror;
+typedef enum {OneShot, SampleBySample} eSyncMode;
 
 //######################## MTOC ###############################
 
@@ -200,6 +201,7 @@ typedef struct
 	 uint32_t u32;
 	 float    f;
 	}Offset;
+	eSyncMode SyncMode;
 }tWfmRef;
 
 typedef struct
