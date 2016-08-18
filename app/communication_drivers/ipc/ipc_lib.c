@@ -62,7 +62,7 @@ IPCInit(void)
 	IPC_MtoC_Msg.WfmRef.Gain.f = 1.0;
 	IPC_MtoC_Msg.WfmRef.Offset.f = 0.0;
 
-	if(IPC_MtoC_Msg.PSModule.Model.enu = FAP_DCDC_20kHz)
+	if(IPC_MtoC_Msg.PSModule.Model.enu == FAP_DCDC_20kHz)
 	{
 		IPC_MtoC_Msg.WfmRef.SyncMode = SampleBySample;
 	}
