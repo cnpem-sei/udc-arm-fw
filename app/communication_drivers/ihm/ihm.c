@@ -179,7 +179,7 @@ void ProcessCmd(){
     	       Mensagem.CMD = 0x01;
     	       Mensagem.PDADO = 0x00;
     	       Mensagem.NDADO = 0x01;
-    	       //Mensagem.DADO[0] = Parametros.MdFnt;
+    	       Mensagem.DADO[0] = PowerSupplyModelRead();
     	       Mensagem.ACK = 0x00;
     	       SendDisplay(); // Envia mensagem para o Display
                break;
@@ -963,12 +963,28 @@ void ProcessCmd(){
 	 case 0xE0:
 		 	   Mensagem.CMD = 0xE0;
 			   Mensagem.PDADO = 0x00;
-			   Mensagem.NDADO = 0x04;
+			   Mensagem.NDADO = 0x08;
 
-			   Mensagem.DADO[0] = InterlockSts(0);
-			   Mensagem.DADO[1] = InterlockSts(1);
-			   Mensagem.DADO[2] = InterlockSts(2);
-			   Mensagem.DADO[3] = InterlockSts(3);
+
+			   Mensagem.DADO[0] = HardInterlockSts(0);
+			   Mensagem.DADO[1] = HardInterlockSts(1);
+			   Mensagem.DADO[2] = HardInterlockSts(2);
+			   Mensagem.DADO[3] = HardInterlockSts(3);
+			   Mensagem.DADO[4] = SoftInterlockSts(0);
+			   Mensagem.DADO[5] = SoftInterlockSts(1);
+			   Mensagem.DADO[6] = SoftInterlockSts(2);
+			   Mensagem.DADO[7] = SoftInterlockSts(3);
+
+			   /*
+			   Mensagem.DADO[0] = 0;
+			   Mensagem.DADO[1] = 0;
+			   Mensagem.DADO[2] = 0x10;
+			   Mensagem.DADO[3] = 0;
+			   Mensagem.DADO[4] = 0;
+			   Mensagem.DADO[5] = 0x06;
+			   Mensagem.DADO[6] = 0;
+			   Mensagem.DADO[7] = 0;
+			   */
 
 			   Mensagem.ACK = 0x00;
 			   SendDisplay(); // Envia mensagem para o Display

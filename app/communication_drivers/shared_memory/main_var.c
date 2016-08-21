@@ -17,6 +17,12 @@
 #include <stdint.h>
 
 
+uint8_t
+PowerSupplyModelRead(void)
+{
+	return IPC_MtoC_Msg.PSModule.Model.u16;
+}
+
 void
 ISetpointWrite(float current)
 {
@@ -61,9 +67,15 @@ OutputStsRead(void)
 }
 
 uint8_t
-InterlockSts(uint8_t ch)
+HardInterlockSts(uint8_t ch)
 {
 	return IPC_CtoM_Msg.PSModule.HardInterlocks.u8[ch];
+}
+
+uint8_t
+SoftInterlockSts(uint8_t ch)
+{
+	return IPC_CtoM_Msg.PSModule.SoftInterlocks.u8[ch];
 }
 
 void

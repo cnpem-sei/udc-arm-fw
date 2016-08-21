@@ -10,7 +10,10 @@
 #ifndef MAIN_VAR_H_
 #define MAIN_VAR_H_
 
+extern uint8_t PowerSupplyModelRead(void);
+
 extern void ISetpointWrite(float current);
+
 extern float ISetpointRead(void);
 
 extern float IOutputRead(void);
@@ -19,7 +22,9 @@ extern void OutputStsWrite(uint8_t sts);
 
 extern uint8_t OutputStsRead(void);
 
-extern uint8_t InterlockSts(uint8_t ch);
+extern uint8_t HardInterlockSts(uint8_t ch);
+
+extern uint8_t SoftInterlockSts(uint8_t ch);
 
 extern void InterlockAlarmReset(void);
 

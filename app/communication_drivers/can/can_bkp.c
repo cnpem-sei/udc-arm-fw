@@ -432,35 +432,119 @@ CanCheck(void)
 
 
 			//Interlock
-			if(pui8MsgData[4] & 0b00000001) Mod1Q1.VoutItlkSts = 1;
+			if(pui8MsgData[4] & 0b00000001)
+			{
+				Mod1Q1.VoutItlkSts = 1;
+				IPC_MtoC_Msg.PSModule.HardInterlocks.u32 |= OUT_OVERVOLTAGE;
+				SendIpcFlag(HARD_INTERLOCK);
+			}
 			else Mod1Q1.VoutItlkSts = 0;
-			if(pui8MsgData[4] & 0b00000010) Mod1Q1.VinItlkSts = 1;
+
+			if(pui8MsgData[4] & 0b00000010)
+			{
+				Mod1Q1.VinItlkSts = 1;
+				IPC_MtoC_Msg.PSModule.HardInterlocks.u32 |= IN_OVERVOLTAGE;
+				SendIpcFlag(HARD_INTERLOCK);
+			}
 			else Mod1Q1.VinItlkSts = 0;
-			if(pui8MsgData[4] & 0b00000100) Mod1Q1.IoutA1ItlkSts = 1;
+
+			if(pui8MsgData[4] & 0b00000100)
+			{
+				Mod1Q1.IoutA1ItlkSts = 1;
+				IPC_MtoC_Msg.PSModule.HardInterlocks.u32 |= ARM1_OVERCURRENT;
+				SendIpcFlag(HARD_INTERLOCK);
+			}
 			else Mod1Q1.IoutA1ItlkSts = 0;
-			if(pui8MsgData[4] & 0b00001000) Mod1Q1.IoutA2ItlkSts = 1;
+
+			if(pui8MsgData[4] & 0b00001000)
+			{
+				Mod1Q1.IoutA2ItlkSts = 1;
+				IPC_MtoC_Msg.PSModule.HardInterlocks.u32 |= ARM2_OVERCURRENT;
+				SendIpcFlag(HARD_INTERLOCK);
+			}
 			else Mod1Q1.IoutA2ItlkSts = 0;
-			if(pui8MsgData[4] & 0b00010000) Mod1Q1.IinItlkSts = 1;
+
+			if(pui8MsgData[4] & 0b00010000)
+			{
+				Mod1Q1.IinItlkSts = 1;
+				IPC_MtoC_Msg.PSModule.HardInterlocks.u32 |= IN_OVERCURRENT;
+				SendIpcFlag(HARD_INTERLOCK);
+			}
 			else Mod1Q1.IinItlkSts = 0;
-			if(pui8MsgData[4] & 0b00100000) Mod1Q1.TempIGBT1ItlkSts = 1;
+
+			if(pui8MsgData[4] & 0b00100000)
+			{
+				Mod1Q1.TempIGBT1ItlkSts = 1;
+				IPC_MtoC_Msg.PSModule.SoftInterlocks.u32 |= IGBT1_OVERTEMP;
+				SendIpcFlag(SOFT_INTERLOCK);
+			}
 			else Mod1Q1.TempIGBT1ItlkSts = 0;
-			if(pui8MsgData[4] & 0b01000000) Mod1Q1.TempIGBT2ItlkSts = 1;
+
+			if(pui8MsgData[4] & 0b01000000)
+			{
+				Mod1Q1.TempIGBT2ItlkSts = 1;
+				IPC_MtoC_Msg.PSModule.SoftInterlocks.u32 |= IGBT2_OVERTEMP;
+				SendIpcFlag(SOFT_INTERLOCK);
+			}
 			else Mod1Q1.TempIGBT2ItlkSts = 0;
-			if(pui8MsgData[4] & 0b10000000) Mod1Q1.TempL1ItlkSts = 1;
+
+			if(pui8MsgData[4] & 0b10000000)
+			{
+				Mod1Q1.TempL1ItlkSts = 1;
+				IPC_MtoC_Msg.PSModule.SoftInterlocks.u32 |= L1_OVERTEMP;
+				SendIpcFlag(SOFT_INTERLOCK);
+			}
 			else Mod1Q1.TempL1ItlkSts = 0;
 
-			if(pui8MsgData[5] & 0b00000001) Mod1Q1.TempL2ItlkSts = 1;
+			if(pui8MsgData[5] & 0b00000001)
+			{
+				Mod1Q1.TempL2ItlkSts = 1;
+				IPC_MtoC_Msg.PSModule.SoftInterlocks.u32 |= L2_OVERTEMP;
+				SendIpcFlag(SOFT_INTERLOCK);
+			}
 			else Mod1Q1.TempL2ItlkSts = 0;
-			if(pui8MsgData[5] & 0b00000010) Mod1Q1.TempHeatSinkItlkSts = 1;
+
+			if(pui8MsgData[5] & 0b00000010)
+			{
+				Mod1Q1.TempHeatSinkItlkSts = 1;
+				IPC_MtoC_Msg.PSModule.SoftInterlocks.u32 |= HEATSINK_OVERTEMP;
+				SendIpcFlag(SOFT_INTERLOCK);
+			}
 			else Mod1Q1.TempHeatSinkItlkSts = 0;
-			if(pui8MsgData[5] & 0b00000100) Mod1Q1.ExtItlkSts = 1;
+
+			if(pui8MsgData[5] & 0b00000100)
+			{
+				Mod1Q1.ExtItlkSts = 1;
+				IPC_MtoC_Msg.PSModule.HardInterlocks.u32 |= EXTERNAL_INTERLOCK;
+				SendIpcFlag(HARD_INTERLOCK);
+			}
 			else Mod1Q1.ExtItlkSts = 0;
-			if(pui8MsgData[5] & 0b00001000) Mod1Q1.Driver1ErrorItlk = 1;
+
+			if(pui8MsgData[5] & 0b00001000)
+			{
+				Mod1Q1.Driver1ErrorItlk = 1;
+				IPC_MtoC_Msg.PSModule.HardInterlocks.u32 |= DRIVER1_FAULT;
+				SendIpcFlag(HARD_INTERLOCK);
+			}
 			else Mod1Q1.Driver1ErrorItlk = 0;
-			if(pui8MsgData[5] & 0b00010000) Mod1Q1.Driver2ErrorItlk = 1;
+
+			if(pui8MsgData[5] & 0b00010000)
+			{
+				Mod1Q1.Driver2ErrorItlk = 1;
+				IPC_MtoC_Msg.PSModule.HardInterlocks.u32 |= DRIVER2_FAULT;
+				SendIpcFlag(HARD_INTERLOCK);
+			}
 			else Mod1Q1.Driver2ErrorItlk = 0;
-			if(pui8MsgData[5] & 0b00100000) Mod1Q1.RelativeHumidityItlk = 1;
+
+			if(pui8MsgData[5] & 0b00100000)
+			{
+				Mod1Q1.RelativeHumidityItlk = 1;
+				IPC_MtoC_Msg.PSModule.SoftInterlocks.u32 |= OVER_HUMIDITY_FAULT;
+				SendIpcFlag(SOFT_INTERLOCK);
+			}
 			else Mod1Q1.RelativeHumidityItlk = 0;
+
+
 
 
 			g_bRXFlag4 = 0;
@@ -482,8 +566,9 @@ CanCheck(void)
     		if(Mod1Q1.Interlock)
     		{
 
-    			IPC_MtoC_Msg.PSModule.HardInterlocks.u32 = Mod1Q1.Interlock;
+    			//IPC_MtoC_Msg.PSModule.HardInterlocks.u32 = Mod1Q1.Interlock;
     			SendIpcFlag(HARD_INTERLOCK);
+    			SendIpcFlag(SOFT_INTERLOCK);
     		}
 
 
@@ -645,38 +730,116 @@ CanCheck(void)
 		    else Rectifier.RelativeHumidityAlarm = 0;
 
     		//Interlock
-    		if(pui8MsgData[4] & 0b00000001) Rectifier.IoutRectf1Itlk = 1;
+    		if(pui8MsgData[4] & 0b00000001)
+    		{
+    			Rectifier.IoutRectf1Itlk = 1;
+    			IPC_MtoC_Msg.PSModule.HardInterlocks.u32 |= OUT1_OVERCURRENT;
+    		}
     		else Rectifier.IoutRectf1Itlk = 0;
-		    if(pui8MsgData[4] & 0b00000010) Rectifier.IoutRectf2Itlk = 1;
+
+    		if(pui8MsgData[4] & 0b00000010)
+    		{
+    			Rectifier.IoutRectf2Itlk = 1;
+    			IPC_MtoC_Msg.PSModule.HardInterlocks.u32 |= OUT2_OVERCURRENT;
+    		}
 		    else Rectifier.IoutRectf2Itlk = 0;
-		    if(pui8MsgData[4] & 0b00000100) Rectifier.VoutRectf1Itlk = 1;
+
+		    if(pui8MsgData[4] & 0b00000100)
+		    {
+		    	Rectifier.VoutRectf1Itlk = 1;
+		    	IPC_MtoC_Msg.PSModule.HardInterlocks.u32 |= OUT1_OVERVOLTAGE;
+		    }
 		    else Rectifier.VoutRectf1Itlk = 0;
-		    if(pui8MsgData[4] & 0b00001000) Rectifier.VoutRectf2Itlk = 1;
+
+		    if(pui8MsgData[4] & 0b00001000)
+		    {
+		    	Rectifier.VoutRectf2Itlk = 1;
+		    	IPC_MtoC_Msg.PSModule.HardInterlocks.u32 |= OUT1_OVERVOLTAGE;
+		    }
 		    else Rectifier.VoutRectf2Itlk = 0;
-		    if(pui8MsgData[4] & 0b00010000) Rectifier.LeakageCurrentItlk = 1;
+
+		    if(pui8MsgData[4] & 0b00010000)
+		    {
+		    	Rectifier.LeakageCurrentItlk = 1;
+		    	IPC_MtoC_Msg.PSModule.HardInterlocks.u32 |= LEAKAGE_OVERCURRENT;
+		    }
 		    else Rectifier.LeakageCurrentItlk = 0;
-		    if(pui8MsgData[4] & 0b00100000) Rectifier.TempHeatSinkItlk = 1;
+
+		    if(pui8MsgData[4] & 0b00100000)
+		    {
+		    	Rectifier.TempHeatSinkItlk = 1;
+		    	IPC_MtoC_Msg.PSModule.SoftInterlocks.u32 |= HEATSINK_OVERTEMP;
+		    }
 		    else Rectifier.TempHeatSinkItlk = 0;
-		    if(pui8MsgData[4] & 0b01000000) Rectifier.TempWaterItlk = 1;
+
+		    if(pui8MsgData[4] & 0b01000000)
+		    {
+		    	Rectifier.TempWaterItlk = 1;
+		    	IPC_MtoC_Msg.PSModule.SoftInterlocks.u32 |= WATER_OVERTEMP;
+		    }
 		    else Rectifier.TempWaterItlk = 0;
-		    if(pui8MsgData[4] & 0b10000000) Rectifier.TempModule1Itlk = 1;
+
+		    if(pui8MsgData[4] & 0b10000000)
+		    {
+		    	Rectifier.TempModule1Itlk = 1;
+		    	IPC_MtoC_Msg.PSModule.SoftInterlocks.u32 |= RECTFIER1_OVERTEMP;
+		    }
 		    else Rectifier.TempModule1Itlk = 0;
 
-		    if(pui8MsgData[5] & 0b00000001) Rectifier.TempModule2Itlk = 1;
+		    if(pui8MsgData[5] & 0b00000001)
+		    {
+		    	Rectifier.TempModule2Itlk = 1;
+		    	IPC_MtoC_Msg.PSModule.SoftInterlocks.u32 |= RECTFIER2_OVERTEMP;
+		    }
 		    else Rectifier.TempModule2Itlk = 0;
-		    if(pui8MsgData[5] & 0b00000010) Rectifier.TempL1Itlk = 1;
+
+		    if(pui8MsgData[5] & 0b00000010)
+		    {
+		    	Rectifier.TempL1Itlk = 1;
+		    	IPC_MtoC_Msg.PSModule.SoftInterlocks.u32 |= L1_OVERTEMP;
+		    }
 		    else Rectifier.TempL1Itlk = 0;
-		    if(pui8MsgData[5] & 0b00000100) Rectifier.TempL2Itlk = 1;
+
+		    if(pui8MsgData[5] & 0b00000100)
+		    {
+		    	Rectifier.TempL2Itlk = 1;
+		    	IPC_MtoC_Msg.PSModule.SoftInterlocks.u32 |= L2_OVERTEMP;
+		    }
 		    else Rectifier.TempL2Itlk = 0;
-		    if(pui8MsgData[5] & 0b00001000) Rectifier.AcPhaseFaultItlk = 1;
+
+		    if(pui8MsgData[5] & 0b00001000)
+		    {
+		    	Rectifier.AcPhaseFaultItlk = 1;
+		    	IPC_MtoC_Msg.PSModule.HardInterlocks.u32 |= AC_FAULT;
+		    }
 		    else Rectifier.AcPhaseFaultItlk = 0;
-		    if(pui8MsgData[5] & 0b00010000) Rectifier.AcOverCurrentItlk = 1;
+
+		    if(pui8MsgData[5] & 0b00010000)
+		    {
+		    	Rectifier.AcOverCurrentItlk = 1;
+		    	IPC_MtoC_Msg.PSModule.HardInterlocks.u32 |= AC_OVERCURRENT;
+		    }
 		    else Rectifier.AcOverCurrentItlk = 0;
-		    if(pui8MsgData[5] & 0b00100000) Rectifier.AcTransformerOverTempItlk = 1;
+
+		    if(pui8MsgData[5] & 0b00100000)
+		    {
+		    	Rectifier.AcTransformerOverTempItlk = 1;
+		    	IPC_MtoC_Msg.PSModule.SoftInterlocks.u32 |= AC_TRANSF_OVERTEMP;
+		    }
 		    else Rectifier.AcTransformerOverTempItlk = 0;
-		    if(pui8MsgData[5] & 0b01000000) Rectifier.WaterFluxInterlockItlk = 1;
+
+		    if(pui8MsgData[5] & 0b01000000)
+		    {
+		    	Rectifier.WaterFluxInterlockItlk = 1;
+		    	IPC_MtoC_Msg.PSModule.SoftInterlocks.u32 |= WATER_FLUX_FAULT;
+		    }
 		    else Rectifier.WaterFluxInterlockItlk = 0;
-		    if(pui8MsgData[5] & 0b10000000) Rectifier.RelativeHumidityItlk = 1;
+
+		    if(pui8MsgData[5] & 0b10000000)
+		    {
+		    	Rectifier.RelativeHumidityItlk = 1;
+		    	IPC_MtoC_Msg.PSModule.SoftInterlocks.u32 |= OVER_HUMIDITY_FAULT;
+		    }
 		    else Rectifier.RelativeHumidityItlk = 0;
 
             g_bRXFlag5 = 0;
@@ -697,7 +860,7 @@ CanCheck(void)
 
 			if(Rectifier.Interlock)
 			{
-				IPC_MtoC_Msg.PSModule.HardInterlocks.u32 = Rectifier.Interlock;
+				//IPC_MtoC_Msg.PSModule.HardInterlocks.u32 = Rectifier.Interlock;
 				SendIpcFlag(HARD_INTERLOCK);
 			}
 
