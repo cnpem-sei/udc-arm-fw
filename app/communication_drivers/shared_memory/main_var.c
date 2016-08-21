@@ -92,7 +92,7 @@ InterlockCheck(void)
 {
 	static uint8_t ItlkOld = 0;
 
-	if(IPC_CtoM_Msg.PSModule.HardInterlocks.u8[0]  && ItlkOld == 0)
+	if(IPC_CtoM_Msg.PSModule.HardInterlocks.u32  && ItlkOld == 0)
 	{
 
 		// Set Iout = 0.0
@@ -107,7 +107,7 @@ InterlockCheck(void)
 		ItlkOld = 1;
 
 	}
-	else if(IPC_CtoM_Msg.PSModule.HardInterlocks.u8[0] == 0 && ItlkOld == 1) ItlkOld = 0;
+	else if(IPC_CtoM_Msg.PSModule.HardInterlocks.u32 == 0 && ItlkOld == 1) ItlkOld = 0;
 
 }
 
