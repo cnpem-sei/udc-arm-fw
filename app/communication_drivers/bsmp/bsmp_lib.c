@@ -425,7 +425,7 @@ uint8_t SetISlowRef (uint8_t *input, uint8_t *output)
 		*output = 6;
 	}
 	else{
-	//Condicional do Modo de Operação IPC_CTOM
+	//Condicional do Modo de Operaï¿½ï¿½o IPC_CTOM
 		if(IPC_CtoM_Msg.PSModule.OpMode.enu == SlowRef)
 		{
 			IPC_MtoC_Msg.PSModule.ISlowRef.u32 = (input[3]<< 24) |(input[2] << 16)|(input[1] << 8) | input[0];
@@ -442,7 +442,7 @@ uint8_t SetISlowRef (uint8_t *input, uint8_t *output)
 		}
 		else
 		{
-			*output = 7; //Valor inválido
+			*output = 7; //Valor invï¿½lido
 		}
 	}
 	return *output;
@@ -1140,10 +1140,17 @@ BSMPInit(void)
 			Init_BSMP_var(1,DP_Framework.NetSignals[18].u8);		// Max Iload measured
 			Init_BSMP_var(2,DP_Framework_MtoC.NetSignals[2].u8);	// Imod1
 			Init_BSMP_var(3,DP_Framework_MtoC.NetSignals[3].u8);	// Imod2
+			Init_BSMP_var(4,DP_Framework_MtoC.NetSignals[20].u8);	// Imod1_MAX
+			Init_BSMP_var(5,DP_Framework_MtoC.NetSignals[21].u8);	// Imod2 MAX
 			Init_BSMP_var(6,DP_Framework_MtoC.NetSignals[9].u8);	// Vload
 			Init_BSMP_var(7,DP_Framework.NetSignals[13].u8);		// Vdclink (C28)
 			Init_BSMP_var(8,DP_Framework_MtoC.NetSignals[5].u8);	// Vdclink (IIB)
-			Init_BSMP_var(14,Mod1Q1.TempHeatSink.u8);				// TempHeatSink
+			Init_BSMP_var(9,DP_Framework_MtoC.NetSignals[22].u8);	// Vdclink MAX (IIB)
+			Init_BSMP_var(10,DP_Framework_MtoC.NetSignals[23].u8);	// Vload MAX
+			Init_BSMP_var(11,Mod1Q1.TempHeatSink.u8);				// TempHeatSink
+			Init_BSMP_var(12,DP_Framework_MtoC.NetSignals[24].u8);	// TempHeatSink MAX
+			Init_BSMP_var(13,DP_Framework_MtoC.NetSignals[25].u8);	// TempL1 MAX
+			Init_BSMP_var(14,DP_Framework_MtoC.NetSignals[26].u8);	// TempL2 MAX
 			Init_BSMP_var(15,Mod1Q1.TempIGBT1.u8);					// TempIGBT1
 			Init_BSMP_var(16,Mod1Q1.TempIGBT2.u8);					// TempIGBT2
 			Init_BSMP_var(17,Mod1Q1.TempL1.u8);						// TempL1

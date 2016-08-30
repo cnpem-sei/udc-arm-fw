@@ -309,7 +309,7 @@ CanCheck(void)
 
     		CANMessageGet(CAN0_BASE, 1, &sCANMessage, 0);
 
-    		//  I Braço 1
+    		//  I Braï¿½o 1
     		Mod1Q1.IoutA1.u8[0] = pui8MsgData[0];
     		Mod1Q1.IoutA1.u8[1] = pui8MsgData[1];
     		Mod1Q1.IoutA1.u8[2] = pui8MsgData[2];
@@ -317,13 +317,23 @@ CanCheck(void)
 
     		DP_Framework_MtoC.NetSignals[2].f = Mod1Q1.IoutA1.f;
 
-    		//  I Braço 2
+    		if( Mod1Q1.IoutA1.f > DP_Framework_MtoC.NetSignals[20].f )
+    		{
+    			DP_Framework_MtoC.NetSignals[20].f = Mod1Q1.IoutA1.f;
+    		}
+
+    		//  I Braï¿½o 2
     		Mod1Q1.IoutA2.u8[0] = pui8MsgData[4];
     		Mod1Q1.IoutA2.u8[1] = pui8MsgData[5];
     		Mod1Q1.IoutA2.u8[2] = pui8MsgData[6];
     		Mod1Q1.IoutA2.u8[3] = pui8MsgData[7];
 
     		DP_Framework_MtoC.NetSignals[3].f = Mod1Q1.IoutA2.f;
+
+    		if( Mod1Q1.IoutA2.f > DP_Framework_MtoC.NetSignals[21].f )
+			{
+				DP_Framework_MtoC.NetSignals[21].f = Mod1Q1.IoutA2.f;
+			}
 
             g_bRXFlag1 = 0;
 
@@ -348,6 +358,11 @@ CanCheck(void)
 
     		DP_Framework_MtoC.NetSignals[5].f = Mod1Q1.Vin.f;
 
+    		if( Mod1Q1.Vin.f > DP_Framework_MtoC.NetSignals[22].f )
+			{
+				DP_Framework_MtoC.NetSignals[22].f = Mod1Q1.Vin.f;
+			}
+
     		//  Vout
     		Mod1Q1.Vout.u8[0] = pui8MsgData[4];
     		Mod1Q1.Vout.u8[1] = pui8MsgData[5];
@@ -355,6 +370,11 @@ CanCheck(void)
     		Mod1Q1.Vout.u8[3] = pui8MsgData[7];
 
     		DP_Framework_MtoC.NetSignals[9].f = Mod1Q1.Vout.f;
+
+    		if( Mod1Q1.Vout.f > DP_Framework_MtoC.NetSignals[23].f )
+			{
+				DP_Framework_MtoC.NetSignals[23].f = Mod1Q1.Vout.f;
+			}
 
             g_bRXFlag2 = 0;
         }
@@ -390,6 +410,21 @@ CanCheck(void)
     		else Mod1Q1.Driver2Error  = 0;
 
     		DP_Framework_MtoC.NetSignals[17].f = Mod1Q1.ContactorSts;
+
+    		if( Mod1Q1.TempHeatSink.f > DP_Framework_MtoC.NetSignals[24].f )
+			{
+				DP_Framework_MtoC.NetSignals[24].f = Mod1Q1.TempHeatSink.f;
+			}
+
+    		if( Mod1Q1.TempL1.f > DP_Framework_MtoC.NetSignals[25].f )
+			{
+				DP_Framework_MtoC.NetSignals[25].f = Mod1Q1.TempL1.f;
+			}
+
+    		if( Mod1Q1.TempL2.f > DP_Framework_MtoC.NetSignals[26].f )
+			{
+				DP_Framework_MtoC.NetSignals[26].f = Mod1Q1.TempL2.f;
+			}
 
     		g_bRXFlag3 = 0;
 
@@ -567,8 +602,8 @@ CanCheck(void)
     		{
 
     			//IPC_MtoC_Msg.PSModule.HardInterlocks.u32 = Mod1Q1.Interlock;
-    			SendIpcFlag(HARD_INTERLOCK);
-    			SendIpcFlag(SOFT_INTERLOCK);
+    			//SendIpcFlag(HARD_INTERLOCK);
+    			//SendIpcFlag(SOFT_INTERLOCK);
     		}
 
 
@@ -891,7 +926,7 @@ CanCheck(void)
 		floatNchars.c[1] = pui8MsgData[1];
 		floatNchars.c[2] = pui8MsgData[2];
 		floatNchars.c[3] = pui8MsgData[3];
-		Mod1Q1.Iout1 = floatNchars.f; 						//  I Braço 1
+		Mod1Q1.Iout1 = floatNchars.f; 						//  I Braï¿½o 1
 		DP_Framework_MtoC.NetSignals[2].f = floatNchars.f;
 
 
@@ -899,7 +934,7 @@ CanCheck(void)
 		floatNchars.c[1] = pui8MsgData[5];
 		floatNchars.c[2] = pui8MsgData[6];
 		floatNchars.c[3] = pui8MsgData[7];
-		Mod1Q1.Iout2 = floatNchars.f; 						//  I Braço 2
+		Mod1Q1.Iout2 = floatNchars.f; 						//  I Braï¿½o 2
 		DP_Framework_MtoC.NetSignals[3].f = floatNchars.f;
 
         //
@@ -988,14 +1023,14 @@ CanCheck(void)
 		floatNchars.c[1] = pui8MsgData[1];
 		floatNchars.c[2] = pui8MsgData[2];
 		floatNchars.c[3] = pui8MsgData[3];
-		Mod2Q1.Iout1 = floatNchars.f; //  I Braço 1
+		Mod2Q1.Iout1 = floatNchars.f; //  I Braï¿½o 1
 		//DP_Framework_MtoC.NetSignals[2].f = floatNchars.f;
 
 		floatNchars.c[0] = pui8MsgData[4];
 		floatNchars.c[1] = pui8MsgData[5];
 		floatNchars.c[2] = pui8MsgData[6];
 		floatNchars.c[3] = pui8MsgData[7];
-		Mod2Q1.Iout2 = floatNchars.f; //  I Braço 2
+		Mod2Q1.Iout2 = floatNchars.f; //  I Braï¿½o 2
 		//DP_Framework_MtoC.NetSignals[3].f = floatNchars.f;
 
 		g_bRXFlag4 = 0;
