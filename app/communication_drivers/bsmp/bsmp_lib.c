@@ -1074,7 +1074,7 @@ BSMPInit(void)
 	// 					BSMP Variable Pointers Initialization
 	//*****************************************************************************
 	Init_BSMP_var(0,DP_Framework.NetSignals[1].u8);
-	Init_BSMP_var(1,DP_Framework.NetSignals[2].u8);
+	//Init_BSMP_var(1,DP_Framework.NetSignals[2].u8);
 	Init_BSMP_var(19,IPC_CtoM_Msg.PSModule.OnOff.u8);
 	Init_BSMP_var(20,IPC_CtoM_Msg.PSModule.OpMode.u8);
 	Init_BSMP_var(21,IPC_MtoC_Msg.PSModule.LocalRemote.u8);
@@ -1137,15 +1137,24 @@ BSMPInit(void)
 
 		case FAP_DCDC_20kHz:
 			// TODO: Make this definition compatible with BSMP + IPC specs
+			Init_BSMP_var(1,DP_Framework.NetSignals[18].u8);		// Max Iload measured
 			Init_BSMP_var(2,DP_Framework_MtoC.NetSignals[2].u8);	// Imod1
 			Init_BSMP_var(3,DP_Framework_MtoC.NetSignals[3].u8);	// Imod2
+			Init_BSMP_var(4,DP_Framework_MtoC.NetSignals[20].u8);	// Imod1_MAX
+			Init_BSMP_var(5,DP_Framework_MtoC.NetSignals[21].u8);	// Imod2 MAX
 			Init_BSMP_var(6,DP_Framework_MtoC.NetSignals[9].u8);	// Vload
-			Init_BSMP_var(7,DP_Framework_MtoC.NetSignals[5].u8);	// Vdclink
+			Init_BSMP_var(7,DP_Framework.NetSignals[13].u8);		// Vdclink (C28)
+			Init_BSMP_var(8,DP_Framework_MtoC.NetSignals[5].u8);	// Vdclink (IIB)
+			Init_BSMP_var(9,DP_Framework_MtoC.NetSignals[22].u8);	// Vdclink MAX (IIB)
+			Init_BSMP_var(10,DP_Framework_MtoC.NetSignals[23].u8);	// Vload MAX
+			Init_BSMP_var(11,Mod1Q1.TempHeatSink.u8);				// TempHeatSink
+			Init_BSMP_var(12,DP_Framework_MtoC.NetSignals[24].u8);	// TempHeatSink MAX
+			Init_BSMP_var(13,DP_Framework_MtoC.NetSignals[25].u8);	// TempL1 MAX
+			Init_BSMP_var(14,DP_Framework_MtoC.NetSignals[26].u8);	// TempL2 MAX
 			Init_BSMP_var(15,Mod1Q1.TempIGBT1.u8);					// TempIGBT1
 			Init_BSMP_var(16,Mod1Q1.TempIGBT2.u8);					// TempIGBT2
 			Init_BSMP_var(17,Mod1Q1.TempL1.u8);						// TempL1
 			Init_BSMP_var(18,Mod1Q1.TempL2.u8);						// TempL2
-
 			break;
 
 		default:
