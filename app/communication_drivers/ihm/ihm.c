@@ -32,6 +32,8 @@
 
 #include "../ethernet/ethernet_uip.h"
 
+#include "../can/can_bkp.h"
+
 #include "ihm.h"
 
 #include <stdint.h>
@@ -950,7 +952,19 @@ void ProcessCmd(){
 
 	 // Envia os dados referentes ao status do alarme
 	 case 0xA0:
+		       var64 = AlarmStatusRead();
 
+		 	   Mensagem.CMD = 0xA0;
+			   Mensagem.PDADO = 0x00;
+			   Mensagem.NDADO = 0x04;
+
+			   Mensagem.DADO[0] = var64;
+			   Mensagem.DADO[1] = var64 >> 8;
+			   Mensagem.DADO[2] = var64 >> 16;
+			   Mensagem.DADO[3] = var64 >> 24;
+
+			   Mensagem.ACK = 0x00;
+			   SendDisplay(); // Envia mensagem para o Display
 
 		   	   break;
 

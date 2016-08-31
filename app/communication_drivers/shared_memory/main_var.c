@@ -84,6 +84,7 @@ InterlockAlarmReset(void)
 	SendIpcFlag(RESET_INTERLOCKS);
 	IPC_MtoC_Msg.PSModule.SoftInterlocks.u32=0;
 	IPC_MtoC_Msg.PSModule.HardInterlocks.u32=0;
+	AlarmStatusClear();
 	SendCanMessage(255); // CAN RESET MESSAGE
 }
 
