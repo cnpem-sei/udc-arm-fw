@@ -425,7 +425,7 @@ uint8_t SetISlowRef (uint8_t *input, uint8_t *output)
 		*output = 6;
 	}
 	else{
-	//Condicional do Modo de Operação IPC_CTOM
+	//Condicional do Modo de Operaï¿½ï¿½o IPC_CTOM
 		if(IPC_CtoM_Msg.PSModule.OpMode.enu == SlowRef)
 		{
 			IPC_MtoC_Msg.PSModule.ISlowRef.u32 = (input[3]<< 24) |(input[2] << 16)|(input[1] << 8) | input[0];
@@ -442,7 +442,7 @@ uint8_t SetISlowRef (uint8_t *input, uint8_t *output)
 		}
 		else
 		{
-			*output = 7; //Valor inválido
+			*output = 7; //Valor invï¿½lido
 		}
 	}
 	return *output;
