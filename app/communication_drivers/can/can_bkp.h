@@ -213,4 +213,6 @@ extern void SendCanMessage(unsigned char CanMess);
 extern uint32_t AlarmStatusRead(void);
 extern void AlarmStatusClear(void);
 
+extern void InterlockStatusClear(void);
+
 #endif /* APP_COMMUNICATION_DRIVERS_CAN_CAN_BKP_H_ */

@@ -1659,3 +1659,41 @@ AlarmStatusClear(void)
 {
 	PSModuleAlarms = 0;
 }
+
+void
+InterlockStatusClear(void)
+{
+	Mod1Q1.Driver1ErrorItlk = 0;
+	Mod1Q1.Driver2ErrorItlk = 0;
+	Mod1Q1.ExtItlkSts = 0;
+	Mod1Q1.IinItlkSts = 0;
+	Mod1Q1.IoutA1ItlkSts = 0;
+	Mod1Q1.IoutA2ItlkSts = 0;
+	Mod1Q1.RelativeHumidityItlk = 0;
+	Mod1Q1.TempHeatSinkItlkSts = 0;
+	Mod1Q1.TempIGBT1ItlkSts = 0;
+	Mod1Q1.TempIGBT2ItlkSts = 0;
+	Mod1Q1.TempL1ItlkSts = 0;
+	Mod1Q1.TempL2ItlkSts = 0;
+	Mod1Q1.VinItlkSts = 0;
+	Mod1Q1.VoutItlkSts = 0;
+
+	Rectifier.AcOverCurrentItlk = 0;
+	Rectifier.AcPhaseFaultItlk = 0;
+	Rectifier.AcTransformerOverTempItlk = 0;
+	Rectifier.IoutRectf1Itlk = 0;
+	Rectifier.IoutRectf2Itlk = 0;
+	Rectifier.LeakageCurrentItlk = 0;
+	Rectifier.RelativeHumidityItlk = 0;
+	Rectifier.TempHeatSinkItlk = 0;
+	Rectifier.TempL1Itlk = 0;
+	Rectifier.TempL2Itlk = 0;
+	Rectifier.TempModule1Itlk = 0;
+	Rectifier.TempModule2Itlk = 0;
+	Rectifier.TempWaterItlk = 0;
+	Rectifier.VoutRectf1Itlk = 0;
+	Rectifier.VoutRectf2Itlk = 0;
+	Rectifier.WaterFluxInterlockItlk = 0;
+
+
+}
