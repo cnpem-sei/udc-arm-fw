@@ -10,6 +10,16 @@
 #ifndef SYSTEM_TASK_H_
 #define SYSTEM_TASK_H_
 
+typedef enum
+{
+	SAMPLE_RTC,
+	CLEAR_ITLK_ALARM,
+	PROCESS_DISPLAY_MESSAGE,
+	PROCESS_ETHERNET_MESSAGE,
+	PROCESS_CAN_MESSAGE,
+	PROCESS_RS485_MESSAGE
+}eTask;
+
 extern void TaskCheck(void);
 
 extern void TaskSetNew(uint8_t TaskNum);

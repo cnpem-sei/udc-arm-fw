@@ -29,6 +29,8 @@
 
 #include "../i2c_onboard/eeprom.h"
 
+#include "../system_task/system_task.h"
+
 #include <stdint.h>
 #include <stdarg.h>
 #include <string.h>
@@ -109,7 +111,8 @@ RS485IntHandler(void)
     	sCarga = (recv_buffer.data[2]<<8) | recv_buffer.data[3];
     	if(recv_buffer.index > sCarga +4)
     	{
-    		NewData =1;
+    		//NewData =1;
+    		TaskSetNew(PROCESS_RS485_MESSAGE);
     	}
     	//lErrors = lErrors + ulStatus;
     }
@@ -131,7 +134,8 @@ RS485IntHandler(void)
                 //lErrors |= lChar;
             }
     	}
-    	NewData = 1;
+    	//NewData = 1;
+    	TaskSetNew(PROCESS_RS485_MESSAGE);
     	//lErrors = lErrors + ulStatus;
     }
     else if(0x00000020 == ulStatus) // TX interrupt
@@ -179,45 +183,42 @@ RS485TxHandler(void)
 void
 RS485ProcessData(void)
 {
-	if(NewData)
-	{
 
-		//GPIOPinWrite(DEBUG_BASE, DEBUG_PIN, ON);
+	//GPIOPinWrite(DEBUG_BASE, DEBUG_PIN, ON);
 
-		// Received less than HEADER + CSUM bytes
-		if(recv_buffer.index < (SERIAL_HEADER + SERIAL_CSUM))
-			goto exit;
+	// Received less than HEADER + CSUM bytes
+	if(recv_buffer.index < (SERIAL_HEADER + SERIAL_CSUM))
+		goto exit;
 
-		// Checksum is not zero
-		if(recv_buffer.csum)
-			goto exit;
+	// Checksum is not zero
+	if(recv_buffer.csum)
+		goto exit;
 
-		// Packet is not for me
-		if(recv_buffer.data[0] != SERIAL_ADDRESS && recv_buffer.data[0] != BCAST_ADDRESS)
-			goto exit;
+	// Packet is not for me
+	if(recv_buffer.data[0] != SERIAL_ADDRESS && recv_buffer.data[0] != BCAST_ADDRESS)
+		goto exit;
 
-		recv_packet.len = recv_buffer.index - SERIAL_HEADER - SERIAL_CSUM;
+	recv_packet.len = recv_buffer.index - SERIAL_HEADER - SERIAL_CSUM;
 
-		//GPIOPinWrite(DEBUG_BASE, DEBUG_PIN, ON);
+	//GPIOPinWrite(DEBUG_BASE, DEBUG_PIN, ON);
 
-		// Library will process the packet
-		BSMPprocess(&recv_packet, &send_packet);
+	// Library will process the packet
+	BSMPprocess(&recv_packet, &send_packet);
 
-		//GPIOPinWrite(DEBUG_BASE, DEBUG_PIN, OFF);
+	//GPIOPinWrite(DEBUG_BASE, DEBUG_PIN, OFF);
 
-		if(recv_buffer.data[0]==SERIAL_ADDRESS)
-			RS485TxHandler();
+	if(recv_buffer.data[0]==SERIAL_ADDRESS)
+		RS485TxHandler();
 
 	exit:
-		recv_buffer.index = 0;
-		recv_buffer.csum  = 0;
-		send_buffer.index = 0;
-		send_buffer.csum  = 0;
+	recv_buffer.index = 0;
+	recv_buffer.csum  = 0;
+	send_buffer.index = 0;
+	send_buffer.csum  = 0;
 
-		// Clear new data flag
-		NewData = 0;
-		//GPIOPinWrite(DEBUG_BASE, DEBUG_PIN, OFF);
-	}
+	// Clear new data flag
+	//NewData = 0;
+	//GPIOPinWrite(DEBUG_BASE, DEBUG_PIN, OFF);
 
 }
 

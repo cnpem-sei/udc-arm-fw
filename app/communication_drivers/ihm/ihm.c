@@ -34,6 +34,8 @@
 
 #include "../can/can_bkp.h"
 
+#include "../system_task/system_task.h"
+
 #include "ihm.h"
 
 #include <stdint.h>
@@ -188,19 +190,11 @@ void ProcessCmd(){
      // Data e hora
      case 0x02:
     	       // Chamar sub rotina de coleta de dados do RTC
-    	       //Read_Rtc_Clock(true); // Faz a leitura do RTC
     	       Mensagem.CMD = 0x02;
 			   Mensagem.PDADO = 0x00;
 			   Mensagem.NDADO = 0x07;
-			   //Mensagem.DADO[0] = Rtc.RTCano;
-			   //Mensagem.DADO[1] = Rtc.RTCmes;
-			   //Mensagem.DADO[2] = Rtc.RTCdia;
-			   //Mensagem.DADO[3] = Rtc.RTChora;
-			   //Mensagem.DADO[4] = Rtc.RTCmin;
-			   //Mensagem.DADO[5] = Rtc.RTCseg;
-			   //Mensagem.DADO[6] = Rtc.RTCdiasem;
 
-			   var64 = DataHourRead();
+			   var64 = DataHourRead(); // Read actual date and hour
 
 			   Mensagem.DADO[0] = var64 >> 48;
 			   Mensagem.DADO[1] = var64 >> 40;
@@ -970,7 +964,8 @@ void ProcessCmd(){
 
 	 // Reseta interlock e alarme
      case 0xC0:
-    	 	   InterlockAlarmReset();
+    	 	   //InterlockAlarmReset();
+    	 	   TaskSetNew(CLEAR_ITLK_ALARM);
     	       break;
 
 	 // Envia os dados referentes ao status do interlock
@@ -978,7 +973,6 @@ void ProcessCmd(){
 		 	   Mensagem.CMD = 0xE0;
 			   Mensagem.PDADO = 0x00;
 			   Mensagem.NDADO = 0x08;
-
 
 			   Mensagem.DADO[0] = HardInterlockSts(0);
 			   Mensagem.DADO[1] = HardInterlockSts(1);
@@ -988,17 +982,6 @@ void ProcessCmd(){
 			   Mensagem.DADO[5] = SoftInterlockSts(1);
 			   Mensagem.DADO[6] = SoftInterlockSts(2);
 			   Mensagem.DADO[7] = SoftInterlockSts(3);
-
-			   /*
-			   Mensagem.DADO[0] = 0;
-			   Mensagem.DADO[1] = 0;
-			   Mensagem.DADO[2] = 0x10;
-			   Mensagem.DADO[3] = 0;
-			   Mensagem.DADO[4] = 0;
-			   Mensagem.DADO[5] = 0x06;
-			   Mensagem.DADO[6] = 0;
-			   Mensagem.DADO[7] = 0;
-			   */
 
 			   Mensagem.ACK = 0x00;
 			   SendDisplay(); // Envia mensagem para o Display
@@ -1026,13 +1009,15 @@ IHMIntHandler(void)
 
     if(0x00000040 == ulStatus)
     {
-    	NewData = 1;
+    	//NewData = 1;
     	// Loop while there are characters in the receive FIFO.
     	while(UARTCharsAvail(DISPLAY_UART_BASE) && Dado.counter < SERIAL_BUF_SIZE)
     	{
     		Dado.buffer_rx[Dado.counter] = UARTCharGet(DISPLAY_UART_BASE);
     		Dado.csum += Dado.buffer_rx[Dado.counter++];
     	}
+
+    	TaskSetNew(PROCESS_DISPLAY_MESSAGE);
 
     }
 
@@ -1044,23 +1029,22 @@ IHMIntHandler(void)
 void
 DisplayProcessData(void)
 {
-	if(NewData)
-	{
-		// Checksum is not zero
-		if(Dado.csum)
-			goto exit;
 
-		SeparaDado(); // Chama sub rotina que tira os dados do buffer e aloca na estrutura
-		ProcessCmd(); // Chama Sub rotina para interpretação dos dados recebidos
+	// Checksum is not zero
+	if(Dado.csum)
+		goto exit;
+
+	SeparaDado(); // Chama sub rotina que tira os dados do buffer e aloca na estrutura
+	ProcessCmd(); // Chama Sub rotina para interpretação dos dados recebidos
 
 	exit:
-		Dado.counter = 0;
-		Dado.csum  = 0;
+	Dado.counter = 0;
+	Dado.csum  = 0;
 
-		// Clear new data flag
-		NewData = 0;
-		//GPIOPinWrite(DEBUG_BASE, DEBUG_PIN, OFF);
-	}
+	// Clear new data flag
+	//NewData = 0;
+	//GPIOPinWrite(DEBUG_BASE, DEBUG_PIN, OFF);
+
 }
 
 void

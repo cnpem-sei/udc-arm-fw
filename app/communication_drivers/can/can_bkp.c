@@ -24,6 +24,8 @@
 
 #include "../ipc/ipc_lib.h"
 
+#include "../system_task/system_task.h"
+
 #include <stdint.h>
 #include <stdarg.h>
 #include <string.h>
@@ -185,15 +187,8 @@ CANIntHandler(void)
 		//
 		g_bRXFlag1 = 1;
 
-
-        //
-        // Increment a counter to keep track of how many messages have been
-        // received.  In a real application this could be used to set flags to
-        // indicate when a message is received.
-        //
-        g_ui32MsgCount++;
-
-
+		// Indicate new message that needs to be processed
+		TaskSetNew(PROCESS_CAN_MESSAGE);
 
         //
         // Since a message was received, clear any error flags.
@@ -210,7 +205,9 @@ CANIntHandler(void)
 
         g_bRXFlag2 = 1;
 
-        g_ui32MsgCount++;
+        // Indicate new message that needs to be processed
+        TaskSetNew(PROCESS_CAN_MESSAGE);
+
         g_bErrFlag = 0;
     }
 
@@ -223,7 +220,9 @@ CANIntHandler(void)
 
         g_bRXFlag3 = 1;
 
-        g_ui32MsgCount++;
+        // Indicate new message that needs to be processed
+        TaskSetNew(PROCESS_CAN_MESSAGE);
+
         g_bErrFlag = 0;
     }
 
@@ -237,8 +236,9 @@ CANIntHandler(void)
 
         g_bRXFlag4 = 1;
 
+        // Indicate new message that needs to be processed
+        TaskSetNew(PROCESS_CAN_MESSAGE);
 
-        g_ui32MsgCount++;
         g_bErrFlag = 0;
     }
 
@@ -251,7 +251,9 @@ CANIntHandler(void)
 
         g_bRXFlag5 = 1;
 
-        g_ui32MsgCount++;
+        // Indicate new message that needs to be processed
+        TaskSetNew(PROCESS_CAN_MESSAGE);
+
         g_bErrFlag = 0;
     }
 
@@ -264,7 +266,9 @@ CANIntHandler(void)
 
         g_bRXFlag6 = 1;
 
-        g_ui32MsgCount++;
+        // Indicate new message that needs to be processed
+        TaskSetNew(PROCESS_CAN_MESSAGE);
+
         g_bErrFlag = 0;
     }
 
@@ -274,6 +278,11 @@ CANIntHandler(void)
 	else if(ui32Status == 7)
 	{
 		CANIntClear(CAN0_BASE, 7);
+
+		g_bRXFlag7 = 1;
+
+		// Indicate new message that needs to be processed
+		TaskSetNew(PROCESS_CAN_MESSAGE);
 
 		g_bErrFlag = 0;
 	}
@@ -287,7 +296,9 @@ CANIntHandler(void)
 
 		g_bRXFlag8 = 1;
 
-		g_ui32MsgCount++;
+		// Indicate new message that needs to be processed
+		TaskSetNew(PROCESS_CAN_MESSAGE);
+
 		g_bErrFlag = 0;
 	}
 
@@ -300,7 +311,9 @@ CANIntHandler(void)
 
 		g_bRXFlag9 = 1;
 
-		g_ui32MsgCount++;
+		// Indicate new message that needs to be processed
+		TaskSetNew(PROCESS_CAN_MESSAGE);
+
 		g_bErrFlag = 0;
 	}
 

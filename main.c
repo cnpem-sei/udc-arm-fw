@@ -164,20 +164,22 @@ int main(void) {
 	while(1)
 	{
 
-		for (ulLoop=0;ulLoop<2000;ulLoop++)
+		for (ulLoop=0;ulLoop<1000;ulLoop++)
 			{
-				RS485ProcessData();
+				//RS485ProcessData();
 				EthernetProcessData();
-				DisplayProcessData();
+				//DisplayProcessData();
 				//RS485BKPProcessData();
 				//MensagUsb();
-				CanCheck();
+				//CanCheck();
+
+				TaskCheck();
 			}
 
 		IPC_MtoC_Msg.PSModule.LocalRemote.u16 = LocRemUpdate();
 
-		TaskCheck();
 
+		/*
 
 		if(read_rtc)
 		{
@@ -251,6 +253,7 @@ int main(void) {
 			read_flash_sn = 0;
 			FlashMemReadSerialNumber();
 		}
+		*/
 
 	}
 

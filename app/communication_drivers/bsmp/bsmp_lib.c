@@ -12,6 +12,7 @@
 #include "bsmp_lib.h"
 
 #include "../i2c_onboard/eeprom.h"
+#include "../system_task/system_task.h"
 
 //#!
 #include "inc/hw_memmap.h"
@@ -619,9 +620,10 @@ uint8_t ResetInterlocks (uint8_t *input, uint8_t *output)
 	    	*output = 5;
 	    }
 	    else{
-	    	IPC_MtoC_Msg.PSModule.SoftInterlocks.u32=0;
-	    	IPC_MtoC_Msg.PSModule.HardInterlocks.u32=0;
-	    	SendCanMessage(255); // CAN RESET MESSAGE
+	    	//IPC_MtoC_Msg.PSModule.SoftInterlocks.u32=0;
+	    	//IPC_MtoC_Msg.PSModule.HardInterlocks.u32=0;
+	    	//SendCanMessage(255); // CAN RESET MESSAGE
+	    	TaskSetNew(CLEAR_ITLK_ALARM);
 	    	*output = 0;
 	    }
 	}

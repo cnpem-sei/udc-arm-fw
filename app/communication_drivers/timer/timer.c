@@ -20,6 +20,7 @@
 #include "../adcp/adcp.h"
 
 #include "../system_task/system_task.h"
+
 #include "set_pinout_udc_v2.0.h"
 
 uint16_t time = 0x00;
@@ -41,13 +42,13 @@ GlobalTimerIntHandler(void)
 	if(iib_sample >= 40)
 	{
 		iib_sample = 0;
-		TaskSetNew(0x10);
+		//TaskSetNew(0x10);
 	}
 
 	if(time >= 1000)
 	{
 		time = 0;
-		TaskSetNew(0x05);
+		TaskSetNew(SAMPLE_RTC);
 	}
 
 
