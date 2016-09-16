@@ -135,6 +135,25 @@ void AdcChannelAppConfig(void)
 
 			break;
 
+		case FAP_DCDC_15kHz_225A:
+
+			// Imod 1: 10V = 200A
+			AnalogCh0.Enable = 1;
+			AnalogCh0.Gain = 200.0/2048.0;
+			AnalogCh0.Value = &DP_Framework_MtoC.NetSignals[0].f;
+
+			// Imod 2: 10V = 200A
+			AnalogCh1.Enable = 1;
+			AnalogCh1.Gain = 200.0/2048.0;
+			AnalogCh1.Value = &DP_Framework_MtoC.NetSignals[1].f;
+
+			AnalogCh2.Enable = 0;
+			AnalogCh3.Enable = 0;
+			AnalogCh4.Enable = 0;
+			AnalogCh5.Enable = 0;
+			AnalogCh6.Enable = 0;
+			AnalogCh7.Enable = 0;
+
 		default:
 
 			break;

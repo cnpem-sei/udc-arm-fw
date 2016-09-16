@@ -1110,6 +1110,12 @@ BSMPInit(void)
 			Init_BSMP_var(15,DP_Framework_MtoC.NetSignals[13].u8);	// Temperature
 			break;
 
+		case FAC_ACDC_10kHz:
+
+			Init_BSMP_var(2,DP_Framework.NetSignals[5].u8);			// Iin
+			Init_BSMP_var(11,DP_Framework.NetSignals[7].u8);		// Vout
+			break;
+
 		case FAC_Full_ACDC_10kHz:
 
 			Init_BSMP_var(2,DP_Framework.NetSignals[4].u8);			// Iin1
@@ -1157,6 +1163,11 @@ BSMPInit(void)
 			Init_BSMP_var(16,Mod1Q1.TempIGBT2.u8);					// TempIGBT2
 			Init_BSMP_var(17,Mod1Q1.TempL1.u8);						// TempL1
 			Init_BSMP_var(18,Mod1Q1.TempL2.u8);						// TempL2
+			break;
+
+		case FAP_DCDC_15kHz_225A:
+			Init_BSMP_var(2,DP_Framework_MtoC.NetSignals[0].u8);	// Imod1
+			Init_BSMP_var(3,DP_Framework_MtoC.NetSignals[1].u8);	// Imod2
 			break;
 
 		default:
