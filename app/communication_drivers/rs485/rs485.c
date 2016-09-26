@@ -259,6 +259,7 @@ InitRS485(void)
 
 	// Load Baud Rate configuration from EEPROM and gonfig it
 	ConfigRS485(EepromReadRs485BaudRate());
+	//ConfigRS485(1000000);
 
 	UARTFIFOEnable(RS485_UART_BASE);
 

@@ -71,6 +71,12 @@ IPCInit(void)
 		IPC_MtoC_Msg.WfmRef.SyncMode = OneShot;
 	}
 
+	IPC_MtoC_Msg.HRADCConfig.ID.u16 = 0;
+	IPC_MtoC_Msg.HRADCConfig.FreqSampling.f = 0.0;
+	IPC_MtoC_Msg.HRADCConfig.OpMode.enu = HRADC_Sampling;
+	IPC_MtoC_Msg.HRADCConfig.InputType.enu = Vin_bipolar;
+	IPC_MtoC_Msg.HRADCConfig.EnableHeater.u16 = 0;
+	IPC_MtoC_Msg.HRADCConfig.EnableHeater.u16 = 0;
 
 	//  Register M3 interrupt handlers
 	IntRegister(INT_CTOMPIC1, CtoMIPC1IntHandler);

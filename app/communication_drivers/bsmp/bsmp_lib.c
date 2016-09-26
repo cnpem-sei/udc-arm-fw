@@ -670,7 +670,7 @@ static struct bsmp_func wfmrefupdate_func = {
 //*****************************************************************************
 // 							Model BSMP Function
 //*****************************************************************************
-uint16_t ConfigPSModel (uint8_t *input, uint8_t *output)
+uint8_t ConfigPSModel (uint8_t *input, uint8_t *output)
 {
 	EepromWritePSModel(input[0]);
 	*output = 0;
@@ -683,7 +683,144 @@ static struct bsmp_func model_func = {
     .info.output_size = 1,      // command_ack
 };
 
+//*****************************************************************************
+// 					Configure HRADC board BSMP Function
+//*****************************************************************************
+uint8_t ConfigHRADC (uint8_t *input, uint8_t *output)
+{
+	ulTimeout=0;
+	if(IPCMtoCBusy(HRADC_CONFIG))
+	{
+		*output = 6;
+	}
+	else{
+		IPC_MtoC_Msg.HRADCConfig.ID.u16	   			= (input[1] << 8) | input[0];
+		IPC_MtoC_Msg.HRADCConfig.FreqSampling.u32	= (input[5]<< 24) |(input[4] << 16)|(input[3] << 8) | input[2];
+		IPC_MtoC_Msg.HRADCConfig.InputType.u16		= (input[7] << 8) | input[6];
+		IPC_MtoC_Msg.HRADCConfig.EnableHeater.u16	= (input[9] << 8) | input[8];
+		IPC_MtoC_Msg.HRADCConfig.EnableMonitor.u16	= (input[11] << 8) | input[10];
 
+		SendIpcFlag(HRADC_CONFIG);
+
+	    while ((HWREG(MTOCIPC_BASE + IPC_O_MTOCIPCFLG) & HRADC_CONFIG)&&(ulTimeout<TIMEOUT_VALUE)){
+	    	ulTimeout++;
+	    }
+	    if(ulTimeout==TIMEOUT_VALUE){
+	    	*output = 5;
+	    }
+	    else{
+	    	*output = 0;
+	    }
+	}
+	return *output;
+}
+
+static struct bsmp_func confighradc_func = {
+    .func_p 		  = ConfigHRADC,
+    .info.input_size  = 12,		// ID(2)+FreqSampling(4)+InputType(2)+EnableHeater(2)+EnableMonitor(2)
+    .info.output_size = 1,		// command_ack
+};
+
+//*****************************************************************************
+// 			 Configure HRADC board operation mode BSMP Function
+//*****************************************************************************
+uint8_t ConfigHRADCOpMode (uint8_t *input, uint8_t *output)
+{
+	ulTimeout=0;
+	if(IPCMtoCBusy(HRADC_OPMODE))
+	{
+		*output = 6;
+	}
+	else{
+		IPC_MtoC_Msg.HRADCConfig.ID.u16	   		= (input[1] << 8) | input[0];
+		IPC_MtoC_Msg.HRADCConfig.OpMode.u16		= (input[3] << 8) | input[2];
+
+		SendIpcFlag(HRADC_OPMODE);
+
+	    while ((HWREG(MTOCIPC_BASE + IPC_O_MTOCIPCFLG) & HRADC_OPMODE)&&(ulTimeout<TIMEOUT_VALUE)){
+	    	ulTimeout++;
+	    }
+	    if(ulTimeout==TIMEOUT_VALUE){
+	    	*output = 5;
+	    }
+	    else{
+	    	*output = 0;
+	    }
+	}
+	return *output;
+}
+
+static struct bsmp_func confighradcopmode_func = {
+    .func_p 		  = ConfigHRADCOpMode,
+    .info.input_size  = 4,		// ID(2)+OpMode(2)
+    .info.output_size = 1,		// command_ack
+};
+
+//*****************************************************************************
+// 			 Enable HRADC sampling BSMP Function
+//*****************************************************************************
+uint8_t EnableHRADCSampling (uint8_t *input, uint8_t *output)
+{
+	ulTimeout=0;
+	if(IPCMtoCBusy(HRADC_SAMPLING_ENABLE))
+	{
+		*output = 6;
+	}
+	else{
+
+		SendIpcFlag(HRADC_SAMPLING_ENABLE);
+
+	    while ((HWREG(MTOCIPC_BASE + IPC_O_MTOCIPCFLG) & HRADC_SAMPLING_ENABLE)&&(ulTimeout<TIMEOUT_VALUE)){
+	    	ulTimeout++;
+	    }
+	    if(ulTimeout==TIMEOUT_VALUE){
+	    	*output = 5;
+	    }
+	    else{
+	    	*output = 0;
+	    }
+	}
+	return *output;
+}
+
+static struct bsmp_func enablehradcsampling_func = {
+    .func_p 		  = EnableHRADCSampling,
+    .info.input_size  = 0,		// Nothing is read from the input parameter
+    .info.output_size = 1,		// command_ack
+};
+
+//*****************************************************************************
+// 			 Disable HRADC sampling BSMP Function
+//*****************************************************************************
+uint8_t DisableHRADCSampling (uint8_t *input, uint8_t *output)
+{
+	ulTimeout=0;
+	if(IPCMtoCBusy(HRADC_SAMPLING_DISABLE))
+	{
+		*output = 6;
+	}
+	else{
+
+		SendIpcFlag(HRADC_SAMPLING_DISABLE);
+
+	    while ((HWREG(MTOCIPC_BASE + IPC_O_MTOCIPCFLG) & HRADC_SAMPLING_DISABLE)&&(ulTimeout<TIMEOUT_VALUE)){
+	    	ulTimeout++;
+	    }
+	    if(ulTimeout==TIMEOUT_VALUE){
+	    	*output = 5;
+	    }
+	    else{
+	    	*output = 0;
+	    }
+	}
+	return *output;
+}
+
+static struct bsmp_func disablehradcsampling_func = {
+    .func_p 		  = DisableHRADCSampling,
+    .info.input_size  = 0,		// Nothing is read from the input parameter
+    .info.output_size = 1,		// command_ack
+};
 
 //*****************************************************************************
 // 							Dummy BSMP Functions
@@ -1002,21 +1139,25 @@ BSMPInit(void)
 	//*****************************************************************************
 	// 						BSMP Function Register
 	//*****************************************************************************
-	bsmp_register_function(&bsmp, &turnon_func); 		  // Function ID 0
-	bsmp_register_function(&bsmp, &turnoff_func);         // Function ID 1
-	bsmp_register_function(&bsmp, &openloop_func); 		  // Function ID 2
-	bsmp_register_function(&bsmp, &closedloop_func);      // Function ID 3
-	bsmp_register_function(&bsmp, &opmode_func); 		  // Function ID 4
-	bsmp_register_function(&bsmp, &remoteinterface_func); // Function ID 5
-	bsmp_register_function(&bsmp, &setislowref_func); 	  // Function ID 6
-	bsmp_register_function(&bsmp, &configwfm_func); 	  // Function ID 7
-	bsmp_register_function(&bsmp, &configsiggen_func);	  // Function ID 8
-	bsmp_register_function(&bsmp, &enablesiggen_func);	  // Function ID 9
-	bsmp_register_function(&bsmp, &disablesiggen_func);	  // Function ID 10
-	bsmp_register_function(&bsmp, &configdpmodule_func);  // Function ID 11
-	bsmp_register_function(&bsmp, &wfmrefupdate_func);	  // Function ID 12
-	bsmp_register_function(&bsmp, &resetinterlocks_func); // Function ID 13
-	bsmp_register_function(&bsmp, &model_func);           // Function ID 14
+	bsmp_register_function(&bsmp, &turnon_func); 		  		// Function ID 0
+	bsmp_register_function(&bsmp, &turnoff_func);         		// Function ID 1
+	bsmp_register_function(&bsmp, &openloop_func); 		  		// Function ID 2
+	bsmp_register_function(&bsmp, &closedloop_func);      		// Function ID 3
+	bsmp_register_function(&bsmp, &opmode_func); 		  		// Function ID 4
+	bsmp_register_function(&bsmp, &remoteinterface_func); 		// Function ID 5
+	bsmp_register_function(&bsmp, &setislowref_func); 	  		// Function ID 6
+	bsmp_register_function(&bsmp, &configwfm_func); 	  		// Function ID 7
+	bsmp_register_function(&bsmp, &configsiggen_func);	  		// Function ID 8
+	bsmp_register_function(&bsmp, &enablesiggen_func);	 	 	// Function ID 9
+	bsmp_register_function(&bsmp, &disablesiggen_func);	  		// Function ID 10
+	bsmp_register_function(&bsmp, &configdpmodule_func);  		// Function ID 11
+	bsmp_register_function(&bsmp, &wfmrefupdate_func);	  		// Function ID 12
+	bsmp_register_function(&bsmp, &resetinterlocks_func); 		// Function ID 13
+	bsmp_register_function(&bsmp, &model_func);           		// Function ID 14
+	bsmp_register_function(&bsmp, &confighradc_func);     		// Function ID 15
+	bsmp_register_function(&bsmp, &confighradcopmode_func);		// Function ID 16
+	bsmp_register_function(&bsmp, &enablehradcsampling_func);	// Function ID 17
+	bsmp_register_function(&bsmp, &disablehradcsampling_func);	// Function ID 18
 
 	//*****************************************************************************
 	// 						BSMP Variable Register

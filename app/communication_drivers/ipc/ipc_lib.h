@@ -26,19 +26,25 @@
  *
  * MtoC Message Defines
  */
-#define IPC_PS_ON_OFF		 0x00000011 //IPC1+IPC5
-#define OPERATING_MODE		 0x00000021 //IPC1+IPC6
-#define OPEN_CLOSE_LOOP		 0x00000041 //IPC1+IPC7
-#define SLOWREF_UPDATE		 0x00000081 //IPC1+IPC8
-#define SIGGEN_ENA_DIS		 0x00000101 //IPC1+IPC9
-#define SIGGEN_CONFIG		 0x00000201 //IPC1+IPC10
-#define DPMODULES_CONFIG	 0x00000401 //IPC1+IPC11
-#define SAMPLES_BUFFER_ONOFF 0x00000801 //IPC1+IPC12
-#define RESET_INTERLOCKS	 0x00001001 //IPC1+IPC13
-#define CTOM_MESSAGE_ERROR	 0x80000001 //IPC1+IPC32
-#define WFMREF_SYNC			 0x00000002 //IPC2
-#define SOFT_INTERLOCK		 0x00000004 //IPC3
-#define HARD_INTERLOCK		 0x00000008 //IPC4
+#define IPC_PS_ON_OFF			0x00000011 //IPC1+IPC5
+#define OPERATING_MODE			0x00000021 //IPC1+IPC6
+#define OPEN_CLOSE_LOOP			0x00000041 //IPC1+IPC7
+#define SLOWREF_UPDATE			0x00000081 //IPC1+IPC8
+#define SIGGEN_ENA_DIS			0x00000101 //IPC1+IPC9
+#define SIGGEN_CONFIG			0x00000201 //IPC1+IPC10
+#define DPMODULES_CONFIG		0x00000401 //IPC1+IPC11
+#define SAMPLES_BUFFER_ONOFF	0x00000801 //IPC1+IPC12
+#define RESET_INTERLOCKS		0x00001001 //IPC1+IPC13
+//...//
+#define HRADC_SAMPLING_DISABLE	0x08000001 //IPC1+IPC28
+#define HRADC_SAMPLING_ENABLE	0x10000001 //IPC1+IPC29
+#define HRADC_OPMODE			0x20000001 //IPC1+IPC30
+#define HRADC_CONFIG			0x40000001 //IPC1+IPC31
+#define CTOM_MESSAGE_ERROR		0x80000001 //IPC1+IPC32
+
+#define WFMREF_SYNC				0x00000002 //IPC2
+#define SOFT_INTERLOCK		0x00000004 //IPC3
+#define HARD_INTERLOCK		0x00000008 //IPC4
 
 /*
  * CtoM Message Defines
@@ -94,8 +100,8 @@
 #define OVER_HUMIDITY_FAULT		0x00000400
 
 
-typedef enum {NO_ERROR_CTOM,ERROR1, ERROR2, ERROR3, ERROR4} 	eCTOMerror;
-typedef enum {NO_ERROR_MTOC,INVALID_SLOWREF_UPDATE, INVALID_DP_MODULE, ERROR7, ERROR8} 	eMTOCerror;
+typedef enum {NO_ERROR_CTOM, ERROR1, ERROR2, ERROR3, ERROR4} 	eCTOMerror;
+typedef enum {NO_ERROR_MTOC, INVALID_SLOWREF_UPDATE, INVALID_DP_MODULE, IPC_LOW_PRIORITY_MSG_FULL, HRADC_CONFIG_ERROR} 	eMTOCerror;
 typedef enum {OneShot, SampleBySample} eSyncMode;
 
 //######################## MTOC ###############################
@@ -124,7 +130,6 @@ typedef enum
 	SigGen
 }ePSOpMode;
 
-
 typedef enum
 {
 	ELP_Error,
@@ -147,6 +152,30 @@ typedef enum
 	Buffer_Block0,
 	Buffer_Block1,
 } eBlockBusy;
+
+typedef enum {
+		Vin_bipolar,
+		Vin_unipolar_p,
+		Vin_unipolar_n,
+		Iin_bipolar,
+		Iin_unipolar_p,
+		Iin_unipolar_n,
+		Vref_bipolar_p,
+		Vref_bipolar_n,
+		GND,
+		Vref_unipolar_p,
+		Vref_unipolar_n,
+		GND_unipolar,
+		Temp,
+		Reserved0,
+		Reserved1,
+		Reserved2
+} eInputType;
+
+typedef enum {
+		HRADC_Sampling,
+		HRADC_UFM
+} eHRADCOpMode;
 
 typedef struct
 {
@@ -305,13 +334,51 @@ typedef struct
 
 }tDPModule;
 
+typedef struct
+{
+	union
+	{
+		uint8_t u8[2];
+		uint16_t u16;
+	}ID;
+	union
+	{
+		uint8_t  u8[4];
+		uint32_t u32;
+		float	 f;
+	} FreqSampling;
+	union
+	{
+		uint8_t      u8[2];
+		uint16_t     u16;
+		eHRADCOpMode enu;
+	}OpMode;
+	union
+	{
+		uint8_t   u8[2];
+		uint16_t   u16;
+		eInputType enu;
+	}InputType;
+	union
+	{
+		uint8_t u8[2];
+		uint16_t u16;
+	}EnableHeater;
+	union
+	{
+		uint8_t u8[2];
+		uint16_t u16;
+	}EnableMonitor;
+} tHRADCConfig;
+
 
 typedef struct
 {
-	 tPSModuleMtoC PSModule;
-     tWfmRef       WfmRef;
-     tSigGen       SigGen;
-     tDPModule     DPModule;
+	 tPSModuleMtoC	PSModule;
+     tWfmRef		WfmRef;
+     tSigGen		SigGen;
+     tDPModule		DPModule;
+     tHRADCConfig	HRADCConfig;
 }tIPC_MTOC_MSG_RAM;
 
 //######################## CTOM ###############################
