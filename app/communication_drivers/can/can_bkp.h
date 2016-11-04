@@ -95,17 +95,113 @@ typedef struct
 
 typedef struct
 {
-	float Iout;
-	float Vin;
-	float Vout;
-	uint8_t TempChv1;
-	uint8_t TempChv2;
+	union
+	{
+		uint8_t	u8[4];
+		float 	f;
+	} Iout;
+	uint8_t IoutAlarmSts;
+	uint8_t IoutItlkSts;
+	union
+	{
+		uint8_t	u8[4];
+		float 	f;
+	} Vin;
+	union
+	{
+		uint8_t	u8[4];
+		float 	f;
+	} Vout;
+	union
+	{
+		uint8_t	u8[4];
+		float 	f;
+	} TempIGBT1;
+	uint8_t TempIGBT1AlarmSts;
+	uint8_t TempIGBT1ItlkSts;
+	union
+	{
+		uint8_t	u8[4];
+		float 	f;
+	} TempIGBT2;
+	uint8_t TempIGBT2AlarmSts;
+	uint8_t TempIGBT2ItlkSts;
 	uint8_t TempL1;
 	uint8_t TempL2;
 	uint8_t DvrVolt;
 	uint8_t DvrCurr;
 	uint8_t RH;
+	uint8_t RelativeHumidityAlarm;
+	uint8_t RelativeHumidityItlk;
 } Q4Module_t;
+
+typedef struct
+{
+	union
+	{
+		uint8_t	u8[4];
+		float 	f;
+	} Iin1;
+	uint8_t Iin1AlarmSts;
+	uint8_t Iin1ItlkSts;
+	union
+	{
+		uint8_t	u8[4];
+		float 	f;
+	} Iin2;
+	uint8_t Iin2AlarmSts;
+	uint8_t Iin2ItlkSts;
+	union
+	{
+		uint8_t	u8[4];
+		float 	f;
+	} Iout1;
+	uint8_t Iout1AlarmSts;
+	uint8_t Iout1ItlkSts;
+	union
+	{
+		uint8_t	u8[4];
+		float 	f;
+	} Iout2;
+	uint8_t Iout2AlarmSts;
+	uint8_t Iout2ItlkSts;
+	union
+	{
+		uint8_t	u8[4];
+		float 	f;
+	} Vin1;
+	uint8_t Vin1AlarmSts;
+	uint8_t Vin1ItlkSts;
+	union
+	{
+		uint8_t	u8[4];
+		float 	f;
+	} Vin2;
+	uint8_t Vin2AlarmSts;
+	uint8_t Vin2ItlkSts;
+	union
+	{
+		uint8_t	u8[4];
+		float 	f;
+	} TempL1;
+	uint8_t TempL1AlarmSts;
+	uint8_t TempL1ItlkSts;
+	union
+	{
+		uint8_t	u8[4];
+		float 	f;
+	} TempL2;
+	uint8_t TempL2AlarmSts;
+	uint8_t TempL2ItlkSts;
+	uint8_t WaterFluxInterlock;
+	uint8_t WaterFluxInterlockItlk;
+	uint8_t AcOverCurrent;
+	uint8_t AcOverCurrentItlk;
+	uint8_t RH;
+	uint8_t RelativeHumidityAlarm;
+	uint8_t RelativeHumidityItlk;
+
+}BuckMudule_t;
 
 typedef struct
 {

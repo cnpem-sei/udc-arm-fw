@@ -131,7 +131,11 @@ static union
 
 Q1Module_t Mod1Q1;
 Q1Module_t Mod2Q1;
+Q4Module_t Mod1Q4;
+Q4Module_t Mod2Q4;
+BuckMudule_t Buck;
 RectModule_t Rectifier;
+
 
 
 //*****************************************************************************
@@ -1171,6 +1175,531 @@ CanCheck(void)
 		}
 
     	break;
+    case FAC_Full_ACDC_10kHz:
+    	//
+		// If the flag for message object 1 is set, that means that the RX
+		// interrupt occurred and there is a message ready to be read from
+		// this CAN message object.
+		//
+		if(g_bRXFlag1)
+		{
+			sCANMessage.pucMsgData = pui8MsgData;
+
+			CANMessageGet(CAN0_BASE, 1, &sCANMessage, 0);
+
+			// Iin1
+			Buck.Iin1.u8[0] = pui8MsgData[0];
+			Buck.Iin1.u8[1] = pui8MsgData[1];
+			Buck.Iin1.u8[2] = pui8MsgData[2];
+			Buck.Iin1.u8[3] = pui8MsgData[3];
+
+
+			// Iin2
+			Buck.Iin2.u8[0] = pui8MsgData[4];
+			Buck.Iin2.u8[1] = pui8MsgData[5];
+			Buck.Iin2.u8[2] = pui8MsgData[6];
+			Buck.Iin2.u8[3] = pui8MsgData[7];
+
+
+			//
+			// Clear the pending message flag so that the interrupt handler can
+			// set it again when the next message arrives.
+			//
+			g_bRXFlag1 = 0;
+
+		}
+
+		//
+		// Check for message received on message object 2.  If so then
+		// read message and print information.
+		//
+		if(g_bRXFlag2)
+		{
+			sCANMessage.pucMsgData = pui8MsgData;
+
+			CANMessageGet(CAN0_BASE, 2, &sCANMessage, 0);
+
+			//  Iout1
+			Buck.Iout1.u8[0] = pui8MsgData[0];
+			Buck.Iout1.u8[1] = pui8MsgData[1];
+			Buck.Iout1.u8[2] = pui8MsgData[2];
+			Buck.Iout1.u8[3] = pui8MsgData[3];
+			//DP_Framework_MtoC.NetSignals[9].f = Rectifier.VoutRectf1.f;
+
+			//  Iout2
+			Buck.Iout2.u8[0] = pui8MsgData[4];
+			Buck.Iout2.u8[1] = pui8MsgData[5];
+			Buck.Iout2.u8[2] = pui8MsgData[6];
+			Buck.Iout2.u8[3] = pui8MsgData[7];
+			//DP_Framework_MtoC.NetSignals[10].f = Rectifier.VoutRectf2.f;
+
+			g_bRXFlag2 = 0;
+		}
+
+		//
+		// Check for message received on message object 2.  If so then
+		// read message and print information.
+		//
+		if(g_bRXFlag3)
+		{
+			sCANMessage.pucMsgData = pui8MsgData;
+
+			CANMessageGet(CAN0_BASE, 3, &sCANMessage, 0);
+
+			//  Vin1
+			Buck.Vin1.u8[0] = pui8MsgData[0];
+			Buck.Vin1.u8[1] = pui8MsgData[1];
+			Buck.Vin1.u8[2] = pui8MsgData[2];
+			Buck.Vin1.u8[3] = pui8MsgData[3];
+			//DP_Framework_MtoC.NetSignals[9].f = Rectifier.VoutRectf1.f;
+
+			//  Vin2
+			Buck.Vin2.u8[0] = pui8MsgData[4];
+			Buck.Vin2.u8[1] = pui8MsgData[5];
+			Buck.Vin2.u8[2] = pui8MsgData[6];
+			Buck.Vin2.u8[3] = pui8MsgData[7];
+			//DP_Framework_MtoC.NetSignals[10].f = Rectifier.VoutRectf2.f;
+
+			g_bRXFlag3 = 0;
+		}
+
+		//
+		// If the flag for message object 1 is set, that means that the RX
+		// interrupt occurred and there is a message ready to be read from
+		// this CAN message object.
+		//
+		if(g_bRXFlag4)
+		{
+			sCANMessage.pucMsgData = pui8MsgData;
+
+			CANMessageGet(CAN0_BASE, 4, &sCANMessage, 0);
+
+			//  Inductor Temperature
+			Buck.TempL1.f = pui8MsgData[0];
+			Buck.TempL2.f = pui8MsgData[1];
+
+			if(pui8MsgData[2] & 0b00000001)
+			{
+				Buck.WaterFluxInterlock = 1;
+			}
+			else Buck.WaterFluxInterlock = 0;
+
+			if(pui8MsgData[2] & 0b00000010)
+			{
+				Buck.AcOverCurrent = 1;
+			}
+			else Buck.AcOverCurrent = 0;
+
+
+			// Alarm
+
+			if(pui8MsgData[4] & 0b00000001)
+			{
+				Buck.Iin1AlarmSts = 1;
+				PSModuleAlarms |= IN_CURRENT_ALARM;
+			}
+			else Buck.Iin1AlarmSts = 0;
+
+			if(pui8MsgData[4] & 0b00000010)
+			{
+				Buck.Iin2AlarmSts = 1;
+				PSModuleAlarms |= IN_CURRENT_ALARM;
+			}
+			else Buck.Iin2AlarmSts = 0;
+
+			if(pui8MsgData[4] & 0b00000100)
+			{
+				Buck.Iout1AlarmSts = 1;
+				PSModuleAlarms |= OUT1_CURRENT_ALARM;
+			}
+			else Buck.Iout1AlarmSts = 0;
+
+			if(pui8MsgData[4] & 0b00001000)
+			{
+				Buck.Iout2AlarmSts = 1;
+				PSModuleAlarms |= OUT2_CURRENT_ALARM;
+			}
+			else Buck.Iout2AlarmSts = 0;
+
+			if(pui8MsgData[4] & 0b00010000)
+			{
+				Buck.TempL1AlarmSts = 1;
+				PSModuleAlarms |= L1_TEMP_ALARM;
+			}
+			else Buck.TempL1AlarmSts = 1;
+
+			if(pui8MsgData[4] & 0b00100000)
+			{
+				Buck.TempL2AlarmSts = 1;
+				PSModuleAlarms |= L2_TEMP_ALARM;
+			}
+			else Buck.TempL2AlarmSts = 1;
+
+			if(pui8MsgData[4] & 0b01000000)
+			{
+				Buck.RelativeHumidityAlarm = 1;
+				PSModuleAlarms |= HUMIDITY_ALARM;
+			}
+			else Buck.RelativeHumidityAlarm = 0;
+
+			// Interlock
+
+			if(pui8MsgData[6] & 0b00000001)
+			{
+				Buck.Iin1ItlkSts = 1;
+				IPC_MtoC_Msg.PSModule.HardInterlocks.u32 |= IN_OVERCURRENT;
+				SendIpcFlag(HARD_INTERLOCK);
+			}
+			else Buck.Iin1ItlkSts = 0;
+
+			if(pui8MsgData[6] & 0b00000010)
+			{
+				Buck.Iin2ItlkSts = 1;
+				IPC_MtoC_Msg.PSModule.HardInterlocks.u32 |= IN_OVERCURRENT;
+				SendIpcFlag(HARD_INTERLOCK);
+			}
+			else Buck.Iin2ItlkSts = 0;
+
+			if(pui8MsgData[6] & 0b00000100)
+			{
+				Buck.Iout1ItlkSts = 1;
+				IPC_MtoC_Msg.PSModule.HardInterlocks.u32 |= OUT1_OVERCURRENT;
+				SendIpcFlag(HARD_INTERLOCK);
+			}
+			else Buck.Iout1ItlkSts = 0;
+
+			if(pui8MsgData[6] & 0b00001000)
+			{
+				Buck.Iout2ItlkSts = 1;
+				IPC_MtoC_Msg.PSModule.HardInterlocks.u32 |= OUT2_OVERCURRENT;
+				SendIpcFlag(HARD_INTERLOCK);
+			}
+			else Buck.Iout2ItlkSts = 0;
+
+			if(pui8MsgData[6] & 0b00010000)
+			{
+				Buck.TempL1ItlkSts = 1;
+				IPC_MtoC_Msg.PSModule.SoftInterlocks.u32 |= L1_OVERTEMP;
+				SendIpcFlag(SOFT_INTERLOCK);
+			}
+			else Buck.TempL1ItlkSts = 0;
+
+			if(pui8MsgData[6] & 0b00100000)
+			{
+				Buck.TempL2ItlkSts = 1;
+				IPC_MtoC_Msg.PSModule.SoftInterlocks.u32 |= L2_OVERTEMP;
+				SendIpcFlag(SOFT_INTERLOCK);
+			}
+			else Buck.TempL2ItlkSts = 0;
+
+			if(pui8MsgData[6] & 0b01000000)
+			{
+				Buck.WaterFluxInterlockItlk = 1;
+				IPC_MtoC_Msg.PSModule.SoftInterlocks.u32 |= WATER_FLUX_FAULT;
+				SendIpcFlag(SOFT_INTERLOCK);
+			}
+			else Buck.WaterFluxInterlockItlk = 0;
+
+			if(pui8MsgData[6] & 0b10000000)
+			{
+				Buck.AcOverCurrentItlk = 1;
+				IPC_MtoC_Msg.PSModule.HardInterlocks.u32 |= AC_OVERCURRENT;
+				SendIpcFlag(HARD_INTERLOCK);
+			}
+			else Buck.AcOverCurrentItlk = 0;
+
+			if(pui8MsgData[7] & 0b00000001)
+			{
+				Buck.RelativeHumidityItlk = 1;
+				IPC_MtoC_Msg.PSModule.SoftInterlocks.u32 |= OVER_HUMIDITY_FAULT;
+				SendIpcFlag(SOFT_INTERLOCK);
+			}
+			else Buck.RelativeHumidityItlk = 0;
+
+
+			//
+			// Clear the pending message flag so that the interrupt handler can
+			// set it again when the next message arrives.
+			//
+			g_bRXFlag4 = 0;
+
+		}
+
+    	break;
+    case FAC_Full_DCDC_20kHz:
+    	//
+		// If the flag for message object 1 is set, that means that the RX
+		// interrupt occurred and there is a message ready to be read from
+		// this CAN message object.
+		//
+		if(g_bRXFlag1)
+		{
+			sCANMessage.pucMsgData = pui8MsgData;
+
+			CANMessageGet(CAN0_BASE, 1, &sCANMessage, 0);
+
+			//  Iout
+			Mod1Q4.Iout.u8[0] = pui8MsgData[0];
+			Mod1Q4.Iout.u8[1] = pui8MsgData[1];
+			Mod1Q4.Iout.u8[2] = pui8MsgData[2];
+			Mod1Q4.Iout.u8[3] = pui8MsgData[3];
+
+
+			//  Temperatures and Humidity
+			Mod1Q4.TempIGBT1.f = pui8MsgData[4];
+			Mod1Q4.TempIGBT2.f = pui8MsgData[5];
+			Mod1Q4.RH = pui8MsgData[6];
+
+
+			//
+			// Clear the pending message flag so that the interrupt handler can
+			// set it again when the next message arrives.
+			//
+			g_bRXFlag1 = 0;
+
+		}
+
+		//
+		// If the flag for message object 1 is set, that means that the RX
+		// interrupt occurred and there is a message ready to be read from
+		// this CAN message object.
+		//
+		if(g_bRXFlag2)
+		{
+			sCANMessage.pucMsgData = pui8MsgData;
+
+			CANMessageGet(CAN0_BASE, 2, &sCANMessage, 0);
+
+
+			// Alarm
+			//  Iout Alarm
+			if(pui8MsgData[4] & 0b00000001)
+			{
+				Mod1Q4.IoutAlarmSts = 1;
+				PSModuleAlarms |= OUT1_CURRENT_ALARM;
+			}
+			else Mod1Q4.IoutAlarmSts = 0;
+
+			// IGBT1 Temperature Alarm
+			if(pui8MsgData[4] & 0b00000010)
+			{
+				Mod1Q4.TempIGBT1AlarmSts = 1;
+				PSModuleAlarms |= IGBT1_TEMP_ALARM;
+			}
+			else Mod1Q4.TempIGBT1AlarmSts = 0;
+
+			// IGBT2 Temperature Alarm
+			if(pui8MsgData[4] & 0b00000100)
+			{
+				Mod1Q4.TempIGBT2AlarmSts = 1;
+				PSModuleAlarms |= IGBT2_TEMP_ALARM;
+			}
+			else Mod1Q4.TempIGBT2AlarmSts = 0;
+
+			// Humidity Temperature Alarm
+			if(pui8MsgData[4] & 0b00001000)
+			{
+				Mod1Q4.RelativeHumidityAlarm = 1;
+				PSModuleAlarms |= HUMIDITY_ALARM;
+			}
+			else Mod1Q4.RelativeHumidityAlarm = 0;
+
+			// Interlock
+
+			// Iout Interlock
+			if(pui8MsgData[5] & 0b00000001)
+			{
+				if(!Mod1Q4.IoutItlkSts)
+				{
+					Mod1Q4.IoutItlkSts = 1;
+					IPC_MtoC_Msg.PSModule.HardInterlocks.u32 |= OUT1_OVERCURRENT;
+					SendIpcFlag(HARD_INTERLOCK);
+				}
+			}
+			else Mod1Q4.IoutItlkSts = 0;
+
+			// IGBT1 Temperature Interlock
+			if(pui8MsgData[5] & 0b00000010)
+			{
+				if(!Mod1Q4.TempIGBT1ItlkSts)
+				{
+					Mod1Q4.TempIGBT1ItlkSts = 1;
+					IPC_MtoC_Msg.PSModule.SoftInterlocks.u32 |= IGBT1_OVERTEMP;
+					SendIpcFlag(SOFT_INTERLOCK);
+				}
+			}
+			else Mod1Q4.TempIGBT1ItlkSts = 0;
+
+			// IGBT2 Temperature Interlock
+			if(pui8MsgData[5] & 0b00000100)
+			{
+				if(!Mod1Q4.TempIGBT2ItlkSts)
+				{
+					Mod1Q4.TempIGBT2ItlkSts = 1;
+					IPC_MtoC_Msg.PSModule.SoftInterlocks.u32 |= IGBT2_OVERTEMP;
+					SendIpcFlag(SOFT_INTERLOCK);
+				}
+			}
+			else Mod1Q4.TempIGBT2ItlkSts = 0;
+
+			// Humidity Interlock
+			if(pui8MsgData[5] & 0b00001000)
+			{
+				if(!Mod1Q4.RelativeHumidityItlk)
+				{
+					Mod1Q4.RelativeHumidityItlk = 1;
+					IPC_MtoC_Msg.PSModule.SoftInterlocks.u32 |= OVER_HUMIDITY_FAULT;
+					SendIpcFlag(SOFT_INTERLOCK);
+				}
+			}
+			else Mod1Q4.RelativeHumidityItlk = 0;
+
+
+			//
+			// Clear the pending message flag so that the interrupt handler can
+			// set it again when the next message arrives.
+			//
+			g_bRXFlag2 = 0;
+
+		}
+
+		//
+		// If the flag for message object 1 is set, that means that the RX
+		// interrupt occurred and there is a message ready to be read from
+		// this CAN message object.
+		//
+		if(g_bRXFlag3)
+		{
+			sCANMessage.pucMsgData = pui8MsgData;
+
+			CANMessageGet(CAN0_BASE, 3, &sCANMessage, 0);
+
+			//  Iout
+			Mod2Q4.Iout.u8[0] = pui8MsgData[0];
+			Mod2Q4.Iout.u8[1] = pui8MsgData[1];
+			Mod2Q4.Iout.u8[2] = pui8MsgData[2];
+			Mod2Q4.Iout.u8[3] = pui8MsgData[3];
+
+
+			//  Temperatures and Humidity
+			Mod2Q4.TempIGBT1.f = pui8MsgData[4];
+			Mod2Q4.TempIGBT2.f = pui8MsgData[5];
+			Mod2Q4.RH = pui8MsgData[6];
+
+
+			//
+			// Clear the pending message flag so that the interrupt handler can
+			// set it again when the next message arrives.
+			//
+			g_bRXFlag3 = 0;
+
+		}
+
+		//
+		// If the flag for message object 1 is set, that means that the RX
+		// interrupt occurred and there is a message ready to be read from
+		// this CAN message object.
+		//
+		if(g_bRXFlag4)
+		{
+			sCANMessage.pucMsgData = pui8MsgData;
+
+			CANMessageGet(CAN0_BASE, 4, &sCANMessage, 0);
+
+
+			// Alarm
+			//  Iout Alarm
+			if(pui8MsgData[4] & 0b00000001)
+			{
+				Mod2Q4.IoutAlarmSts = 1;
+				PSModuleAlarms |= OUT1_CURRENT_ALARM;
+			}
+			else Mod2Q4.IoutAlarmSts = 0;
+
+			// IGBT1 Temperature Alarm
+			if(pui8MsgData[4] & 0b00000010)
+			{
+				Mod2Q4.TempIGBT1AlarmSts = 1;
+				PSModuleAlarms |= IGBT1_TEMP_ALARM;
+			}
+			else Mod2Q4.TempIGBT1AlarmSts = 0;
+
+			// IGBT2 Temperature Alarm
+			if(pui8MsgData[4] & 0b00000100)
+			{
+				Mod2Q4.TempIGBT2AlarmSts = 1;
+				PSModuleAlarms |= IGBT2_TEMP_ALARM;
+			}
+			else Mod2Q4.TempIGBT2AlarmSts = 0;
+
+			// Humidity Temperature Alarm
+			if(pui8MsgData[4] & 0b00001000)
+			{
+				Mod2Q4.RelativeHumidityAlarm = 1;
+				PSModuleAlarms |= HUMIDITY_ALARM;
+			}
+			else Mod2Q4.RelativeHumidityAlarm = 0;
+
+			// Interlock
+
+			// Iout Interlock
+			if(pui8MsgData[5] & 0b00000001)
+			{
+				if(!Mod2Q4.IoutItlkSts)
+				{
+					Mod2Q4.IoutItlkSts = 1;
+					IPC_MtoC_Msg.PSModule.HardInterlocks.u32 |= OUT1_OVERCURRENT;
+					SendIpcFlag(HARD_INTERLOCK);
+				}
+			}
+			else Mod2Q4.IoutItlkSts = 0;
+
+			// IGBT1 Temperature Interlock
+			if(pui8MsgData[5] & 0b00000010)
+			{
+				if(!Mod2Q4.TempIGBT1ItlkSts)
+				{
+					Mod2Q4.TempIGBT1ItlkSts = 1;
+					IPC_MtoC_Msg.PSModule.SoftInterlocks.u32 |= IGBT1_OVERTEMP;
+					SendIpcFlag(SOFT_INTERLOCK);
+				}
+			}
+			else Mod2Q4.TempIGBT1ItlkSts = 0;
+
+			// IGBT2 Temperature Interlock
+			if(pui8MsgData[5] & 0b00000100)
+			{
+				if(!Mod2Q4.TempIGBT2ItlkSts)
+				{
+					Mod2Q4.TempIGBT2ItlkSts = 1;
+					IPC_MtoC_Msg.PSModule.SoftInterlocks.u32 |= IGBT2_OVERTEMP;
+					SendIpcFlag(SOFT_INTERLOCK);
+				}
+			}
+			else Mod2Q4.TempIGBT2ItlkSts = 0;
+
+			// Humidity Interlock
+			if(pui8MsgData[5] & 0b00001000)
+			{
+				if(!Mod2Q4.RelativeHumidityItlk)
+				{
+					Mod2Q4.RelativeHumidityItlk = 1;
+					IPC_MtoC_Msg.PSModule.SoftInterlocks.u32 |= OVER_HUMIDITY_FAULT;
+					SendIpcFlag(SOFT_INTERLOCK);
+				}
+			}
+			else Mod2Q4.RelativeHumidityItlk = 0;
+
+
+			//
+			// Clear the pending message flag so that the interrupt handler can
+			// set it again when the next message arrives.
+			//
+			g_bRXFlag4 = 0;
+
+		}
+
+    	break;
 
     }
 
@@ -1578,6 +2107,92 @@ InitCanBkp(void)
 		CANMessageSet(CAN0_BASE, 6, &sCANMessage, MSG_OBJ_TYPE_RX);
 
     	break;
+
+    case FAC_Full_ACDC_10kHz:
+    	//
+		// Initialize a message object to receive CAN messages with ID 0x010.
+		// The expected ID must be set along with the mask to indicate that all
+		// bits in the ID must match.
+		//
+		sCANMessage.ulMsgID = 0x010;
+		sCANMessage.ulMsgIDMask = 0x7FF;
+		sCANMessage.ulFlags = (MSG_OBJ_RX_INT_ENABLE | MSG_OBJ_USE_ID_FILTER | MSG_OBJ_FIFO);
+		sCANMessage.ulMsgLen = 8;
+
+		//
+		// Now load the message object into the CAN peripheral message object 1.
+		// Once loaded the CAN will receive any messages with this CAN ID into
+		// this message object, and an interrupt will occur.
+		//
+		CANMessageSet(CAN0_BASE, 1, &sCANMessage, MSG_OBJ_TYPE_RX);
+
+		//
+		// Change the ID to 0x011, and load into message object 2 which will be
+		// used for receiving any CAN messages with this ID.  Since only the CAN
+		// ID field changes, we don't need to reload all the other fields.
+		//
+		sCANMessage.ulMsgID = 0x011;
+		CANMessageSet(CAN0_BASE, 2, &sCANMessage, MSG_OBJ_TYPE_RX);
+
+		//
+		// Change the ID to 0x012, and load into message object 3 which will be
+		// used for receiving any CAN messages with this ID.  Since only the CAN
+		// ID field changes, we don't need to reload all the other fields.
+		//
+		sCANMessage.ulMsgID = 0x012;
+		CANMessageSet(CAN0_BASE, 3, &sCANMessage, MSG_OBJ_TYPE_RX);
+
+		//
+		// Change the ID to 0x013, and load into message object 3 which will be
+		// used for receiving any CAN messages with this ID.  Since only the CAN
+		// ID field changes, we don't need to reload all the other fields.
+		//
+		sCANMessage.ulMsgID = 0x013;
+		CANMessageSet(CAN0_BASE, 4, &sCANMessage, MSG_OBJ_TYPE_RX);
+
+    case FAC_Full_DCDC_20kHz:
+    	//
+		// Initialize a message object to receive CAN messages with ID 0x010.
+		// The expected ID must be set along with the mask to indicate that all
+		// bits in the ID must match.
+		//
+		sCANMessage.ulMsgID = 0x010;
+		sCANMessage.ulMsgIDMask = 0x7FF;
+		sCANMessage.ulFlags = (MSG_OBJ_RX_INT_ENABLE | MSG_OBJ_USE_ID_FILTER | MSG_OBJ_FIFO);
+		sCANMessage.ulMsgLen = 8;
+
+		//
+		// Now load the message object into the CAN peripheral message object 1.
+		// Once loaded the CAN will receive any messages with this CAN ID into
+		// this message object, and an interrupt will occur.
+		//
+		CANMessageSet(CAN0_BASE, 1, &sCANMessage, MSG_OBJ_TYPE_RX);
+
+		//
+		// Change the ID to 0x011, and load into message object 2 which will be
+		// used for receiving any CAN messages with this ID.  Since only the CAN
+		// ID field changes, we don't need to reload all the other fields.
+		//
+		sCANMessage.ulMsgID = 0x011;
+		CANMessageSet(CAN0_BASE, 2, &sCANMessage, MSG_OBJ_TYPE_RX);
+
+		//
+		// Change the ID to 0x020, and load into message object 2 which will be
+		// used for receiving any CAN messages with this ID.  Since only the CAN
+		// ID field changes, we don't need to reload all the other fields.
+		//
+		sCANMessage.ulMsgID = 0x020;
+		CANMessageSet(CAN0_BASE, 3, &sCANMessage, MSG_OBJ_TYPE_RX);
+
+		//
+		// Change the ID to 0x011, and load into message object 2 which will be
+		// used for receiving any CAN messages with this ID.  Since only the CAN
+		// ID field changes, we don't need to reload all the other fields.
+		//
+		sCANMessage.ulMsgID = 0x021;
+		CANMessageSet(CAN0_BASE, 4, &sCANMessage, MSG_OBJ_TYPE_RX);
+    	break;
+
 
     }
 
