@@ -49,6 +49,7 @@ GlobalTimerIntHandler(void)
 	{
 		time = 0;
 		TaskSetNew(SAMPLE_RTC);
+		TaskSetNew(POWER_TEMP_SAMPLE);
 	}
 
 

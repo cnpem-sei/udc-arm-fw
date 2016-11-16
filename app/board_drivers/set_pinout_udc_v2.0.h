@@ -55,7 +55,7 @@
 //*****************************************************************************
 // MACROS for onboard I2C
 //*****************************************************************************
-#define	I2C_ONBOARD__MASTER_BASE	I2C0_MASTER_BASE
+#define	I2C_ONBOARD_MASTER_BASE		I2C0_MASTER_BASE
 #define I2C_ONBOARD_BASE	  		GPIO_PORTN_BASE
 #define I2C_ONBOARD_PINS 			(GPIO_PIN_0 | GPIO_PIN_1)
 #define I2C_ONBOARD_SCL				GPIO_PN0_I2C0SCL
@@ -63,14 +63,14 @@
 #define I2C_ONBOARD_SYSCTL			SYSCTL_PERIPH_I2C0
 
 //*****************************************************************************
-// MACROS for offboard I2C
+// MACROS for offboard I2C Isolated
 //*****************************************************************************
-#define	I2C_OFFBOARD__MASTER_BASE	I2C1_MASTER_BASE
-#define I2C_OFFBOARD_BASE			GPIO_PORTP_BASE
-#define I2C_OFFBOARD_PINS 			(GPIO_PIN_0 | GPIO_PIN_1)
-#define I2C_OFFBOARD_SCL			GPIO_PP0_I2C1SCL
-#define I2C_OFFBOARD_SDA 			GPIO_PP1_I2C1SDA
-#define I2C_OFFBOARD_SYSCTL			SYSCTL_PERIPH_I2C1
+#define	I2C_OFFBOARD_ISO_MASTER_BASE	I2C1_MASTER_BASE
+#define I2C_OFFBOARD_ISO_BASE			GPIO_PORTP_BASE
+#define I2C_OFFBOARD_ISO_PINS 			(GPIO_PIN_0 | GPIO_PIN_1)
+#define I2C_OFFBOARD_ISO_SCL			GPIO_PP0_I2C1SCL
+#define I2C_OFFBOARD_ISO_SDA 			GPIO_PP1_I2C1SDA
+#define I2C_OFFBOARD_ISO_SYSCTL			SYSCTL_PERIPH_I2C1
 
 //*****************************************************************************
 // MACROS for RS-485 communication

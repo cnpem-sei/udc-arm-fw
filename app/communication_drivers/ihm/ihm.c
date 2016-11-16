@@ -27,6 +27,8 @@
 
 #include "../i2c_onboard/rtc.h"
 
+#include "../i2c_offboard_isolated/temp_low_power_module.h"
+
 #include "../shared_memory/ctrl_law.h"
 #include "../shared_memory/main_var.h"
 
@@ -799,7 +801,7 @@ void ProcessCmd(){
 			   Mensagem.PDADO = 0x00;
 			   Mensagem.NDADO = 0x01;
 			   //Mensagem.DADO[0] = LeituraVarDin.TempDig;
-			   Mensagem.DADO[0] = 47;
+			   Mensagem.DADO[0] = PowerSupply1Temp();
 			   Mensagem.ACK = 0x00;
 
 			   SendDisplay(); // Envia mensagem para o Display
