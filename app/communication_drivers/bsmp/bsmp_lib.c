@@ -1278,6 +1278,7 @@ BSMPInit(void)
 			Init_BSMP_var(4,Rectifier.LeakageCurrent.u8);			// LeakageCurrent
 			Init_BSMP_var(11,DP_Framework_MtoC.NetSignals[9].u8);	// VoutRectf1
 			Init_BSMP_var(12,DP_Framework_MtoC.NetSignals[10].u8);	// VoutRectf2
+			Init_BSMP_var(13,Rectifier.TempHeatSink.u8);			// TempHeatSink
 			Init_BSMP_var(15,Rectifier.TempModule1.u8);				// TempRectf1
 			Init_BSMP_var(16,Rectifier.TempModule2.u8);			    // TempRectf2
 			Init_BSMP_var(17,Rectifier.TempL1.u8);					// TempL1
@@ -1295,11 +1296,10 @@ BSMPInit(void)
 			Init_BSMP_var(7,DP_Framework.NetSignals[13].u8);		// Vdclink (C28)
 			Init_BSMP_var(8,DP_Framework_MtoC.NetSignals[5].u8);	// Vdclink (IIB)
 			Init_BSMP_var(9,DP_Framework_MtoC.NetSignals[22].u8);	// Vdclink MAX (IIB)
-			Init_BSMP_var(10,DP_Framework_MtoC.NetSignals[23].u8);	// Vload MAX
-			Init_BSMP_var(11,Mod1Q1.TempHeatSink.u8);				// TempHeatSink
-			Init_BSMP_var(12,DP_Framework_MtoC.NetSignals[24].u8);	// TempHeatSink MAX
-			Init_BSMP_var(13,DP_Framework_MtoC.NetSignals[25].u8);	// TempL1 MAX
-			Init_BSMP_var(14,DP_Framework_MtoC.NetSignals[26].u8);	// TempL2 MAX
+			Init_BSMP_var(11,DP_Framework.DutySignals[0].u8);		// Duty Mod 0
+			Init_BSMP_var(12,DP_Framework.DutySignals[1].u8);		// Duty Mod 1
+			Init_BSMP_var(13,DP_Framework_MtoC.NetSignals[23].u8);	// Vload MAX
+			Init_BSMP_var(14,Mod1Q1.TempHeatSink.u8);				// TempHeatSink
 			Init_BSMP_var(15,Mod1Q1.TempIGBT1.u8);					// TempIGBT1
 			Init_BSMP_var(16,Mod1Q1.TempIGBT2.u8);					// TempIGBT2
 			Init_BSMP_var(17,Mod1Q1.TempL1.u8);						// TempL1
