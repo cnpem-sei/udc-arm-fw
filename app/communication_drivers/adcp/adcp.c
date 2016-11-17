@@ -154,6 +154,50 @@ void AdcChannelAppConfig(void)
 			AnalogCh6.Enable = 0;
 			AnalogCh7.Enable = 0;
 
+		case FBPx4_100kHz:
+
+			// PS4 VdcLink: 10V = 20V
+			AnalogCh0.Enable = 1;
+			AnalogCh0.Gain = 20.0/2048.0;
+			AnalogCh0.Value = &DP_Framework_MtoC.NetSignals[8].f;
+
+			// PS2 VdcLink: 10V = 20V
+			AnalogCh1.Enable = 1;
+			AnalogCh1.Gain = 20.0/2048.0;
+			AnalogCh1.Value = &DP_Framework_MtoC.NetSignals[6].f;
+
+			// PS1 VdcLink: 10V = 20V
+			AnalogCh2.Enable = 1;
+			AnalogCh2.Gain = 20.0/2048.0;
+			AnalogCh2.Value = &DP_Framework_MtoC.NetSignals[5].f;
+
+			// PS3 Vload: 10V = 20.2V
+			AnalogCh3.Enable = 1;
+			AnalogCh3.Gain = 20.2/2048.0;
+			AnalogCh3.Value = &DP_Framework_MtoC.NetSignals[11].f;
+
+			// PS3 VdcLink: 10V = 20V
+			AnalogCh4.Enable = 1;
+			AnalogCh4.Gain = 20.0/2048.0;
+			AnalogCh4.Value = &DP_Framework_MtoC.NetSignals[7].f;
+
+			// PS4 Vload: 10V = 20.2V
+			AnalogCh5.Enable = 1;
+			AnalogCh5.Gain = 20.2/2048.0;
+			AnalogCh5.Value = &DP_Framework_MtoC.NetSignals[12].f;
+
+			// PS1 Vload: 10V = 20.2V
+			AnalogCh6.Enable = 1;
+			AnalogCh6.Gain = 20.2/2048.0;
+			AnalogCh6.Value = &DP_Framework_MtoC.NetSignals[9].f;
+
+			// PS2 Vload: 10V = 20.2V
+			AnalogCh7.Enable = 1;
+			AnalogCh7.Gain = 20.2/2048.0;
+			AnalogCh7.Value = &DP_Framework_MtoC.NetSignals[10].f;
+
+			break;
+
 		default:
 
 			break;

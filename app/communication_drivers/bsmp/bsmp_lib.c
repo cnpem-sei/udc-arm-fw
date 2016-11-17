@@ -80,7 +80,7 @@ static bool buffer_read_block (struct bsmp_curve *curve, uint16_t block,
     	return false;
     else
     {
-	    offset = (IPC_CtoM_Translate((unsigned long)IPC_CtoM_Msg.SamplesBuffer.PtrBufferK) - IPC_CtoM_Translate((unsigned long)IPC_CtoM_Msg.SamplesBuffer.PtrBufferStart));
+	    offset = (IPC_CtoM_Translate((unsigned long)IPC_CtoM_Msg.SamplesBuffer.PtrBufferK.f) - IPC_CtoM_Translate((unsigned long)IPC_CtoM_Msg.SamplesBuffer.PtrBufferStart.f));
 
     	//memcpy(data, block_data, block_size);
 	    memcpy(data, block_data + offset, block_size - offset);
@@ -149,9 +149,9 @@ static bool curve_write_block (struct bsmp_curve *curve, uint16_t block,
     {
     	memcpy(block_data, data, len);
     	IPC_MtoC_Msg.WfmRef.BufferInfo.BufferBusy.u16 = block+2;
-    	IPC_MtoC_Msg.WfmRef.BufferInfo.PtrBufferStart = (float *) IPC_MtoC_Translate((unsigned long)block_data);
-    	IPC_MtoC_Msg.WfmRef.BufferInfo.PtrBufferEnd   = (float *) (IPC_MtoC_Translate((unsigned long)(block_data + len))-2);
-    	IPC_MtoC_Msg.WfmRef.BufferInfo.PtrBufferK     = IPC_MtoC_Msg.WfmRef.BufferInfo.PtrBufferStart;
+    	IPC_MtoC_Msg.WfmRef.BufferInfo.PtrBufferStart.f = (float *) IPC_MtoC_Translate((unsigned long)block_data);
+    	IPC_MtoC_Msg.WfmRef.BufferInfo.PtrBufferEnd.f   = (float *) (IPC_MtoC_Translate((unsigned long)(block_data + len))-2);
+    	IPC_MtoC_Msg.WfmRef.BufferInfo.PtrBufferK.f     = IPC_MtoC_Msg.WfmRef.BufferInfo.PtrBufferStart.f;
     	return true;
     }
 }
@@ -200,9 +200,9 @@ static bool fullcurve_write_block (struct bsmp_curve *curve, uint16_t block,
     {
     	memcpy(block_data, data, len);
     	IPC_MtoC_Msg.WfmRef.BufferInfo.BufferBusy.enu = Buffer_All;
-    	IPC_MtoC_Msg.WfmRef.BufferInfo.PtrBufferStart = (float *) IPC_MtoC_Translate((unsigned long)block_data);
-    	IPC_MtoC_Msg.WfmRef.BufferInfo.PtrBufferEnd   = (float *) (IPC_MtoC_Translate((unsigned long)(block_data + len))-2);
-    	IPC_MtoC_Msg.WfmRef.BufferInfo.PtrBufferK     = IPC_MtoC_Msg.WfmRef.BufferInfo.PtrBufferStart;
+    	IPC_MtoC_Msg.WfmRef.BufferInfo.PtrBufferStart.f = (float *) IPC_MtoC_Translate((unsigned long)block_data);
+    	IPC_MtoC_Msg.WfmRef.BufferInfo.PtrBufferEnd.f   = (float *) (IPC_MtoC_Translate((unsigned long)(block_data + len))-2);
+    	IPC_MtoC_Msg.WfmRef.BufferInfo.PtrBufferK.f     = IPC_MtoC_Msg.WfmRef.BufferInfo.PtrBufferStart.f;
     	return true;
     }
 }
@@ -823,6 +823,37 @@ static struct bsmp_func disablehradcsampling_func = {
 };
 
 //*****************************************************************************
+// 							Reset WfmRef BSMP Function
+//*****************************************************************************
+uint8_t ResetWfmRef (uint8_t *input, uint8_t *output)
+{
+	ulTimeout=0;
+	if(IPCMtoCBusy(RESET_WFMREF))
+	{
+		*output = 6;
+	}
+	else{
+		SendIpcFlag(RESET_WFMREF);
+	    while ((HWREG(MTOCIPC_BASE + IPC_O_MTOCIPCFLG) & RESET_WFMREF)&&(ulTimeout<TIMEOUT_VALUE)){
+	    	ulTimeout++;
+	    }
+	    if(ulTimeout==TIMEOUT_VALUE){
+	    	*output = 5;
+	    }
+	    else{
+	    	*output = 0;
+	    }
+	}
+	return *output;
+}
+
+static struct bsmp_func resetwfmref_func = {
+    .func_p 		  = ResetWfmRef,
+    .info.input_size  = 0,      // Nothing is read from the input parameter
+    .info.output_size = 1,      // command_ack
+};
+
+//*****************************************************************************
 // 							Dummy BSMP Functions
 //*****************************************************************************
 uint8_t DummyFunction (uint8_t *input, uint8_t *output)
@@ -1124,6 +1155,33 @@ static  struct bsmp_var ps_Model = {
 		.value_ok      = NULL,
 };
 
+static struct bsmp_var wfmRef_PtrBufferStart = {
+		.info.size 	   = sizeof(dummy_u32_memory),    // 4 bytes (uint32)
+		.info.writable = false,      			      // Read only
+		.data 		   = dummy_u32_memory,      	  // Data pointer will be initialized
+		.value_ok 	   = NULL,
+};
+
+static struct bsmp_var wfmRef_PtrBufferEnd = {
+		.info.size 	   = sizeof(dummy_u32_memory),    // 4 bytes (uint32)
+		.info.writable = false,      			      // Read only
+		.data 		   = dummy_u32_memory,      	  // Data pointer will be initialized
+		.value_ok 	   = NULL,
+};
+
+static struct bsmp_var wfmRef_PtrBufferK= {
+		.info.size 	   = sizeof(dummy_u32_memory),    // 4 bytes (uint32)
+		.info.writable = false,      			      // Read only
+		.data 		   = dummy_u32_memory,      	  // Data pointer will be initialized
+		.value_ok 	   = NULL,
+};
+
+static  struct bsmp_var wfmRef_SyncMode = {
+		.info.size     = sizeof(dummy_u16_memory),    // 2 bytes (uint16)
+		.info.writable = false,      			      // Read only
+		.data          = dummy_u16_memory,            // Data pointer will be initialized
+		.value_ok      = NULL,
+};
 
 //*****************************************************************************
 // 							BSMP Initialization
@@ -1158,51 +1216,56 @@ BSMPInit(void)
 	bsmp_register_function(&bsmp, &confighradcopmode_func);		// Function ID 16
 	bsmp_register_function(&bsmp, &enablehradcsampling_func);	// Function ID 17
 	bsmp_register_function(&bsmp, &disablehradcsampling_func);	// Function ID 18
+	bsmp_register_function(&bsmp, &resetwfmref_func);			// Function ID 19
 
 	//*****************************************************************************
 	// 						BSMP Variable Register
 	//*****************************************************************************
-	bsmp_register_variable(&bsmp, &iLoad1);   			 // Var ID 0
-	bsmp_register_variable(&bsmp, &iLoad2);   			 // Var ID 1
-	bsmp_register_variable(&bsmp, &iMod1);   			 // Var ID 2
-	bsmp_register_variable(&bsmp, &iMod2);  			 // Var ID 3
-	bsmp_register_variable(&bsmp, &iMod3);  			 // Var ID 4
-	bsmp_register_variable(&bsmp, &iMod4);   			 // Var ID 5
-	bsmp_register_variable(&bsmp, &vLoad);   			 // Var ID 6
-	bsmp_register_variable(&bsmp, &vDCMod1); 			 // Var ID 7
-	bsmp_register_variable(&bsmp, &vDCMod2); 			 // Var ID 8
-	bsmp_register_variable(&bsmp, &vDCMod3); 			 // Var ID 9
-	bsmp_register_variable(&bsmp, &vDCMod4); 			 // Var ID 10
-	bsmp_register_variable(&bsmp, &vOutMod1);			 // Var ID 11
-	bsmp_register_variable(&bsmp, &vOutMod2);			 // Var ID 12
-	bsmp_register_variable(&bsmp, &vOutMod3);			 // Var ID 13
-	bsmp_register_variable(&bsmp, &vOutMod4);			 // Var ID 14
-	bsmp_register_variable(&bsmp, &temp1);   			 // Var ID 15
-	bsmp_register_variable(&bsmp, &temp2);  			 // Var ID 16
-	bsmp_register_variable(&bsmp, &temp3);   			 // Var ID 17
-	bsmp_register_variable(&bsmp, &temp4);          	 // Var ID 18
-	bsmp_register_variable(&bsmp, &ps_onoff);            // Var ID 19
-	bsmp_register_variable(&bsmp, &ps_opmode);           // Var ID 20
-	bsmp_register_variable(&bsmp, &ps_remote);           // Var ID 21
-	bsmp_register_variable(&bsmp, &ps_OpenLoop);         // Var ID 22
-	bsmp_register_variable(&bsmp, &ps_SoftInterlocks);   // Var ID 23
-	bsmp_register_variable(&bsmp, &ps_HardInterlocks);   // Var ID 24
-	bsmp_register_variable(&bsmp, &iRef);   			 // Var ID 25
-	bsmp_register_variable(&bsmp, &wfmRef_Gain);   		 // Var ID 26
-	bsmp_register_variable(&bsmp, &wfmRef_Offset);   	 // Var ID 27
-	bsmp_register_variable(&bsmp, &sigGen_Enable);   	 // Var ID 28
-	bsmp_register_variable(&bsmp, &sigGen_Type);   		 // Var ID 29
-	bsmp_register_variable(&bsmp, &sigGen_Ncycles);   	 // Var ID 30
-	bsmp_register_variable(&bsmp, &sigGen_PhaseStart);   // Var ID 31
-	bsmp_register_variable(&bsmp, &sigGen_PhaseEnd);   	 // Var ID 32
-	bsmp_register_variable(&bsmp, &sigGen_Freq);   	     // Var ID 33
-	bsmp_register_variable(&bsmp, &sigGen_Amplitude);    // Var ID 34
-	bsmp_register_variable(&bsmp, &sigGen_Offset);   	 // Var ID 35
-	bsmp_register_variable(&bsmp, &sigGen_Aux);   	     // Var ID 36
-	bsmp_register_variable(&bsmp, &dp_ID);   			 // Var ID 37
-	bsmp_register_variable(&bsmp, &dp_Class);   		 // Var ID 38
-	bsmp_register_variable(&bsmp, &dp_Coeffs);   	     // Var ID 39
-	bsmp_register_variable(&bsmp, &ps_Model);   	     // Var ID 40
+	bsmp_register_variable(&bsmp, &iLoad1);   			 	// Var ID 0
+	bsmp_register_variable(&bsmp, &iLoad2);   				// Var ID 1
+	bsmp_register_variable(&bsmp, &iMod1);   				// Var ID 2
+	bsmp_register_variable(&bsmp, &iMod2);  				// Var ID 3
+	bsmp_register_variable(&bsmp, &iMod3);  				// Var ID 4
+	bsmp_register_variable(&bsmp, &iMod4);   			 	// Var ID 5
+	bsmp_register_variable(&bsmp, &vLoad);   			 	// Var ID 6
+	bsmp_register_variable(&bsmp, &vDCMod1); 				// Var ID 7
+	bsmp_register_variable(&bsmp, &vDCMod2); 			 	// Var ID 8
+	bsmp_register_variable(&bsmp, &vDCMod3); 				// Var ID 9
+	bsmp_register_variable(&bsmp, &vDCMod4); 				// Var ID 10
+	bsmp_register_variable(&bsmp, &vOutMod1);				// Var ID 11
+	bsmp_register_variable(&bsmp, &vOutMod2);				// Var ID 12
+	bsmp_register_variable(&bsmp, &vOutMod3);				// Var ID 13
+	bsmp_register_variable(&bsmp, &vOutMod4);				// Var ID 14
+	bsmp_register_variable(&bsmp, &temp1);   				// Var ID 15
+	bsmp_register_variable(&bsmp, &temp2);  				// Var ID 16
+	bsmp_register_variable(&bsmp, &temp3);   				// Var ID 17
+	bsmp_register_variable(&bsmp, &temp4);          	 	// Var ID 18
+	bsmp_register_variable(&bsmp, &ps_onoff);            	// Var ID 19
+	bsmp_register_variable(&bsmp, &ps_opmode);          	// Var ID 20
+	bsmp_register_variable(&bsmp, &ps_remote);           	// Var ID 21
+	bsmp_register_variable(&bsmp, &ps_OpenLoop);        	// Var ID 22
+	bsmp_register_variable(&bsmp, &ps_SoftInterlocks);  	// Var ID 23
+	bsmp_register_variable(&bsmp, &ps_HardInterlocks);  	// Var ID 24
+	bsmp_register_variable(&bsmp, &iRef);   			 	// Var ID 25
+	bsmp_register_variable(&bsmp, &wfmRef_Gain);   		 	// Var ID 26
+	bsmp_register_variable(&bsmp, &wfmRef_Offset);   		// Var ID 27
+	bsmp_register_variable(&bsmp, &sigGen_Enable);   	 	// Var ID 28
+	bsmp_register_variable(&bsmp, &sigGen_Type);   			// Var ID 29
+	bsmp_register_variable(&bsmp, &sigGen_Ncycles);   	 	// Var ID 30
+	bsmp_register_variable(&bsmp, &sigGen_PhaseStart);   	// Var ID 31
+	bsmp_register_variable(&bsmp, &sigGen_PhaseEnd);   	 	// Var ID 32
+	bsmp_register_variable(&bsmp, &sigGen_Freq);   	     	// Var ID 33
+	bsmp_register_variable(&bsmp, &sigGen_Amplitude);    	// Var ID 34
+	bsmp_register_variable(&bsmp, &sigGen_Offset);   	 	// Var ID 35
+	bsmp_register_variable(&bsmp, &sigGen_Aux);   	     	// Var ID 36
+	bsmp_register_variable(&bsmp, &dp_ID);   				// Var ID 37
+	bsmp_register_variable(&bsmp, &dp_Class);   		 	// Var ID 38
+	bsmp_register_variable(&bsmp, &dp_Coeffs);   	     	// Var ID 39
+	bsmp_register_variable(&bsmp, &ps_Model);   	     	// Var ID 40
+	bsmp_register_variable(&bsmp, &wfmRef_PtrBufferStart);	// Var ID 41
+	bsmp_register_variable(&bsmp, &wfmRef_PtrBufferEnd);   	// Var ID 42
+	bsmp_register_variable(&bsmp, &wfmRef_PtrBufferK);   	// Var ID 43
+	bsmp_register_variable(&bsmp, &wfmRef_SyncMode);   	    // Var ID 44
 
 	//*****************************************************************************
 	// 						BSMP Curve Register
@@ -1240,6 +1303,10 @@ BSMPInit(void)
 	Init_BSMP_var(38,IPC_MtoC_Msg.DPModule.DPclass.u8);
 	Init_BSMP_var(39,IPC_MtoC_Msg.DPModule.Coeffs[0].u8);
 	Init_BSMP_var(40,IPC_MtoC_Msg.PSModule.Model.u8);
+	Init_BSMP_var(41,IPC_CtoM_Msg.WfmRef.BufferInfo.PtrBufferStart.u8);
+	Init_BSMP_var(42,IPC_CtoM_Msg.WfmRef.BufferInfo.PtrBufferEnd.u8);
+	Init_BSMP_var(43,IPC_CtoM_Msg.WfmRef.BufferInfo.PtrBufferK.u8);
+	Init_BSMP_var(44,IPC_CtoM_Msg.WfmRef.SyncMode.u8);
 
 	// Initialize BSMP variable pointers based on PS model
 	switch(IPC_MtoC_Msg.PSModule.Model.enu)
@@ -1310,6 +1377,22 @@ BSMPInit(void)
 			Init_BSMP_var(2,DP_Framework_MtoC.NetSignals[0].u8);	// Imod1
 			Init_BSMP_var(3,DP_Framework_MtoC.NetSignals[1].u8);	// Imod2
 			break;
+
+		case FBPx4_100kHz:
+			Init_BSMP_var(7,DP_Framework_MtoC.NetSignals[5].u8);	// PS1 Vdclink
+			Init_BSMP_var(8,DP_Framework_MtoC.NetSignals[6].u8);	// PS2 Vdclink
+			Init_BSMP_var(9,DP_Framework_MtoC.NetSignals[7].u8);	// PS3 Vdclink
+			Init_BSMP_var(10,DP_Framework_MtoC.NetSignals[8].u8);	// PS4 Vdclink
+			Init_BSMP_var(11,DP_Framework_MtoC.NetSignals[9].u8);	// PS1 Vload
+			Init_BSMP_var(12,DP_Framework_MtoC.NetSignals[10].u8);	// PS2 Vload
+			Init_BSMP_var(13,DP_Framework_MtoC.NetSignals[11].u8);	// PS3 Vload
+			Init_BSMP_var(14,DP_Framework_MtoC.NetSignals[12].u8);	// PS4 Vload
+			Init_BSMP_var(15,DP_Framework_MtoC.NetSignals[13].u8);	// PS1 Temperature
+			Init_BSMP_var(16,DP_Framework_MtoC.NetSignals[14].u8);	// PS2 Temperature
+			Init_BSMP_var(17,DP_Framework_MtoC.NetSignals[15].u8);	// PS3 Temperature
+			Init_BSMP_var(18,DP_Framework_MtoC.NetSignals[16].u8);	// PS4 Temperature
+			break;
+
 
 		default:
 			break;
