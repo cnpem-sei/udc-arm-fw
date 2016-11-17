@@ -12,6 +12,9 @@
 #include "../i2c_onboard/eeprom.h"
 #include "../i2c_onboard/exio.h"
 
+#include "../i2c_offboard_isolated/i2c_offboard_isolated.h"
+#include "../i2c_offboard_isolated/temp_low_power_module.h"
+
 #include "../adcp/adcp.h"
 
 #include "../timer/timer.h"
@@ -110,6 +113,10 @@ void
 SystemInit(void)
 {
 	InitI2COnboard();
+
+	InitI2COffboardIsolated();
+
+	PowerSupplyTempInit();
 
 	ExIOInit();
 

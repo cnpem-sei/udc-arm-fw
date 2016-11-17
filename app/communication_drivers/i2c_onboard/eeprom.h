@@ -31,4 +31,7 @@ extern void EepromWriteKi(float KI);
 extern float EepromReadKd(void);
 extern void EepromWriteKd(float KD);
 
+extern uint8_t EepromReadPSModel(void);
+extern void EepromWritePSModel(uint8_t ps_model);
+
 #endif /* EEPROM_H_ */

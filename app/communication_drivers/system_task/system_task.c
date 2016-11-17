@@ -9,6 +9,8 @@
 
 #include "../i2c_onboard/rtc.h"
 
+#include "../i2c_offboard_isolated/temp_low_power_module.h"
+
 #include "../signals_onboard/signals_onboard.h"
 
 #include "../rs485_bkp/rs485_bkp.h"
@@ -31,6 +33,7 @@ volatile bool PROCESS_DISP_MESS = 0;
 volatile bool PROCESS_ETH_MESS = 0;
 volatile bool PROCESS_CAN_MESS = 0;
 volatile bool PROCESS_RS485_MESS = 0;
+volatile bool PROCESS_POWER_TEMP_SAMPLE = 0;
 
 void
 TaskSetNew(uint8_t TaskNum)
@@ -63,6 +66,10 @@ TaskSetNew(uint8_t TaskNum)
 
 	case PROCESS_RS485_MESSAGE:
 		PROCESS_RS485_MESS = 1;
+		break;
+
+	case POWER_TEMP_SAMPLE:
+		PROCESS_POWER_TEMP_SAMPLE = 1;
 		break;
 
 	default:
@@ -117,6 +124,12 @@ TaskCheck(void)
 	{
 		ITLK_ALARM_RESET = 0;
 		InterlockAlarmReset();
+	}
+
+	else if(PROCESS_POWER_TEMP_SAMPLE)
+	{
+		PROCESS_POWER_TEMP_SAMPLE = 0;
+		PowerSupply1TempRead();
 	}
 
 }
