@@ -55,20 +55,26 @@ IPCInit(void)
 	IPC_MtoC_Msg.PSModule.ISlowRef.f = 0.0;
 	IPC_MtoC_Msg.PSModule.ErrorCtoM = NO_ERROR_CTOM;
 
-	IPC_MtoC_Msg.WfmRef.BufferInfo.PtrBufferStart = (float *) 0x00012000;
-	IPC_MtoC_Msg.WfmRef.BufferInfo.PtrBufferEnd = (float *) 0x00012FFE;
-	IPC_MtoC_Msg.WfmRef.BufferInfo.PtrBufferK = (float *) 0x00012000;
+	IPC_MtoC_Msg.WfmRef.BufferInfo.PtrBufferStart.f = (float *) 0x00012000;
+	IPC_MtoC_Msg.WfmRef.BufferInfo.PtrBufferEnd.f = (float *) 0x00012FFE;
+	IPC_MtoC_Msg.WfmRef.BufferInfo.PtrBufferK.f = (float *) 0x00012000;
 	IPC_MtoC_Msg.WfmRef.BufferInfo.BufferBusy.u16 = 0;
 	IPC_MtoC_Msg.WfmRef.Gain.f = 1.0;
 	IPC_MtoC_Msg.WfmRef.Offset.f = 0.0;
 
-	if(IPC_MtoC_Msg.PSModule.Model.enu == FAP_DCDC_20kHz)
+	switch(IPC_MtoC_Msg.PSModule.Model.enu)
 	{
-		IPC_MtoC_Msg.WfmRef.SyncMode = SampleBySample;
-	}
-	else
-	{
-		IPC_MtoC_Msg.WfmRef.SyncMode = OneShot;
+		case FAP_DCDC_20kHz:
+		case FBP_100kHz:
+		{
+			IPC_MtoC_Msg.WfmRef.SyncMode.enu = SampleBySample;
+			break;
+		}
+		default:
+		{
+			IPC_MtoC_Msg.WfmRef.SyncMode.enu = OneShot;
+			break;
+		}
 	}
 
 	IPC_MtoC_Msg.HRADCConfig.ID.u16 = 0;

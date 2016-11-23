@@ -15,6 +15,9 @@
 #include "stdint.h"
 #include "../shared_memory/structs.h"
 
+#ifndef IPC_LIB_H_
+#define IPC_LIB_H_
+
 #define DP_MODULE_MAX_COEFF   16
 
 #define N_SWEEP_FREQS			37
@@ -35,6 +38,7 @@
 #define DPMODULES_CONFIG		0x00000401 //IPC1+IPC11
 #define SAMPLES_BUFFER_ONOFF	0x00000801 //IPC1+IPC12
 #define RESET_INTERLOCKS		0x00001001 //IPC1+IPC13
+#define RESET_WFMREF			0x00002001 //IPC1+IPC14
 //...//
 #define HRADC_SAMPLING_DISABLE	0x08000001 //IPC1+IPC28
 #define HRADC_SAMPLING_ENABLE	0x10000001 //IPC1+IPC29
@@ -119,7 +123,8 @@ typedef enum
 	TEST_HRPWM,
 	TEST_HRADC,
 	JIGA_HRADC,
-	FAP_DCDC_15kHz_225A
+	FAP_DCDC_15kHz_225A,
+	FBPx4_100kHz
 }ePSModel;
 
 typedef enum
@@ -179,13 +184,28 @@ typedef enum {
 
 typedef struct
 {
-	float	   *PtrBufferStart;
-	float	   *PtrBufferEnd;
-	float	   *PtrBufferK;
 	union
 	{
-	eBlockBusy enu;
-	uint16_t u16;
+		uint8_t  u8[4];
+		float 	*f;
+	} PtrBufferStart;
+
+	union
+	{
+		uint8_t  u8[4];
+		float 	*f;
+	} PtrBufferEnd;
+
+	union
+	{
+		uint8_t  u8[4];
+		float 	*f;
+	} PtrBufferK;
+
+	union
+	{
+		eBlockBusy enu;
+		uint16_t u16;
 	}BufferBusy;
 } tBuffer;
 
@@ -255,7 +275,12 @@ typedef struct
 	 uint32_t u32;
 	 float    f;
 	}Offset;
-	eSyncMode SyncMode;
+	union
+	{
+	 uint8_t  u8[2];
+	 uint16_t u16;
+	 eSigGenType enu;
+	}SyncMode;
 }tWfmRef;
 
 typedef struct
@@ -495,3 +520,4 @@ extern tIPC_MTOC_MSG_RAM IPC_MtoC_Msg;
 //extern tIPC_MTOC_PARAM_RAM	IPC_MtoC_Param;
 //extern tIPC_MTOC_PS_FUNCS	IPC_MtoC_PS_funcs;
 
+#endif /* IPC_LIB_H_ */
