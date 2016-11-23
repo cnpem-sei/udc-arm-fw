@@ -2306,6 +2306,49 @@ InterlockStatusClear(void)
 	Mod1Q1.VinItlkSts = 0;
 	Mod1Q1.VoutItlkSts = 0;
 
+	Mod2Q1.Driver1ErrorItlk = 0;
+	Mod2Q1.Driver2ErrorItlk = 0;
+	Mod2Q1.ExtItlkSts = 0;
+	Mod2Q1.IinItlkSts = 0;
+	Mod2Q1.IoutA1ItlkSts = 0;
+	Mod2Q1.IoutA2ItlkSts = 0;
+	Mod2Q1.RelativeHumidityItlk = 0;
+	Mod2Q1.TempHeatSinkItlkSts = 0;
+	Mod2Q1.TempIGBT1ItlkSts = 0;
+	Mod2Q1.TempIGBT2ItlkSts = 0;
+	Mod2Q1.TempL1ItlkSts = 0;
+	Mod2Q1.TempL2ItlkSts = 0;
+	Mod2Q1.VinItlkSts = 0;
+	Mod2Q1.VoutItlkSts = 0;
+
+	Mod1Q4.IoutAlarmSts = 0;
+	Mod1Q4.IoutItlkSts = 0;
+	Mod1Q4.RelativeHumidityAlarm = 0;
+	Mod1Q4.RelativeHumidityItlk = 0;
+	Mod1Q4.TempIGBT1AlarmSts = 0;
+	Mod1Q4.TempIGBT1ItlkSts = 0;
+	Mod1Q4.TempIGBT2AlarmSts = 0;
+	Mod1Q4.TempIGBT2ItlkSts = 0;
+
+	Mod2Q4.IoutAlarmSts = 0;
+	Mod2Q4.IoutItlkSts = 0;
+	Mod2Q4.RelativeHumidityAlarm = 0;
+	Mod2Q4.RelativeHumidityItlk = 0;
+	Mod2Q4.TempIGBT1AlarmSts = 0;
+	Mod2Q4.TempIGBT1ItlkSts = 0;
+	Mod2Q4.TempIGBT2AlarmSts = 0;
+	Mod2Q4.TempIGBT2ItlkSts = 0;
+
+	Buck.AcOverCurrentItlk = 0;
+	Buck.Iin1AlarmSts = 0;
+	Buck.Iin1ItlkSts = 0;
+	Buck.Iin2AlarmSts = 0;
+	Buck.Iin2ItlkSts = 0;
+	Buck.Iout1AlarmSts = 0;
+	Buck.Iout1ItlkSts = 0;
+	Buck.Iout2AlarmSts = 0;
+	Buck.Iout2ItlkSts = 0;
+
 	Rectifier.AcOverCurrentItlk = 0;
 	Rectifier.AcPhaseFaultItlk = 0;
 	Rectifier.AcTransformerOverTempItlk = 0;
@@ -2322,6 +2365,5 @@ InterlockStatusClear(void)
 	Rectifier.VoutRectf1Itlk = 0;
 	Rectifier.VoutRectf2Itlk = 0;
 	Rectifier.WaterFluxInterlockItlk = 0;
-
 
 }
