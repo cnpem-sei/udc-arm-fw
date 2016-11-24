@@ -1328,14 +1328,30 @@ BSMPInit(void)
 
 			Init_BSMP_var(2,DP_Framework.NetSignals[4].u8);			// Iin1
 			Init_BSMP_var(3,DP_Framework.NetSignals[5].u8);			// Iin2
+			Init_BSMP_var(4,Buck.Iout1.u8);							// Iout1
+			Init_BSMP_var(5,Buck.Iout2.u8);							// Iout2
+			Init_BSMP_var(7,Buck.Vin1.u8);							// Vin1
+			Init_BSMP_var(8,Buck.Vin2.u8);							// Vin2
 			Init_BSMP_var(11,DP_Framework.NetSignals[6].u8);		// Vout1
 			Init_BSMP_var(12,DP_Framework.NetSignals[7].u8);		// Vout2
+			Init_BSMP_var(15,Buck.TempL1.u8);						// Temp L1
+			Init_BSMP_var(16,Buck.TempL2.u8);						// Temp L2
 			break;
 
 		case FAC_Full_DCDC_20kHz:
 
+			Init_BSMP_var(1,DP_Framework.NetSignals[11].u8);		// dDuty
 			Init_BSMP_var(2,DP_Framework_MtoC.NetSignals[0].u8);	// Iout1
 			Init_BSMP_var(3,DP_Framework_MtoC.NetSignals[1].u8);	// Iout2
+			Init_BSMP_var(3,DP_Framework_MtoC.NetSignals[1].u8);	// Iout2
+			Init_BSMP_var(11,DP_Framework.DutySignals[0].u8);		// Duty Mod 1
+			Init_BSMP_var(12,DP_Framework.DutySignals[1].u8);		// Duty Mod 2
+			Init_BSMP_var(13,Mod1Q4.RH);							// Relative humidity Mod1
+			Init_BSMP_var(14,Mod2Q4.RH);							// Relative humidity Mod2
+			Init_BSMP_var(15,Mod1Q4.TempIGBT1.u8);					// Temp IGBTs 1+4 Mod1
+			Init_BSMP_var(16,Mod1Q4.TempIGBT2.u8);			    	// Temp IGBTs 2+3 Mod1
+			Init_BSMP_var(17,Mod2Q4.TempIGBT1.u8);					// Temp IGBTs 1+4 Mod2
+			Init_BSMP_var(18,Mod2Q4.TempIGBT2.u8);			    	// Temp IGBTs 2+3 Mod2
 			break;
 
 		case FAP_ACDC:
@@ -1363,8 +1379,8 @@ BSMPInit(void)
 			Init_BSMP_var(7,DP_Framework.NetSignals[13].u8);		// Vdclink (C28)
 			Init_BSMP_var(8,DP_Framework_MtoC.NetSignals[5].u8);	// Vdclink (IIB)
 			Init_BSMP_var(9,DP_Framework_MtoC.NetSignals[22].u8);	// Vdclink MAX (IIB)
-			Init_BSMP_var(11,DP_Framework.DutySignals[0].u8);		// Duty Mod 0
-			Init_BSMP_var(12,DP_Framework.DutySignals[1].u8);		// Duty Mod 1
+			Init_BSMP_var(11,DP_Framework.DutySignals[0].u8);		// Duty Mod1
+			Init_BSMP_var(12,DP_Framework.DutySignals[1].u8);		// Duty Mod2
 			Init_BSMP_var(13,DP_Framework_MtoC.NetSignals[23].u8);	// Vload MAX
 			Init_BSMP_var(14,Mod1Q1.TempHeatSink.u8);				// TempHeatSink
 			Init_BSMP_var(15,Mod1Q1.TempIGBT1.u8);					// TempIGBT1
@@ -1379,6 +1395,10 @@ BSMPInit(void)
 			break;
 
 		case FBPx4_100kHz:
+			Init_BSMP_var(2,DP_Framework.NetSignals[5].u8);			// PS1 iLoad
+			Init_BSMP_var(3,DP_Framework.NetSignals[7].u8);			// PS2 iLoad
+			Init_BSMP_var(4,DP_Framework.NetSignals[9].u8);			// PS3 iLoad
+			Init_BSMP_var(5,DP_Framework.NetSignals[11].u8);		// PS4 iLoad
 			Init_BSMP_var(7,DP_Framework_MtoC.NetSignals[5].u8);	// PS1 Vdclink
 			Init_BSMP_var(8,DP_Framework_MtoC.NetSignals[6].u8);	// PS2 Vdclink
 			Init_BSMP_var(9,DP_Framework_MtoC.NetSignals[7].u8);	// PS3 Vdclink

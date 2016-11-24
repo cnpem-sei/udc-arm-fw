@@ -96,16 +96,16 @@ void AdcChannelAppConfig(void)
 		case FAC_Full_DCDC_20kHz:
 
 			// Iout module 1: 10V = 1000A
-			AnalogCh0.Enable = 1;
-			AnalogCh0.Gain = 1000.0/2048.0;
-			AnalogCh0.Value = &DP_Framework_MtoC.NetSignals[0].f;
-
-			// Iout module 2: 10V = 1000A
 			AnalogCh1.Enable = 1;
 			AnalogCh1.Gain = 1000.0/2048.0;
-			AnalogCh1.Value = &DP_Framework_MtoC.NetSignals[1].f;
+			AnalogCh1.Value = &DP_Framework_MtoC.NetSignals[0].f;
 
-			AnalogCh2.Enable = 0;
+			// Iout module 2: 10V = 1000A
+			AnalogCh2.Enable = 1;
+			AnalogCh2.Gain = 1000.0/2048.0;
+			AnalogCh2.Value = &DP_Framework_MtoC.NetSignals[1].f;
+
+			AnalogCh0.Enable = 0;
 			AnalogCh3.Enable = 0;
 			AnalogCh4.Enable = 0;
 			AnalogCh5.Enable = 0;

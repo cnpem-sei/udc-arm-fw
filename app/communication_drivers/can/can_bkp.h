@@ -299,6 +299,9 @@ typedef struct
 
 extern Q1Module_t Mod1Q1;
 extern Q1Module_t Mod2Q1;
+extern Q4Module_t Mod1Q4;
+extern Q4Module_t Mod2Q4;
+extern BuckMudule_t Buck;
 extern RectModule_t Rectifier;
 
 extern void InitCanBkp(void);
