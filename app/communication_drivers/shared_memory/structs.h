@@ -239,7 +239,8 @@ typedef enum
 	Square,
 	Triangle,
 	FreqSweep,
-	DampedSine
+	DampedSine,
+	Trapezoidal
 } eSigGenType;
 
 /*typedef struct {

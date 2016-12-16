@@ -65,6 +65,21 @@ IPCInit(void)
 	switch(IPC_MtoC_Msg.PSModule.Model.enu)
 	{
 		case FAP_DCDC_20kHz:
+		{
+			IPC_MtoC_Msg.SigGen.Enable.u16 = 0;
+			IPC_MtoC_Msg.SigGen.Amplitude[0].f = 180.0;
+			IPC_MtoC_Msg.SigGen.Aux.f = 2.0;
+			IPC_MtoC_Msg.SigGen.Freq.f = 0.0;
+			IPC_MtoC_Msg.SigGen.Ncycles.u16 = 1;
+			IPC_MtoC_Msg.SigGen.Offset.f = 0.0;
+			IPC_MtoC_Msg.SigGen.PhaseEnd.f = 30.0;
+			IPC_MtoC_Msg.SigGen.PhaseStart.f = 30.0;
+			IPC_MtoC_Msg.SigGen.Type.enu = Trapezoidal;
+
+
+			IPC_MtoC_Msg.WfmRef.SyncMode.enu = SampleBySample;
+			break;
+		}
 		case FBP_100kHz:
 		{
 			IPC_MtoC_Msg.WfmRef.SyncMode.enu = SampleBySample;
