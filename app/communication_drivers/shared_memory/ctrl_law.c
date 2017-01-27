@@ -15,7 +15,8 @@
 
 #include <stdint.h>
 
-
+float kptest = 0.0;
+float kitest = 0.0;
 
 
 void
@@ -30,13 +31,13 @@ CtrllawInit(void)
 
 	IPC_MtoC_Msg.DPModule.ID.u16 = 0;
 	IPC_MtoC_Msg.DPModule.DPclass.enu = ELP_PI_dawu;
-	IPC_MtoC_Msg.DPModule.Coeffs[0].f = EepromReadKp();
-	IPC_MtoC_Msg.DPModule.Coeffs[1].f = EepromReadKi();
+	IPC_MtoC_Msg.DPModule.Coeffs[0].f = EepromReadKp1();
+	IPC_MtoC_Msg.DPModule.Coeffs[1].f = EepromReadKi1();
 	IPC_MtoC_Msg.DPModule.Coeffs[2].f = DP_Framework.DPlibrary.ELP_PI_dawu[0].FreqSample;
 	IPC_MtoC_Msg.DPModule.Coeffs[3].f = DP_Framework.DPlibrary.ELP_PI_dawu[0].Umax;
 	IPC_MtoC_Msg.DPModule.Coeffs[4].f = DP_Framework.DPlibrary.ELP_PI_dawu[0].Umin;
 
-	//SendIpcFlag(DPMODULES_CONFIG);
+	SendIpcFlag(DPMODULES_CONFIG);
 
 	/*
 	shm_m2c_param_ctrl.u_max = 0.9;
@@ -70,7 +71,7 @@ KpWrite(float kpvar)
 
 		SendIpcFlag(DPMODULES_CONFIG);
 
-		EepromWriteKp(kpvar);
+		SaveKp1Gain(kpvar);
 	}
 }
 
@@ -102,7 +103,7 @@ KiWrite(float	kivar)
 
 		SendIpcFlag(DPMODULES_CONFIG);
 
-		EepromWriteKi(kivar);
+		SaveKi1Gain(kivar);
 	}
 }
 

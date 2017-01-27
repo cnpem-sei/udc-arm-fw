@@ -27,7 +27,8 @@
 
 #include "adcp.h"
 
-#include "set_pinout_udc_v2.0.h"
+//#include "set_pinout_udc_v2.0.h"
+#include "../board_drivers/hardware_def.h"
 
 #include "../ipc/ipc_lib.h"
 #include "../shared_memory/structs.h"

@@ -29,8 +29,10 @@
 #include "driverlib/ipc.h"
 #include "driverlib/usb.h"
 
-#include "set_pinout_udc_v2.0.h"
+//#include "set_pinout_udc_v2.0.h"
 //#include "set_pinout_ctrl_card.h"
+
+#include "hardware_def.h"
 
 #include "app/communication_drivers/signals_onboard/signals_onboard.h"
 #include "app/communication_drivers/rs485/rs485.h"
@@ -116,20 +118,30 @@ int main(void) {
     FlashInit();
 
     // Configure the board peripherals
-    PinoutSet();
+    //HardwareInit();
+	#if HARDWARE_VERSION == 0x20
+    	PinoutSet20();
+
+	#elif HARDWARE_VERSION == 0x21
+    	PinoutSet21();
+	#endif
+
+
 
     // assign S0 and S1 of the shared ram for use by the c28
 	// Details of how c28 uses these memory sections is defined
 	// in the c28 linker file.
 	RAMMReqSharedMemAccess((S1_ACCESS | S2_ACCESS | S4_ACCESS | S5_ACCESS),C28_MASTER);
 
-	SystemInit();
+	SystemConfig();
 
-    //  Send boot command to allow the C28 application to begin execution
+	//  Send boot command to allow the C28 application to begin execution
     IPCMtoCBootControlSystem(CBROM_MTOC_BOOTMODE_BOOT_FROM_FLASH);
 
 	// Delay
-	for (ulLoop=0;ulLoop<2000000;ulLoop++){};
+	for (ulLoop=0;ulLoop<500000;ulLoop++){};
+
+	SystemInit();
 
 	/*Init_BSMP_var(0,DP_Framework.NetSignals[1].u8);
 	Init_BSMP_var(6,DP_Framework_MtoC.NetSignals[4].u8);

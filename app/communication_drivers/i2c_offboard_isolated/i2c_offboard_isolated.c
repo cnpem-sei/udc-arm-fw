@@ -25,8 +25,8 @@
 
 #include <stdint.h>
 
-#include "set_pinout_udc_v2.0.h"
 //#include "set_pinout_udc_v2.0.h"
+#include "../board_drivers/hardware_def.h"
 
 #define I2C_READ true
 #define I2C_WRITE false

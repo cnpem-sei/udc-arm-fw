@@ -20,8 +20,9 @@
 #include "driverlib/systick.h"
 #include "driverlib/debug.h"
 
-#include "set_pinout_udc_v2.0.h"
+//#include "set_pinout_udc_v2.0.h"
 //#include "set_pinout_ctrl_card.h"
+#include "../board_drivers/hardware_def.h"
 
 #include "rs485.h"
 
@@ -228,7 +229,7 @@ SetRS485Address(uint8_t addr)
 	if(addr < 33 && addr > 0 && addr != SERIAL_ADDRESS)
 	{
 		SERIAL_ADDRESS = addr;
-		EepromWriteRs485Add(SERIAL_ADDRESS);
+		SaveRs485Add(SERIAL_ADDRESS);
 	}
 }
 
@@ -263,7 +264,7 @@ InitRS485(void)
 
 	UARTFIFOEnable(RS485_UART_BASE);
 
-	//Habilita interrupção pela UART0 (RS-485)
+	//Habilita interrupção pela UART1 (RS-485)
 	IntRegister(RS485_INT, RS485IntHandler);
 	UARTIntEnable(RS485_UART_BASE, UART_INT_RX | UART_INT_TX | UART_INT_RT);
 	UARTTxIntModeSet(RS485_UART_BASE, UART_TXINT_MODE_EOT);

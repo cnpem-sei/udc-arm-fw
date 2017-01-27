@@ -22,7 +22,8 @@
 
 #include <stdint.h>
 
-#include "set_pinout_udc_v2.0.h"
+//#include "set_pinout_udc_v2.0.h"
+#include "../board_drivers/hardware_def.h"
 
 
 dataflash_t DataFlash;

@@ -9,5 +9,6 @@
 #define SYSTEM_H_
 
 extern void SystemInit(void);
+extern void SystemConfig(void);
 
 #endif /* SYSTEM_H_ */

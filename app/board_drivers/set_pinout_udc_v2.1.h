@@ -1,9 +1,9 @@
 //###########################################################################
-// FILE:   set_pinout_f28m35x.h
-// TITLE:  GPIO setup for the F28M35x controlCARD.
+// FILE:   set_pinout_udc_v2.1.h
+// TITLE:  GPIO setup for the UDC V2.1 board.
 //###########################################################################
-// $TI Release: F28M36x Support Library v202 $
-// $Release Date: Tue Apr  8 12:36:34 CDT 2014 $
+//
+//
 //###########################################################################
 
 #ifndef __SET_PINOUT_H__
@@ -43,8 +43,6 @@
 //*****************************************************************************
 #define ON					~0
 #define OFF					0
-#define LED_OP_BASE         GPIO_PORTP_BASE
-#define LED_OP_PIN          GPIO_PIN_5
 
 //*****************************************************************************
 // GPIO for the Debug Pin CON9 GPIO0
@@ -111,8 +109,20 @@
 #define RS485_BKP_RD_BASE	GPIO_PORTP_BASE
 #define RS485_BKP_RD_PIN	GPIO_PIN_3
 
-#define RS485_BKP_UART_BASE		UART4_BASE
-#define RS485_BKP_INT			INT_UART4
+#define RS485_BKP_UART_BASE	UART4_BASE
+#define RS485_BKP_INT		INT_UART4
+
+//*****************************************************************************
+// MACROS for UART FT230 communication (USB to Uart)
+//*****************************************************************************
+#define FT230_BASE			GPIO_PORTQ_BASE
+#define	FT230_PINS			(GPIO_PIN_2 | GPIO_PIN_3)
+#define FT230_RX			GPIO_PQ2_U0RX
+#define	FT230_TX			GPIO_PQ3_U0TX
+#define FT230_SYSCTL    	SYSCTL_PERIPH_UART0
+
+#define FT230_UART_BASE		UART0_BASE
+#define FT230_INT			INT_UART0
 
 //*****************************************************************************
 // MACROS for WP EEPROM
@@ -139,15 +149,6 @@
 #define CAN_PINS			(GPIO_PIN_6 | GPIO_PIN_7)
 #define CAN_RX				GPIO_PE6_CAN0RX
 #define	CAN_TX				GPIO_PE7_CAN0TX
-
-//*****************************************************************************
-// MACROS for USB communication
-//*****************************************************************************
-#define USB_5V_BASE			GPIO_PORTF_BASE
-#define USB_5V_PIN			GPIO_PIN_6
-
-#define USB_PN_BASE			GPIO_PORTG_BASE
-#define USB_PN_PINS			(GPIO_PIN_2 | GPIO_PIN_5)
 
 //*****************************************************************************
 // MACROS for ADCP communication
@@ -187,7 +188,7 @@
 // Public function prototypes.
 //
 //*****************************************************************************
-extern void PinoutSet20(void);
+extern void PinoutSet21(void);
 
 
 #endif // __SET_PINOUT_H__

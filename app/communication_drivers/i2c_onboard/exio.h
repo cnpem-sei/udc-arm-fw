@@ -25,4 +25,13 @@ extern void HradcRstCtrl(uint8_t sts);
 extern void PwmFiberCtrl(uint8_t sts);
 extern void PwmEletrCtrl(uint8_t sts);
 
+extern uint8_t HardwareVersionTest(void);
+
+// Available only on 2.1 hardware release
+extern uint8_t DisplayAttSts(void);
+extern void BuffersCtrl(uint8_t sts);
+extern void LedItlkCtrl(uint8_t sts);
+extern void LedStsCtrl(uint8_t sts);
+extern void SoundSelCtrl(uint8_t sts);
+
 #endif /* EXIO_H_ */

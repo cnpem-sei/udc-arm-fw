@@ -1,7 +1,7 @@
 /*
- * 		File: set_pinout_udc_v2.0.c
- * 		Project: UDC V2.0
- * 		Date:04/14/2015
+ * 		File: set_pinout_udc_v2.1.c
+ * 		Project: UDC V2.1
+ * 		Date:11/17/2015
  *
  * 		Developer: João Nilton
  * 		Contact:
@@ -33,14 +33,7 @@
 #include "driverlib/udma.h"
 
 
-#include "set_pinout_udc_v2.0.h"
-
-
-
-#include <stdint.h>
-
-
-
+#include "set_pinout_udc_v2.1.h"
 
 //*****************************************************************************
 //
@@ -50,7 +43,7 @@
 //*****************************************************************************
 
 void
-EnablePeripherals(void)
+EnablePeripherals21(void)
 {
 
 	// Disable clock supply for the watchdog modules
@@ -62,22 +55,15 @@ EnablePeripherals(void)
 	SysCtlPeripheralEnable(RS485_SYSCTL);
 	SysCtlPeripheralEnable(DISPLAY_SYSCTL);
 	SysCtlPeripheralEnable(RS485_BKP_SYSCTL);
+	SysCtlPeripheralEnable(FT230_SYSCTL);
 
-	// Setup USB clock tree for 60MHz
-	// 20MHz * 12 / 4 = 60
-	SysCtlUSBPLLConfigSet(
-		(SYSCTL_UPLLIMULT_M & 12) | SYSCTL_UPLLCLKSRC_X1 | SYSCTL_UPLLEN);
-
-	SysCtlPeripheralEnable(SYSCTL_PERIPH_USB0);
-	// Enable the UART usb-serial.
-	SysCtlPeripheralEnable(SYSCTL_PERIPH_UART1);
 
 
 	SysCtlPeripheralEnable(I2C_ONBOARD_SYSCTL);
 	SysCtlPeripheralEnable(I2C_OFFBOARD_ISO_SYSCTL);
 
 	SysCtlPeripheralEnable(ADCP_SPI_SYSCTL);
-	//SysCtlPeripheralEnable(SYSCTL_PERIPH_SSI1);
+
 	SysCtlPeripheralEnable(SYSCTL_PERIPH_SSI1);
 
 	SysCtlPeripheralEnable(SYSCTL_PERIPH_CAN0);
@@ -106,7 +92,7 @@ EnablePeripherals(void)
 //
 //*****************************************************************************
 static void
-PortControlSet(void)
+PortControlSet21(void)
 {
 
 	//
@@ -114,127 +100,6 @@ PortControlSet(void)
 	// peripherals.
 	//
 
-
-	//UART Setup
-	//UART RS485
-	GPIOPinTypeUART(RS485_BASE, RS485_PINS);
-	GPIOPinConfigure(RS485_RX);
-	GPIOPinConfigure(RS485_TX);
-	//UART DISPLAY
-	GPIOPinTypeUART(DISPLAY_BASE, DISPLAY_PINS);
-	GPIOPinConfigure(DISPLAY_RX);
-	GPIOPinConfigure(DISPLAY_TX);
-	//UART BACKPLANE
-	GPIOPinTypeUART(RS485_BKP_BASE, RS485_BKP_PINS);
-	GPIOPinConfigure(RS485_BKP_RX);
-	GPIOPinConfigure(RS485_BKP_TX);
-
-	//I2C Setup
-	//I2C INTERNAL
-	GPIOPinTypeI2C(I2C_ONBOARD_BASE, I2C_ONBOARD_PINS);
-	GPIOPinConfigure(I2C_ONBOARD_SCL);
-	GPIOPinConfigure(I2C_ONBOARD_SDA);
-	//I2C BACKPLANE ISOLATED
-	GPIOPinTypeI2C(I2C_OFFBOARD_ISO_BASE, I2C_OFFBOARD_ISO_PINS);
-	GPIOPinConfigure(I2C_OFFBOARD_ISO_SCL);
-	GPIOPinConfigure(I2C_OFFBOARD_ISO_SDA);
-
-	//SPI Setup
-	//SPI ADCP
-	GPIOPinTypeSSI(ADCP_BASE, ADCP_SPI_PINS);
-	GPIOPinConfigure(ADCP_SPI_CLK);
-	GPIOPinConfigure(ADCP_SPI_FSS);
-	GPIOPinConfigure(ADCP_SPI_RX);
-	GPIOPinConfigure(ADCP_SPI_TX);
-
-	//SPI FLASH
-
-	GPIOPinTypeSSI(GPIO_PORTE_BASE , GPIO_PIN_2 | GPIO_PIN_3);
-	GPIOPinTypeSSI(GPIO_PORTF_BASE, GPIO_PIN_2 | GPIO_PIN_3);
-
-	GPIOPadConfigSet(GPIO_PORTE_BASE, GPIO_PIN_2 | GPIO_PIN_3, GPIO_PIN_TYPE_STD_WPU);
-	GPIOPadConfigSet(GPIO_PORTF_BASE, GPIO_PIN_2 | GPIO_PIN_3, GPIO_PIN_TYPE_STD_WPU);
-
-	GPIOPinConfigure(GPIO_PF2_SSI1CLK);
-	GPIOPinConfigure(GPIO_PF3_SSI1FSS);
-	GPIOPinConfigure(GPIO_PE2_SSI1RX);
-	GPIOPinConfigure(GPIO_PE3_SSI1TX);
-
-
-
-	//CAN Setup
-	GPIOPinConfigure(CAN_RX);
-	GPIOPinConfigure(CAN_TX);
-	GPIOPinTypeCAN(CAN_BASE, CAN_PINS);
-
-
-
-	//SSI SD Card Setup
-	GPIOPinTypeSSI(SDC_GPIO_PORT_BASE, SDC_SSI_TX | SDC_SSI_RX | SDC_SSI_CLK);
-	GPIOPinTypeGPIOOutput(SDCARD_CS_BASE, SDCARD_CS_PIN);
-	GPIOPadConfigSet(SDC_GPIO_PORT_BASE, SDC_SSI_PINS,
-					 GPIO_PIN_TYPE_STD_WPU);
-	GPIOPadConfigSet(SDCARD_CS_BASE, SDCARD_CS_PIN,
-					 GPIO_PIN_TYPE_STD_WPU);
-	GPIOPinConfigure(GPIO_PR0_SSI3TX);
-	GPIOPinConfigure(GPIO_PR1_SSI3RX);
-	GPIOPinConfigure(GPIO_PR2_SSI3CLK);
-	GPIOPinWrite(SDCARD_CS_BASE, SDCARD_CS_PIN, SDCARD_CS_PIN);
-
-
-	// USB Pins
-	// USB DEVICE SELF_POWERED
-	GPIOPinTypeUSBAnalog(USB_5V_BASE, USB_5V_PIN);
-	GPIOPinTypeUSBAnalog(USB_PN_BASE, USB_PN_PINS);
-
-
-	//Ethernet pin setup
-	GPIODirModeSet(GPIO_PORTK_BASE,
-				   GPIO_PIN_4 | GPIO_PIN_5 | GPIO_PIN_7,
-				   GPIO_DIR_MODE_HW);
-	GPIOPadConfigSet(GPIO_PORTK_BASE,
-					 GPIO_PIN_4 | GPIO_PIN_5 | GPIO_PIN_7,
-					 GPIO_PIN_TYPE_STD);
-	GPIOPinConfigure(GPIO_PK4_MIITXEN);
-	GPIOPinConfigure(GPIO_PK5_MIITXCK);
-	GPIOPinConfigure(GPIO_PK7_MIICRS);
-
-
-	GPIODirModeSet(GPIO_PORTL_BASE,
-				   GPIO_PIN_0 | GPIO_PIN_1 | GPIO_PIN_2 | GPIO_PIN_3 |
-				   GPIO_PIN_4 | GPIO_PIN_5 | GPIO_PIN_6 | GPIO_PIN_7,
-				   GPIO_DIR_MODE_HW);
-	GPIOPadConfigSet(GPIO_PORTL_BASE,
-					 GPIO_PIN_0 | GPIO_PIN_1 | GPIO_PIN_2 | GPIO_PIN_3 |
-					 GPIO_PIN_4 | GPIO_PIN_5 | GPIO_PIN_6 | GPIO_PIN_7,
-					 GPIO_PIN_TYPE_STD);
-	GPIOPinConfigure(GPIO_PL0_MIIRXD3);
-	GPIOPinConfigure(GPIO_PL1_MIIRXD2);
-	GPIOPinConfigure(GPIO_PL2_MIIRXD1);
-	GPIOPinConfigure(GPIO_PL3_MIIRXD0);
-	GPIOPinConfigure(GPIO_PL4_MIICOL);
-	GPIOPinConfigure(GPIO_PL5_MIIPHYRSTN);
-	GPIOPinConfigure(GPIO_PL6_MIIPHYINTRN);
-	GPIOPinConfigure(GPIO_PL7_MIIMDC);
-
-	GPIODirModeSet(GPIO_PORTM_BASE,
-				   GPIO_PIN_0 | GPIO_PIN_1 | GPIO_PIN_2 | GPIO_PIN_3 |
-				   GPIO_PIN_4 | GPIO_PIN_5 | GPIO_PIN_6 | GPIO_PIN_7,
-				   GPIO_DIR_MODE_HW);
-	GPIOPadConfigSet(GPIO_PORTM_BASE,
-					 GPIO_PIN_0 | GPIO_PIN_1 | GPIO_PIN_2 | GPIO_PIN_3 |
-					 GPIO_PIN_4 | GPIO_PIN_5 | GPIO_PIN_6 | GPIO_PIN_7,
-					 GPIO_PIN_TYPE_STD);
-	GPIOPinConfigure(GPIO_PM0_MIIMDIO);
-	GPIOPinConfigure(GPIO_PM1_MIITXD3);
-	GPIOPinConfigure(GPIO_PM2_MIITXD2);
-	GPIOPinConfigure(GPIO_PM3_MIITXD1);
-	GPIOPinConfigure(GPIO_PM4_MIITXD0);
-	GPIOPinConfigure(GPIO_PM5_MIIRXDV);
-	GPIOPinConfigure(GPIO_PM6_MIIRXER);
-	GPIOPinConfigure(GPIO_PM7_MIIRXCK);
-
-	/*
 	//SDRAM Setup
 	//
 	// GPIO Port C pins
@@ -285,7 +150,7 @@ PortControlSet(void)
 										   GPIO_PCTL_PJ3_EPI0S19 |
 										   GPIO_PCTL_PJ4_EPI0S28 |
 										   GPIO_PCTL_PJ5_EPI0S29 |
-										   GPIO_PCTL_PJ6_EPI0S30;
+										   GPIO_PCTL_PJ6_EPI0S30; // */
 
 	GPIODirModeSet(GPIO_PORTC_BASE,
 				   (GPIO_PIN_4 | GPIO_PIN_5 | GPIO_PIN_6 | GPIO_PIN_7),
@@ -346,10 +211,132 @@ PortControlSet(void)
 					 (GPIO_PIN_0 | GPIO_PIN_1 | GPIO_PIN_2 | GPIO_PIN_3 |
 					 GPIO_PIN_4 | GPIO_PIN_5 | GPIO_PIN_6),
 					 GPIO_PIN_TYPE_STD_WPU);
-	*/
 
-	GPIOPinTypeGPIOOutput(LED_OP_BASE, LED_OP_PIN);
-	GPIOPinWrite(LED_OP_BASE, LED_OP_PIN, OFF);
+
+	//UART Setup
+	//UART RS485
+	GPIOPinTypeUART(RS485_BASE, RS485_PINS);
+	GPIOPinConfigure(RS485_RX);
+	GPIOPinConfigure(RS485_TX);
+	//UART DISPLAY
+	GPIOPinTypeUART(DISPLAY_BASE, DISPLAY_PINS);
+	GPIOPinConfigure(DISPLAY_RX);
+	GPIOPinConfigure(DISPLAY_TX);
+	//UART BACKPLANE
+	GPIOPinTypeUART(RS485_BKP_BASE, RS485_BKP_PINS);
+	GPIOPinConfigure(RS485_BKP_RX);
+	GPIOPinConfigure(RS485_BKP_TX);
+	//UART FT230
+	GPIOPinTypeUART(FT230_BASE, FT230_PINS);
+	GPIOPinConfigure(FT230_RX);
+	GPIOPinConfigure(FT230_TX);
+
+	//I2C Setup
+	//I2C INTERNAL
+	GPIOPinTypeI2C(I2C_ONBOARD_BASE, I2C_ONBOARD_PINS);
+	GPIOPinConfigure(I2C_ONBOARD_SCL);
+	GPIOPinConfigure(I2C_ONBOARD_SDA);
+	//I2C BACKPLANE ISOLATED
+	GPIOPinTypeI2C(I2C_OFFBOARD_ISO_BASE, I2C_OFFBOARD_ISO_PINS);
+	GPIOPinConfigure(I2C_OFFBOARD_ISO_SCL);
+	GPIOPinConfigure(I2C_OFFBOARD_ISO_SDA);
+
+	//SPI Setup
+	//SPI ADCP
+	GPIOPinTypeSSI(ADCP_BASE, ADCP_SPI_PINS);
+	GPIOPinConfigure(ADCP_SPI_CLK);
+	GPIOPinConfigure(ADCP_SPI_FSS);
+	GPIOPinConfigure(ADCP_SPI_RX);
+	GPIOPinConfigure(ADCP_SPI_TX);
+
+	//SPI FLASH
+
+	GPIOPinTypeSSI(GPIO_PORTE_BASE , GPIO_PIN_2 | GPIO_PIN_3);
+	GPIOPinTypeSSI(GPIO_PORTF_BASE, GPIO_PIN_2 | GPIO_PIN_3);
+
+	GPIOPadConfigSet(GPIO_PORTE_BASE, GPIO_PIN_2 | GPIO_PIN_3, GPIO_PIN_TYPE_STD_WPU);
+	GPIOPadConfigSet(GPIO_PORTF_BASE, GPIO_PIN_2 | GPIO_PIN_3, GPIO_PIN_TYPE_STD_WPU);
+
+	GPIOPinConfigure(GPIO_PF2_SSI1CLK);
+	GPIOPinConfigure(GPIO_PF3_SSI1FSS);
+	GPIOPinConfigure(GPIO_PE2_SSI1RX);
+	GPIOPinConfigure(GPIO_PE3_SSI1TX);
+
+
+
+	//CAN Setup
+	GPIOPinConfigure(CAN_RX);
+	GPIOPinConfigure(CAN_TX);
+	GPIOPinTypeCAN(CAN_BASE, CAN_PINS);
+
+
+
+	//SSI SD Card Setup
+	GPIOPinTypeSSI(SDC_GPIO_PORT_BASE, SDC_SSI_TX | SDC_SSI_RX | SDC_SSI_CLK);
+	GPIOPinTypeGPIOOutput(SDCARD_CS_BASE, SDCARD_CS_PIN);
+	GPIOPadConfigSet(SDC_GPIO_PORT_BASE, SDC_SSI_PINS,
+					 GPIO_PIN_TYPE_STD_WPU);
+	GPIOPadConfigSet(SDCARD_CS_BASE, SDCARD_CS_PIN,
+					 GPIO_PIN_TYPE_STD_WPU);
+	GPIOPinConfigure(GPIO_PR0_SSI3TX);
+	GPIOPinConfigure(GPIO_PR1_SSI3RX);
+	GPIOPinConfigure(GPIO_PR2_SSI3CLK);
+	GPIOPinWrite(SDCARD_CS_BASE, SDCARD_CS_PIN, SDCARD_CS_PIN);
+
+
+
+	//Ethernet pin setup
+	GPIODirModeSet(GPIO_PORTK_BASE,
+				   GPIO_PIN_4 | GPIO_PIN_5 | GPIO_PIN_7,
+				   GPIO_DIR_MODE_HW);
+	GPIOPadConfigSet(GPIO_PORTK_BASE,
+					 GPIO_PIN_4 | GPIO_PIN_5 | GPIO_PIN_7,
+					 GPIO_PIN_TYPE_STD);
+	GPIOPinConfigure(GPIO_PK4_MIITXEN);
+	GPIOPinConfigure(GPIO_PK5_MIITXCK);
+	GPIOPinConfigure(GPIO_PK7_MIICRS);
+
+
+	GPIODirModeSet(GPIO_PORTL_BASE,
+				   GPIO_PIN_0 | GPIO_PIN_1 | GPIO_PIN_2 | GPIO_PIN_3 |
+				   GPIO_PIN_4 | GPIO_PIN_5 | GPIO_PIN_6 | GPIO_PIN_7,
+				   GPIO_DIR_MODE_HW);
+	GPIOPadConfigSet(GPIO_PORTL_BASE,
+					 GPIO_PIN_0 | GPIO_PIN_1 | GPIO_PIN_2 | GPIO_PIN_3 |
+					 GPIO_PIN_4 | GPIO_PIN_5 | GPIO_PIN_6 | GPIO_PIN_7,
+					 GPIO_PIN_TYPE_STD);
+	GPIOPinConfigure(GPIO_PL0_MIIRXD3);
+	GPIOPinConfigure(GPIO_PL1_MIIRXD2);
+	GPIOPinConfigure(GPIO_PL2_MIIRXD1);
+	GPIOPinConfigure(GPIO_PL3_MIIRXD0);
+	GPIOPinConfigure(GPIO_PL4_MIICOL);
+	GPIOPinConfigure(GPIO_PL5_MIIPHYRSTN);
+	GPIOPinConfigure(GPIO_PL6_MIIPHYINTRN);
+	GPIOPinConfigure(GPIO_PL7_MIIMDC);
+
+	GPIODirModeSet(GPIO_PORTM_BASE,
+				   GPIO_PIN_0 | GPIO_PIN_1 | GPIO_PIN_2 | GPIO_PIN_3 |
+				   GPIO_PIN_4 | GPIO_PIN_5 | GPIO_PIN_6 | GPIO_PIN_7,
+				   GPIO_DIR_MODE_HW);
+	GPIOPadConfigSet(GPIO_PORTM_BASE,
+					 GPIO_PIN_0 | GPIO_PIN_1 | GPIO_PIN_2 | GPIO_PIN_3 |
+					 GPIO_PIN_4 | GPIO_PIN_5 | GPIO_PIN_6 | GPIO_PIN_7,
+					 GPIO_PIN_TYPE_STD);
+	GPIOPinConfigure(GPIO_PM0_MIIMDIO);
+	GPIOPinConfigure(GPIO_PM1_MIITXD3);
+	GPIOPinConfigure(GPIO_PM2_MIITXD2);
+	GPIOPinConfigure(GPIO_PM3_MIITXD1);
+	GPIOPinConfigure(GPIO_PM4_MIITXD0);
+	GPIOPinConfigure(GPIO_PM5_MIIRXDV);
+	GPIOPinConfigure(GPIO_PM6_MIIRXER);
+	GPIOPinConfigure(GPIO_PM7_MIIRXCK);
+
+
+
+
+
+	//GPIOPinTypeGPIOOutput(LED_OP_BASE, LED_OP_PIN);
+	//GPIOPinWrite(LED_OP_BASE, LED_OP_PIN, OFF);
 
 	GPIOPinTypeGPIOOutput(RS485_RD_BASE, RS485_RD_PIN); //RD RS485
 	GPIOPinWrite(RS485_RD_BASE, RS485_RD_PIN, OFF);
@@ -387,7 +374,7 @@ PortControlSet(void)
 //
 //*****************************************************************************
 void
-PinCorSet(void)
+PinCorSet21(void)
 {
 
 	// Pinos a serem controlados pelo C28
@@ -431,23 +418,23 @@ PinCorSet(void)
 																			   //GPIO30 - PE6 é utilizado para o CAN_RX (ARM)
 																			   //GPIO31 - PE7 é utilizado para o CAN_TX (ARM)
 
-	GPIOPinConfigureCoreSelect(GPIO_PORTF_BASE, 0x83, GPIO_PIN_C_CORE_SELECT); //GPIO32, GPIO33 e GPIO39 são utilizados pelo C28 (C28)
-																			   //GPIO32 - PF0 é utilizado para o EPWMSYNCI (C28)
+	GPIOPinConfigureCoreSelect(GPIO_PORTF_BASE, 0xC3, GPIO_PIN_C_CORE_SELECT); //GPIO32, GPIO33 e GPIO39 são utilizados pelo C28 (C28)
+																			   //GPIO32 - PF0 é utilizado para o PWM_SOC (C28)
 																			   //GPIO33 - PF1 é utilizado para o EPWMSYNCO (C28)
 																			   //GPIO34 - PF2 é utilizado para o SPI_FLASH_CLK (ARM)
 																			   //GPIO35 - PF3 é utilizado para o SPI_FLASH_CS (ARM)
 																			   //GPIO36 - PF4 é utilizado para o SDRAM_AD12 (ARM)
 																			   //GPIO37 - PF5 é utilizado para o SDRAM_AD15 (ARM)
-																			   //GPIO38 - PF6 é utilizado para o USB0_GPIO38 (ARM)
+																			   //GPIO38 - PF6 é utilizado para o EPWMSYNCI (C28)
 																			   //GPIO39 - PF7 é utilizado para o HRADC_INT_STS (C28)
 
-	GPIOPinConfigureCoreSelect(GPIO_PORTG_BASE, 0x00, GPIO_PIN_C_CORE_SELECT); //GPIO46 é utilizado pelo C28 (C28)
+	GPIOPinConfigureCoreSelect(GPIO_PORTG_BASE, 0x24, GPIO_PIN_C_CORE_SELECT); //GPIO42 e 45 são utilizados pelo C28 (C28)
 																			   //GPIO40 - PG0 é utilizado para o SDRAM_BA0D13 (ARM)
 																			   //GPIO41 - PG1 é utilizado para o SDRAM_BA1D14 (ARM)
-																			   //GPIO42 - PG2 é utilizado para o USB0_GPIO42 (ARM)
+																			   //GPIO42 - PG2 é utilizado para o STATUS_ADC0 (C28)
 																			   //GPIO43 - PG3 é utilizado para o RTC-TIMER (ARM)
 																			   //GPIO44 - PG4 é utilizado para o ADC_AD_I (ARM)
-																			   //GPIO45 - PG5 é utilizado para o USB0_GPIO45 (ARM)
+																			   //GPIO45 - PG5 é utilizado para o STATUS_ADC2 (C28)
 																			   //GPIO46 - PG6 é utilizado para o GPIO0 (ARM)
 																			   //GPIO47 - PG7 é utilizado para o SDRAM_CLK (ARM)
 
@@ -521,21 +508,21 @@ PinCorSet(void)
 																			   //GPIO102 - PN6 é utilizado para o UART_M3_RX (ARM)
 																			   //GPIO103 - PN7 é utilizado para o UART_M3_TX (ARM)
 
-	GPIOPinConfigureCoreSelect(GPIO_PORTP_BASE, 0xC0, GPIO_PIN_C_CORE_SELECT); //GPIO110 e GPIO111 é utilizado pelo C28 (C28)
+	GPIOPinConfigureCoreSelect(GPIO_PORTP_BASE, 0xE0, GPIO_PIN_C_CORE_SELECT); //GPIO109 , 110 e 111 são utilizados pelo C28 (C28)
 																			   //GPIO104 - PP0 é utilizado para o BP_I2C_SCL (ARM)
 																			   //GPIO105 - PP1 é utilizado para o BP_I2C_SDA (ARM)
 																			   //GPIO106 - PP2 é utilizado para o RS-485_RD (ARM)
 																			   //GPIO107 - PP3 é utilizado para o UART_M3_RD (ARM)
 																			   //GPIO108 - PP4 é utilizado para o EEPROM-WP (ARM)
-																			   //GPIO109 - PP5 é utilizado para o OperationARM (ARM)
-																			   //GPIO110 - PP6 é utilizado para o OperationDSP (C28)
+																			   //GPIO109 - PP5 é utilizado para o GPDI9B (C28)
+																			   //GPIO110 - PP6 é utilizado para o GPDI10B (C28)
 																			   //GPIO111 - PP7 é utilizado para o GPIO1 (C28)
 
-	GPIOPinConfigureCoreSelect(GPIO_PORTQ_BASE, 0xFF, GPIO_PIN_C_CORE_SELECT); //Todo o port é utilizado pelo C28 (C28)
+	GPIOPinConfigureCoreSelect(GPIO_PORTQ_BASE, 0xF3, GPIO_PIN_C_CORE_SELECT); //GPIO114 e 115 são utilizados pelo ARM (ARM)
 																			   //GPIO112 - PQ0 é utilizado para o GPDI12B (C28)
 																			   //GPIO113 - PQ1 é utilizado para o GPDI11B (C28)
-																			   //GPIO114 - PQ2 é utilizado para o GPDI10B (C28)
-																			   //GPIO115 - PQ3 é utilizado para o GPDI9B (C28)
+																			   //GPIO114 - PQ2 é utilizado para o USB_UART_RX (ARM)
+																			   //GPIO115 - PQ3 é utilizado para o USB_UART_TX (ARM)
 																			   //GPIO116 - PQ4 é utilizado para o GPDI6B (C28)
 																			   //GPIO117 - PQ5 é utilizado para o SCI_RD (C28)
 																			   //GPIO118 - PQ6 é utilizado para o SCITXDA (C28)
@@ -552,13 +539,13 @@ PinCorSet(void)
 																			   //GPIO127 - PR7 é utilizado para o GPDI2B (C28)
 
 	GPIOPinConfigureCoreSelect(GPIO_PORTS_BASE, 0xFF, GPIO_PIN_C_CORE_SELECT); //Todo o port é utilizado pelo C28 (C28)
-																			   //GPIO128 - PS0 é utilizado para o GPIO_CS1 (C28)
+																			   //GPIO128 - PS0 é utilizado para o 4KHz (C28)
 																			   //GPIO129 - PS1 é utilizado para o GPIO_CS2 (C28)
-																			   //GPIO130 - PS2 é utilizado para o PWM_SOC (C28)
+																			   //GPIO130 - PS2 é utilizado para o GPIO_CS1 (C28)
 																			   //GPIO131 - PS3 é utilizado para o GPIO_CONFIG (C28)
-																			   //GPIO132 - PS4 é utilizado para o STATUS_ADC0 (C28)
+																			   //GPIO132 - PS4 é utilizado para o 16Hz (C28)
 																			   //GPIO133 - PS5 é utilizado para o STATUS_ADC1 (C28)
-																			   //GPIO134 - PS6 é utilizado para o STATUS_ADC2 (C28)
+																			   //GPIO134 - PS6 é utilizado para o SOUND_CUSTOM (C28)
 																			   //GPIO135 - PS7 é utilizado para o STATUS_ADC3 (C28)
 
 }
@@ -590,7 +577,7 @@ PinCorSet(void)
 //
 //*****************************************************************************
 void
-PinoutSet20(void)
+PinoutSet21(void)
 {
 
 	//
@@ -623,16 +610,17 @@ PinoutSet20(void)
 	// Write to commit register
 	HWREG(GPIO_PORTB_BASE+GPIO_O_CR) |= 0x000000FF;
 
-	PinCorSet();
+	EnablePeripherals21();
+
+	PinCorSet21();
 
 	//
 	// Determine the port control settings required to enable the EPI pins
 	// and other peripheral signals for this daughter board and set all the
 	// GPIO port control registers.
 	//
-	PortControlSet();
+	PortControlSet21();
 
-	EnablePeripherals();
 }
 
 

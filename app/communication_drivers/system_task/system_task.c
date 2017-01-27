@@ -23,6 +23,10 @@
 
 #include "../shared_memory/main_var.h"
 
+#include "../ipc/ipc_lib.h"
+
+#include "../i2c_onboard/eeprom.h"
+
 #include <stdint.h>
 #include <stdbool.h>
 
@@ -34,6 +38,7 @@ volatile bool PROCESS_ETH_MESS = 0;
 volatile bool PROCESS_CAN_MESS = 0;
 volatile bool PROCESS_RS485_MESS = 0;
 volatile bool PROCESS_POWER_TEMP_SAMPLE = 0;
+volatile bool EEPROM_WRITE_REQUEST = 0;
 
 void
 TaskSetNew(uint8_t TaskNum)
@@ -70,6 +75,9 @@ TaskSetNew(uint8_t TaskNum)
 
 	case POWER_TEMP_SAMPLE:
 		PROCESS_POWER_TEMP_SAMPLE = 1;
+		break;
+	case EEPROM_WRITE_REQUEST_CHECK:
+		EEPROM_WRITE_REQUEST = 1;
 		break;
 
 	default:
@@ -129,7 +137,25 @@ TaskCheck(void)
 	else if(PROCESS_POWER_TEMP_SAMPLE)
 	{
 		PROCESS_POWER_TEMP_SAMPLE = 0;
-		PowerSupply1TempRead();
+
+		switch(IPC_MtoC_Msg.PSModule.Model.u16)
+		{
+			case FBP_100kHz:
+				//PowerSupply1TempRead();
+				break;
+			case FBPx4_100kHz:
+				PowerSupply1TempRead();
+				PowerSupply2TempRead();
+				PowerSupply3TempRead();
+				PowerSupply4TempRead();
+				break;
+		}
+	}
+
+	else if(EEPROM_WRITE_REQUEST)
+	{
+		EEPROM_WRITE_REQUEST = 0;
+		EepromWriteRequestCheck();
 	}
 
 }

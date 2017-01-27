@@ -20,8 +20,9 @@
 #include "driverlib/systick.h"
 #include "driverlib/debug.h"
 
-#include "set_pinout_udc_v2.0.h"
+//#include "set_pinout_udc_v2.0.h"
 //#include "set_pinout_ctrl_card.h"
+#include "../board_drivers/hardware_def.h"
 
 #include "../rs485/rs485.h"
 

@@ -7,13 +7,15 @@
 
 #include "system.h"
 
+#include "../board_drivers/hardware_def.h"
+
 #include "../i2c_onboard/i2c_onboard.h"
 #include "../i2c_onboard/rtc.h"
 #include "../i2c_onboard/eeprom.h"
 #include "../i2c_onboard/exio.h"
 
 #include "../i2c_offboard_isolated/i2c_offboard_isolated.h"
-#include "../i2c_offboard_isolated/temp_low_power_module.h"
+#include "../i2c_offboard_isolated/external_devices.h"
 
 #include "../adcp/adcp.h"
 
@@ -42,6 +44,10 @@
 #include "../shared_memory/ctrl_law.h"
 
 #include "../ipc/ipc_lib.h"
+
+#include "../usb_to_serial/usb_to_serial.h"
+
+#include "../epi/sdram_mem.h"
 
 #include <stdint.h>
 #include <stdarg.h>
@@ -76,7 +82,7 @@ TestEepromMemory(void)
 		var32 = var32 << 8;
 		var32 |= 0xCB;		// 203
 
-		EepromWriteIP(var32);
+		SaveIpAddress(var32);
 
 		// Write default IP MASK 255.255.255.0
 		var32 = 0xFF;		// 255
@@ -87,42 +93,52 @@ TestEepromMemory(void)
 		var32 = var32 << 8;
 		var32 |= 0x00;		// 0
 
-		EepromWriteIPMask(var32);
+		SaveIpMask(var32);
 
 		// Write default RS485 address
-		EepromWriteRs485Add(0x01);
+		SaveRs485Add(0x01);
 
 		// Write default RS485 Baud Rate
-		EepromWriteRs485BaudRate(115200);
+		SaveRs485Baud(115200);
 
 		// Write default Kp gain 0.0
-		EepromWriteKp(0.0);
+		SaveKp1Gain(0.0);
 
 		// Write default Ki gain 0.0
-		EepromWriteKi(0.0);
+		SaveKi1Gain(0.0);
 
 		// Write default Ki gain 0.0
-		EepromWriteKd(0.0);
+		SaveKd1Gain(0.0);
 
 		// Write default PS_Model as 0 (FBP)
-		EepromWritePSModel(0);
+		SavePsModel(0);
+
+		EepromWriteRequestCheck();
 	}
+}
+
+void
+SystemConfig(void)
+{
+	InitI2COnboard();
+
+	TestEepromMemory();
+
+	ExIOInit();
+
+	#if HARDWARE_VERSION == 0x21
+		BuffersCtrl(1);
+		#endif
+
+	IPCInit();
+
 }
 
 void
 SystemInit(void)
 {
-	InitI2COnboard();
 
 	InitI2COffboardIsolated();
-
-	PowerSupplyTempInit();
-
-	ExIOInit();
-
-	TestEepromMemory();
-
-	IPCInit();
 
 	FlashMemInit();
 
@@ -135,6 +151,10 @@ SystemInit(void)
 	InitRS485();
 
 	InitRS485BKP();
+
+	#if HARDWARE_VERSION == 0x21
+		InitUsb2Serial();
+		#endif
 
 	InitCanBkp();
 
@@ -150,9 +170,14 @@ SystemInit(void)
 
 	AdcpInit();
 
-	PwmFiberCtrl(true);
+	#if HARDWARE_VERSION == 0x20
+		PwmFiberCtrl(true);
+		PwmEletrCtrl(true);
+		#endif
 
-	PwmEletrCtrl(true);
+	SdramInit();
+
+	InitI2cOffboardExternalDevices();
 
 	GlobalTimerInit();
 

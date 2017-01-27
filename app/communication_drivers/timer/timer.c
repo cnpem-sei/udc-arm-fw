@@ -21,10 +21,15 @@
 
 #include "../system_task/system_task.h"
 
-#include "set_pinout_udc_v2.0.h"
+//#include "set_pinout_udc_v2.0.h"
+#include "../board_drivers/hardware_def.h"
+
+#include "../i2c_onboard/exio.h"
 
 uint16_t time = 0x00;
 uint8_t  iib_sample = 0x00;
+
+uint8_t	LedCtrl = 0;
 
 // Trata a interrupção do timer0 a cada 1ms
 void
@@ -50,6 +55,24 @@ GlobalTimerIntHandler(void)
 		time = 0;
 		TaskSetNew(SAMPLE_RTC);
 		TaskSetNew(POWER_TEMP_SAMPLE);
+		TaskSetNew(EEPROM_WRITE_REQUEST_CHECK);
+		#if HARDWARE_VERSION == 0x21
+			if(LedCtrl)
+			{
+				LedStsCtrl(0);
+				LedItlkCtrl(0);
+				SoundSelCtrl(0);
+				LedCtrl = 0;
+			}
+			else
+			{
+				LedStsCtrl(1);
+				LedItlkCtrl(1);
+				SoundSelCtrl(1);
+				LedCtrl = 1;
+			}
+
+			#endif
 	}
 
 

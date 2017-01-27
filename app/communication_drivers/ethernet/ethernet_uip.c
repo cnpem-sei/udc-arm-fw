@@ -21,8 +21,9 @@
 #include "inc/hw_sysctl.h"
 #include "inc/hw_ethernet.h"
 
-#include "set_pinout_udc_v2.0.h"
+//#include "set_pinout_udc_v2.0.h"
 //#include "set_pinout_ctrl_card.h"
+#include "../board_drivers/hardware_def.h"
 
 #include "driverlib/udma.h"
 #include "driverlib/gpio.h"
@@ -261,7 +262,7 @@ IPAddressWrite(uint8_t ip_addr0, uint8_t ip_addr1, uint8_t ip_addr2, uint8_t ip_
 		ipvar = ipvar << 8;
 		ipvar |= IPADDR3;
 
-		EepromWriteIP(ipvar);
+		SaveIpAddress(ipvar);
 
 	}
 }
@@ -305,7 +306,7 @@ IPMaskWrite(uint8_t ip_mask0, uint8_t ip_mask1, uint8_t ip_mask2, uint8_t ip_mas
 		mskvar = mskvar << 8;
 		mskvar |= IPMASK3;
 
-		EepromWriteIPMask(mskvar);
+		SaveIpMask(mskvar);
 
 	}
 }
@@ -911,7 +912,7 @@ EthernetProcessData(void)
                 }
             }
 
-//#if UIP_UDP
+#if UIP_UDP
             for(ulTemp = 0; ulTemp < UIP_UDP_CONNS; ulTemp++)
             {
                 uip_udp_periodic(ulTemp);
@@ -926,7 +927,7 @@ EthernetProcessData(void)
                     uip_len = 0;
                 }
             }
-//#endif
+#endif
         }
 
         // Process ARP Timer here.
