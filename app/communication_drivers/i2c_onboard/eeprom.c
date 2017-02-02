@@ -988,7 +988,7 @@ static uint8_t ps_model_data = 0;
 static uint8_t ps_model_new_data = 0;
 
 void
-SavePsModel(float PS_MODEL)
+SavePsModel(uint8_t PS_MODEL)
 {
 	ps_model_data = PS_MODEL;
 	ps_model_new_data = 1;

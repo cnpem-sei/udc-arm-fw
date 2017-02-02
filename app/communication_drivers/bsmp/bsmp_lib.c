@@ -672,7 +672,8 @@ static struct bsmp_func wfmrefupdate_func = {
 //*****************************************************************************
 uint8_t ConfigPSModel (uint8_t *input, uint8_t *output)
 {
-	EepromWritePSModel(input[0]);
+	//EepromWritePSModel(input[0]);
+	SavePsModel(input[0]);
 	*output = 0;
 	return *output;
 }

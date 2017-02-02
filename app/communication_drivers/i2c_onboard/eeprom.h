@@ -59,7 +59,7 @@ extern float EepromReadKd4(void);
 extern void SaveKd4Gain(float KD4);
 
 extern uint8_t EepromReadPSModel(void);
-extern void SavePsModel(float PS_MODEL);
+extern void SavePsModel(uint8_t PS_MODEL);
 
 extern void EepromWriteRequestCheck(void);
 
