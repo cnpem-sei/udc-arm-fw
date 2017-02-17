@@ -29,6 +29,7 @@
 void
 Usb2SerialIntHandler(void)
 {
+
 	long lChar;
 	short sCarga;
 	unsigned char ucChar;
@@ -36,6 +37,9 @@ Usb2SerialIntHandler(void)
 
     // Get the interrrupt status.
     ulStatus = UARTIntStatus(FT230_UART_BASE, true);
+
+    // Clear the asserted interrupts.
+    UARTIntClear(FT230_UART_BASE, ulStatus);
 
     //if(0x00000010 == ulStatus)
     if(0x00000040 == ulStatus)
@@ -59,13 +63,7 @@ Usb2SerialIntHandler(void)
 			UARTCharPutNonBlocking(FT230_UART_BASE, ' ');
     	}
 
-
-
     }
-
-
-    // Clear the asserted interrupts.
-    UARTIntClear(FT230_UART_BASE, ulStatus);
 
 }
 
@@ -90,4 +88,5 @@ InitUsb2Serial(void)
 	IntPrioritySet(FT230_INT, 3);
 
 	IntEnable(FT230_INT);
+
 }

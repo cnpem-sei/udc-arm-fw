@@ -126,9 +126,7 @@ SystemConfig(void)
 
 	ExIOInit();
 
-	#if HARDWARE_VERSION == 0x21
-		BuffersCtrl(1);
-		#endif
+	if(HARDWARE_VERSION == 0x21) BuffersCtrl(1);
 
 	IPCInit();
 
@@ -152,9 +150,7 @@ SystemInit(void)
 
 	InitRS485BKP();
 
-	#if HARDWARE_VERSION == 0x21
-		InitUsb2Serial();
-		#endif
+	if(HARDWARE_VERSION == 0x21) InitUsb2Serial();
 
 	InitCanBkp();
 
@@ -170,10 +166,11 @@ SystemInit(void)
 
 	AdcpInit();
 
-	#if HARDWARE_VERSION == 0x20
+	if(HARDWARE_VERSION == 0x20)
+	{
 		PwmFiberCtrl(true);
 		PwmEletrCtrl(true);
-		#endif
+	}
 
 	SdramInit();
 

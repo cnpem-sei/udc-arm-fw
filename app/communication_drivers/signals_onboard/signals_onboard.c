@@ -12,8 +12,9 @@
 
 #include <stdint.h>
 
-#include "set_pinout_udc_v2.0.h"
+//#include "set_pinout_udc_v2.0.h"
 //#include "set_pinout_ctrl_card.h"
+#include "hardware_def.h"
 
 
 void

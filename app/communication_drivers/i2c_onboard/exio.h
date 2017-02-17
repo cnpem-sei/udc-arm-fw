@@ -33,5 +33,6 @@ extern void BuffersCtrl(uint8_t sts);
 extern void LedItlkCtrl(uint8_t sts);
 extern void LedStsCtrl(uint8_t sts);
 extern void SoundSelCtrl(uint8_t sts);
+extern void Rs485TermCtrl(uint8_t sts);
 
 #endif /* EXIO_H_ */

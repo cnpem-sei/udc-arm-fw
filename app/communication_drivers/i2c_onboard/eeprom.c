@@ -20,7 +20,8 @@
 #include "eeprom.h"
 #include "i2c_onboard.h"
 
-#include "set_pinout_udc_v2.0.h"
+//#include "set_pinout_udc_v2.0.h"
+#include "hardware_def.h"
 
 #include <stdint.h>
 

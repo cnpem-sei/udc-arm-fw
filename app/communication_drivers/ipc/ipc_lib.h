@@ -106,7 +106,7 @@
 
 typedef enum {NO_ERROR_CTOM, ERROR1, ERROR2, ERROR3, ERROR4} 	eCTOMerror;
 typedef enum {NO_ERROR_MTOC, INVALID_SLOWREF_UPDATE, INVALID_DP_MODULE, IPC_LOW_PRIORITY_MSG_FULL, HRADC_CONFIG_ERROR} 	eMTOCerror;
-typedef enum {OneShot, SampleBySample} eSyncMode;
+typedef enum {OneShot, SampleBySample, SampleBySample_Continuous} eSyncMode;
 
 //######################## MTOC ###############################
 

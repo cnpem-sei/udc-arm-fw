@@ -30,6 +30,8 @@
 
 #include "../i2c_onboard/eeprom.h"
 
+#include "../i2c_onboard/exio.h"
+
 #include "../system_task/system_task.h"
 
 #include <stdint.h>
@@ -79,75 +81,61 @@ RS485IntHandler(void)
 	long lChar;
 	short sCarga;
 	unsigned char ucChar;
-    unsigned long ulStatus;
+	unsigned long ulStatus;
 
-    // Get the interrrupt status.
-    ulStatus = UARTIntStatus(RS485_UART_BASE, true);
-    UARTFIFOLevelSet(RS485_UART_BASE,UART_FIFO_TX4_8,UART_FIFO_RX4_8);
-    //UARTFIFOLevelGet(RS485_UART_BASE,&ulTriggerTX,&ulTriggerRX);
+	// Get the interrrupt status.
+	ulStatus = UARTIntStatus(RS485_UART_BASE, true);
 
-    // Clear the asserted interrupts.
-    //UARTIntClear(RS485_UART_BASE, ulStatus);
+	// Clear the asserted interrupts.
+	UARTIntClear(RS485_UART_BASE, ulStatus);
 
-    if(0x00000010 == ulStatus)
-    {
-    	// Loop while there are characters in the receive FIFO.
-    	while(UARTCharsAvail(RS485_UART_BASE) && recv_buffer.index < SERIAL_BUF_SIZE)
-    	{
-    		lChar = UARTCharGetNonBlocking(RS485_UART_BASE);
-            if(!(lChar & ~0xFF))
-            {
-                ucChar = (unsigned char)(lChar & 0xFF);
-                recv_buffer.data[recv_buffer.index] = ucChar;
-                recv_buffer.csum += recv_buffer.data[recv_buffer.index++];
-                //NewData = 1;
-            }
-            /*
-            else
-            {
-                // Update the error accumulator.
-                //lErrors |= lChar;
-            }*/
-    	}
-    	sCarga = (recv_buffer.data[2]<<8) | recv_buffer.data[3];
-    	if(recv_buffer.index > sCarga +4)
-    	{
-    		//NewData =1;
-    		TaskSetNew(PROCESS_RS485_MESSAGE);
-    	}
-    	//lErrors = lErrors + ulStatus;
-    }
-    else if (0x00000040 == ulStatus)
-    {
-    	// Loop while there are characters in the receive FIFO.
-    	while(UARTCharsAvail(RS485_UART_BASE) && recv_buffer.index < SERIAL_BUF_SIZE)
-    	{
-    		lChar = UARTCharGetNonBlocking(RS485_UART_BASE);
-            if(!(lChar & ~0xFF))
-            {
-                ucChar = (unsigned char)(lChar & 0xFF);
-                recv_buffer.data[recv_buffer.index] = ucChar;
-                recv_buffer.csum += recv_buffer.data[recv_buffer.index++];
-            }
-            else
-            {
-                // Update the error accumulator.
-                //lErrors |= lChar;
-            }
-    	}
-    	//NewData = 1;
-    	TaskSetNew(PROCESS_RS485_MESSAGE);
-    	//lErrors = lErrors + ulStatus;
-    }
-    else if(0x00000020 == ulStatus) // TX interrupt
-    {
-    	// Put IC in the reception mode
-    	GPIOPinWrite(RS485_RD_BASE, RS485_RD_PIN, OFF);
-    }
+	if(UARTRxErrorGet(RS485_UART_BASE)) UARTRxErrorClear(RS485_UART_BASE);
+
+	// Receive Interrupt Mask
+	if(UART_INT_RX == ulStatus || UART_INT_RT == ulStatus)
+	{
+
+		// Loop while there are characters in the receive FIFO.
+		while(UARTCharsAvail(RS485_UART_BASE) && recv_buffer.index < SERIAL_BUF_SIZE)
+		{
+			lChar = UARTCharGet(RS485_UART_BASE);
+			if(!(lChar & ~0xFF))
+			{
+				ucChar = (unsigned char)(lChar & 0xFF);
+				recv_buffer.data[recv_buffer.index] = ucChar;
+				recv_buffer.csum += recv_buffer.data[recv_buffer.index++];
+				//NewData = 1;
+			}
+
+		}
 
 
-    // Clear the asserted interrupts.
-    UARTIntClear(RS485_UART_BASE, ulStatus);
+		sCarga = (recv_buffer.data[2]<<8) | recv_buffer.data[3];
+		if(recv_buffer.index > sCarga +4)
+		{
+			TaskSetNew(PROCESS_RS485_MESSAGE);
+		}
+
+		/*
+		else
+		{
+			recv_buffer.index = 0;
+			recv_buffer.csum  = 0;
+			send_buffer.index = 0;
+			send_buffer.csum  = 0;
+		} */
+
+	}
+
+    // Transmit Interrupt Mask
+	else if(UART_INT_TX == ulStatus) // TX interrupt
+	{
+		while(UARTBusy(RS485_RD_BASE));
+
+		// Put IC in the reception mode
+		GPIOPinWrite(RS485_RD_BASE, RS485_RD_PIN, OFF);
+
+	}
 
 }
 
@@ -172,12 +160,12 @@ RS485TxHandler(void)
 		// CheckSum calc
 		send_buffer.csum -= send_buffer.data[i];
 		// Send Byte
-		UARTCharPutNonBlocking(RS485_UART_BASE, send_buffer.data[i]);
+		UARTCharPut(RS485_UART_BASE, send_buffer.data[i]);
 	}
 	// Wait until have space in the TX buffer
 	while(!UARTSpaceAvail(RS485_UART_BASE));
 	// Send Byte
-	UARTCharPutNonBlocking(RS485_UART_BASE, send_buffer.csum);
+	UARTCharPut(RS485_UART_BASE, send_buffer.csum);
 
 }
 
@@ -255,18 +243,25 @@ void
 InitRS485(void)
 {
 
+	if(HARDWARE_VERSION == 0x21) Rs485TermCtrl(1);
+
 	// Load RS485 address from EEPROM and config it
 	SetRS485Address(EepromReadRs485Add());
 
 	// Load Baud Rate configuration from EEPROM and gonfig it
 	ConfigRS485(EepromReadRs485BaudRate());
-	//ConfigRS485(1000000);
+	//ConfigRS485(6000000);
+	//ConfigRS485(3000000);
 
 	UARTFIFOEnable(RS485_UART_BASE);
+	UARTFIFOLevelSet(RS485_UART_BASE,UART_FIFO_TX1_8,UART_FIFO_RX4_8);
 
 	//Habilita interrupção pela UART1 (RS-485)
 	IntRegister(RS485_INT, RS485IntHandler);
 	UARTIntEnable(RS485_UART_BASE, UART_INT_RX | UART_INT_TX | UART_INT_RT);
+	//UARTIntEnable(RS485_UART_BASE, UART_INT_RX | UART_INT_RT);
+
+	//EOT - End of Transmission
 	UARTTxIntModeSet(RS485_UART_BASE, UART_TXINT_MODE_EOT);
 
 	//Seta níveis de prioridade entre as interrupções

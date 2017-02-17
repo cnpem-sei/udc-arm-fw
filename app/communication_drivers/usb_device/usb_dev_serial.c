@@ -32,8 +32,9 @@
 #include "usb_dev_serial.h"
 #include <string.h>
 
-#include "set_pinout_udc_v2.0.h"
+//#include "set_pinout_udc_v2.0.h"
 //#include "set_pinout_ctrl_card.h"
+#include "hardware_def.h"
 
 #pragma CODE_SECTION(ControlHandler, "ramfuncs");
 
