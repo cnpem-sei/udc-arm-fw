@@ -244,6 +244,8 @@ PortControlSet(void)
 	// GPIO Port C pins
 	//
 
+	/*
+
 	HWREG(GPIO_PORTC_BASE + GPIO_O_PCTL) = GPIO_PCTL_PC4_EPI0S2 |
 										   GPIO_PCTL_PC5_EPI0S3 |
 										   GPIO_PCTL_PC6_EPI0S4 |
@@ -351,7 +353,7 @@ PortControlSet(void)
 					 GPIO_PIN_4 | GPIO_PIN_5 | GPIO_PIN_6),
 					 GPIO_PIN_TYPE_STD_WPU);
 
-
+	*/
 }
 
 

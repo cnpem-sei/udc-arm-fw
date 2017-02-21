@@ -109,14 +109,13 @@ RS485IntHandler(void)
 
 		}
 
-
 		sCarga = (recv_buffer.data[2]<<8) | recv_buffer.data[3];
 		if(recv_buffer.index > sCarga +4)
 		{
 			TaskSetNew(PROCESS_RS485_MESSAGE);
 		}
 
-		/*
+/*
 		else
 		{
 			recv_buffer.index = 0;
@@ -243,7 +242,7 @@ void
 InitRS485(void)
 {
 
-	if(HARDWARE_VERSION == 0x21) Rs485TermCtrl(1);
+	if(HARDWARE_VERSION == 0x21) Rs485TermCtrl(0);
 
 	// Load RS485 address from EEPROM and config it
 	SetRS485Address(EepromReadRs485Add());
@@ -254,7 +253,7 @@ InitRS485(void)
 	//ConfigRS485(3000000);
 
 	UARTFIFOEnable(RS485_UART_BASE);
-	UARTFIFOLevelSet(RS485_UART_BASE,UART_FIFO_TX1_8,UART_FIFO_RX4_8);
+	UARTFIFOLevelSet(RS485_UART_BASE,UART_FIFO_TX1_8,UART_FIFO_RX1_8);
 
 	//Habilita interrupção pela UART1 (RS-485)
 	IntRegister(RS485_INT, RS485IntHandler);

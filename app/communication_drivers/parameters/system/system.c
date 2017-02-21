@@ -142,7 +142,8 @@ SystemInit(void)
 
 	DcdcPwrCtrl(true);
 
-	CtrllawInit();
+	// Não necessita da configuração da malha de controle, o dsp ja possui os dados
+	//CtrllawInit();
 
 	InitDisplay();
 
@@ -172,7 +173,7 @@ SystemInit(void)
 		PwmEletrCtrl(true);
 	}
 
-	SdramInit();
+	//SdramInit();
 
 	InitI2cOffboardExternalDevices();
 

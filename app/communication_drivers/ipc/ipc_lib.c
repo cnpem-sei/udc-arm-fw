@@ -93,16 +93,16 @@ IPCInit(void)
 
 		case FAC_Full_DCDC_20kHz:
 		{
-			//IPC_MtoC_Msg.WfmRef.SyncMode.enu = OneShot;
-			IPC_MtoC_Msg.WfmRef.SyncMode.enu = SampleBySample_Continuous;
+			IPC_MtoC_Msg.WfmRef.SyncMode.enu = OneShot;
+			//IPC_MtoC_Msg.WfmRef.SyncMode.enu = SampleBySample_Continuous;
 			memcpy(0x20014000, wfmRef_Data_FAC, 8192);
 			break;
 		}
 
 		case FBPx4_100kHz:
 		{
-			//IPC_MtoC_Msg.WfmRef.SyncMode.enu = OneShot;
-			IPC_MtoC_Msg.WfmRef.SyncMode.enu = SampleBySample_Continuous;
+			IPC_MtoC_Msg.WfmRef.SyncMode.enu = OneShot;
+			//IPC_MtoC_Msg.WfmRef.SyncMode.enu = SampleBySample_Continuous;
 			memcpy(0x20014000, wfmRef_Data_FBP, 8192);
 			break;
 		}

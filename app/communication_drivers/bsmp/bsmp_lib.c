@@ -1344,7 +1344,8 @@ BSMPInit(void)
 			Init_BSMP_var(1,DP_Framework.NetSignals[11].u8);		// dDuty
 			Init_BSMP_var(2,DP_Framework_MtoC.NetSignals[0].u8);	// Iout1
 			Init_BSMP_var(3,DP_Framework_MtoC.NetSignals[1].u8);	// Iout2
-			Init_BSMP_var(3,DP_Framework_MtoC.NetSignals[1].u8);	// Iout2
+			Init_BSMP_var(7,DP_Framework.NetSignals[18].u8);	// V DC Link Mod1
+			Init_BSMP_var(8,DP_Framework.NetSignals[20].u8);	// V DC Link Mod2
 			Init_BSMP_var(11,DP_Framework.DutySignals[0].u8);		// Duty Mod 1
 			Init_BSMP_var(12,DP_Framework.DutySignals[1].u8);		// Duty Mod 2
 			Init_BSMP_var(13,Mod1Q4.RH);							// Relative humidity Mod1
