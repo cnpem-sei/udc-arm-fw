@@ -271,7 +271,7 @@ AdcpIntHandler(void)
     ulStatus = SSIIntStatus(ADCP_SPI_BASE, true);
 
     // Clear any pending status
-    SSIIntClear(ADCP_SPI_BASE, ulStatus);
+    //SSIIntClear(ADCP_SPI_BASE, ulStatus);
 
 	// ******** We received a "FIFO RX SSI0 half full" interrupt *********
 	if (ulStatus & SSI_RXFF)
@@ -301,6 +301,9 @@ AdcpIntHandler(void)
 		AdcChannel(readVal);
 
 	}
+
+	// Clear any pending status
+	SSIIntClear(ADCP_SPI_BASE, ulStatus);
 
 	GPIOPinWrite(DEBUG_BASE, DEBUG_PIN, OFF);
 }
@@ -335,12 +338,12 @@ void
 AdcpRxIntEnable(void)
 {
 	// Configure ADCP Rx as Interrupt driven
-	IntEnable(ADCP_SPI_INT);
 	SSIIntEnable(ADCP_SPI_BASE,SSI_RXFF|SSI_RXOR);
 
 	SSIIntRegister(ADCP_SPI_BASE, AdcpIntHandler);
 
-	IntPrioritySet(RS485_INT, 3);
+	IntPrioritySet(ADCP_SPI_INT, 3);
+	IntEnable(ADCP_SPI_INT);
 }
 
 // ADCP parametrization

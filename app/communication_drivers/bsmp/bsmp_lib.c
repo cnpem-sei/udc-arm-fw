@@ -23,6 +23,7 @@
 #include "../ipc/ipc_lib.h"
 #include "../shared_memory/structs.h"
 #include "../can/can_bkp.h"
+#include "../rs485/rs485.h"
 //#!
 
 #include <stdint.h>
@@ -207,6 +208,80 @@ static bool fullcurve_write_block (struct bsmp_curve *curve, uint16_t block,
     }
 }
 
+//*****************************************************************************
+// 		Function used to read block for BSMP wfmRef_Blocks Curve entity
+//*****************************************************************************
+static bool wfmrefblocks_read_block (struct bsmp_curve *curve, uint16_t block,
+                              uint8_t *data, uint16_t *len)
+{
+    uint8_t *block_data;
+    uint16_t block_size = curve->info.block_size;
+
+    block_data = &wfm_curve_memory[block*block_size];
+
+    //Check if any block is busy
+    if( (IPC_CtoM_Msg.PSModule.OpMode.enu == WfmRef) && (IPC_CtoM_Msg.WfmRef.BufferInfo.BufferBusy.enu != Buffer_Idle) )
+    	return false;
+    else
+    {
+    	memcpy(data, block_data, block_size);
+    	// We copied the whole requested block
+    	*len = block_size;
+    	return true;
+    }
+}
+
+
+//*****************************************************************************
+// 		Function used to write block for BSMP wfmRef_Blocks Curve entity
+//*****************************************************************************
+static bool wfmrefblocks_write_block (struct bsmp_curve *curve, uint16_t block,
+                               uint8_t *data, uint16_t len)
+{
+    uint8_t *block_data;
+    uint16_t block_size = curve->info.block_size;
+
+    block_data = &wfm_curve_memory[block*block_size];
+
+    switch(curve->info.id)
+    {
+    	case 0:
+    	{
+    	    if( (IPC_CtoM_Msg.PSModule.OpMode.enu == WfmRef) && ( (IPC_CtoM_Msg.WfmRef.BufferInfo.BufferBusy.u16 == (block+2)) || (IPC_CtoM_Msg.WfmRef.BufferInfo.BufferBusy.enu==Buffer_All) ) )
+    	    	return false;
+    	    else
+    	    {
+    	    	memcpy(block_data, data, len);
+    	    	IPC_MtoC_Msg.WfmRef.BufferInfo.BufferBusy.u16 = block+2;
+    	    	IPC_MtoC_Msg.WfmRef.BufferInfo.PtrBufferStart.f = (float *) IPC_MtoC_Translate((unsigned long)block_data);
+    	    	IPC_MtoC_Msg.WfmRef.BufferInfo.PtrBufferEnd.f   = (float *) (IPC_MtoC_Translate((unsigned long)(block_data + len))-2);
+    	    	IPC_MtoC_Msg.WfmRef.BufferInfo.PtrBufferK.f     = IPC_MtoC_Msg.WfmRef.BufferInfo.PtrBufferStart.f;
+    	    	curve->user = ((void*) (IPC_MtoC_Msg.WfmRef.BufferInfo.PtrBufferEnd.f - IPC_MtoC_Msg.WfmRef.BufferInfo.PtrBufferStart.f)) + 1;
+    	    	return true;
+    	    }
+    		break;
+    	}
+
+    	case 3:
+    	case 4:
+    	{
+    	    if( (IPC_CtoM_Msg.PSModule.OpMode.enu == WfmRef) && (IPC_CtoM_Msg.WfmRef.BufferInfo.BufferBusy.enu != Buffer_Idle) )
+    	    	return false;
+    	    else
+    	    {
+    	    	memcpy(block_data, data, len);
+    	    	IPC_MtoC_Msg.WfmRef.BufferInfo.BufferBusy.enu = Buffer_All;
+    	    	IPC_MtoC_Msg.WfmRef.BufferInfo.PtrBufferStart.f = (float *) IPC_MtoC_Translate((unsigned long)wfm_curve_memory);
+    	    	IPC_MtoC_Msg.WfmRef.BufferInfo.PtrBufferEnd.f   = (float *) (IPC_MtoC_Translate((unsigned long)(block_data + len))-2);
+    	    	IPC_MtoC_Msg.WfmRef.BufferInfo.PtrBufferK.f     = IPC_MtoC_Msg.WfmRef.BufferInfo.PtrBufferStart.f;
+    	    	curve->user = ((void*) (IPC_MtoC_Msg.WfmRef.BufferInfo.PtrBufferEnd.f - IPC_MtoC_Msg.WfmRef.BufferInfo.PtrBufferStart.f)) + 1;
+    	    	return true;
+    	    }
+    		break;
+    	}
+    }
+}
+
 
 //*****************************************************************************
 // 					WaveformReference Curve Declaration
@@ -252,6 +327,18 @@ static struct bsmp_curve fullwfm_curve = {
     .read_block      = fullcurve_read_block,
     .write_block     = fullcurve_write_block,
     .user            = (void*) "FULLWAVEFORM"
+};
+
+//*****************************************************************************
+// 					WaveformBlocks Curve Declaration
+//*****************************************************************************
+static struct bsmp_curve wfm_blocks = {
+    .info.nblocks    = 16,					// 16 blocks
+    .info.block_size = 1024,				// 1024 bytes per block
+    .info.writable   = true,				// The client can write to this Curve.
+    .read_block      = wfmrefblocks_read_block,
+    .write_block     = wfmrefblocks_write_block,
+    .user            = (void*) "WAVEFORMBLOCKS"
 };
 
 //*****************************************************************************
@@ -672,8 +759,7 @@ static struct bsmp_func wfmrefupdate_func = {
 //*****************************************************************************
 uint8_t ConfigPSModel (uint8_t *input, uint8_t *output)
 {
-	//EepromWritePSModel(input[0]);
-	SavePsModel(input[0]);
+    SavePsModel(input[0]);
 	*output = 0;
 	return *output;
 }
@@ -853,6 +939,24 @@ static struct bsmp_func resetwfmref_func = {
     .info.input_size  = 0,      // Nothing is read from the input parameter
     .info.output_size = 1,      // command_ack
 };
+
+//*****************************************************************************
+//                      Set RS485 Address Function
+//*****************************************************************************
+uint8_t SetRSAddress (uint8_t *input, uint8_t *output)
+{
+    SetRS485Address(input[0]);
+    *output = 0;
+    return *output;
+}
+
+static struct bsmp_func set_rsaddress = {
+    .func_p           = SetRSAddress,
+    .info.input_size  = 2,      // rs_address is read from the input parameter
+    .info.output_size = 1,      // command_ack
+};
+
+//*****************************************************************************
 
 //*****************************************************************************
 // 							Dummy BSMP Functions
@@ -1218,6 +1322,7 @@ BSMPInit(void)
 	bsmp_register_function(&bsmp, &enablehradcsampling_func);	// Function ID 17
 	bsmp_register_function(&bsmp, &disablehradcsampling_func);	// Function ID 18
 	bsmp_register_function(&bsmp, &resetwfmref_func);			// Function ID 19
+	bsmp_register_function(&bsmp, &set_rsaddress);              // Function ID 20
 
 	//*****************************************************************************
 	// 						BSMP Variable Register
@@ -1271,10 +1376,12 @@ BSMPInit(void)
 	//*****************************************************************************
 	// 						BSMP Curve Register
 	//*****************************************************************************
-	bsmp_register_curve(&bsmp, &wfm_curve);       		 // Curve ID 0
-	bsmp_register_curve(&bsmp, &sigGen_SweepAmp);        // Curve ID 1
-	bsmp_register_curve(&bsmp, &samples_buffer);         // Curve ID 2
-	bsmp_register_curve(&bsmp, &fullwfm_curve);          // Curve ID 3
+	bsmp_register_curve(&bsmp, &wfm_curve);				// Curve ID 0
+	bsmp_register_curve(&bsmp, &sigGen_SweepAmp);		// Curve ID 1
+	bsmp_register_curve(&bsmp, &samples_buffer);		// Curve ID 2
+	bsmp_register_curve(&bsmp, &fullwfm_curve);			// Curve ID 3
+	bsmp_register_curve(&bsmp, &wfm_blocks);			// Curve ID 4
+
 	//********************************************
 
 	//*****************************************************************************

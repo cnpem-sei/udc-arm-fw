@@ -19,6 +19,7 @@
 #include "driverlib/interrupt.h"
 #include "driverlib/systick.h"
 #include "driverlib/debug.h"
+#include "driverlib/ram.h"
 
 //#include "set_pinout_udc_v2.0.h"
 //#include "set_pinout_ctrl_card.h"
@@ -37,6 +38,12 @@
 #include <stdint.h>
 #include <stdarg.h>
 #include <string.h>
+
+// Put the code in to the RAM memory
+#pragma CODE_SECTION(RS485IntHandler, "ramfuncs");
+#pragma CODE_SECTION(RS485ProcessData, "ramfuncs");
+
+//*****************************************************************************
 
 #pragma DATA_SECTION(recv_buffer, "SERIALBUFFER")
 #pragma DATA_SECTION(send_buffer, "SERIALBUFFER")
@@ -71,17 +78,19 @@ static struct bsmp_raw_packet send_packet =
 
 //*****************************************************************************
 
-static uint8_t NewData = 0;
+static uint8_t MessageOverflow = 0;
 
 //*****************************************************************************
 
 void
 RS485IntHandler(void)
 {
-	long lChar;
-	short sCarga;
-	unsigned char ucChar;
-	unsigned long ulStatus;
+	uint32_t lChar;
+	uint16_t sCarga;
+	uint8_t ucChar;
+	uint32_t ulStatus;
+
+	uint8_t time_out = 0;
 
 	// Get the interrrupt status.
 	ulStatus = UARTIntStatus(RS485_UART_BASE, true);
@@ -95,34 +104,60 @@ RS485IntHandler(void)
 	if(UART_INT_RX == ulStatus || UART_INT_RT == ulStatus)
 	{
 
-		// Loop while there are characters in the receive FIFO.
-		while(UARTCharsAvail(RS485_UART_BASE) && recv_buffer.index < SERIAL_BUF_SIZE)
-		{
-			lChar = UARTCharGet(RS485_UART_BASE);
-			if(!(lChar & ~0xFF))
-			{
-				ucChar = (unsigned char)(lChar & 0xFF);
-				recv_buffer.data[recv_buffer.index] = ucChar;
-				recv_buffer.csum += recv_buffer.data[recv_buffer.index++];
-				//NewData = 1;
-			}
+		//for(time_out = 0; time_out < 15; time_out++)
+		//{
+		    // Loop while there are characters in the receive FIFO.
+            while(UARTCharsAvail(RS485_UART_BASE) && recv_buffer.index < SERIAL_BUF_SIZE)
+            {
 
-		}
+                //recv_buffer.data[recv_buffer.index] = (uint8_t)UARTCharGet(RS485_UART_BASE);;
+                //recv_buffer.csum += recv_buffer.data[recv_buffer.index++];
+
+
+            	lChar = UARTCharGet(RS485_UART_BASE);
+            	if(!(lChar & ~0xFF))
+                {
+                    ucChar = (unsigned char)(lChar & 0xFF);
+                    recv_buffer.data[recv_buffer.index] = ucChar;
+                    recv_buffer.csum += recv_buffer.data[recv_buffer.index++];
+                    //NewData = 1;
+                }
+
+                time_out = 0;
+
+            }
+		//}
+
 
 		sCarga = (recv_buffer.data[2]<<8) | recv_buffer.data[3];
 		if(recv_buffer.index > sCarga +4)
 		{
-			TaskSetNew(PROCESS_RS485_MESSAGE);
+			//TaskSetNew(PROCESS_RS485_MESSAGE);
+		    RS485ProcessData();
+		    MessageOverflow = 0;
 		}
 
-/*
+		// Only 6Mbps
+		/*
 		else
 		{
 			recv_buffer.index = 0;
 			recv_buffer.csum  = 0;
 			send_buffer.index = 0;
 			send_buffer.csum  = 0;
-		} */
+		}
+		*/
+
+		// Low Speed
+        if(sCarga > SERIAL_BUF_SIZE)
+        {
+            recv_buffer.index = 0;
+            recv_buffer.csum  = 0;
+            send_buffer.index = 0;
+            send_buffer.csum  = 0;
+
+            MessageOverflow = 0;
+        }
 
 	}
 
@@ -174,6 +209,8 @@ RS485ProcessData(void)
 
 	//GPIOPinWrite(DEBUG_BASE, DEBUG_PIN, ON);
 
+    GPIOPinWrite(EEPROM_WP_BASE, EEPROM_WP_PIN, ON);
+
 	// Received less than HEADER + CSUM bytes
 	if(recv_buffer.index < (SERIAL_HEADER + SERIAL_CSUM))
 		goto exit;
@@ -185,6 +222,8 @@ RS485ProcessData(void)
 	// Packet is not for me
 	if(recv_buffer.data[0] != SERIAL_ADDRESS && recv_buffer.data[0] != BCAST_ADDRESS)
 		goto exit;
+
+	//GPIOPinWrite(EEPROM_WP_BASE, EEPROM_WP_PIN, ON);
 
 	recv_packet.len = recv_buffer.index - SERIAL_HEADER - SERIAL_CSUM;
 
@@ -207,6 +246,8 @@ RS485ProcessData(void)
 	// Clear new data flag
 	//NewData = 0;
 	//GPIOPinWrite(DEBUG_BASE, DEBUG_PIN, OFF);
+
+	GPIOPinWrite(EEPROM_WP_BASE, EEPROM_WP_PIN, OFF);
 
 }
 
@@ -265,6 +306,9 @@ InitRS485(void)
 
 	//Seta níveis de prioridade entre as interrupções
 	IntPrioritySet(RS485_INT, 0);
+
+	// Enable the UART
+	UARTEnable(RS485_UART_BASE);
 
 	IntEnable(RS485_INT);
 }

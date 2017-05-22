@@ -29,8 +29,6 @@
 uint16_t time = 0x00;
 uint8_t  iib_sample = 0x00;
 
-uint8_t	LedCtrl = 0;
-
 // Trata a interrupção do timer0 a cada 1ms
 void
 GlobalTimerIntHandler(void)
@@ -57,21 +55,7 @@ GlobalTimerIntHandler(void)
 		TaskSetNew(POWER_TEMP_SAMPLE);
 		TaskSetNew(EEPROM_WRITE_REQUEST_CHECK);
 		#if HARDWARE_VERSION == 0x21
-			if(LedCtrl)
-			{
-				LedStsCtrl(0);
-				LedItlkCtrl(0);
-				SoundSelCtrl(0);
-				LedCtrl = 0;
-			}
-			else
-			{
-				LedStsCtrl(1);
-				LedItlkCtrl(1);
-				SoundSelCtrl(1);
-				LedCtrl = 1;
-			}
-
+		    TaskSetNew(LED_STATUS);
 			#endif
 	}
 
@@ -90,11 +74,13 @@ GlobalTimerInit(void)
     // Configura o TIMER 0 A com interrupção de 1ms (divide o clock por 1000)
 	TimerLoadSet(TIMER0_BASE, TIMER_A, SysCtlClockGet(SYSTEM_CLOCK_SPEED) / 1024 );
 
-	IntEnable(INT_TIMER0A);
+
 	TimerIntEnable(TIMER0_BASE, TIMER_TIMA_TIMEOUT);
 	IntRegister(INT_TIMER0A, GlobalTimerIntHandler);
 
-	IntPrioritySet(INT_TIMER0A, 4);
+	IntPrioritySet(INT_TIMER0A, 3);
+
+	IntEnable(INT_TIMER0A);
 
 	TimerEnable(TIMER0_BASE, TIMER_A);
 }

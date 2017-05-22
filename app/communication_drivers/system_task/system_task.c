@@ -30,6 +30,8 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+volatile uint8_t LedCtrl = 0;
+
 volatile bool READ_RTC = 0;
 volatile bool READ_IIB = 0;
 volatile bool ITLK_ALARM_RESET = 0;
@@ -39,6 +41,7 @@ volatile bool PROCESS_CAN_MESS = 0;
 volatile bool PROCESS_RS485_MESS = 0;
 volatile bool PROCESS_POWER_TEMP_SAMPLE = 0;
 volatile bool EEPROM_WRITE_REQUEST = 0;
+volatile bool LED_STATUS_REQUEST = 0;
 
 void
 TaskSetNew(uint8_t TaskNum)
@@ -79,6 +82,9 @@ TaskSetNew(uint8_t TaskNum)
 	case EEPROM_WRITE_REQUEST_CHECK:
 		EEPROM_WRITE_REQUEST = 1;
 		break;
+	case LED_STATUS:
+	    LED_STATUS_REQUEST = 1;
+	    break;
 
 	default:
 
@@ -156,6 +162,27 @@ TaskCheck(void)
 	{
 		EEPROM_WRITE_REQUEST = 0;
 		EepromWriteRequestCheck();
+	}
+
+	else if(LED_STATUS_REQUEST)
+	{
+	    LED_STATUS_REQUEST = 0;
+
+	    if(LedCtrl)
+        {
+            LedStsCtrl(0);
+            LedItlkCtrl(0);
+            SoundSelCtrl(0);
+            LedCtrl = 0;
+        }
+        else
+        {
+            LedStsCtrl(1);
+            LedItlkCtrl(1);
+            SoundSelCtrl(1);
+            LedCtrl = 1;
+        }
+
 	}
 
 }
