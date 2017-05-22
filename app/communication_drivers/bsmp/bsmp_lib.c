@@ -1522,6 +1522,15 @@ BSMPInit(void)
 			Init_BSMP_var(18,DP_Framework_MtoC.NetSignals[16].u8);	// PS4 Temperature
 			break;
 
+		case FAP_6U_DCDC_20kHz:
+			// TODO: Make this definition compatible with BSMP + IPC specs
+			Init_BSMP_var(1,DP_Framework.NetSignals[18].u8);		// Max Iload measured
+			Init_BSMP_var(2,DP_Framework_MtoC.NetSignals[0].u8);	// Imod1
+			Init_BSMP_var(3,DP_Framework_MtoC.NetSignals[1].u8);	// Imod2
+			Init_BSMP_var(7,DP_Framework.NetSignals[13].u8);		// Vdclink (C28)
+			Init_BSMP_var(11,DP_Framework.DutySignals[0].u8);		// Duty Mod1
+			Init_BSMP_var(12,DP_Framework.DutySignals[1].u8);		// Duty Mod2
+			break;
 
 		default:
 			break;
