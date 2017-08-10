@@ -282,6 +282,27 @@ static bool wfmrefblocks_write_block (struct bsmp_curve *curve, uint16_t block,
     }
 }
 
+//*****************************************************************************
+// 				Function used to read block for BSMP SamplesBuffer
+//*****************************************************************************
+static bool buffer_read_blocks (struct bsmp_curve *curve, uint16_t block,
+                              uint8_t *data, uint16_t *len)
+{
+    uint8_t *block_data;
+    uint16_t block_size = curve->info.block_size;
+
+    block_data = &samples_buffer_memory[block*block_size];
+
+    //Check if any block is busy
+    if((IPC_CtoM_Msg.SamplesBuffer.BufferBusy.u16 == (block+2))||(IPC_CtoM_Msg.SamplesBuffer.BufferBusy.enu==Buffer_All))
+    	return false;
+    else
+    {
+    	memcpy(data, block_data, block_size);
+    	*len = block_size;
+    	return true;
+    }
+}
 
 //*****************************************************************************
 // 					WaveformReference Curve Declaration
@@ -311,7 +332,7 @@ static struct bsmp_curve sigGen_SweepAmp = {
 //*****************************************************************************
 static struct bsmp_curve samples_buffer = {
     .info.nblocks    = 1,                  // New 1 //2 blocks
-    .info.block_size = 2*8192,               //New 16384 8192 bytes per block
+    .info.block_size = 2*8192,             //New 16384 8192 bytes per block
     .info.writable   = false,              // Read-Only
     .read_block      = buffer_read_block,
     .user            = (void*) "SAMPLESBUFFER"
@@ -339,6 +360,17 @@ static struct bsmp_curve wfm_blocks = {
     .read_block      = wfmrefblocks_read_block,
     .write_block     = wfmrefblocks_write_block,
     .user            = (void*) "WAVEFORMBLOCKS"
+};
+
+//*****************************************************************************
+// 					SamplesBufferBlocks Curve Declaration
+//*****************************************************************************
+static struct bsmp_curve samples_buffer_blocks = {
+    .info.nblocks    = 16,					// 16 blocks
+    .info.block_size = 1024,				// 1024 bytes per block
+    .info.writable   = false,				// The client can write to this Curve.
+    .read_block      = buffer_read_blocks,
+    .user            = (void*) "SAMPLESBUFFER_BLOCKS"
 };
 
 //*****************************************************************************
@@ -957,6 +989,64 @@ static struct bsmp_func set_rsaddress = {
 };
 
 //*****************************************************************************
+//                      Enable SamplesBuffer
+//*****************************************************************************
+uint8_t EnableSamplesBuffer (uint8_t *input, uint8_t *output)
+{
+   	IPC_MtoC_Msg.PSModule.BufferOnOff.u16 = 1;
+   	SendIpcFlag(SAMPLES_BUFFER_ONOFF);
+
+   	ulTimeout = 0;
+    while ((HWREG(MTOCIPC_BASE + IPC_O_MTOCIPCFLG) & SAMPLES_BUFFER_ONOFF)&&(ulTimeout<TIMEOUT_VALUE)){
+		ulTimeout++;
+	}
+
+	if(ulTimeout==TIMEOUT_VALUE){
+		*output = 5;
+	}
+	else{
+		*output = 0;
+	}
+
+    return *output;
+}
+
+static struct bsmp_func enable_samplesBuffer = {
+    .func_p           = EnableSamplesBuffer,
+    .info.input_size  = 0,      // Nothing is read from the input parameter
+    .info.output_size = 1,      // command_ack
+};
+
+//*****************************************************************************
+//                      Disable SamplesBuffer
+//*****************************************************************************
+uint8_t DisableSamplesBuffer (uint8_t *input, uint8_t *output)
+{
+   	IPC_MtoC_Msg.PSModule.BufferOnOff.u16 = 0;
+   	SendIpcFlag(SAMPLES_BUFFER_ONOFF);
+
+   	ulTimeout = 0;
+    while ((HWREG(MTOCIPC_BASE + IPC_O_MTOCIPCFLG) & SAMPLES_BUFFER_ONOFF)&&(ulTimeout<TIMEOUT_VALUE)){
+		ulTimeout++;
+	}
+
+	if(ulTimeout==TIMEOUT_VALUE){
+		*output = 5;
+	}
+	else{
+		*output = 0;
+	}
+
+    return *output;
+}
+
+static struct bsmp_func disable_samplesBuffer = {
+    .func_p           = DisableSamplesBuffer,
+    .info.input_size  = 0,      // Nothing is read from the input parameter
+    .info.output_size = 1,      // command_ack
+};
+
+//*****************************************************************************
 
 //*****************************************************************************
 // 							Dummy BSMP Functions
@@ -1323,6 +1413,8 @@ BSMPInit(void)
 	bsmp_register_function(&bsmp, &disablehradcsampling_func);	// Function ID 18
 	bsmp_register_function(&bsmp, &resetwfmref_func);			// Function ID 19
 	bsmp_register_function(&bsmp, &set_rsaddress);              // Function ID 20
+	bsmp_register_function(&bsmp, &enable_samplesBuffer);       // Function ID 21
+	bsmp_register_function(&bsmp, &disable_samplesBuffer);      // Function ID 22
 
 	//*****************************************************************************
 	// 						BSMP Variable Register
@@ -1381,6 +1473,7 @@ BSMPInit(void)
 	bsmp_register_curve(&bsmp, &samples_buffer);		// Curve ID 2
 	bsmp_register_curve(&bsmp, &fullwfm_curve);			// Curve ID 3
 	bsmp_register_curve(&bsmp, &wfm_blocks);			// Curve ID 4
+	bsmp_register_curve(&bsmp, &samples_buffer_blocks);	// Curve ID 5
 
 	//********************************************
 
@@ -1451,8 +1544,8 @@ BSMPInit(void)
 			Init_BSMP_var(1,DP_Framework.NetSignals[11].u8);		// dDuty
 			Init_BSMP_var(2,DP_Framework_MtoC.NetSignals[0].u8);	// Iout1
 			Init_BSMP_var(3,DP_Framework_MtoC.NetSignals[1].u8);	// Iout2
-			Init_BSMP_var(7,DP_Framework.NetSignals[18].u8);	// V DC Link Mod1
-			Init_BSMP_var(8,DP_Framework.NetSignals[20].u8);	// V DC Link Mod2
+			Init_BSMP_var(7,DP_Framework.NetSignals[17].u8);		// V DC Link Mod1
+			Init_BSMP_var(8,DP_Framework.NetSignals[19].u8);		// V DC Link Mod2
 			Init_BSMP_var(11,DP_Framework.DutySignals[0].u8);		// Duty Mod 1
 			Init_BSMP_var(12,DP_Framework.DutySignals[1].u8);		// Duty Mod 2
 			Init_BSMP_var(13,Mod1Q4.RH);							// Relative humidity Mod1
@@ -1504,6 +1597,7 @@ BSMPInit(void)
 			break;
 
 		case FBPx4_100kHz:
+		case JIGA_BASTIDOR:
 			Init_BSMP_var(2,DP_Framework.NetSignals[5].u8);			// PS1 iLoad
 			Init_BSMP_var(3,DP_Framework.NetSignals[7].u8);			// PS2 iLoad
 			Init_BSMP_var(4,DP_Framework.NetSignals[9].u8);			// PS3 iLoad

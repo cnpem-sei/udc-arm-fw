@@ -150,6 +150,7 @@ TaskCheck(void)
 				//PowerSupply1TempRead();
 				break;
 			case FBPx4_100kHz:
+			case JIGA_BASTIDOR:
 				PowerSupply1TempRead();
 				PowerSupply2TempRead();
 				PowerSupply3TempRead();

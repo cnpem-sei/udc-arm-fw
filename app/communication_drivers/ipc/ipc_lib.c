@@ -101,11 +101,17 @@ IPCInit(void)
 
 		case FBPx4_100kHz:
 		{
-			IPC_MtoC_Msg.WfmRef.SyncMode.enu = OneShot;
-			//IPC_MtoC_Msg.WfmRef.SyncMode.enu = SampleBySample_Continuous;
+			//IPC_MtoC_Msg.WfmRef.SyncMode.enu = OneShot;
+			IPC_MtoC_Msg.WfmRef.SyncMode.enu = SampleBySample_Continuous;
 			memcpy(0x20014000, wfmRef_Data_FBP, 8192);
 			break;
 		}
+
+		case JIGA_BASTIDOR:
+		{
+			IPC_MtoC_Msg.SigGen.Aux.f = -1.0;
+		}
+
 		default:
 		{
 			IPC_MtoC_Msg.WfmRef.SyncMode.enu = OneShot;

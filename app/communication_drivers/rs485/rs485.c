@@ -104,8 +104,8 @@ RS485IntHandler(void)
 	if(UART_INT_RX == ulStatus || UART_INT_RT == ulStatus)
 	{
 
-		//for(time_out = 0; time_out < 15; time_out++)
-		//{
+		//for(time_out = 0; time_out < 15; time_out++)  	//comentar para uso em 6Mbps
+		//{ 												//comentar para uso em 6Mbps
 		    // Loop while there are characters in the receive FIFO.
             while(UARTCharsAvail(RS485_UART_BASE) && recv_buffer.index < SERIAL_BUF_SIZE)
             {
@@ -126,7 +126,7 @@ RS485IntHandler(void)
                 time_out = 0;
 
             }
-		//}
+		//}												//comentar para uso em 6Mbps
 
 
 		sCarga = (recv_buffer.data[2]<<8) | recv_buffer.data[3];
@@ -138,7 +138,8 @@ RS485IntHandler(void)
 		}
 
 		// Only 6Mbps
-		/*
+		//comentar todo o else para para uso em 115.2kbps
+
 		else
 		{
 			recv_buffer.index = 0;
@@ -146,10 +147,12 @@ RS485IntHandler(void)
 			send_buffer.index = 0;
 			send_buffer.csum  = 0;
 		}
-		*/
 
-		// Low Speed
-        if(sCarga > SERIAL_BUF_SIZE)
+
+
+		// Low Speed (115200)
+		//comentar todo o if para uso em 6Mbps
+        /*if(sCarga > SERIAL_BUF_SIZE)
         {
             recv_buffer.index = 0;
             recv_buffer.csum  = 0;
@@ -157,7 +160,8 @@ RS485IntHandler(void)
             send_buffer.csum  = 0;
 
             MessageOverflow = 0;
-        }
+        }*/
+
 
 	}
 
@@ -289,9 +293,9 @@ InitRS485(void)
 	SetRS485Address(EepromReadRs485Add());
 
 	// Load Baud Rate configuration from EEPROM and gonfig it
-	ConfigRS485(EepromReadRs485BaudRate());
-	//ConfigRS485(6000000);
-	//ConfigRS485(3000000);
+	//ConfigRS485(EepromReadRs485BaudRate());
+	ConfigRS485(6000000);
+	//ConfigRS485(115200);
 
 	UARTFIFOEnable(RS485_UART_BASE);
 	UARTFIFOLevelSet(RS485_UART_BASE,UART_FIFO_TX1_8,UART_FIFO_RX1_8);

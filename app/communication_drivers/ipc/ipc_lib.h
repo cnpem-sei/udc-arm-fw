@@ -125,7 +125,8 @@ typedef enum
 	JIGA_HRADC,
 	FAP_DCDC_15kHz_225A,
 	FBPx4_100kHz,
-	FAP_6U_DCDC_20kHz
+	FAP_6U_DCDC_20kHz,
+	JIGA_BASTIDOR
 }ePSModel;
 
 typedef enum

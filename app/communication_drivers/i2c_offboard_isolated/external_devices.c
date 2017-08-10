@@ -20,6 +20,7 @@ InitI2cOffboardExternalDevices(void)
 			//PowerSupply1TempInit();
 			break;
 		case FBPx4_100kHz:
+		case JIGA_BASTIDOR:
 			PowerSupply1TempInit();
 			PowerSupply2TempInit();
 			PowerSupply3TempInit();
