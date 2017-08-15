@@ -50,10 +50,10 @@ const float wfmRef_Data_FAC[2048] = {0.000000000000000,0.000377055257559,0.00166
 void
 IPCInit(void)
 {
-	IPC_MtoC_Msg.PSModule.Model.u16 = (uint16_t) EepromReadPSModel();
+	IPC_MtoC_Msg.PSModule.Model.u16 = (uint16_t) JIGA_BASTIDOR; //EepromReadPSModel();
 	IPC_MtoC_Msg.PSModule.OnOff.u16 = 0;
 	IPC_MtoC_Msg.PSModule.OpMode.enu = SlowRef;
-	IPC_MtoC_Msg.PSModule.OpenLoop.u16 = 0;
+	IPC_MtoC_Msg.PSModule.OpenLoop.u16 = 0x000F;
 	IPC_MtoC_Msg.PSModule.SoftInterlocks.u32 = 0x00000000;
 	IPC_MtoC_Msg.PSModule.HardInterlocks.u32 = 0x00000000;
 	IPC_MtoC_Msg.PSModule.BufferOnOff.u16 = 0;

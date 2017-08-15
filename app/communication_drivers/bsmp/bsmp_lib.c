@@ -68,8 +68,8 @@ static bool buffer_read_block (struct bsmp_curve *curve, uint16_t block,
 
 
     IPC_MtoC_Msg.PSModule.BufferOnOff.u16=0;
-    SendIpcFlag(SAMPLES_BUFFER_ONOFF);
-    while ((HWREG(MTOCIPC_BASE + IPC_O_MTOCIPCFLG) & SAMPLES_BUFFER_ONOFF)&&(ulTimeout<TIMEOUT_VALUE)){
+    SendIpcFlag(SAMPLES_BUFFER_ON_OFF);
+    while ((HWREG(MTOCIPC_BASE + IPC_O_MTOCIPCFLG) & SAMPLES_BUFFER_ON_OFF)&&(ulTimeout<TIMEOUT_VALUE)){
     	ulTimeout++;
     }
     if(ulTimeout==TIMEOUT_VALUE){
@@ -90,10 +90,10 @@ static bool buffer_read_block (struct bsmp_curve *curve, uint16_t block,
 
     	IPC_MtoC_Msg.PSModule.BufferOnOff.u16=1;
 
-    	SendIpcFlag(SAMPLES_BUFFER_ONOFF);
+    	SendIpcFlag(SAMPLES_BUFFER_ON_OFF);
 
     	ulTimeout = 0;
-	    while ((HWREG(MTOCIPC_BASE + IPC_O_MTOCIPCFLG) & SAMPLES_BUFFER_ONOFF)&&(ulTimeout<TIMEOUT_VALUE)){
+	    while ((HWREG(MTOCIPC_BASE + IPC_O_MTOCIPCFLG) & SAMPLES_BUFFER_ON_OFF)&&(ulTimeout<TIMEOUT_VALUE)){
 	    	ulTimeout++;
 	    }
 	    if(ulTimeout==TIMEOUT_VALUE){
@@ -379,14 +379,14 @@ static struct bsmp_curve samples_buffer_blocks = {
 uint8_t TurnOn (uint8_t *input, uint8_t *output)
 {
 	ulTimeout=0;
-	if(IPCMtoCBusy(IPC_PS_ON_OFF))
+	if(IPCMtoCBusy(TURN_ON))
 	{
 		*output = 6;
 	}
 	else{
-		IPC_MtoC_Msg.PSModule.OnOff.u16=1;
-		SendIpcFlag(IPC_PS_ON_OFF);
-	    while ((HWREG(MTOCIPC_BASE + IPC_O_MTOCIPCFLG) & IPC_PS_ON_OFF)&&(ulTimeout<TIMEOUT_VALUE)){
+		IPC_MtoC_Msg.PSModule.OnOff.u16 = (input[1] << 8) | input[0];
+		SendIpcFlag(TURN_ON);
+	    while ((HWREG(MTOCIPC_BASE + IPC_O_MTOCIPCFLG) & TURN_ON)&&(ulTimeout<TIMEOUT_VALUE)){
 	    	ulTimeout++;
 	    }
 	    if(ulTimeout==TIMEOUT_VALUE){
@@ -401,9 +401,10 @@ uint8_t TurnOn (uint8_t *input, uint8_t *output)
 
 static struct bsmp_func turnon_func = {
     .func_p 		  = TurnOn,
-    .info.input_size  = 0,       // Nothing is read from the input parameter
+    .info.input_size  = 2,       // Uint16 ps_modules
     .info.output_size = 1,       // command_ack
 };
+
 
 //*****************************************************************************
 // 						TurnOff BSMP Function
@@ -411,14 +412,14 @@ static struct bsmp_func turnon_func = {
 uint8_t TurnOff (uint8_t *input, uint8_t *output)
 {
 	ulTimeout=0;
-	if(IPCMtoCBusy(IPC_PS_ON_OFF))
+	if(IPCMtoCBusy(TURN_OFF))
 	{
 		*output = 6;
 	}
 	else{
-		IPC_MtoC_Msg.PSModule.OnOff.u16 = 0;
-		SendIpcFlag(IPC_PS_ON_OFF);
-	    while ((HWREG(MTOCIPC_BASE + IPC_O_MTOCIPCFLG) & IPC_PS_ON_OFF)&&(ulTimeout<TIMEOUT_VALUE)){
+		IPC_MtoC_Msg.PSModule.OnOff.u16 = (input[1] << 8) | input[0];
+		SendIpcFlag(TURN_OFF);
+	    while ((HWREG(MTOCIPC_BASE + IPC_O_MTOCIPCFLG) & TURN_OFF)&&(ulTimeout<TIMEOUT_VALUE)){
 	    	ulTimeout++;
 	    }
 	    if(ulTimeout==TIMEOUT_VALUE){
@@ -433,7 +434,7 @@ uint8_t TurnOff (uint8_t *input, uint8_t *output)
 
 static struct bsmp_func turnoff_func = {
     .func_p           = TurnOff,
-    .info.input_size  = 0,       // Nothing is read from the input parameter
+    .info.input_size  = 2,       // Uint16 ps_modules
     .info.output_size = 1,       // command_ack
 };
 
@@ -447,7 +448,7 @@ uint8_t OpenLoop (uint8_t *input, uint8_t *output)
 		*output = 6;
 	}
 	else{
-		IPC_MtoC_Msg.PSModule.OpenLoop.u16=1;
+		IPC_MtoC_Msg.PSModule.OpenLoop.u16 |= (input[1] << 8) | input[0];
 		SendIpcFlag(OPEN_CLOSE_LOOP);
 	    while ((HWREG(MTOCIPC_BASE + IPC_O_MTOCIPCFLG) & OPEN_CLOSE_LOOP)&&(ulTimeout<TIMEOUT_VALUE)){
 	    	ulTimeout++;
@@ -464,7 +465,7 @@ uint8_t OpenLoop (uint8_t *input, uint8_t *output)
 
 static struct bsmp_func openloop_func = {
     .func_p           = OpenLoop,
-    .info.input_size  = 0,      // Nothing is read from the input parameter
+	.info.input_size  = 2,       // Uint16 ps_modules
     .info.output_size = 1,      // command_ack
 };
 
@@ -480,7 +481,7 @@ uint8_t ClosedLoop (uint8_t *input, uint8_t *output)
 		*output = 6;
 	}
 	else{
-		IPC_MtoC_Msg.PSModule.OpenLoop.u16=0;
+		IPC_MtoC_Msg.PSModule.OpenLoop.u16 = (~((input[1] << 8) | input[0])) & IPC_CtoM_Msg.PSModule.OpenLoop.u16;
 		SendIpcFlag(OPEN_CLOSE_LOOP);
 	    while ((HWREG(MTOCIPC_BASE + IPC_O_MTOCIPCFLG) & OPEN_CLOSE_LOOP)&&(ulTimeout<TIMEOUT_VALUE)){
 	    	ulTimeout++;
@@ -497,7 +498,7 @@ uint8_t ClosedLoop (uint8_t *input, uint8_t *output)
 
 static struct bsmp_func closedloop_func = {
     .func_p           = ClosedLoop,
-    .info.input_size  = 0,       // Nothing is read from the input parameter
+	.info.input_size  = 2,       // Uint16 ps_modules
     .info.output_size = 1,       // command_ack
 };
 
@@ -631,14 +632,14 @@ static struct bsmp_func configsiggen_func = {
 uint8_t EnableSigGen (uint8_t *input, uint8_t *output)
 {
 	ulTimeout=0;
-	if(IPCMtoCBusy(SIGGEN_ENA_DIS))
+	if(IPCMtoCBusy(SIGGEN_ENABLE))
 	{
 		*output = 6;
 	}
 	else{
 		IPC_MtoC_Msg.SigGen.Enable.u16 = 1;
-		SendIpcFlag(SIGGEN_ENA_DIS);
-	    while ((HWREG(MTOCIPC_BASE + IPC_O_MTOCIPCFLG) & SIGGEN_ENA_DIS)&&(ulTimeout<TIMEOUT_VALUE)){
+		SendIpcFlag(SIGGEN_ENABLE);
+	    while ((HWREG(MTOCIPC_BASE + IPC_O_MTOCIPCFLG) & SIGGEN_ENABLE)&&(ulTimeout<TIMEOUT_VALUE)){
 	    	ulTimeout++;
 	    }
 	    if(ulTimeout==TIMEOUT_VALUE){
@@ -663,14 +664,14 @@ static struct bsmp_func enablesiggen_func = {
 uint8_t DisableSigGen (uint8_t *input, uint8_t *output)
 {
 	ulTimeout=0;
-	if(IPCMtoCBusy(SIGGEN_ENA_DIS))
+	if(IPCMtoCBusy(SIGGEN_ENABLE))
 	{
 		*output = 6;
 	}
 	else{
 		IPC_MtoC_Msg.SigGen.Enable.u16 = 0;
-		SendIpcFlag(SIGGEN_ENA_DIS);
-	    while ((HWREG(MTOCIPC_BASE + IPC_O_MTOCIPCFLG) & SIGGEN_ENA_DIS)&&(ulTimeout<TIMEOUT_VALUE)){
+		SendIpcFlag(SIGGEN_ENABLE);
+	    while ((HWREG(MTOCIPC_BASE + IPC_O_MTOCIPCFLG) & SIGGEN_ENABLE)&&(ulTimeout<TIMEOUT_VALUE)){
 	    	ulTimeout++;
 	    }
 	    if(ulTimeout==TIMEOUT_VALUE){
@@ -994,10 +995,10 @@ static struct bsmp_func set_rsaddress = {
 uint8_t EnableSamplesBuffer (uint8_t *input, uint8_t *output)
 {
    	IPC_MtoC_Msg.PSModule.BufferOnOff.u16 = 1;
-   	SendIpcFlag(SAMPLES_BUFFER_ONOFF);
+   	SendIpcFlag(SAMPLES_BUFFER_ON_OFF);
 
    	ulTimeout = 0;
-    while ((HWREG(MTOCIPC_BASE + IPC_O_MTOCIPCFLG) & SAMPLES_BUFFER_ONOFF)&&(ulTimeout<TIMEOUT_VALUE)){
+    while ((HWREG(MTOCIPC_BASE + IPC_O_MTOCIPCFLG) & SAMPLES_BUFFER_ON_OFF)&&(ulTimeout<TIMEOUT_VALUE)){
 		ulTimeout++;
 	}
 
@@ -1023,10 +1024,10 @@ static struct bsmp_func enable_samplesBuffer = {
 uint8_t DisableSamplesBuffer (uint8_t *input, uint8_t *output)
 {
    	IPC_MtoC_Msg.PSModule.BufferOnOff.u16 = 0;
-   	SendIpcFlag(SAMPLES_BUFFER_ONOFF);
+   	SendIpcFlag(SAMPLES_BUFFER_ON_OFF);
 
    	ulTimeout = 0;
-    while ((HWREG(MTOCIPC_BASE + IPC_O_MTOCIPCFLG) & SAMPLES_BUFFER_ONOFF)&&(ulTimeout<TIMEOUT_VALUE)){
+    while ((HWREG(MTOCIPC_BASE + IPC_O_MTOCIPCFLG) & SAMPLES_BUFFER_ON_OFF)&&(ulTimeout<TIMEOUT_VALUE)){
 		ulTimeout++;
 	}
 
@@ -1415,6 +1416,10 @@ BSMPInit(void)
 	bsmp_register_function(&bsmp, &set_rsaddress);              // Function ID 20
 	bsmp_register_function(&bsmp, &enable_samplesBuffer);       // Function ID 21
 	bsmp_register_function(&bsmp, &disable_samplesBuffer);      // Function ID 22
+	//bsmp_register_function(&bsmp, &turnon_modules_func); 		// Function ID 23
+	//bsmp_register_function(&bsmp, &turnoff_modules_func);       // Function ID 24
+	//bsmp_register_function(&bsmp, &openloop_modules_func); 		// Function ID 25
+	//bsmp_register_function(&bsmp, &closedloop_modules_func);    // Function ID 26
 
 	//*****************************************************************************
 	// 						BSMP Variable Register

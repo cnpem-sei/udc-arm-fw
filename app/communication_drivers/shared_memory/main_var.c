@@ -56,7 +56,7 @@ OutputStsWrite(uint8_t sts)
 	//shm_m2c_param_ctrl.ps_sts = sts;
 
 	IPC_MtoC_Msg.PSModule.OnOff.u8[0]=sts;
-	SendIpcFlag(IPC_PS_ON_OFF);
+	SendIpcFlag(TURN_ON);
 }
 
 uint8_t
