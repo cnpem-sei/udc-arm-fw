@@ -22,6 +22,7 @@
 
 #include "../ipc/ipc_lib.h"
 #include "../shared_memory/structs.h"
+#include "../shared_memory/hradc.h"
 #include "../can/can_bkp.h"
 #include "../rs485/rs485.h"
 //#!
@@ -1046,7 +1047,102 @@ static struct bsmp_func disable_samplesBuffer = {
     .info.output_size = 1,      // command_ack
 };
 
+
 //*****************************************************************************
+// 				Select HRADC board for test of calibration
+//*****************************************************************************
+uint8_t SelectHRADCBoard (uint8_t *input, uint8_t *output)
+{
+	ulTimeout=0;
+	if(IPCMtoCBusy(HRADC_SELECT_BOARD))
+	{
+		*output = 6;
+	}
+	else{
+		IPC_MtoC_Msg.HRADCConfig.ID.u16	= (input[1] << 8) | input[0];
+		SendIpcFlag(HRADC_SELECT_BOARD);
+
+	    while ((HWREG(MTOCIPC_BASE + IPC_O_MTOCIPCFLG) & HRADC_SELECT_BOARD)&&(ulTimeout<TIMEOUT_VALUE)){
+	    	ulTimeout++;
+	    }
+	    if(ulTimeout==TIMEOUT_VALUE){
+	    	*output = 5;
+	    }
+	    else{
+	    	*output = 0;
+	    }
+	}
+	return *output;
+}
+
+static struct bsmp_func selecthradc_func = {
+    .func_p 		  = SelectHRADCBoard,
+    .info.input_size  = 2,		// ID(2)
+    .info.output_size = 1,		// command_ack
+};
+
+
+//*****************************************************************************
+// 				Select HRADC board for test of calibration
+//*****************************************************************************
+uint8_t SelectTestSource (uint8_t *input, uint8_t *output)
+{
+	ulTimeout=0;
+	if(IPCMtoCBusy(HRADC_TEST_SOURCE))
+	{
+		*output = 6;
+	}
+	else{
+		IPC_MtoC_Msg.HRADCConfig.InputType.u16 = (input[1] << 8) | input[0];
+		SendIpcFlag(HRADC_TEST_SOURCE);
+
+	    while ((HWREG(MTOCIPC_BASE + IPC_O_MTOCIPCFLG) & HRADC_TEST_SOURCE)&&(ulTimeout<TIMEOUT_VALUE)){
+	    	ulTimeout++;
+	    }
+	    if(ulTimeout==TIMEOUT_VALUE){
+	    	*output = 5;
+	    }
+	    else{
+	    	*output = 0;
+	    }
+	}
+	return *output;
+}
+
+static struct bsmp_func selecttestsource_func = {
+    .func_p 		  = SelectTestSource,
+    .info.input_size  = 2,		// InputType(2)
+    .info.output_size = 1,		// command_ack
+};
+
+
+//*****************************************************************************
+// 				Reset HRADC boards via HRADC_DIG_ENABLE pin
+//*****************************************************************************
+
+uint8_t ResetHRADCBoards (uint8_t *input, uint8_t *output)
+{
+	if(HRADCs_Info.enable_Sampling)
+	{
+		*output = 6;
+	}
+	else
+	{
+		HradcRstCtrl(1);
+		for(ulTimeout = 0; ulTimeout < 5000000; ulTimeout++);{}
+		HradcRstCtrl(0);
+		*output = 0;
+	}
+
+    return *output;
+}
+
+static struct bsmp_func resethradc_func = {
+    .func_p 		  = ResetHRADCBoards,
+    .info.input_size  = 0,		// Nothing is read from the input parameter
+    .info.output_size = 1,		// command_ack
+};
+
 
 //*****************************************************************************
 // 							Dummy BSMP Functions
@@ -1415,6 +1511,9 @@ BSMPInit(void)
 	bsmp_register_function(&bsmp, &set_rsaddress);              // Function ID 20
 	bsmp_register_function(&bsmp, &enable_samplesBuffer);       // Function ID 21
 	bsmp_register_function(&bsmp, &disable_samplesBuffer);      // Function ID 22
+	bsmp_register_function(&bsmp, &selecthradc_func);      		// Function ID 23
+	bsmp_register_function(&bsmp, &selecttestsource_func);      // Function ID 24
+	bsmp_register_function(&bsmp, &resethradc_func);      // Function ID 25
 
 	//*****************************************************************************
 	// 						BSMP Variable Register

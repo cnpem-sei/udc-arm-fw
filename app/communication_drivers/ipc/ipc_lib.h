@@ -14,6 +14,7 @@
 
 #include "stdint.h"
 #include "../shared_memory/structs.h"
+#include "../shared_memory/hradc.h"
 
 #ifndef IPC_LIB_H_
 #define IPC_LIB_H_
@@ -40,6 +41,8 @@
 #define RESET_INTERLOCKS		0x00001001 //IPC1+IPC13
 #define RESET_WFMREF			0x00002001 //IPC1+IPC14
 //...//
+#define HRADC_SELECT_BOARD		0x02000001 //IPC1+IPC26
+#define HRADC_TEST_SOURCE		0x04000001 //IPC1+IPC27
 #define HRADC_SAMPLING_DISABLE	0x08000001 //IPC1+IPC28
 #define HRADC_SAMPLING_ENABLE	0x10000001 //IPC1+IPC29
 #define HRADC_OPMODE			0x20000001 //IPC1+IPC30
@@ -160,7 +163,7 @@ typedef enum
 	Buffer_Block1,
 } eBlockBusy;
 
-typedef enum {
+/*typedef enum {
 		Vin_bipolar,
 		Vin_unipolar_p,
 		Vin_unipolar_n,
@@ -182,7 +185,7 @@ typedef enum {
 typedef enum {
 		HRADC_Sampling,
 		HRADC_UFM
-} eHRADCOpMode;
+} eHRADCOpMode;*/
 
 typedef struct
 {
