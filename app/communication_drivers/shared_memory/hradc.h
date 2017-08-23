@@ -16,7 +16,7 @@
 #define RAILS_DISABLE 		0
 #define RAILS_ENABLE 		1
 
-#define UFM_BOARDDATA_SIZE 	24
+#define UFM_BOARDDATA_SIZE 	28
 
 /* Enumerate definition for configurable analog inputs */
 typedef enum {
