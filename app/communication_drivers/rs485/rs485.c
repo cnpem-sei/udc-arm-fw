@@ -110,20 +110,20 @@ RS485IntHandler(void)
             while(UARTCharsAvail(RS485_UART_BASE) && recv_buffer.index < SERIAL_BUF_SIZE)
             {
 
-                //recv_buffer.data[recv_buffer.index] = (uint8_t)UARTCharGet(RS485_UART_BASE);;
-                //recv_buffer.csum += recv_buffer.data[recv_buffer.index++];
+                recv_buffer.data[recv_buffer.index] = (uint8_t)UARTCharGet(RS485_UART_BASE);;
+                recv_buffer.csum += recv_buffer.data[recv_buffer.index++];
 
 
-            	lChar = UARTCharGet(RS485_UART_BASE);
-            	if(!(lChar & ~0xFF))
-                {
-                    ucChar = (unsigned char)(lChar & 0xFF);
-                    recv_buffer.data[recv_buffer.index] = ucChar;
-                    recv_buffer.csum += recv_buffer.data[recv_buffer.index++];
-                    //NewData = 1;
-                }
+            	//lChar = UARTCharGet(RS485_UART_BASE);
+            	//if(!(lChar & ~0xFF))
+                //{
+                //    ucChar = (unsigned char)(lChar & 0xFF);
+                //    recv_buffer.data[recv_buffer.index] = ucChar;
+                //    recv_buffer.csum += recv_buffer.data[recv_buffer.index++];
+                //    //NewData = 1;
+                //}
 
-                time_out = 0;
+                //time_out = 0;
 
             }
 		//}												//comentar para uso em 6Mbps
@@ -287,7 +287,7 @@ void
 InitRS485(void)
 {
 
-	if(HARDWARE_VERSION == 0x21) Rs485TermCtrl(0);
+	if(HARDWARE_VERSION == 0x21) Rs485TermCtrl(1);
 
 	// Load RS485 address from EEPROM and config it
 	SetRS485Address(EepromReadRs485Add());

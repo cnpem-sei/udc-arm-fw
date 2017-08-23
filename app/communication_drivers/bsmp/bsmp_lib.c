@@ -1128,9 +1128,7 @@ uint8_t ResetHRADCBoards (uint8_t *input, uint8_t *output)
 	}
 	else
 	{
-		HradcRstCtrl(1);
-		for(ulTimeout = 0; ulTimeout < 5000000; ulTimeout++);{}
-		HradcRstCtrl(0);
+		HradcRstCtrl(input[0]);
 		*output = 0;
 	}
 
@@ -1139,7 +1137,7 @@ uint8_t ResetHRADCBoards (uint8_t *input, uint8_t *output)
 
 static struct bsmp_func resethradc_func = {
     .func_p 		  = ResetHRADCBoards,
-    .info.input_size  = 0,		// Nothing is read from the input parameter
+    .info.input_size  = 2,		// enable(2)
     .info.output_size = 1,		// command_ack
 };
 

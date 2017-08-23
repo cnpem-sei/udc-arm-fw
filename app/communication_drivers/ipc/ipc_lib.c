@@ -196,9 +196,27 @@ void
 CtoMIPC1IntHandler (void)
 {
 	//Placeholder for Debug
-	//SendIpcFlag(IPC_FLAG3);
-    // Acknowledge IPC INT1 Flag
-    HWREG(MTOCIPC_BASE + IPC_O_CTOMIPCACK) |= IPC_CTOMIPCACK_IPC1;
+
+	static uint32_t aux;
+
+	aux = HWREG(MTOCIPC_BASE + IPC_O_CTOMIPCSTS) & 0xFFFFFFF1;
+
+	switch(aux)
+	{
+		case ENABLE_HRADC_BOARDS: //IPC1 +IPC5
+		{
+			IPCCtoMFlagAcknowledge(ENABLE_HRADC_BOARDS);
+			HradcRstCtrl(0);
+			break;
+		}
+
+		case DISABLE_HRADC_BOARDS: //IPC1 +IPC6
+		{
+			IPCCtoMFlagAcknowledge(ENABLE_HRADC_BOARDS);
+			HradcRstCtrl(1);
+			break;
+		}
+	}
 }
 
 //*****************************************************************************

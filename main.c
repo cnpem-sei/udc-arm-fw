@@ -129,6 +129,8 @@ int main(void) {
 
 	SystemConfig();
 
+	HradcRstCtrl(1);
+
 	//  Send boot command to allow the C28 application to begin execution
     IPCMtoCBootControlSystem(CBROM_MTOC_BOOTMODE_BOOT_FROM_FLASH);
 
