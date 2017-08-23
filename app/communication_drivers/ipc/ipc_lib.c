@@ -50,7 +50,7 @@ const float wfmRef_Data_FAC[2048] = {0.000000000000000,0.000377055257559,0.00166
 void
 IPCInit(void)
 {
-	IPC_MtoC_Msg.PSModule.Model.u16 = (uint16_t) EepromReadPSModel();
+	IPC_MtoC_Msg.PSModule.Model.u16 = JIGA_HRADC; //(uint16_t) EepromReadPSModel();
 	IPC_MtoC_Msg.PSModule.OnOff.u16 = 0;
 	IPC_MtoC_Msg.PSModule.OpMode.enu = SlowRef;
 	IPC_MtoC_Msg.PSModule.OpenLoop.u16 = 0;
@@ -125,6 +125,7 @@ IPCInit(void)
 	IPC_MtoC_Msg.HRADCConfig.InputType.enu = Vin_bipolar;
 	IPC_MtoC_Msg.HRADCConfig.EnableHeater.u16 = 0;
 	IPC_MtoC_Msg.HRADCConfig.EnableHeater.u16 = 0;
+	IPC_MtoC_Msg.HRADCConfig.nHRADC.u16 = 0;
 
 	//  Register M3 interrupt handlers
 	IntRegister(INT_CTOMPIC1, CtoMIPC1IntHandler);

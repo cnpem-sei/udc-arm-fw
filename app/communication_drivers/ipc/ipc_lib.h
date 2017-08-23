@@ -41,6 +41,10 @@
 #define RESET_INTERLOCKS		0x00001001 //IPC1+IPC13
 #define RESET_WFMREF			0x00002001 //IPC1+IPC14
 //...//
+#define HRADC_UFM_READ          0x00200001 //IPC1+IPC22
+#define HRADC_UFM_WRITE         0x00400001 //IPC1+IPC23
+#define HRADC_UFM_ERASE         0x00800001 //IPC1+IPC24
+#define HRADC_BOARDDATA         0x01000001 //IPC1+IPC25
 #define HRADC_SELECT_BOARD		0x02000001 //IPC1+IPC26
 #define HRADC_TEST_SOURCE		0x04000001 //IPC1+IPC27
 #define HRADC_SAMPLING_DISABLE	0x08000001 //IPC1+IPC28
@@ -399,6 +403,21 @@ typedef struct
 		uint8_t u8[2];
 		uint16_t u16;
 	}EnableMonitor;
+	union
+	{
+		uint8_t u8[2];
+		uint16_t u16;
+	}nHRADC;
+	    union
+    {
+        uint8_t u8[2];
+        uint16_t u16;
+    }UFMAdd;
+    union
+    {
+        uint8_t u8[2];
+        uint16_t u16;
+    }UFMData;
 } tHRADCConfig;
 
 
