@@ -14,6 +14,7 @@
 
 #include "stdint.h"
 #include "../shared_memory/structs.h"
+#include "../shared_memory/hradc.h"
 
 #ifndef IPC_LIB_H_
 #define IPC_LIB_H_
@@ -41,6 +42,12 @@
 #define RESET_WFMREF			0x00002001 //IPC1+IPC14
 #define TURN_OFF				0x00004001 //IPC1+IPC15
 //...//
+#define HRADC_UFM_READ          0x00200001 //IPC1+IPC22
+#define HRADC_UFM_WRITE         0x00400001 //IPC1+IPC23
+#define HRADC_UFM_ERASE         0x00800001 //IPC1+IPC24
+#define HRADC_BOARDDATA         0x01000001 //IPC1+IPC25
+#define HRADC_SELECT_BOARD		0x02000001 //IPC1+IPC26
+#define HRADC_TEST_SOURCE		0x04000001 //IPC1+IPC27
 #define HRADC_SAMPLING_DISABLE	0x08000001 //IPC1+IPC28
 #define HRADC_SAMPLING_ENABLE	0x10000001 //IPC1+IPC29
 #define HRADC_OPMODE			0x20000001 //IPC1+IPC30
@@ -54,17 +61,17 @@
 /*
  * CtoM Message Defines
  */
-#define IPC5				0x00000011 //IPC1+IPC5
-#define IPC6				0x00000021 //IPC1+IPC6
-#define IPC7				0x00000041 //IPC1+IPC7
-#define IPC8				0x00000081 //IPC1+IPC8
-#define IPC9				0x00000101 //IPC1+IPC9
-#define IPC10				0x00000201 //IPC1+IPC10
-#define IPC11				0x00000401 //IPC1+IPC11
-#define MTOC_MESSAGE_ERROR	0x80000001 //IPC1+IPC32
-#define SOFT_INTERLOCK_CTOM	0x00000002 //IPC2
-#define HARD_INTERLOCK_CTOM	0x00000004 //IPC3
-#define IPC4				0x00000008 //IPC4
+#define ENABLE_HRADC_BOARDS		0x00000011 //IPC1+IPC5
+#define DISABLE_HRADC_BOARDS	0x00000021 //IPC1+IPC6
+#define IPC7					0x00000041 //IPC1+IPC7
+#define IPC8					0x00000081 //IPC1+IPC8
+#define IPC9					0x00000101 //IPC1+IPC9
+#define IPC10					0x00000201 //IPC1+IPC10
+#define IPC11					0x00000401 //IPC1+IPC11
+#define MTOC_MESSAGE_ERROR		0x80000001 //IPC1+IPC32
+#define SOFT_INTERLOCK_CTOM		0x00000002 //IPC2
+#define HARD_INTERLOCK_CTOM		0x00000004 //IPC3
+#define IPC4					0x00000008 //IPC4
 
 /*
  * CtoM Hard Interlocks Defines
@@ -161,7 +168,7 @@ typedef enum
 	Buffer_Block1,
 } eBlockBusy;
 
-typedef enum {
+/*typedef enum {
 		Vin_bipolar,
 		Vin_unipolar_p,
 		Vin_unipolar_n,
@@ -183,7 +190,7 @@ typedef enum {
 typedef enum {
 		HRADC_Sampling,
 		HRADC_UFM
-} eHRADCOpMode;
+} eHRADCOpMode;*/
 
 typedef struct
 {
@@ -397,6 +404,21 @@ typedef struct
 		uint8_t u8[2];
 		uint16_t u16;
 	}EnableMonitor;
+	union
+	{
+		uint8_t u8[2];
+		uint16_t u16;
+	}nHRADC;
+	    union
+    {
+        uint8_t u8[2];
+        uint16_t u16;
+    }UFMAdd;
+    union
+    {
+        uint8_t u8[2];
+        uint16_t u16;
+    }UFMData;
 } tHRADCConfig;
 
 

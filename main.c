@@ -129,6 +129,10 @@ int main(void) {
 
 	SystemConfig();
 
+	HradcRstCtrl(1);
+	for (ulLoop=0;ulLoop<500000;ulLoop++){}
+	HradcRstCtrl(0);
+
 	//  Send boot command to allow the C28 application to begin execution
     IPCMtoCBootControlSystem(CBROM_MTOC_BOOTMODE_BOOT_FROM_FLASH);
 
@@ -136,6 +140,8 @@ int main(void) {
 	for (ulLoop=0;ulLoop<500000;ulLoop++){};
 
 	SystemInit();
+
+	if(HARDWARE_VERSION == 0x21) BuffersCtrl(1);
 
 	// Enable processor interrupts.
 	IntMasterEnable();

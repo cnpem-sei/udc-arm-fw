@@ -22,6 +22,7 @@
 
 #include "../ipc/ipc_lib.h"
 #include "../shared_memory/structs.h"
+#include "../shared_memory/hradc.h"
 #include "../can/can_bkp.h"
 #include "../rs485/rs485.h"
 //#!
@@ -1047,7 +1048,267 @@ static struct bsmp_func disable_samplesBuffer = {
     .info.output_size = 1,      // command_ack
 };
 
+
 //*****************************************************************************
+// 				Select HRADC board for test of calibration
+//*****************************************************************************
+uint8_t SelectHRADCBoard (uint8_t *input, uint8_t *output)
+{
+	ulTimeout=0;
+	if(IPCMtoCBusy(HRADC_SELECT_BOARD))
+	{
+		*output = 6;
+	}
+	else{
+		IPC_MtoC_Msg.HRADCConfig.ID.u16	= (input[1] << 8) | input[0];
+		SendIpcFlag(HRADC_SELECT_BOARD);
+
+	    while ((HWREG(MTOCIPC_BASE + IPC_O_MTOCIPCFLG) & HRADC_SELECT_BOARD)&&(ulTimeout<TIMEOUT_VALUE)){
+	    	ulTimeout++;
+	    }
+	    if(ulTimeout==TIMEOUT_VALUE){
+	    	*output = 5;
+	    }
+	    else{
+	    	*output = 0;
+	    }
+	}
+	return *output;
+}
+
+static struct bsmp_func selecthradc_func = {
+    .func_p 		  = SelectHRADCBoard,
+    .info.input_size  = 2,		// ID(2)
+    .info.output_size = 1,		// command_ack
+};
+
+
+//*****************************************************************************
+// 				Select HRADC board for test of calibration
+//*****************************************************************************
+uint8_t SelectTestSource (uint8_t *input, uint8_t *output)
+{
+	ulTimeout=0;
+	if(IPCMtoCBusy(HRADC_TEST_SOURCE))
+	{
+		*output = 6;
+	}
+	else{
+		IPC_MtoC_Msg.HRADCConfig.InputType.u16 = (input[1] << 8) | input[0];
+		SendIpcFlag(HRADC_TEST_SOURCE);
+
+	    while ((HWREG(MTOCIPC_BASE + IPC_O_MTOCIPCFLG) & HRADC_TEST_SOURCE)&&(ulTimeout<TIMEOUT_VALUE)){
+	    	ulTimeout++;
+	    }
+	    if(ulTimeout==TIMEOUT_VALUE){
+	    	*output = 5;
+	    }
+	    else{
+	    	*output = 0;
+	    }
+	}
+	return *output;
+}
+
+static struct bsmp_func selecttestsource_func = {
+    .func_p 		  = SelectTestSource,
+    .info.input_size  = 2,		// InputType(2)
+    .info.output_size = 1,		// command_ack
+};
+
+
+//*****************************************************************************
+// 				Reset HRADC boards via HRADC_DIG_ENABLE pin
+//*****************************************************************************
+
+uint8_t ResetHRADCBoards (uint8_t *input, uint8_t *output)
+{
+	if(HRADCs_Info.enable_Sampling)
+	{
+		*output = 6;
+	}
+	else
+	{
+		HradcRstCtrl(input[0]);
+		*output = 0;
+	}
+
+    return *output;
+}
+
+static struct bsmp_func resethradc_func = {
+    .func_p 		  = ResetHRADCBoards,
+    .info.input_size  = 2,		// enable(2)
+    .info.output_size = 1,		// command_ack
+};
+
+
+//*****************************************************************************
+// 				Configure number of HRADC board to initiate
+//*****************************************************************************
+uint8_t Config_nHRADC (uint8_t *input, uint8_t *output)
+{
+	if(HRADCs_Info.enable_Sampling)
+	{
+		*output = 6;
+	}
+	else
+	{
+		IPC_MtoC_Msg.HRADCConfig.nHRADC.u16 = (input[1] << 8) | input[0];
+		*output = 0;
+	}
+	return *output;
+}
+
+static struct bsmp_func confignhradc_func = {
+    .func_p 		  = Config_nHRADC,
+    .info.input_size  = 2,		// nHRADC(2)
+    .info.output_size = 1,		// command_ack
+};
+
+
+//*****************************************************************************
+// 			 				Read HRADC UFM memory
+//*****************************************************************************
+uint8_t ReadHRADC_UFM (uint8_t *input, uint8_t *output)
+{
+	ulTimeout=0;
+	if(IPCMtoCBusy(HRADC_UFM_READ))
+	{
+		*output = 6;
+	}
+	else{
+		IPC_MtoC_Msg.HRADCConfig.ID.u16	   		= (input[1] << 8) | input[0];
+		IPC_MtoC_Msg.HRADCConfig.UFMAdd.u16		= (input[3] << 8) | input[2];
+
+		SendIpcFlag(HRADC_UFM_READ);
+
+	    while ((HWREG(MTOCIPC_BASE + IPC_O_MTOCIPCFLG) & HRADC_UFM_READ)&&(ulTimeout<TIMEOUT_VALUE)){
+	    	ulTimeout++;
+	    }
+	    if(ulTimeout==TIMEOUT_VALUE){
+	    	*output = 5;
+	    }
+	    else{
+	    	*output = 0;
+	    }
+	}
+	return *output;
+}
+
+static struct bsmp_func readhradcufm_func = {
+    .func_p 		  = ReadHRADC_UFM,
+    .info.input_size  = 4,		// hradcID(2)+UFMAdd(2)
+    .info.output_size = 1,		// command_ack
+};
+
+
+//*****************************************************************************
+// 							 Write HRADC UFM memory
+//*****************************************************************************
+uint8_t WriteHRADC_UFM (uint8_t *input, uint8_t *output)
+{
+	ulTimeout=0;
+	if(IPCMtoCBusy(HRADC_UFM_WRITE))
+	{
+		*output = 6;
+	}
+	else{
+		IPC_MtoC_Msg.HRADCConfig.ID.u16	   		= (input[1] << 8) | input[0];
+		IPC_MtoC_Msg.HRADCConfig.UFMAdd.u16		= (input[3] << 8) | input[2];
+		IPC_MtoC_Msg.HRADCConfig.UFMData.u16	= (input[5] << 8) | input[4];
+
+		SendIpcFlag(HRADC_UFM_WRITE);
+
+	    while ((HWREG(MTOCIPC_BASE + IPC_O_MTOCIPCFLG) & HRADC_UFM_WRITE)&&(ulTimeout<TIMEOUT_VALUE)){
+	    	ulTimeout++;
+	    }
+	    if(ulTimeout==TIMEOUT_VALUE){
+	    	*output = 5;
+	    }
+	    else{
+	    	*output = 0;
+	    }
+	}
+	return *output;
+}
+
+static struct bsmp_func writehradcufm_func = {
+    .func_p 		  = WriteHRADC_UFM,
+    .info.input_size  = 6,		// hradcID(2)+UFMAdd(2)+UFMData
+    .info.output_size = 1,		// command_ack
+};
+
+
+//*****************************************************************************
+// 							Erase HRADC UFM memory
+//*****************************************************************************
+uint8_t EraseHRADC_UFM (uint8_t *input, uint8_t *output)
+{
+	ulTimeout=0;
+	if(IPCMtoCBusy(HRADC_UFM_ERASE))
+	{
+		*output = 6;
+	}
+	else{
+		IPC_MtoC_Msg.HRADCConfig.ID.u16	   		= (input[1] << 8) | input[0];
+
+		SendIpcFlag(HRADC_UFM_ERASE);
+
+	    while ((HWREG(MTOCIPC_BASE + IPC_O_MTOCIPCFLG) & HRADC_UFM_ERASE)&&(ulTimeout<TIMEOUT_VALUE)){
+	    	ulTimeout++;
+	    }
+	    if(ulTimeout==TIMEOUT_VALUE){
+	    	*output = 5;
+	    }
+	    else{
+	    	*output = 0;
+	    }
+	}
+	return *output;
+}
+
+static struct bsmp_func erasehradcufm_func = {
+    .func_p 		  = EraseHRADC_UFM,
+    .info.input_size  = 2,		// hradcID(2)
+    .info.output_size = 1,		// command_ack
+};
+
+
+//*****************************************************************************
+// 							Read HRADC Board Data
+//*****************************************************************************
+uint8_t ReadHRADC_BoardData (uint8_t *input, uint8_t *output)
+{
+	ulTimeout=0;
+	if(IPCMtoCBusy(HRADC_BOARDDATA))
+	{
+		*output = 6;
+	}
+	else{
+		IPC_MtoC_Msg.HRADCConfig.ID.u16	= (input[1] << 8) | input[0];
+
+		SendIpcFlag(HRADC_BOARDDATA);
+
+	    while ((HWREG(MTOCIPC_BASE + IPC_O_MTOCIPCFLG) & HRADC_BOARDDATA)&&(ulTimeout<TIMEOUT_VALUE)){
+	    	ulTimeout++;
+	    }
+	    if(ulTimeout==TIMEOUT_VALUE){
+	    	*output = 5;
+	    }
+	    else{
+	    	*output = 0;
+	    }
+	}
+	return *output;
+}
+
+static struct bsmp_func readhradcdata_func = {
+    .func_p 		  = ReadHRADC_BoardData,
+    .info.input_size  = 2,		// hradcID(2)
+    .info.output_size = 1,		// command_ack
+};
+
 
 //*****************************************************************************
 // 							Dummy BSMP Functions
@@ -1416,10 +1677,14 @@ BSMPInit(void)
 	bsmp_register_function(&bsmp, &set_rsaddress);              // Function ID 20
 	bsmp_register_function(&bsmp, &enable_samplesBuffer);       // Function ID 21
 	bsmp_register_function(&bsmp, &disable_samplesBuffer);      // Function ID 22
-	//bsmp_register_function(&bsmp, &turnon_modules_func); 		// Function ID 23
-	//bsmp_register_function(&bsmp, &turnoff_modules_func);       // Function ID 24
-	//bsmp_register_function(&bsmp, &openloop_modules_func); 		// Function ID 25
-	//bsmp_register_function(&bsmp, &closedloop_modules_func);    // Function ID 26
+	bsmp_register_function(&bsmp, &selecthradc_func);      		// Function ID 23
+	bsmp_register_function(&bsmp, &selecttestsource_func);      // Function ID 24
+	bsmp_register_function(&bsmp, &resethradc_func);      		// Function ID 25
+	bsmp_register_function(&bsmp, &confignhradc_func);      	// Function ID 26
+	bsmp_register_function(&bsmp, &readhradcufm_func);      	// Function ID 27
+	bsmp_register_function(&bsmp, &writehradcufm_func);      	// Function ID 28
+	bsmp_register_function(&bsmp, &erasehradcufm_func);      	// Function ID 29
+	bsmp_register_function(&bsmp, &readhradcdata_func);      	// Function ID 30
 
 	//*****************************************************************************
 	// 						BSMP Variable Register

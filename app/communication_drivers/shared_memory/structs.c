@@ -16,4 +16,6 @@ tDP_Framework DP_Framework_MtoC;
 #pragma DATA_SECTION(shm_c2m_output_var,"SHARERAMS2");
 
 tDP_Framework DP_Framework;
-#pragma DATA_SECTION(DP_Framework,"SHARERAMS1");
+//#pragma DATA_SECTION(DP_Framework,"SHARERAMS1");
+#pragma DATA_SECTION(DP_Framework,"SHARERAMS1_0");
+

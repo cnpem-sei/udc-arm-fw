@@ -62,7 +62,9 @@ MEMORY
     C2 (RWX)        : origin = 0x200051B0, length = 0x0E50
     C3 (RWX)        : origin = 0x20006000, length = 0x2000
     S0 (RWX)        : origin = 0x20008000, length = 0x2000
-    S1 (RWX)        : origin = 0x2000A000, length = 0x2000
+    //S1 (RWX)        : origin = 0x2000A000, length = 0x2000
+    S1_0 (RWX)        : origin = 0x2000A000, length = 0x1000
+    S1_1 (RWX)        : origin = 0x2000B000, length = 0x1000
     S2 (RWX)        : origin = 0x2000C000, length = 0x2000
     S3 (RWX)        : origin = 0x2000E000, length = 0x2000
     //S4 (RWX)        : origin = 0x20010000, length = 0x2000
@@ -140,11 +142,13 @@ SECTIONS
                            crc_table(AppCrc, algorithm=CRC32_PRIME),
                            PAGE = 0, ALIGN(8)
  
-    SHARERAMS0  : > S0
-    SHARERAMS1  : > S1
-    SHARERAMS2  : > S2
-    SHARERAMS3  : > S3
-    SHARERAMS45  : > S45
+    SHARERAMS0		: > S0
+    //SHARERAMS1		: > S1
+    SHARERAMS1_0    : > S1_0
+   	SHARERAMS1_1    : > S1_1
+    SHARERAMS2  	: > S2
+    SHARERAMS3  	: > S3
+    SHARERAMS45  	: > S45
     //SHARERAMS4  : > S4
     //SHARERAMS5  : > S5
     //SHARERAMS6  : > S6

@@ -126,7 +126,7 @@ SystemConfig(void)
 
 	ExIOInit();
 
-	if(HARDWARE_VERSION == 0x21) BuffersCtrl(1);
+	if(HARDWARE_VERSION == 0x21) BuffersCtrl(0);
 
 	IPCInit();
 
