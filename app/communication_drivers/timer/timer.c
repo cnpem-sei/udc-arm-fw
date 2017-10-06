@@ -41,6 +41,7 @@ GlobalTimerIntHandler(void)
 	GPIOPinWrite(DEBUG_BASE, DEBUG_PIN, ON);
 
 	AdcpRead();
+	//TaskSetNew(SAMPLE_ADCP);
 
 	if(iib_sample >= 40)
 	{

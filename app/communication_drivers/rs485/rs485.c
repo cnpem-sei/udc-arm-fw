@@ -104,16 +104,19 @@ RS485IntHandler(void)
 	if(UART_INT_RX == ulStatus || UART_INT_RT == ulStatus)
 	{
 
-		//for(time_out = 0; time_out < 15; time_out++)  	//comentar para uso em 6Mbps
-		//{ 												//comentar para uso em 6Mbps
+	    // GPIO1 turn on
+	    //GPIOPinWrite(GPIO_PORTP_BASE, GPIO_PIN_7, ON);
+
+	    for(time_out = 0; time_out < 15; time_out++)  	//comentar para uso em 6Mbps
+		{ 												//comentar para uso em 6Mbps
 		    // Loop while there are characters in the receive FIFO.
             while(UARTCharsAvail(RS485_UART_BASE) && recv_buffer.index < SERIAL_BUF_SIZE)
             {
 
-                //recv_buffer.data[recv_buffer.index] = (uint8_t)UARTCharGet(RS485_UART_BASE);;
-                //recv_buffer.csum += recv_buffer.data[recv_buffer.index++];
+                recv_buffer.data[recv_buffer.index] = (uint8_t)UARTCharGet(RS485_UART_BASE);;
+                recv_buffer.csum += recv_buffer.data[recv_buffer.index++];
 
-
+                /*
             	lChar = UARTCharGet(RS485_UART_BASE);
             	if(!(lChar & ~0xFF))
                 {
@@ -122,11 +125,13 @@ RS485IntHandler(void)
                     recv_buffer.csum += recv_buffer.data[recv_buffer.index++];
                     //NewData = 1;
                 }
+            	*/
+
 
                 time_out = 0;
 
             }
-		//}												//comentar para uso em 6Mbps
+		}												//comentar para uso em 6Mbps
 
 
 		sCarga = (recv_buffer.data[2]<<8) | recv_buffer.data[3];
@@ -140,6 +145,7 @@ RS485IntHandler(void)
 		// Only 6Mbps
 		//comentar todo o else para para uso em 115.2kbps
 
+		//if(sCarga > SERIAL_BUF_SIZE)
 		else
 		{
 			recv_buffer.index = 0;
@@ -162,6 +168,8 @@ RS485IntHandler(void)
             MessageOverflow = 0;
         }*/
 
+		// GPIO1 turn off
+		//GPIOPinWrite(GPIO_PORTP_BASE, GPIO_PIN_7, OFF);
 
 	}
 
@@ -213,7 +221,7 @@ RS485ProcessData(void)
 
 	//GPIOPinWrite(DEBUG_BASE, DEBUG_PIN, ON);
 
-    GPIOPinWrite(EEPROM_WP_BASE, EEPROM_WP_PIN, ON);
+    //GPIOPinWrite(EEPROM_WP_BASE, EEPROM_WP_PIN, ON);
 
 	// Received less than HEADER + CSUM bytes
 	if(recv_buffer.index < (SERIAL_HEADER + SERIAL_CSUM))
@@ -251,7 +259,7 @@ RS485ProcessData(void)
 	//NewData = 0;
 	//GPIOPinWrite(DEBUG_BASE, DEBUG_PIN, OFF);
 
-	GPIOPinWrite(EEPROM_WP_BASE, EEPROM_WP_PIN, OFF);
+	//GPIOPinWrite(EEPROM_WP_BASE, EEPROM_WP_PIN, OFF);
 
 }
 

@@ -1046,6 +1046,46 @@ static struct bsmp_func disable_samplesBuffer = {
     .info.output_size = 1,      // command_ack
 };
 
+
+//*****************************************************************************
+//                    Set SlowRef for each FBP module
+//*****************************************************************************
+uint8_t SetISlowRefx4(uint8_t *input, uint8_t *output)
+{
+    ulTimeout=0;
+    if(IPCMtoCBusy(SLOWREFX4_UPDATE))
+    {
+        *output = 6;
+    }
+    else{
+        IPC_MtoC_Msg.DPModule.Coeffs[0].u32 = (input[3]<< 24)  | (input[2] << 16)  | (input[1] << 8)  | input[0];
+        IPC_MtoC_Msg.DPModule.Coeffs[1].u32 = (input[7]<< 24)  | (input[6] << 16)  | (input[5] << 8)  | input[4];
+        IPC_MtoC_Msg.DPModule.Coeffs[2].u32 = (input[11]<< 24) | (input[10] << 16) | (input[9] << 8)  | input[8];
+        IPC_MtoC_Msg.DPModule.Coeffs[3].u32 = (input[15]<< 24) | (input[14] << 16) | (input[13] << 8) | input[12];
+
+        SendIpcFlag(SLOWREFX4_UPDATE);
+
+        while ((HWREG(MTOCIPC_BASE + IPC_O_MTOCIPCFLG) & SLOWREFX4_UPDATE)&&(ulTimeout<TIMEOUT_VALUE)){
+            ulTimeout++;
+        }
+        if(ulTimeout==TIMEOUT_VALUE){
+            *output = 5;
+        }
+        else{
+            *output = 0;
+        }
+    }
+    return *output;
+}
+
+static struct bsmp_func setislowrefx4_func = {
+    .func_p           = SetISlowRefx4,
+    .info.input_size  = 16,     // iRef1(4) + iRef2(4) + iRef3(4) + iRef4(4)
+    .info.output_size = 1,      // command_ack
+};
+
+
+
 //*****************************************************************************
 
 //*****************************************************************************
@@ -1378,6 +1418,42 @@ static  struct bsmp_var wfmRef_SyncMode = {
 		.value_ok      = NULL,
 };
 
+static  struct bsmp_var iRef1 = {
+        .info.size     = sizeof(dummy_float_memory),  // 4 bytes (float)
+        .info.writable = false,                       // Read only
+        .data          = dummy_float_memory,          // Data pointer will be initialized
+        .value_ok      = NULL,
+};
+
+static  struct bsmp_var iRef2 = {
+        .info.size     = sizeof(dummy_float_memory),  // 4 bytes (float)
+        .info.writable = false,                       // Read only
+        .data          = dummy_float_memory,          // Data pointer will be initialized
+        .value_ok      = NULL,
+};
+
+static  struct bsmp_var iRef3 = {
+        .info.size     = sizeof(dummy_float_memory),  // 4 bytes (float)
+        .info.writable = false,                       // Read only
+        .data          = dummy_float_memory,          // Data pointer will be initialized
+        .value_ok      = NULL,
+};
+
+static  struct bsmp_var iRef4 = {
+        .info.size     = sizeof(dummy_float_memory),  // 4 bytes (float)
+        .info.writable = false,                       // Read only
+        .data          = dummy_float_memory,          // Data pointer will be initialized
+        .value_ok      = NULL,
+};
+
+static  struct bsmp_var counterSetISlowRefx4 = {
+        .info.size     = sizeof(dummy_float_memory),  // 4 bytes (float)
+        .info.writable = false,                       // Read only
+        .data          = dummy_float_memory,          // Data pointer will be initialized
+        .value_ok      = NULL,
+};
+
+
 //*****************************************************************************
 // 							BSMP Initialization
 //*****************************************************************************
@@ -1415,6 +1491,7 @@ BSMPInit(void)
 	bsmp_register_function(&bsmp, &set_rsaddress);              // Function ID 20
 	bsmp_register_function(&bsmp, &enable_samplesBuffer);       // Function ID 21
 	bsmp_register_function(&bsmp, &disable_samplesBuffer);      // Function ID 22
+    bsmp_register_function(&bsmp, &setislowrefx4_func);         // Function ID 23
 
 	//*****************************************************************************
 	// 						BSMP Variable Register
@@ -1464,6 +1541,12 @@ BSMPInit(void)
 	bsmp_register_variable(&bsmp, &wfmRef_PtrBufferEnd);   	// Var ID 42
 	bsmp_register_variable(&bsmp, &wfmRef_PtrBufferK);   	// Var ID 43
 	bsmp_register_variable(&bsmp, &wfmRef_SyncMode);   	    // Var ID 44
+	bsmp_register_variable(&bsmp, &iRef1);                  // Var ID 45
+	bsmp_register_variable(&bsmp, &iRef2);                  // Var ID 46
+	bsmp_register_variable(&bsmp, &iRef3);                  // Var ID 47
+	bsmp_register_variable(&bsmp, &iRef4);                  // Var ID 48
+	bsmp_register_variable(&bsmp, &counterSetISlowRefx4);   // Var ID 49
+
 
 	//*****************************************************************************
 	// 						BSMP Curve Register
@@ -1597,6 +1680,30 @@ BSMPInit(void)
 			break;
 
 		case FBPx4_100kHz:
+		    Init_BSMP_var(2,DP_Framework.NetSignals[5].u8);         // PS1 iLoad
+            Init_BSMP_var(3,DP_Framework.NetSignals[7].u8);         // PS2 iLoad
+            Init_BSMP_var(4,DP_Framework.NetSignals[9].u8);         // PS3 iLoad
+            Init_BSMP_var(5,DP_Framework.NetSignals[11].u8);        // PS4 iLoad
+            Init_BSMP_var(7,DP_Framework_MtoC.NetSignals[5].u8);    // PS1 Vdclink
+            Init_BSMP_var(8,DP_Framework_MtoC.NetSignals[6].u8);    // PS2 Vdclink
+            Init_BSMP_var(9,DP_Framework_MtoC.NetSignals[7].u8);    // PS3 Vdclink
+            Init_BSMP_var(10,DP_Framework_MtoC.NetSignals[8].u8);   // PS4 Vdclink
+            Init_BSMP_var(11,DP_Framework_MtoC.NetSignals[9].u8);   // PS1 Vload
+            Init_BSMP_var(12,DP_Framework_MtoC.NetSignals[10].u8);  // PS2 Vload
+            Init_BSMP_var(13,DP_Framework_MtoC.NetSignals[11].u8);  // PS3 Vload
+            Init_BSMP_var(14,DP_Framework_MtoC.NetSignals[12].u8);  // PS4 Vload
+            Init_BSMP_var(15,DP_Framework_MtoC.NetSignals[13].u8);  // PS1 Temperature
+            Init_BSMP_var(16,DP_Framework_MtoC.NetSignals[14].u8);  // PS2 Temperature
+            Init_BSMP_var(17,DP_Framework_MtoC.NetSignals[15].u8);  // PS3 Temperature
+            Init_BSMP_var(18,DP_Framework_MtoC.NetSignals[16].u8);  // PS4 Temperature
+            Init_BSMP_var(45,DP_Framework.NetSignals[1].u8);        // PS1 iRef
+            Init_BSMP_var(46,DP_Framework.NetSignals[2].u8);        // PS2 iRef
+            Init_BSMP_var(47,DP_Framework.NetSignals[3].u8);        // PS3 iRef
+            Init_BSMP_var(48,DP_Framework.NetSignals[4].u8);        // PS4 iRef
+            Init_BSMP_var(49,DP_Framework.NetSignals[13].u8);       // SetISlowRefx4 counter
+
+            break;
+
 		case JIGA_BASTIDOR:
 			Init_BSMP_var(2,DP_Framework.NetSignals[5].u8);			// PS1 iLoad
 			Init_BSMP_var(3,DP_Framework.NetSignals[7].u8);			// PS2 iLoad

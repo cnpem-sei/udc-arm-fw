@@ -225,6 +225,10 @@ PortControlSet(void)
 	GPIOPinTypeGPIOOutput(EEPROM_WP_BASE, EEPROM_WP_PIN); //WP EEPROM
 	GPIOPinWrite(EEPROM_WP_BASE, EEPROM_WP_PIN, ON); // Enable Write ptrotection in to the EEPROM
 
+	//GPIO1
+	GPIOPinTypeGPIOOutput(GPIO_PORTP_BASE, GPIO_PIN_7);
+	GPIOPinWrite(GPIO_PORTP_BASE, GPIO_PIN_7, OFF);
+
 
 
 	GPIOPinTypeGPIOInput(INT_ARM_BASE, INT_ARM_PIN); //Int ARM
@@ -502,6 +506,7 @@ PinCorSet(void)
 																				   //GPIO102 - PN6 é utilizado para o UART_M3_RX (ARM)
 																				   //GPIO103 - PN7 é utilizado para o UART_M3_TX (ARM)
 
+
 		GPIOPinConfigureCoreSelect(GPIO_PORTP_BASE, 0xC0, GPIO_PIN_C_CORE_SELECT); //GPIO110 e GPIO111 é utilizado pelo C28 (C28)
 																				   //GPIO104 - PP0 é utilizado para o BP_I2C_SCL (ARM)
 																				   //GPIO105 - PP1 é utilizado para o BP_I2C_SDA (ARM)
@@ -676,7 +681,7 @@ PinCorSet(void)
 																				   //GPIO102 - PN6 é utilizado para o UART_M3_RX (ARM)
 																				   //GPIO103 - PN7 é utilizado para o UART_M3_TX (ARM)
 
-		GPIOPinConfigureCoreSelect(GPIO_PORTP_BASE, 0xE0, GPIO_PIN_C_CORE_SELECT); //GPIO109 , 110 e 111 são utilizados pelo C28 (C28)
+		//GPIOPinConfigureCoreSelect(GPIO_PORTP_BASE, 0xE0, GPIO_PIN_C_CORE_SELECT); //GPIO109 , 110 e 111 são utilizados pelo C28 (C28)
 																				   //GPIO104 - PP0 é utilizado para o BP_I2C_SCL (ARM)
 																				   //GPIO105 - PP1 é utilizado para o BP_I2C_SDA (ARM)
 																				   //GPIO106 - PP2 é utilizado para o RS-485_RD (ARM)
@@ -685,6 +690,17 @@ PinCorSet(void)
 																				   //GPIO109 - PP5 é utilizado para o GPDI9B (C28)
 																				   //GPIO110 - PP6 é utilizado para o GPDI10B (C28)
 																				   //GPIO111 - PP7 é utilizado para o GPIO1 (C28)
+
+		// GPIO1 for ARM
+		GPIOPinConfigureCoreSelect(GPIO_PORTP_BASE, 0x60, GPIO_PIN_C_CORE_SELECT); //GPIO109 , 110 e 111 são utilizados pelo C28 (C28)
+                                                                                   //GPIO104 - PP0 é utilizado para o BP_I2C_SCL (ARM)
+                                                                                   //GPIO105 - PP1 é utilizado para o BP_I2C_SDA (ARM)
+                                                                                   //GPIO106 - PP2 é utilizado para o RS-485_RD (ARM)
+                                                                                   //GPIO107 - PP3 é utilizado para o UART_M3_RD (ARM)
+                                                                                   //GPIO108 - PP4 é utilizado para o EEPROM-WP (ARM)
+                                                                                   //GPIO109 - PP5 é utilizado para o GPDI9B (C28)
+                                                                                   //GPIO110 - PP6 é utilizado para o GPDI10B (C28)
+                                                                                   //GPIO111 - PP7 é utilizado para o GPIO1 (ARM)
 
 		GPIOPinConfigureCoreSelect(GPIO_PORTQ_BASE, 0xF3, GPIO_PIN_C_CORE_SELECT); //GPIO114 e 115 são utilizados pelo ARM (ARM)
 																				   //GPIO112 - PQ0 é utilizado para o GPDI12B (C28)

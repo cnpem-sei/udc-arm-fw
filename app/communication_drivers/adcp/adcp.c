@@ -32,6 +32,7 @@
 
 #include "../ipc/ipc_lib.h"
 #include "../shared_memory/structs.h"
+#include "../system_task/system_task.h"
 
 // 1000Amps = 10V
 #define		ADC_HALL_CONST	1000.0/2048.0
@@ -51,7 +52,7 @@ uint16_t dummy_read;
 // Dummy vector for ADCP reading
 uint16_t ADCP_TxTable[0x09] = { 0 };
 
-uint16_t ADCP_RxTable[0x09];
+uint16_t ADCP_RxTable[0x09] = { 0 };
 
 // Adcp samples
 adcp_ch_t AnalogCh0;
@@ -278,6 +279,25 @@ void AdcChannel(uint16_t Sampl)
 
 }
 
+void
+AdcpGetSamples(void)
+{
+    uint16_t readVal;
+    uint8_t count = 0;
+
+    // GPIO1 turn on
+    GPIOPinWrite(GPIO_PORTP_BASE, GPIO_PIN_7, ON);
+
+    while(count < 9)
+    {
+        AdcChannel(ADCP_RxTable[count]);
+        count++;
+    }
+
+    // GPIO1 turn on
+    GPIOPinWrite(GPIO_PORTP_BASE, GPIO_PIN_7, OFF);
+}
+
 //*****************************************************************************
 // Interrupt handler for SSI0 TX and RX.
 //*****************************************************************************
@@ -286,7 +306,9 @@ AdcpIntHandler(void)
 {
     unsigned long ulStatus;
 	uint16_t readVal;
+	uint8_t count = 0;
 	//int WordIndex;
+
 
 
 	// Read the interrupt status of the SSI0
@@ -298,36 +320,79 @@ AdcpIntHandler(void)
 	// ******** We received a "FIFO RX SSI0 half full" interrupt *********
 	if (ulStatus & SSI_RXFF)
 	{
-		SSIDataGet(ADCP_SPI_BASE, &readVal);
+
+        while(SSIDataGetNonBlocking(ADCP_SPI_BASE, &ADCP_RxTable[count]) && count < 9)
+        {
+             count++;
+        }
+
+	    // Set task data available
+	    TaskSetNew(ADCP_SAMPLE_AVAILABLE);
+
+
+
+	    /*
+	    // GPIO1 turn on
+	    GPIOPinWrite(GPIO_PORTP_BASE, GPIO_PIN_7, ON);
+
+	    SSIDataGetNonBlocking(ADCP_SPI_BASE, &readVal);
 		AdcChannel(readVal);
 
-		SSIDataGet(ADCP_SPI_BASE, &readVal);
+		GPIOPinWrite(GPIO_PORTP_BASE, GPIO_PIN_7, OFF);
+		GPIOPinWrite(GPIO_PORTP_BASE, GPIO_PIN_7, ON);
+
+		SSIDataGetNonBlocking(ADCP_SPI_BASE, &readVal);
 		AdcChannel(readVal);
 
-		SSIDataGet(ADCP_SPI_BASE, &readVal);
+		GPIOPinWrite(GPIO_PORTP_BASE, GPIO_PIN_7, OFF);
+		GPIOPinWrite(GPIO_PORTP_BASE, GPIO_PIN_7, ON);
+
+		SSIDataGetNonBlocking(ADCP_SPI_BASE, &readVal);
 		AdcChannel(readVal);
 
-		SSIDataGet(ADCP_SPI_BASE, &readVal);
+		GPIOPinWrite(GPIO_PORTP_BASE, GPIO_PIN_7, OFF);
+		GPIOPinWrite(GPIO_PORTP_BASE, GPIO_PIN_7, ON);
+
+		SSIDataGetNonBlocking(ADCP_SPI_BASE, &readVal);
 		AdcChannel(readVal);
 
-		SSIDataGet(ADCP_SPI_BASE, &readVal);
+		GPIOPinWrite(GPIO_PORTP_BASE, GPIO_PIN_7, OFF);
+		GPIOPinWrite(GPIO_PORTP_BASE, GPIO_PIN_7, ON);
+
+		SSIDataGetNonBlocking(ADCP_SPI_BASE, &readVal);
 		AdcChannel(readVal);
 
-		SSIDataGet(ADCP_SPI_BASE, &readVal);
+		GPIOPinWrite(GPIO_PORTP_BASE, GPIO_PIN_7, OFF);
+		GPIOPinWrite(GPIO_PORTP_BASE, GPIO_PIN_7, ON);
+
+		SSIDataGetNonBlocking(ADCP_SPI_BASE, &readVal);
 		AdcChannel(readVal);
 
-		SSIDataGet(ADCP_SPI_BASE, &readVal);
+		GPIOPinWrite(GPIO_PORTP_BASE, GPIO_PIN_7, OFF);
+		GPIOPinWrite(GPIO_PORTP_BASE, GPIO_PIN_7, ON);
+
+		SSIDataGetNonBlocking(ADCP_SPI_BASE, &readVal);
 		AdcChannel(readVal);
 
-		SSIDataGet(ADCP_SPI_BASE, &readVal);
+		GPIOPinWrite(GPIO_PORTP_BASE, GPIO_PIN_7, OFF);
+		GPIOPinWrite(GPIO_PORTP_BASE, GPIO_PIN_7, ON);
+
+		SSIDataGetNonBlocking(ADCP_SPI_BASE, &readVal);
 		AdcChannel(readVal);
+
+		// GPIO1 turn on
+		GPIOPinWrite(GPIO_PORTP_BASE, GPIO_PIN_7, OFF);
+
+		*/
 
 	}
 
 	// Clear any pending status
 	SSIIntClear(ADCP_SPI_BASE, ulStatus);
 
-	GPIOPinWrite(DEBUG_BASE, DEBUG_PIN, OFF);
+	//GPIOPinWrite(DEBUG_BASE, DEBUG_PIN, OFF);
+
+
 }
 
 void
@@ -364,7 +429,7 @@ AdcpRxIntEnable(void)
 
 	SSIIntRegister(ADCP_SPI_BASE, AdcpIntHandler);
 
-	IntPrioritySet(ADCP_SPI_INT, 3);
+	IntPrioritySet(ADCP_SPI_INT, 2);
 	IntEnable(ADCP_SPI_INT);
 }
 

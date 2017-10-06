@@ -15,6 +15,7 @@
 extern void AdcpInit(void);
 
 extern void AdcpRead(void);
+extern void AdcpGetSamples(void);
 
 //extern void ReadAdcP(adcpvar_t *ReadAd);
 //extern void ClearAdcFilter(void);
