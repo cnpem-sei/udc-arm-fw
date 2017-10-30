@@ -158,6 +158,7 @@ void AdcChannelAppConfig(void)
 
 		case FBPx4_100kHz:
 		case JIGA_BASTIDOR:
+		case FBP_FAC_UFJF:
 
 			// PS4 VdcLink: 10V = 20V
 			AnalogCh0.Enable = 1;

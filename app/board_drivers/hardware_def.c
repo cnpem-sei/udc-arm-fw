@@ -681,7 +681,7 @@ PinCorSet(void)
 																				   //GPIO102 - PN6 é utilizado para o UART_M3_RX (ARM)
 																				   //GPIO103 - PN7 é utilizado para o UART_M3_TX (ARM)
 
-		//GPIOPinConfigureCoreSelect(GPIO_PORTP_BASE, 0xE0, GPIO_PIN_C_CORE_SELECT); //GPIO109 , 110 e 111 são utilizados pelo C28 (C28)
+		GPIOPinConfigureCoreSelect(GPIO_PORTP_BASE, 0xE0, GPIO_PIN_C_CORE_SELECT); //GPIO109 , 110 e 111 são utilizados pelo C28 (C28)
 																				   //GPIO104 - PP0 é utilizado para o BP_I2C_SCL (ARM)
 																				   //GPIO105 - PP1 é utilizado para o BP_I2C_SDA (ARM)
 																				   //GPIO106 - PP2 é utilizado para o RS-485_RD (ARM)
@@ -692,7 +692,7 @@ PinCorSet(void)
 																				   //GPIO111 - PP7 é utilizado para o GPIO1 (C28)
 
 		// GPIO1 for ARM
-		GPIOPinConfigureCoreSelect(GPIO_PORTP_BASE, 0x60, GPIO_PIN_C_CORE_SELECT); //GPIO109 , 110 e 111 são utilizados pelo C28 (C28)
+		//GPIOPinConfigureCoreSelect(GPIO_PORTP_BASE, 0x60, GPIO_PIN_C_CORE_SELECT); //GPIO109 , 110 e 111 são utilizados pelo C28 (C28)
                                                                                    //GPIO104 - PP0 é utilizado para o BP_I2C_SCL (ARM)
                                                                                    //GPIO105 - PP1 é utilizado para o BP_I2C_SDA (ARM)
                                                                                    //GPIO106 - PP2 é utilizado para o RS-485_RD (ARM)
