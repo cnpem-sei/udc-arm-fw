@@ -1680,7 +1680,6 @@ BSMPInit(void)
 			break;
 
 		case FBPx4_100kHz:
-		case FBP_FAC_UFJF:
 		    Init_BSMP_var(2,DP_Framework.NetSignals[5].u8);         // PS1 iLoad
             Init_BSMP_var(3,DP_Framework.NetSignals[7].u8);         // PS2 iLoad
             Init_BSMP_var(4,DP_Framework.NetSignals[9].u8);         // PS3 iLoad
@@ -1733,6 +1732,16 @@ BSMPInit(void)
 			Init_BSMP_var(11,DP_Framework.DutySignals[0].u8);		// Duty Mod1
 			Init_BSMP_var(12,DP_Framework.DutySignals[1].u8);		// Duty Mod2
 			break;
+
+        case FBP_FAC_UFJF:
+            Init_BSMP_var(0,DP_Framework.NetSignals[6].u8);         // iLoad
+            Init_BSMP_var(2,DP_Framework.NetSignals[11].u8);        // iMod1
+            Init_BSMP_var(3,DP_Framework.NetSignals[12].u8);        // iMod2
+            Init_BSMP_var(11,DP_Framework_MtoC.NetSignals[9].u8);   // PS1 Vload
+            Init_BSMP_var(12,DP_Framework_MtoC.NetSignals[10].u8);  // PS2 Vload
+            Init_BSMP_var(13,DP_Framework_MtoC.NetSignals[11].u8);  // PS3 Vload
+            Init_BSMP_var(14,DP_Framework_MtoC.NetSignals[12].u8);  // PS4 Vload
+            break;
 
 		default:
 			break;
