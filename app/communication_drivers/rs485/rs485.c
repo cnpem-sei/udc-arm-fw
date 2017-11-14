@@ -287,7 +287,7 @@ void
 InitRS485(void)
 {
 
-	if(HARDWARE_VERSION == 0x21) Rs485TermCtrl(1);
+	if(HARDWARE_VERSION == 0x21) Rs485TermCtrl(0);
 
 	// Load RS485 address from EEPROM and config it
 	SetRS485Address(EepromReadRs485Add());
