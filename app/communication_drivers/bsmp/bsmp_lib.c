@@ -1868,6 +1868,8 @@ BSMPInit(void)
 
 		case FBPx4_100kHz:
 		case JIGA_BASTIDOR:
+		    Init_BSMP_var(0,DP_Framework.NetSignals[20].u8);        // Max temperature
+		    Init_BSMP_var(1,DP_Framework.NetSignals[21].u8);        // PS with max temperature
 			Init_BSMP_var(2,DP_Framework.NetSignals[5].u8);			// PS1 iLoad
 			Init_BSMP_var(3,DP_Framework.NetSignals[7].u8);			// PS2 iLoad
 			Init_BSMP_var(4,DP_Framework.NetSignals[9].u8);			// PS3 iLoad
