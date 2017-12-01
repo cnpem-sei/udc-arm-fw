@@ -1,8 +1,22 @@
-/*
- * hardware_def.h
+/******************************************************************************
+ * Copyright (C) 2017 by LNLS - Brazilian Synchrotron Light Laboratory
  *
- *  Created on: 13/01/2017
- *      Author: joao.rosa
+ * Redistribution, modification or use of this software in source or binary
+ * forms is permitted as long as the files maintain this copyright. LNLS and
+ * the Brazilian Center for Research in Energy and Materials (CNPEM) are not
+ * liable for any misuse of this material.
+ *
+ *****************************************************************************/
+
+/**
+ * @file hardware_def.h
+ * @brief Brief description of module
+ *
+ * Enable basic peripherals for UDC board.
+ *
+ * @author joao.rosa
+ * @date 13/01/2017
+ *
  */
 
 #include <stdint.h>
@@ -13,23 +27,23 @@
 #ifndef HARDWARE_DEF_H_
 #define HARDWARE_DEF_H_
 
-//*****************************************************************************
-// GPIO for the Operation LED
-//*****************************************************************************
+/******************************************************************************
+ * GPIO for the operation LED
+ *****************************************************************************/
 #define ON					~0
 #define OFF					0
 #define LED_OP_BASE         GPIO_PORTP_BASE
 #define LED_OP_PIN          GPIO_PIN_5
 
-//*****************************************************************************
-// SDCard SSI port
-//*****************************************************************************
+/******************************************************************************
+ * SDCard SSI port
+ *****************************************************************************/
 #define SDC_SSI_BASE            SSI3_BASE
 #define SDC_SSI_SYSCTL_PERIPH   SYSCTL_PERIPH_SSI3
 
-//*****************************************************************************
-// GPIO for SDCard SSI pins
-//*****************************************************************************
+/******************************************************************************
+ * GPIO for SDCard SSI pins
+ *****************************************************************************/
 #define SDC_GPIO_PORT_BASE      GPIO_PORTR_BASE
 #define SDC_GPIO_SYSCTL_PERIPH  SYSCTL_PERIPH_GPIOR
 #define SDC_SSI_CLK             GPIO_PIN_2
@@ -38,22 +52,22 @@
 
 #define SDC_SSI_PINS            (SDC_SSI_TX | SDC_SSI_RX | SDC_SSI_CLK)
 
-//*****************************************************************************
-// GPIO for the SDCard chip select
-//*****************************************************************************
+/******************************************************************************
+ * GPIO for the SDCard chip select
+ *****************************************************************************/
 #define SDCARD_CS_PERIPH   SYSCTL_PERIPH_GPIOR
 #define SDCARD_CS_BASE     GPIO_PORTR_BASE
 #define SDCARD_CS_PIN      GPIO_PIN_3
 
-//*****************************************************************************
-// GPIO for the Debug Pin CON9 GPIO0
-//*****************************************************************************
+/******************************************************************************
+ * GPIO for the debug pin CON9 GPIO0
+ *****************************************************************************/
 #define DEBUG_BASE         GPIO_PORTG_BASE
 #define DEBUG_PIN          GPIO_PIN_6
 
-//*****************************************************************************
-// MACROS for onboard I2C
-//*****************************************************************************
+/******************************************************************************
+ * Macros for onboard I2C
+ *****************************************************************************/
 #define	I2C_ONBOARD_MASTER_BASE		I2C0_MASTER_BASE
 #define I2C_ONBOARD_BASE	  		GPIO_PORTN_BASE
 #define I2C_ONBOARD_PINS 			(GPIO_PIN_0 | GPIO_PIN_1)
@@ -61,15 +75,15 @@
 #define I2C_ONBOARD_SDA 			GPIO_PN1_I2C0SDA
 #define I2C_ONBOARD_SYSCTL			SYSCTL_PERIPH_I2C0
 
-//*****************************************************************************
-// MACROS for WP EEPROM
-//*****************************************************************************
+/******************************************************************************
+ * Macros for WP EEPROM
+ *****************************************************************************/
 #define EEPROM_WP_BASE		GPIO_PORTP_BASE
 #define EEPROM_WP_PIN		GPIO_PIN_4
 
-//*****************************************************************************
-// MACROS for offboard I2C Isolated
-//*****************************************************************************
+/******************************************************************************
+ * Macros for offboard I2C isolated
+ *****************************************************************************/
 #define	I2C_OFFBOARD_ISO_MASTER_BASE	I2C1_MASTER_BASE
 #define I2C_OFFBOARD_ISO_BASE			GPIO_PORTP_BASE
 #define I2C_OFFBOARD_ISO_PINS 			(GPIO_PIN_0 | GPIO_PIN_1)
@@ -77,9 +91,9 @@
 #define I2C_OFFBOARD_ISO_SDA 			GPIO_PP1_I2C1SDA
 #define I2C_OFFBOARD_ISO_SYSCTL			SYSCTL_PERIPH_I2C1
 
-//*****************************************************************************
-// MACROS for RS-485 communication
-//*****************************************************************************
+/******************************************************************************
+ * Macros for RS-485 communication
+ *****************************************************************************/
 #define RS485_BASE			GPIO_PORTN_BASE
 #define	RS485_PINS			(GPIO_PIN_2 | GPIO_PIN_3)
 #define RS485_RX			GPIO_PN2_U1RX
@@ -92,9 +106,9 @@
 #define RS485_UART_BASE		UART1_BASE
 #define RS485_INT			INT_UART1
 
-//*****************************************************************************
-// MACROS for RS-485 BACKPLANE communication
-//*****************************************************************************
+/******************************************************************************
+ * Macros for RS-485 backplane communication
+ *****************************************************************************/
 #define RS485_BKP_BASE		GPIO_PORTN_BASE
 #define	RS485_BKP_PINS		(GPIO_PIN_6 | GPIO_PIN_7)
 #define RS485_BKP_RX		GPIO_PN6_U4RX
@@ -107,9 +121,9 @@
 #define RS485_BKP_UART_BASE		UART4_BASE
 #define RS485_BKP_INT			INT_UART4
 
-//*****************************************************************************
-// MACROS for DISPLAY communication
-//*****************************************************************************
+/******************************************************************************
+ * Macros for display communication
+ *****************************************************************************/
 #define DISPLAY_BASE		GPIO_PORTN_BASE
 #define	DISPLAY_PINS		(GPIO_PIN_4 | GPIO_PIN_5)
 #define DISPLAY_RX			GPIO_PN5_U3RX
@@ -119,9 +133,9 @@
 #define DISPLAY_UART_BASE	UART3_BASE
 #define DISPLAY_INT			INT_UART3
 
-//*****************************************************************************
-// MACROS for UART FT230 communication (USB to Uart) (Hardware ver. 2.1)
-//*****************************************************************************
+/******************************************************************************
+ * Macros for UART FT230 communication (USB to Uart) (Hardware ver. 2.1)
+ *****************************************************************************/
 #define FT230_BASE			GPIO_PORTQ_BASE
 #define	FT230_PINS			(GPIO_PIN_2 | GPIO_PIN_3)
 #define FT230_RX			GPIO_PQ2_U0RX
@@ -131,9 +145,9 @@
 #define FT230_UART_BASE		UART0_BASE
 #define FT230_INT			INT_UART0
 
-//*****************************************************************************
-// MACROS for ADCP communication
-//*****************************************************************************
+/******************************************************************************
+ * Macros for ADCP communication
+ *****************************************************************************/
 #define ADCP_BASE			GPIO_PORTD_BASE
 #define ADCP_SPI_PINS		(GPIO_PIN_0 | GPIO_PIN_1 | GPIO_PIN_2 | GPIO_PIN_3)
 #define ADCP_SPI_CLK		GPIO_PD2_SSI0CLK
@@ -148,17 +162,17 @@
 
 #define ADCP_SPI_INT		INT_SSI0
 
-//*****************************************************************************
-// MACROS for CAN communication
-//*****************************************************************************
+/******************************************************************************
+ * Macros for CAN communication
+ *****************************************************************************/
 #define CAN_BASE			GPIO_PORTE_BASE
 #define CAN_PINS			(GPIO_PIN_6 | GPIO_PIN_7)
 #define CAN_RX				GPIO_PE6_CAN0RX
 #define	CAN_TX				GPIO_PE7_CAN0TX
 
-//*****************************************************************************
-// MACROS for FLASH MEMORY communication
-//*****************************************************************************
+/******************************************************************************
+ * Macros for flash memory communication
+ *****************************************************************************/
 #define FLASH_MEM_E_BASE	GPIO_PORTE_BASE
 #define FLASH_MEM_E_PINS	(GPIO_PIN_2 | GPIO_PIN_3)
 #define FLASH_MEM_F_BASE	GPIO_PORTF_BASE
@@ -171,19 +185,25 @@
 
 #define	FLASH_MEM_BASE		SSI1_BASE
 
-//*****************************************************************************
-// MACROS for INT ARM
-//*****************************************************************************
+/******************************************************************************
+ * Macros for int arm
+ *****************************************************************************/
 #define INT_ARM_BASE		GPIO_PORTE_BASE
 #define	INT_ARM_PIN			GPIO_PIN_4
 
-//*****************************************************************************
-// MACROS for RTC TIMER
-//*****************************************************************************
+/******************************************************************************
+ * Macros for RTC timer
+ *****************************************************************************/
 #define RTC_TIMER_BASE		GPIO_PORTG_BASE
 #define RTC_TIMER_PIN		GPIO_PIN_3
 
-
-extern void PinoutSet();
+/**
+* @brief Perform pinout configurations
+*
+* Enable peripherals and perform pinout configurations for ARM core and C28
+*
+* @return void
+*/
+extern void pinout_setup();
 
 #endif /* HARDWARE_DEF_H_ */

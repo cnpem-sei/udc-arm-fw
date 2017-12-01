@@ -1,74 +1,66 @@
-/*
- * system.c
+/******************************************************************************
+ * Copyright (C) 2017 by LNLS - Brazilian Synchrotron Light Laboratory
  *
- *  Created on: 22/07/2015
- *      Author: joao.rosa
+ * Redistribution, modification or use of this software in source or binary
+ * forms is permitted as long as the files maintain this copyright. LNLS and
+ * the Brazilian Center for Research in Energy and Materials (CNPEM) are not
+ * liable for any misuse of this material.
+ *
+ *****************************************************************************/
+
+/**
+ * @file system.c
+ * @brief System module.
+ *
+ * @author joao.rosa
+ *
+ * @date 22/07/2015
+ *
  */
-
-#include "system.h"
-
-#include "../board_drivers/hardware_def.h"
-
-#include "../i2c_onboard/i2c_onboard.h"
-#include "../i2c_onboard/rtc.h"
-#include "../i2c_onboard/eeprom.h"
-#include "../i2c_onboard/exio.h"
-
-#include "../i2c_offboard_isolated/i2c_offboard_isolated.h"
-#include "../i2c_offboard_isolated/external_devices.h"
-
-#include "../adcp/adcp.h"
-
-#include "../timer/timer.h"
-
-#include "../system_task/system_task.h"
-
-#include "../../flash/flash_mem.h"
-
-#include "ethernet_uip.h"
-
-#include "../rs485/rs485.h"
-
-#include "../rs485_bkp/rs485_bkp.h"
-
-#include "../can/can_bkp.h"
-
-#include "../shared_memory/ctrl_law.h"
-
-#include "../usb_device/superv_cmd.h"
-
-#include "../ihm/ihm.h"
-
-#include "../bsmp/bsmp_lib.h"
-
-#include "../shared_memory/ctrl_law.h"
-
-#include "../ipc/ipc_lib.h"
-
-#include "../usb_to_serial/usb_to_serial.h"
-
-#include "../epi/sdram_mem.h"
 
 #include <stdint.h>
 #include <stdarg.h>
 #include <string.h>
 #include <stdbool.h>
 
+#include "board_drivers/hardware_def.h"
+#include "communication_drivers/i2c_onboard/i2c_onboard.h"
+#include "communication_drivers/i2c_onboard/rtc.h"
+#include "communication_drivers/i2c_onboard/eeprom.h"
+#include "communication_drivers/i2c_onboard/exio.h"
+#include "communication_drivers/i2c_offboard_isolated/i2c_offboard_isolated.h"
+#include "communication_drivers/i2c_offboard_isolated/external_devices.h"
+#include "communication_drivers/adcp/adcp.h"
+#include "communication_drivers/timer/timer.h"
+#include "communication_drivers/system_task/system_task.h"
+#include "communication_drivers//flash/flash_mem.h"
+#include "communication_drivers/rs485/rs485.h"
+#include "communication_drivers/rs485_bkp/rs485_bkp.h"
+#include "communication_drivers/can/can_bkp.h"
+#include "communication_drivers/usb_device/superv_cmd.h"
+#include "communication_drivers/ihm/ihm.h"
+#include "communication_drivers/bsmp/bsmp_lib.h"
+#include "communication_drivers/ipc/ipc_lib.h"
+#include "communication_drivers/usb_to_serial/usb_to_serial.h"
+#include "communication_drivers/epi/sdram_mem.h"
+#include "communication_drivers/control/control.h"
 
+#include "ethernet_uip.h"
+
+#include "system.h"
 
 /*
  *  This function test if the EEPROM memory is fully new and doesn't have data.
  *  if this is true, default data is write to initialize the system
  */
-void
-TestEepromMemory(void)
+void test_eeprom_memory(void)
 {
 	uint8_t var8 = 0;
 	uint32_t var32 = 0;
 
 	// Read RS485 address from EEPROM
 	// If data is equal to 0xFF than this is a new memory and needs parameterization
-	var8 = EepromReadRs485Add();
+	var8 = eeprom_read_rs485_add(1);
 
 	if(var8 == 0xFF)
 	{
@@ -82,7 +74,7 @@ TestEepromMemory(void)
 		var32 = var32 << 8;
 		var32 |= 0xCB;		// 203
 
-		SaveIpAddress(var32);
+		save_ip_address(var32);
 
 		// Write default IP MASK 255.255.255.0
 		var32 = 0xFF;		// 255
@@ -93,90 +85,90 @@ TestEepromMemory(void)
 		var32 = var32 << 8;
 		var32 |= 0x00;		// 0
 
-		SaveIpMask(var32);
+		save_ip_mask(var32);
 
 		// Write default RS485 address
-		SaveRs485Add(0x01);
+        save_rs485_ch_0_add(01);
+		save_rs485_ch_1_add(33);
+		save_rs485_ch_2_add(34);
+		save_rs485_ch_3_add(35);
 
 		// Write default RS485 Baud Rate
-		SaveRs485Baud(115200);
+		save_rs485_baud(115200);
 
 		// Write default Kp gain 0.0
-		SaveKp1Gain(0.0);
+		save_kp1_gain(0.0);
 
 		// Write default Ki gain 0.0
-		SaveKi1Gain(0.0);
+		save_ki1_gain(0.0);
 
 		// Write default Ki gain 0.0
-		SaveKd1Gain(0.0);
+		save_kd1_gain(0.0);
 
 		// Write default PS_Model as 0 (FBP)
-		SavePsModel(0);
+		save_ps_model(0);
 
-		EepromWriteRequestCheck();
+		eeprom_write_request_check();
 	}
 }
 
-void
-SystemConfig(void)
+void system_config(void)
 {
-	InitI2COnboard();
+    init_i2c_onboard();
 
-	TestEepromMemory();
+    test_eeprom_memory();
 
-	ExIOInit();
+	extern_io_init();
 
-	if(HARDWARE_VERSION == 0x21) BuffersCtrl(1);
+	if(HARDWARE_VERSION == 0x21) buffers_ctrl(1);
 
-	IPCInit();
+	ipc_init();
 
 }
 
-void
-SystemInit(void)
+void system_init(void)
 {
 
-	InitI2COffboardIsolated();
+    init_i2c_offboard_isolated();
 
-	FlashMemInit();
+	flash_mem_init();
 
-	DcdcPwrCtrl(true);
-
-	// Não necessita da configuração da malha de controle, o dsp ja possui os dados
+	dcdc_pwr_ctrl(true);
+	// NÃ£o necessita da configuraÃ§Ã£o da malha de controle, o dsp ja possui os dados
 	//CtrllawInit();
 
-	InitDisplay();
+	//init_display();
 
-	InitRS485();
+	init_rs485();
 
-	InitRS485BKP();
+	init_rs485_bkp();
 
-	if(HARDWARE_VERSION == 0x21) InitUsb2Serial();
+	if(HARDWARE_VERSION == 0x21) init_usb_to_serial();
 
-	InitCanBkp();
+	//init_can_bkp();
 
-	BSMPInit();
+	//BSMPInit();
 
-	EthernetInit();
+	ethernet_init();
 
 	//InitUSBSerialDevice();
 
-	DisplayPwrCtrl(true);
+	display_pwr_ctrl(true);
 
-	RTCInit();
+	rtc_init();
 
-	AdcpInit();
+	adcp_init();
 
 	if(HARDWARE_VERSION == 0x20)
 	{
-		PwmFiberCtrl(true);
-		PwmEletrCtrl(true);
+	    pwm_fiber_ctrl(true);
+	    pwm_eletr_ctrl(true);
 	}
 
 	//SdramInit();
 
-	InitI2cOffboardExternalDevices();
+	init_i2c_offboard_external_devices();
 
-	GlobalTimerInit();
+	global_timer_init();
 
 }

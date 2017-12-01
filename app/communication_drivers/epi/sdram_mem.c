@@ -1,12 +1,25 @@
-/*
- * sdram_mem.c
+/******************************************************************************
+ * Copyright (C) 2017 by LNLS - Brazilian Synchrotron Light Laboratory
  *
- *  Created on: 23/01/2017
- *      Author: joao.rosa
+ * Redistribution, modification or use of this software in source or binary
+ * forms is permitted as long as the files maintain this copyright. LNLS and
+ * the Brazilian Center for Research in Energy and Materials (CNPEM) are not
+ * liable for any misuse of this material.
+ *
+ *****************************************************************************/
+
+/**
+ * @file sdram_mem.c
+ * @brief SDRAM module.
+ *
+ * @author joao.rosa
+ *
+ * @date 23/01/2017
+ *
  */
 
-
 #include <stdint.h>
+
 #include "inc/hw_types.h"
 #include "inc/hw_memmap.h"
 #include "inc/hw_sysctl.h"
@@ -45,8 +58,7 @@ volatile unsigned long test_cnt;
 // This function performs simple read/write accesses to memory.
 //
 //*****************************************************************************
-uint8_t
-sdram_read_write(void)
+uint8_t sdram_read_write(void)
 {
     unsigned char  sdram_rdb;
     unsigned short sdram_rds;
@@ -129,8 +141,7 @@ sdram_read_write(void)
     return(0);
 }
 
-void
-SdramInit(void)
+void sdram_init(void)
 {
     // Set clock divider to 1 (divide by 2)
     EPIDividerSet(EPI0_BASE, 1);

@@ -1,8 +1,23 @@
-/*
- * can_bkp.h
+/******************************************************************************
+ * Copyright (C) 2017 by LNLS - Brazilian Synchrotron Light Laboratory
  *
- *  Created on: 21/01/2016
- *      Author: joao.rosa
+ * Redistribution, modification or use of this software in source or binary
+ * forms is permitted as long as the files maintain this copyright. LNLS and
+ * the Brazilian Center for Research in Energy and Materials (CNPEM) are not
+ * liable for any misuse of this material.
+ *
+ *****************************************************************************/
+
+/**
+ * @file can_bkp.h
+ * @brief Backplane CAN module.
+ *
+ * Module to process data in CAN BUS for backplane.
+ *
+ * @author joao.rosa
+ *
+ * @date 21/01/2016
+ *
  */
 
 #ifndef CAN_BKP_H_
@@ -304,14 +319,14 @@ extern Q4Module_t Mod2Q4;
 extern BuckMudule_t Buck;
 extern RectModule_t Rectifier;
 
-extern void InitCanBkp(void);
-extern void CanCheck(void);
+extern void init_can_bkp(void);
+extern void can_check(void);
 
-extern void SendCanMessage(unsigned char CanMess);
+extern void send_can_message(unsigned char CanMess);
 
-extern uint32_t AlarmStatusRead(void);
-extern void AlarmStatusClear(void);
+extern uint32_t alarm_status_read(void);
+extern void alarm_status_clear(void);
 
-extern void InterlockStatusClear(void);
+extern void interlock_status_clear(void);
 
 #endif /* APP_COMMUNICATION_DRIVERS_CAN_CAN_BKP_H_ */

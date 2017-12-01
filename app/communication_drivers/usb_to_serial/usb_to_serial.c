@@ -1,10 +1,24 @@
-/*
- * usb_to_serial.c
+/******************************************************************************
+ * Copyright (C) 2017 by LNLS - Brazilian Synchrotron Light Laboratory
  *
- *  Created on: 23/01/2017
- *      Author: joao.rosa
+ * Redistribution, modification or use of this software in source or binary
+ * forms is permitted as long as the files maintain this copyright. LNLS and
+ * the Brazilian Center for Research in Energy and Materials (CNPEM) are not
+ * liable for any misuse of this material.
+ *
+ *****************************************************************************/
+
+/**
+ * @file usb_to_serial.c
+ * @brief USB to Serial module.
+ *
+ * @author joao.rosa
+ *
+ * @date 23/01/2017
+ *
  */
 
+#include <stdint.h>
 
 #include "inc/hw_sysctl.h"
 #include "inc/hw_ints.h"
@@ -20,19 +34,13 @@
 #include "driverlib/systick.h"
 #include "driverlib/debug.h"
 
-#include "../board_drivers/hardware_def.h"
+#include "communication_drivers/epi/sdram_mem.h"
+#include "board_drivers/hardware_def.h"
 
 #include "usb_to_serial.h"
 
-#include "../epi/sdram_mem.h"
-
-void
-Usb2SerialIntHandler(void)
+void isr_usb_to_serial(void)
 {
-
-	long lChar;
-	short sCarga;
-	unsigned char ucChar;
     unsigned long ulStatus;
 
     // Get the interrrupt status.
@@ -67,8 +75,7 @@ Usb2SerialIntHandler(void)
 
 }
 
-void
-InitUsb2Serial(void)
+void init_usb_to_serial(void)
 {
 
 	// Usb serial configuration, operation mode 8-N-1
@@ -80,11 +87,11 @@ InitUsb2Serial(void)
 
 	UARTFIFOEnable(FT230_UART_BASE);
 
-	//Habilita interrupção pela UART0 (RS-485)
-	IntRegister(FT230_INT, Usb2SerialIntHandler);
+	//Habilita interrupï¿½ï¿½o pela UART0 (RS-485)
+	IntRegister(FT230_INT, isr_usb_to_serial);
 	UARTIntEnable(FT230_UART_BASE, UART_INT_RX | UART_INT_RT);
 
-	//Seta níveis de prioridade entre as interrupções
+	//Seta nï¿½veis de prioridade entre as interrupï¿½ï¿½es
 	IntPrioritySet(FT230_INT, 3);
 
 	IntEnable(FT230_INT);

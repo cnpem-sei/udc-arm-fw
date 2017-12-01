@@ -1,8 +1,21 @@
-/*
- * superv_cmd.h
+/******************************************************************************
+ * Copyright (C) 2017 by LNLS - Brazilian Synchrotron Light Laboratory
  *
- *  Created on: 16/09/2013
- *      Author: joao.rosa
+ * Redistribution, modification or use of this software in source or binary
+ * forms is permitted as long as the files maintain this copyright. LNLS and
+ * the Brazilian Center for Research in Energy and Materials (CNPEM) are not
+ * liable for any misuse of this material.
+ *
+ *****************************************************************************/
+
+/**
+ * @file superv_cmd.h
+ * @brief USB Supervisory.
+ *
+ * @author joao.rosa
+ *
+ * @date 16/09/2013
+ *
  */
 
 #ifndef SUPERV_CMD_H_
@@ -30,9 +43,9 @@
  extern buffer_usb_t DadoUsb;
  extern protocolo_usb_t MensagemUsb;
 
-extern void ClearBufferUsb(void);
-extern void MensagUsb(void);
+extern void clear_buffer_usb(void);
+extern void mensagem_usb(void);
 
-extern void SetNewData(void);
+extern void set_new_data(void);
 
 #endif /* SUPERV_CMD_H_ */

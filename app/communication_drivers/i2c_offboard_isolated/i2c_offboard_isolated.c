@@ -1,16 +1,24 @@
-/*
- * i2c_onboard_isolated.c
+/******************************************************************************
+ * Copyright (C) 2017 by LNLS - Brazilian Synchrotron Light Laboratory
  *
- *  Created on: 28/05/2015
- *      Author: joao.rosa
+ * Redistribution, modification or use of this software in source or binary
+ * forms is permitted as long as the files maintain this copyright. LNLS and
+ * the Brazilian Center for Research in Energy and Materials (CNPEM) are not
+ * liable for any misuse of this material.
  *
- *      Routines working fine!!
- *      Tested 15/07/2015
+ *****************************************************************************/
+
+/**
+ * @file i2c_offboard_isolated.c
+ * @brief I2C offboard module.
  *
- *      To work in the future: in single byte read, the I2C read function call 2 bytes, spending more time in it.
+ * @author joao.rosa
+ *
+ * @date 15/07/2015
+ *
  */
 
-#include "i2c_offboard_isolated.h"
+#include <stdint.h>
 
 #include "inc/hw_gpio.h"
 #include "inc/hw_memmap.h"
@@ -18,15 +26,15 @@
 #include "inc/hw_i2c.h"
 #include "inc/hw_ints.h"
 #include "inc/hw_sysctl.h"
+
 #include "driverlib/sysctl.h"
 #include "driverlib/gpio.h"
 #include "driverlib/interrupt.h"
 #include "driverlib/i2c.h"
 
-#include <stdint.h>
+#include "board_drivers/hardware_def.h"
 
-//#include "set_pinout_udc_v2.0.h"
-#include "../board_drivers/hardware_def.h"
+#include "i2c_offboard_isolated.h"
 
 #define I2C_READ true
 #define I2C_WRITE false
@@ -34,8 +42,7 @@
 
 #define I2CWhileMasterBusy while (I2CMasterBusy(I2C_OFFBOARD_ISO_MASTER_BASE)) {}
 
-void
-ReadI2COffboardIsolated(uint8_t SLAVE_ADDR, uint8_t TYPE_REGISTER_ADDR, uint8_t MESSAGE_SIZE, uint8_t *data)
+void read_i2c_offboard_isolated(uint8_t SLAVE_ADDR, uint8_t TYPE_REGISTER_ADDR, uint8_t MESSAGE_SIZE, uint8_t *data)
 {
 
 	I2CMasterSlaveAddrSet(I2C_OFFBOARD_ISO_MASTER_BASE, SLAVE_ADDR, I2C_WRITE);
@@ -73,8 +80,7 @@ ReadI2COffboardIsolated(uint8_t SLAVE_ADDR, uint8_t TYPE_REGISTER_ADDR, uint8_t 
 
 }
 
-void
-WriteI2COffboardIsolated(uint8_t SLAVE_ADDR, uint8_t MESSAGE_SIZE, uint8_t *data)
+void write_i2c_offboard_isolated(uint8_t SLAVE_ADDR, uint8_t MESSAGE_SIZE, uint8_t *data)
 {
 
 	I2CMasterSlaveAddrSet(I2C_OFFBOARD_ISO_MASTER_BASE, SLAVE_ADDR, I2C_WRITE);
@@ -92,8 +98,7 @@ WriteI2COffboardIsolated(uint8_t SLAVE_ADDR, uint8_t MESSAGE_SIZE, uint8_t *data
 	}
 }
 
-void
-InitI2COffboardIsolated(void)
+void init_i2c_offboard_isolated(void)
 {
 	// I2C0 configuration (EEPROM memory, IO expander e Temperature sensor.)
 	// Data rate is set to 400kbps

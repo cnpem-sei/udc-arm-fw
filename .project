@@ -24,4 +24,10 @@
 		<nature>org.eclipse.cdt.core.ccnature</nature>
 		<nature>org.eclipse.cdt.managedbuilder.core.ScannerConfigNature</nature>
 	</natures>
+	<variableList>
+		<variable>
+			<name>CONTROLSUITE</name>
+			<value>$%7BPARENT-1-PROJECT_LOC%7D/controlsuite/arm/MWare</value>
+		</variable>
+	</variableList>
 </projectDescription>

@@ -1,25 +1,34 @@
-/*
- * exio.c
+/******************************************************************************
+ * Copyright (C) 2017 by LNLS - Brazilian Synchrotron Light Laboratory
  *
- *  Created on: 13/07/2015
- *      Author: joao.rosa
+ * Redistribution, modification or use of this software in source or binary
+ * forms is permitted as long as the files maintain this copyright. LNLS and
+ * the Brazilian Center for Research in Energy and Materials (CNPEM) are not
+ * liable for any misuse of this material.
  *
- *      Routines working fine!!
- *      Tested 15/07/2015
+ *****************************************************************************/
+
+/**
+ * @file exio.c
+ * @brief Extern I/O module.
+ *
+ * @author joao.rosa
+ *
+ * @date 15/07/2015
+ *
  */
 
-#include "eeprom.h"
-#include "i2c_onboard.h"
-
-#include "../board_drivers/hardware_def.h"
-
 #include <stdint.h>
+
+#include "i2c_onboard.h"
+#include "eeprom.h"
+#include "exio.h"
+
+#include "board_drivers/hardware_def.h"
 
 #define I2C_SLV_ADDR_EXIO1 0x70 // Endereço 7 bits
 
 #define I2C_SLV_ADDR_EXIO2 0x71 // Endereço 7 bits
-
-//#define HardwareVer	0x20
 
 uint8_t data_exio[10];
 
@@ -83,8 +92,7 @@ static uint8_t StsExpIO2 = 0;
  *
  */
 
-uint8_t
-HardwareVersionTest(uint8_t ExNumber)
+uint8_t hardware_version_test(uint8_t ExNumber)
 {
 	uint8_t Ex1 = 0;
 	uint8_t Ex2 = 0;
@@ -95,11 +103,11 @@ HardwareVersionTest(uint8_t ExNumber)
 	// Try to configure the second expander
 	data_exio[0] = 0x03; // Input/Output configuration register
 	data_exio[1] = 0xC1; // Expander 2 configuration (Test Configuration)
-	WriteI2C(I2C_SLV_ADDR_EXIO2, 0x02, data_exio);
+	write_i2c(I2C_SLV_ADDR_EXIO2, 0x02, data_exio);
 
 	// Try to read back the configuration byte from the second expander
 	data_exio[0] = 0x03;
-	ReadI2C(I2C_SLV_ADDR_EXIO2, SINGLE_ADDRESS, 0x02, data_exio);
+	read_i2c(I2C_SLV_ADDR_EXIO2, SINGLE_ADDRESS, 0x02, data_exio);
 
 	if(data_exio[0] == 0xC1) Ex2 = 0x01; //Expander 2 detected
 	else Ex2 = 0xEE; //Expander 2 not detected
@@ -108,11 +116,11 @@ HardwareVersionTest(uint8_t ExNumber)
 	// Try to configure the second expander
 	data_exio[0] = 0x03; // Input/Output configuration register
 	data_exio[1] = 0x7F; // Expander 1 configuration (Test Configuration)
-	WriteI2C(I2C_SLV_ADDR_EXIO1, 0x02, data_exio);
+	write_i2c(I2C_SLV_ADDR_EXIO1, 0x02, data_exio);
 
 	// Try to read back the configuration byte from the first expander
 	data_exio[0] = 0x03;
-	ReadI2C(I2C_SLV_ADDR_EXIO1, SINGLE_ADDRESS, 0x02, data_exio);
+	read_i2c(I2C_SLV_ADDR_EXIO1, SINGLE_ADDRESS, 0x02, data_exio);
 
 	if(data_exio[0] == 0x7F) Ex1 = 0x01; //Expander 1 detected
 	else Ex1 = 0xEE; //Expander 1 not detected
@@ -135,8 +143,7 @@ HardwareVersionTest(uint8_t ExNumber)
 	}
 }
 
-void
-ExIOInit(void)
+void extern_io_init(void)
 {
 
 	switch(HARDWARE_VERSION)
@@ -144,53 +151,52 @@ ExIOInit(void)
 	case 0x20:
 		data_exio[0] = 0x03; // Input/Output configuration register
 		data_exio[1] = 0x0D; // Expander configuration
-		WriteI2C(I2C_SLV_ADDR_EXIO1, 0x02, data_exio);
+		write_i2c(I2C_SLV_ADDR_EXIO1, 0x02, data_exio);
 
 		data_exio[0] = 0x01; // Output state register
 		data_exio[1] = StsExpIO1 = 0x40; // Output state pins. Turn off: Display, Dcdc, PWM Fiber and PWM Electric
-		WriteI2C(I2C_SLV_ADDR_EXIO1, 0x02, data_exio);
+		write_i2c(I2C_SLV_ADDR_EXIO1, 0x02, data_exio);
 
 		break;
 	case 0x21:
 		// First expander
 		data_exio[0] = 0x03; // Input/Output configuration register
 		data_exio[1] = 0xB5; // Expander configuration
-		WriteI2C(I2C_SLV_ADDR_EXIO1, 0x02, data_exio);
+		write_i2c(I2C_SLV_ADDR_EXIO1, 0x02, data_exio);
 
 		data_exio[0] = 0x01; // Output state register
 		data_exio[1] = StsExpIO1 = 0x00; // Output state pins. Turn off: Display, Dcdc, PWM Fiber and PWM Electric
-		WriteI2C(I2C_SLV_ADDR_EXIO1, 0x02, data_exio);
+		write_i2c(I2C_SLV_ADDR_EXIO1, 0x02, data_exio);
 
 		// Second expander
 		data_exio[0] = 0x03; // Input/Output configuration register
 		data_exio[1] = 0xC1; // Expander configuration
-		WriteI2C(I2C_SLV_ADDR_EXIO2, 0x02, data_exio);
+		write_i2c(I2C_SLV_ADDR_EXIO2, 0x02, data_exio);
 
 		data_exio[0] = 0x01; // Output state register
 		data_exio[1] = StsExpIO2 = 0x00; // Output state pins. Turn off: Display, Dcdc, PWM Fiber and PWM Electric
-		WriteI2C(I2C_SLV_ADDR_EXIO2, 0x02, data_exio);
+		write_i2c(I2C_SLV_ADDR_EXIO2, 0x02, data_exio);
 
 		break;
 	}
 
 }
 
-void
-DisplayPwrCtrl(uint8_t sts)
+void display_pwr_ctrl(uint8_t sts)
 {
 	if(sts) StsExpIO1 |= 0b00000010;
 	else StsExpIO1 &= 0b11111101;
 	data_exio[0] = 0x01;
 	data_exio[1] = StsExpIO1;
-	WriteI2C(I2C_SLV_ADDR_EXIO1, 0x02, data_exio);
+	write_i2c(I2C_SLV_ADDR_EXIO1, 0x02, data_exio);
 }
 
-uint8_t
-DisplayPwrOCSts(void)
+//uint8_t DisplayPwrOCSts(void)
+uint8_t display_pwr_oc_sts(void)
 {
 	uint8_t Sts = 0;
 	data_exio[0] = 0x00;
-	ReadI2C(I2C_SLV_ADDR_EXIO1, SINGLE_ADDRESS, 0x02, data_exio);
+	read_i2c(I2C_SLV_ADDR_EXIO1, SINGLE_ADDRESS, 0x02, data_exio);
 	Sts = data_exio[0];
 
 	Sts &= 0b00000001;
@@ -198,12 +204,12 @@ DisplayPwrOCSts(void)
 	else return(0);
 }
 
-uint8_t
-SdAttSts(void)
+//uint8_t SdAttSts(void)
+uint8_t sd_att_sts(void)
 {
 	uint8_t Sts = 0;
 	data_exio[0] = 0x00;
-	ReadI2C(I2C_SLV_ADDR_EXIO1, SINGLE_ADDRESS, 0x02, data_exio);
+	read_i2c(I2C_SLV_ADDR_EXIO1, SINGLE_ADDRESS, 0x02, data_exio);
 	Sts = data_exio[0];
 
 	Sts &= 0b00000100;
@@ -211,8 +217,7 @@ SdAttSts(void)
 	else return(0);
 }
 
-void
-DcdcPwrCtrl(uint8_t sts)
+void dcdc_pwr_ctrl(uint8_t sts)
 {
 	switch(HARDWARE_VERSION)
 	{
@@ -221,25 +226,24 @@ DcdcPwrCtrl(uint8_t sts)
 		else StsExpIO1 |= 0b01000000;
 		data_exio[0] = 0x01;
 		data_exio[1] = StsExpIO1;
-		WriteI2C(I2C_SLV_ADDR_EXIO1, 0x02, data_exio);
+		write_i2c(I2C_SLV_ADDR_EXIO1, 0x02, data_exio);
 		break;
 	case 0x21:
 		if(sts) StsExpIO2 &= 0b11111101;
 		else StsExpIO2 |= 0b00000010;
 		data_exio[0] = 0x01;
 		data_exio[1] = StsExpIO2;
-		WriteI2C(I2C_SLV_ADDR_EXIO2, 0x02, data_exio);
+		write_i2c(I2C_SLV_ADDR_EXIO2, 0x02, data_exio);
 		break;
 	}
 
 }
 
-uint8_t
-DcdcSts(void)
+uint8_t dcdc_sts(void)
 {
 	uint8_t Sts = 0;
 	data_exio[0] = 0x00;
-	ReadI2C(I2C_SLV_ADDR_EXIO1, SINGLE_ADDRESS, 0x02, data_exio);
+	read_i2c(I2C_SLV_ADDR_EXIO1, SINGLE_ADDRESS, 0x02, data_exio);
 	Sts = data_exio[0];
 
 	switch(HARDWARE_VERSION)
@@ -256,8 +260,7 @@ DcdcSts(void)
 	else return(1);
 }
 
-void
-HradcRstCtrl(uint8_t sts)
+void hradc_rst_ctrl(uint8_t sts)
 {
 	switch(HARDWARE_VERSION)
 	{
@@ -273,52 +276,48 @@ HradcRstCtrl(uint8_t sts)
 
 	data_exio[0] = 0x01;
 	data_exio[1] = StsExpIO1;
-	WriteI2C(I2C_SLV_ADDR_EXIO1, 0x02, data_exio);
+	write_i2c(I2C_SLV_ADDR_EXIO1, 0x02, data_exio);
 }
 
 
 // Available only on 2.0 hardware release
-void
-PwmFiberCtrl(uint8_t sts)
+void pwm_fiber_ctrl(uint8_t sts)
 {
 	if(sts) StsExpIO1 |= 0b10000000;
 	else StsExpIO1 &= 0b01111111;
 	data_exio[0] = 0x01;
 	data_exio[1] = StsExpIO1;
-	WriteI2C(I2C_SLV_ADDR_EXIO1, 0x02, data_exio);
+	write_i2c(I2C_SLV_ADDR_EXIO1, 0x02, data_exio);
 }
 
 
 // Available only on 2.0 hardware release
-void
-PwmEletrCtrl(uint8_t sts)
+void pwm_eletr_ctrl(uint8_t sts)
 {
 	if(sts) StsExpIO1 |= 0b00010000;
 	else StsExpIO1 &= 0b11101111;
 	data_exio[0] = 0x01;
 	data_exio[1] = StsExpIO1;
-	WriteI2C(I2C_SLV_ADDR_EXIO1, 0x02, data_exio);
+	write_i2c(I2C_SLV_ADDR_EXIO1, 0x02, data_exio);
 }
 
 
 // Available only on 2.1 hardware release
-void
-Rs485TermCtrl(uint8_t sts)
+void rs485_term_ctrl(uint8_t sts)
 {
 	if(sts) StsExpIO1 |= 0b00001000;
 	else StsExpIO1 &= 0b11110111;
 	data_exio[0] = 0x01;
 	data_exio[1] = StsExpIO1;
-	WriteI2C(I2C_SLV_ADDR_EXIO1, 0x02, data_exio);
+	write_i2c(I2C_SLV_ADDR_EXIO1, 0x02, data_exio);
 }
 
 // Available only on 2.1 hardware release
-uint8_t
-DisplayAttSts(void)
+uint8_t display_att_sts(void)
 {
 	uint8_t Sts = 0;
 	data_exio[0] = 0x00;
-	ReadI2C(I2C_SLV_ADDR_EXIO1, SINGLE_ADDRESS, 0x02, data_exio);
+	read_i2c(I2C_SLV_ADDR_EXIO1, SINGLE_ADDRESS, 0x02, data_exio);
 	Sts = data_exio[0];
 
 	Sts &= 0b00100000;
@@ -327,45 +326,41 @@ DisplayAttSts(void)
 }
 
 // Available only on 2.1 hardware release
-void
-BuffersCtrl(uint8_t sts)
+void buffers_ctrl(uint8_t sts)
 {
 	if(sts) StsExpIO2 |= 0b00000100;
 	else StsExpIO2 &= 0b11111011;
 	data_exio[0] = 0x01;
 	data_exio[1] = StsExpIO2;
-	WriteI2C(I2C_SLV_ADDR_EXIO2, 0x02, data_exio);
+	write_i2c(I2C_SLV_ADDR_EXIO2, 0x02, data_exio);
 }
 
 // Available only on 2.1 hardware release
-void
-LedItlkCtrl(uint8_t sts)
+void led_itlk_ctrl(uint8_t sts)
 {
 	if(sts) StsExpIO2 |= 0b00001000;
 	else StsExpIO2 &= 0b11110111;
 	data_exio[0] = 0x01;
 	data_exio[1] = StsExpIO2;
-	WriteI2C(I2C_SLV_ADDR_EXIO2, 0x02, data_exio);
+	write_i2c(I2C_SLV_ADDR_EXIO2, 0x02, data_exio);
 }
 
 // Available only on 2.1 hardware release
-void
-LedStsCtrl(uint8_t sts)
+void led_sts_ctrl(uint8_t sts)
 {
 	if(sts) StsExpIO2 |= 0b00010000;
 	else StsExpIO2 &= 0b11101111;
 	data_exio[0] = 0x01;
 	data_exio[1] = StsExpIO2;
-	WriteI2C(I2C_SLV_ADDR_EXIO2, 0x02, data_exio);
+	write_i2c(I2C_SLV_ADDR_EXIO2, 0x02, data_exio);
 }
 
 // Available only on 2.1 hardware release
-void
-SoundSelCtrl(uint8_t sts)
+void sound_sel_ctrl(uint8_t sts)
 {
 	if(sts) StsExpIO2 |= 0b00100000;
 	else StsExpIO2 &= 0b11011111;
 	data_exio[0] = 0x01;
 	data_exio[1] = StsExpIO2;
-	WriteI2C(I2C_SLV_ADDR_EXIO2, 0x02, data_exio);
+	write_i2c(I2C_SLV_ADDR_EXIO2, 0x02, data_exio);
 }

@@ -1,36 +1,38 @@
-/*
- * system_task.c
+/******************************************************************************
+ * Copyright (C) 2017 by LNLS - Brazilian Synchrotron Light Laboratory
  *
- *  Created on: 20/07/2015
- *      Author: joao.rosa
+ * Redistribution, modification or use of this software in source or binary
+ * forms is permitted as long as the files maintain this copyright. LNLS and
+ * the Brazilian Center for Research in Energy and Materials (CNPEM) are not
+ * liable for any misuse of this material.
+ *
+ *****************************************************************************/
+
+/**
+ * @file system_task.c
+ * @brief Application scheduler.
+ *
+ * @author joao.rosa
+ *
+ * @date 20/07/2015
+ *
  */
-
-#include "system_task.h"
-
-#include "../i2c_onboard/rtc.h"
-
-#include "../i2c_offboard_isolated/temp_low_power_module.h"
-
-#include "../signals_onboard/signals_onboard.h"
-
-#include "../rs485_bkp/rs485_bkp.h"
-
-#include "../rs485/rs485.h"
-
-#include "../ihm/ihm.h"
-
-#include "../can/can_bkp.h"
-
-#include "../shared_memory/main_var.h"
-
-#include "../ipc/ipc_lib.h"
-
-#include "../i2c_onboard/eeprom.h"
-
-#include "../adcp/adcp.h"
 
 #include <stdint.h>
 #include <stdbool.h>
+
+#include "communication_drivers/i2c_onboard/rtc.h"
+#include "communication_drivers/i2c_offboard_isolated/temp_low_power_module.h"
+#include "communication_drivers/signals_onboard/signals_onboard.h"
+#include "communication_drivers/rs485_bkp/rs485_bkp.h"
+#include "communication_drivers/rs485/rs485.h"
+#include "communication_drivers/ihm/ihm.h"
+#include "communication_drivers/can/can_bkp.h"
+#include "communication_drivers/ipc/ipc_lib.h"
+#include "communication_drivers/i2c_onboard/eeprom.h"
+#include "communication_drivers/adcp/adcp.h"
+#include "communication_drivers/i2c_onboard/exio.h"
+#include "system_task.h"
 
 volatile uint8_t LedCtrl = 0;
 
@@ -83,15 +85,19 @@ TaskSetNew(uint8_t TaskNum)
 	case POWER_TEMP_SAMPLE:
 		PROCESS_POWER_TEMP_SAMPLE = 1;
 		break;
+
 	case EEPROM_WRITE_REQUEST_CHECK:
 		EEPROM_WRITE_REQUEST = 1;
 		break;
+
 	case LED_STATUS:
 	    LED_STATUS_REQUEST = 1;
 	    break;
+
 	case SAMPLE_ADCP:
 	    SAMPLE_ADCP_REQUEST = 1;
 	    break;
+
 	case ADCP_SAMPLE_AVAILABLE:
 	    ADCP_SAMPLE_AVAILABLE_REQUEST = 1;
 	    break;
@@ -107,28 +113,31 @@ void
 TaskCheck(void)
 {
 
-	if(PROCESS_CAN_MESS)
-	{
-		PROCESS_CAN_MESS = 0;
-		CanCheck();
-	}
-
-	else if(ADCP_SAMPLE_AVAILABLE_REQUEST)
+	if(ADCP_SAMPLE_AVAILABLE_REQUEST)
 	{
 	    ADCP_SAMPLE_AVAILABLE_REQUEST = 0;
-	    AdcpGetSamples();
+	    adcp_get_samples();
 	}
+
+    /**********************************************
+     * TODO: Process CAN message
+     * *******************************************/
+    //else if(PROCESS_CAN_MESS)
+    //{
+    //  PROCESS_CAN_MESS = 0;
+    //  can_check();
+    //}
 
 	else if(SAMPLE_ADCP_REQUEST)
 	{
 	    SAMPLE_ADCP_REQUEST = 0;
-	    AdcpRead();
+	    adcp_read();
 	}
 
 	else if(PROCESS_RS485_MESS)
 	{
 		PROCESS_RS485_MESS = 0;
-		RS485ProcessData();
+		rs485_process_data();
 	}
 
 	else if(PROCESS_ETH_MESS)
@@ -137,54 +146,59 @@ TaskCheck(void)
 		// Ethernet function
 	}
 
-	else if(PROCESS_DISP_MESS)
-	{
-		PROCESS_DISP_MESS = 0;
-		DisplayProcessData();
-	}
+    /**********************************************
+     * TODO: Display process data
+     * *******************************************/
+	//else if(PROCESS_DISP_MESS)
+	//{
+	//	PROCESS_DISP_MESS = 0;
+	//	display_process_data();
+	//}
 
 	else if(READ_RTC)
 	{
 		READ_RTC = 0;
-		RTCReadDataHour();
+		rtc_read_data_hour();
 		//HeartBeatLED();
 	}
 
 	else if(READ_IIB)
 	{
 		READ_IIB = 0;
-		RS485BKPTxHandler();
+		rs485_bkp_tx_handler();
 	}
 
-	else if(ITLK_ALARM_RESET)
-	{
-		ITLK_ALARM_RESET = 0;
-		InterlockAlarmReset();
-	}
+    /**********************************************
+     * TODO: Reset interlocks
+     * *******************************************/
+	//else if(ITLK_ALARM_RESET)
+	//{
+	//	ITLK_ALARM_RESET = 0;
+    //
+	//	interlock_alarm_reset();
+	//}
 
 	else if(PROCESS_POWER_TEMP_SAMPLE)
 	{
 		PROCESS_POWER_TEMP_SAMPLE = 0;
 
-		switch(IPC_MtoC_Msg.PSModule.Model.u16)
+		// TODO: Fix it
+		//switch(g_ipc_mtoc[0].PSModule.Model.u16)
+		switch(g_ipc_mtoc.ps_module[g_current_ps_id].ps_status.bit.model)
 		{
-			case FBP_100kHz:
-				//PowerSupply1TempRead();
-				break;
-			case FBPx4_100kHz:
-			case JIGA_BASTIDOR:
-				PowerSupply1TempRead();
-				PowerSupply2TempRead();
-				PowerSupply3TempRead();
-				PowerSupply4TempRead();
-				break;
+			case FBP:
+			    power_supply_1_temp_read();
+                power_supply_2_temp_read();
+                power_supply_3_temp_read();
+                power_supply_4_temp_read();
+                break;
 		}
 	}
 
 	else if(EEPROM_WRITE_REQUEST)
 	{
 		EEPROM_WRITE_REQUEST = 0;
-		EepromWriteRequestCheck();
+		eeprom_write_request_check();
 	}
 
 	else if(LED_STATUS_REQUEST)
@@ -193,19 +207,18 @@ TaskCheck(void)
 
 	    if(LedCtrl)
         {
-            LedStsCtrl(0);
-            LedItlkCtrl(0);
-            SoundSelCtrl(0);
+	        led_sts_ctrl(0);
+            led_itlk_ctrl(0);
+            sound_sel_ctrl(0);
             LedCtrl = 0;
         }
         else
         {
-            LedStsCtrl(1);
-            LedItlkCtrl(1);
-            SoundSelCtrl(1);
+            led_sts_ctrl(1);
+            led_itlk_ctrl(1);
+            sound_sel_ctrl(1);
             LedCtrl = 1;
         }
-
 	}
 
 }

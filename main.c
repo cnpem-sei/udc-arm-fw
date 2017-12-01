@@ -1,15 +1,26 @@
-/*
- * 		File: Main.c
- * 		Project: UDC V2.0
- * 		Date:04/14/2015
+/******************************************************************************
+ * Copyright (C) 2017 by LNLS - Brazilian Synchrotron Light Laboratory
  *
- * 		Developer: João Nilton
- * 		Contact:
+ * Redistribution, modification or use of this software in source or binary
+ * forms is permitted as long as the files maintain this copyright. LNLS and
+ * the Brazilian Center for Research in Energy and Materials (CNPEM) are not
+ * liable for any misuse of this material.
  *
- * 		Description:
+ *****************************************************************************/
+
+/**
+ * @file main.c
+ * @brief DRS Application.
  *
+ * @author joao.rosa
+ *
+ * @date 14/04/2015
  *
  */
+
+#include <stdint.h>
+#include <stdarg.h>
+#include <string.h>
 
 #include "inc/hw_ints.h"
 #include "inc/hw_memmap.h"
@@ -29,49 +40,27 @@
 #include "driverlib/ipc.h"
 #include "driverlib/usb.h"
 
-//#include "set_pinout_udc_v2.0.h"
-//#include "set_pinout_ctrl_card.h"
+#include "communication_drivers/signals_onboard/signals_onboard.h"
+#include "communication_drivers/rs485/rs485.h"
+#include "communication_drivers/rs485_bkp/rs485_bkp.h"
+#include "communication_drivers/ihm/ihm.h"
+#include "communication_drivers/ethernet/ethernet_uip.h"
+#include "communication_drivers/can/can_bkp.h"
+#include "communication_drivers/usb_device/superv_cmd.h"
+#include "communication_drivers/i2c_onboard/i2c_onboard.h"
+#include "communication_drivers/i2c_onboard/rtc.h"
+#include "communication_drivers/i2c_onboard/eeprom.h"
+#include "communication_drivers/i2c_onboard/exio.h"
+#include "communication_drivers/adcp/adcp.h"
+#include "communication_drivers/timer/timer.h"
+#include "communication_drivers/system_task/system_task.h"
+#include "communication_drivers/flash/flash_mem.h"
+#include "communication_drivers/parameters/system/system.h"
+#include "communication_drivers/ipc/ipc_lib.h"
+#include "communication_drivers/bsmp/bsmp_lib.h"
+#include "communication_drivers/psmodules/fbp/fbp_main.h"
 
 #include "hardware_def.h"
-
-#include "app/communication_drivers/signals_onboard/signals_onboard.h"
-#include "app/communication_drivers/rs485/rs485.h"
-#include "app/communication_drivers/rs485_bkp/rs485_bkp.h"
-#include "app/communication_drivers/ihm/ihm.h"
-#include "app/communication_drivers/ethernet/ethernet_uip.h"
-#include "app/communication_drivers/can/can_bkp.h"
-
-#include "app/communication_drivers/parameters/communication/communication_par.h"
-
-#include "app/communication_drivers/usb_device/superv_cmd.h"
-
-#include "app/communication_drivers/i2c_onboard/i2c_onboard.h"
-#include "app/communication_drivers/i2c_onboard/rtc.h"
-#include "app/communication_drivers/i2c_onboard/eeprom.h"
-#include "app/communication_drivers/i2c_onboard/exio.h"
-
-#include "app/communication_drivers/adcp/adcp.h"
-
-#include "app/communication_drivers/timer/timer.h"
-
-#include "app/communication_drivers/system_task/system_task.h"
-
-#include "app/communication_drivers/flash/flash_mem.h"
-
-#include "app/communication_drivers/flash/flash_mem.h"
-
-#include "app/communication_drivers/parameters/system/system.h"
-
-#include "app/communication_drivers/ipc/ipc_lib.h"
-
-#include "app/communication_drivers/bsmp/bsmp_lib.h"
-
-#include "app/communication_drivers/shared_memory/structs.h"
-
-#include <stdint.h>
-#include <stdarg.h>
-#include <string.h>
-
 
 extern unsigned long RamfuncsLoadStart;
 extern unsigned long RamfuncsRunStart;
@@ -104,9 +93,6 @@ int main(void) {
 	                         SYSCTL_SYSDIV_1 | SYSCTL_M3SSDIV_2 |
 	                         SYSCTL_XCLKDIV_4);
 
-
-
-
 // Copy time critical code and Flash setup code to RAM
 // This includes the following functions:  InitFlash();
 // The  RamfuncsLoadStart, RamfuncsLoadSize, and RamfuncsRunStart
@@ -120,124 +106,73 @@ int main(void) {
     // Configure the board peripherals
     //HardwareInit();
 
-    PinoutSet();
+    pinout_setup();
 
     // assign S0 and S1 of the shared ram for use by the c28
 	// Details of how c28 uses these memory sections is defined
 	// in the c28 linker file.
-	RAMMReqSharedMemAccess((S1_ACCESS | S2_ACCESS | S4_ACCESS | S5_ACCESS),C28_MASTER);
+	RAMMReqSharedMemAccess((S1_ACCESS | S2_ACCESS | S4_ACCESS |
+	                                    S5_ACCESS), C28_MASTER);
 
-	SystemConfig();
+	system_config();
 
-	//  Send boot command to allow the C28 application to begin execution
-    IPCMtoCBootControlSystem(CBROM_MTOC_BOOTMODE_BOOT_FROM_FLASH);
+    //  Send boot command to allow the C28 application to begin execution
+    //IPCMtoCBootControlSystem(CBROM_MTOC_BOOTMODE_BOOT_FROM_FLASH);
 
 	// Delay
 	for (ulLoop=0;ulLoop<500000;ulLoop++){};
 
-	SystemInit();
+	system_init();
 
 	// Enable processor interrupts.
 	IntMasterEnable();
 
 	while(1)
 	{
+	    // TODO: Just when using IHM
+	    //g_ipc_mtoc.ps_module[0].ps_status.bit.state = loc_rem_update();
 
+	    switch(g_ipc_mtoc.ps_module[0].ps_status.bit.model)
+	    {
+	        case FBP:
 
+	            fbp_main();
 
-		for (ulLoop=0;ulLoop<1000;ulLoop++)
-			{
-				//RS485ProcessData();
-				EthernetProcessData();
-				//DisplayProcessData();
-				//RS485BKPProcessData();
-				//MensagUsb();
-				//CanCheck();
+	        break;
 
-				TaskCheck();
-			}
+	        //case FAP_DCDC_20kHz:
+	        //    fap_dcdc_20_khz_main();
+            //
+	        //break;
+            //
+	        //case FAC_Full_DCDC_20kHz:
+	        //    fac_full_dcdc_20_khz_main();
+            //
+	        //break;
+            //
+	        //case FAC_Full_ACDC_10kHz:
+	        //    fac_full_acdc_10_khz_main();
+            //
+	        //break;
+            //
+	        //case FAP_ACDC:
+	        //    fap_acdc_main();
+            //
+	        //break;
+            //
+	        //case FAP_DCDC_15kHz_225A:
+	        //    fap_dcdc_15_khz_main();
+            //
+	        //break;
+            //
+	        //case FAP_6U_DCDC_20kHz:
+	        //    fap_6u_dcdc_20_khz_main();
+            //
+	        //break;
 
-		IPC_MtoC_Msg.PSModule.LocalRemote.u16 = LocRemUpdate();
-
-
-
-		/*
-
-		if(read_rtc)
-		{
-			read_rtc = 0;
-			RTCReadDataHour();
-
-		}
-
-		if(read_rtc_status)
-		{
-			read_rtc_status = 0;
-			RTCWriteDataHour(0x00, 0x30, 0x19, 0x04, 0x08, 0x07, 0x15);
-
-		}
-
-		if(read_add_rs485)
-		{
-			read_add_rs485 = 0;
-			EepromReadRs485Add();
-		}
-
-		if(set_add_rs485)
-		{
-			set_add_rs485 = 0;
-			EepromWriteRs485Add(add485);
-		}
-
-		if(read_add_IP)
-		{
-			read_add_IP = 0;
-			EepromReadIP();
-		}
-
-		if(set_add_IP)
-		{
-			set_add_IP = 0;
-			EepromWriteIP(addIP);
-		}
-
-		if(read_display_sts)
-		{
-			read_display_sts = 0;
-			DisplayPwrOCSts();
-		}
-		if(set_display_sts)
-		{
-			set_display_sts = 0;
-			DisplayPwrCtrl(stsdisp);
-		}
-
-		if(read_isodcdc_sts)
-		{
-			read_isodcdc_sts = 0;
-			DcdcSts();
-		}
-
-		if(set_isodcdc_sts)
-		{
-			set_isodcdc_sts = 0;
-			DcdcPwrCtrl(stsisodcdc);
-		}
-
-		if(read_adcp)
-		{
-			read_adcp = 0;
-			AdcpRead();
-		}
-
-		if(read_flash_sn)
-		{
-			read_flash_sn = 0;
-			FlashMemReadSerialNumber();
-		}
-		*/
-
+	        default:
+	            fbp_main();
+	    }
 	}
-
 
 }
