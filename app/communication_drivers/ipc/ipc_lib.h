@@ -41,6 +41,7 @@
 #define RESET_INTERLOCKS		0x00001001 //IPC1+IPC13
 #define RESET_WFMREF			0x00002001 //IPC1+IPC14
 #define TURN_OFF				0x00004001 //IPC1+IPC15
+#define SLOWREFX4_UPDATE        0x00008001 //IPC1+IPC16
 //...//
 #define HRADC_UFM_READ          0x00200001 //IPC1+IPC22
 #define HRADC_UFM_WRITE         0x00400001 //IPC1+IPC23
@@ -364,6 +365,7 @@ typedef struct
 	union
 	{
 		uint8_t u8[4];
+		uint32_t u32;
 		float	f;
 	} Coeffs[DP_MODULE_MAX_COEFF];
 
