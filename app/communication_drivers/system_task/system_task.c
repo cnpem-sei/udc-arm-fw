@@ -27,6 +27,8 @@
 
 #include "../i2c_onboard/eeprom.h"
 
+#include "../adcp/adcp.h"
+
 #include <stdint.h>
 #include <stdbool.h>
 
@@ -42,6 +44,8 @@ volatile bool PROCESS_RS485_MESS = 0;
 volatile bool PROCESS_POWER_TEMP_SAMPLE = 0;
 volatile bool EEPROM_WRITE_REQUEST = 0;
 volatile bool LED_STATUS_REQUEST = 0;
+volatile bool SAMPLE_ADCP_REQUEST = 0;
+volatile bool ADCP_SAMPLE_AVAILABLE_REQUEST = 0;
 
 void
 TaskSetNew(uint8_t TaskNum)
@@ -85,6 +89,12 @@ TaskSetNew(uint8_t TaskNum)
 	case LED_STATUS:
 	    LED_STATUS_REQUEST = 1;
 	    break;
+	case SAMPLE_ADCP:
+	    SAMPLE_ADCP_REQUEST = 1;
+	    break;
+	case ADCP_SAMPLE_AVAILABLE:
+	    ADCP_SAMPLE_AVAILABLE_REQUEST = 1;
+	    break;
 
 	default:
 
@@ -101,6 +111,18 @@ TaskCheck(void)
 	{
 		PROCESS_CAN_MESS = 0;
 		CanCheck();
+	}
+
+	else if(ADCP_SAMPLE_AVAILABLE_REQUEST)
+	{
+	    ADCP_SAMPLE_AVAILABLE_REQUEST = 0;
+	    AdcpGetSamples();
+	}
+
+	else if(SAMPLE_ADCP_REQUEST)
+	{
+	    SAMPLE_ADCP_REQUEST = 0;
+	    AdcpRead();
 	}
 
 	else if(PROCESS_RS485_MESS)
