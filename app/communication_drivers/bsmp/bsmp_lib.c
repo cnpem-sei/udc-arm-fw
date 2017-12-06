@@ -1238,8 +1238,8 @@ void bsmp_init(uint8_t server)
     init_bsmp_var(&ps_status[server], 2, dummy_u16_memory, false);
     init_bsmp_var(&ps_setpoint[server], 4, dummy_float_memory, false);
     init_bsmp_var(&ps_reference[server], 4, dummy_float_memory, false);
-    init_bsmp_var(&ps_soft_interlocks[server], 4, dummy_u32_memory, false);
-    init_bsmp_var(&ps_hard_interlocks[server], 4, dummy_u32_memory, false);
+    init_bsmp_var(&ps_soft_interlocks[server], 2, dummy_u16_memory, false);
+    init_bsmp_var(&ps_hard_interlocks[server], 2, dummy_u16_memory, false);
     init_bsmp_var(&i_load[server], 4, dummy_float_memory, false);
     init_bsmp_var(&v_load[server], 4, dummy_float_memory, false);
     init_bsmp_var(&v_dclink[server], 4, dummy_float_memory, false);
