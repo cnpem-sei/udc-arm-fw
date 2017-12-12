@@ -68,7 +68,8 @@ typedef volatile struct
 typedef volatile union
 {
 	tHRADC_BoardData	t;
-	uint16_t 				u[UFM_BOARDDATA_SIZE];
+	uint16_t 			u16[UFM_BOARDDATA_SIZE];
+	uint8_t             u8[2*UFM_BOARDDATA_SIZE];
 } uHRADC_BoardData;
 
 

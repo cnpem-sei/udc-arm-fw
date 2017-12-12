@@ -1368,6 +1368,7 @@ static struct bsmp_func remoteinterface_func = {
 static uint8_t dummy_float_memory[4];
 static uint8_t dummy_u32_memory[4];
 static uint8_t dummy_u16_memory[2];
+static uint8_t dummy_u8_memory;
 
 
 //*****************************************************************************
@@ -1712,6 +1713,33 @@ static  struct bsmp_var counterSetISlowRefx4 = {
         .value_ok      = NULL,
 };
 
+static  struct bsmp_var hradc0_boarddata = {
+        .info.size     = 56,                            // 4 bytes (float)
+        .info.writable = false,                         // Read only
+        .data          = &dummy_u8_memory,            // Data pointer will be initialized
+        .value_ok      = NULL,
+};
+
+static  struct bsmp_var hradc1_boarddata = {
+        .info.size     = 56,                            // 4 bytes (float)
+        .info.writable = false,                         // Read only
+        .data          = &dummy_u8_memory,            // Data pointer will be initialized
+        .value_ok      = NULL,
+};
+
+static  struct bsmp_var hradc2_boarddata = {
+        .info.size     = 56,                            // 4 bytes (float)
+        .info.writable = false,                         // Read only
+        .data          = &dummy_u8_memory,            // Data pointer will be initialized
+        .value_ok      = NULL,
+};
+
+static  struct bsmp_var hradc3_boarddata = {
+        .info.size     = 56,                            // 4 bytes (float)
+        .info.writable = false,                         // Read only
+        .data          = &dummy_u8_memory,            // Data pointer will be initialized
+        .value_ok      = NULL,
+};
 
 //*****************************************************************************
 // 							BSMP Initialization
@@ -1813,6 +1841,10 @@ BSMPInit(void)
 	bsmp_register_variable(&bsmp, &iRef3);                  // Var ID 47
 	bsmp_register_variable(&bsmp, &iRef4);                  // Var ID 48
 	bsmp_register_variable(&bsmp, &counterSetISlowRefx4);   // Var ID 49
+	bsmp_register_variable(&bsmp, &hradc0_boarddata);       // Var ID 50
+	bsmp_register_variable(&bsmp, &hradc1_boarddata);       // Var ID 51
+	bsmp_register_variable(&bsmp, &hradc2_boarddata);       // Var ID 52
+	bsmp_register_variable(&bsmp, &hradc3_boarddata);       // Var ID 53
 
 
 	//*****************************************************************************
@@ -1858,6 +1890,11 @@ BSMPInit(void)
 	Init_BSMP_var(42,IPC_CtoM_Msg.WfmRef.BufferInfo.PtrBufferEnd.u8);
 	Init_BSMP_var(43,IPC_CtoM_Msg.WfmRef.BufferInfo.PtrBufferK.u8);
 	Init_BSMP_var(44,IPC_CtoM_Msg.WfmRef.SyncMode.u8);
+
+	Init_BSMP_var(50,HRADCs_Info.HRADC_boards[0].BoardData.u8);
+	Init_BSMP_var(51,HRADCs_Info.HRADC_boards[1].BoardData.u8);
+	Init_BSMP_var(52,HRADCs_Info.HRADC_boards[2].BoardData.u8);
+	Init_BSMP_var(53,HRADCs_Info.HRADC_boards[3].BoardData.u8);
 
 	// Initialize BSMP variable pointers based on PS model
 	switch(IPC_MtoC_Msg.PSModule.Model.enu)
