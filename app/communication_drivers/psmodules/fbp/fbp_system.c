@@ -33,31 +33,31 @@
 
 #define PS1_ID                    0x0000
 
-#define PS1_LOAD_CURRENT          g_controller_ctom.net_signals[0].u8    // HRADC0
-#define PS1_DCLINK_VOLTAGE        g_controller_mtoc.net_signals[0].u8    // ANI2
-#define PS1_LOAD_VOLTAGE          g_controller_mtoc.net_signals[4].u8    // ANI6
-#define PS1_TEMPERATURE           g_controller_mtoc.net_signals[8].u8   // I2C Add 0x48
+#define PS1_LOAD_CURRENT          g_controller_ctom.net_signals[0]   // HRADC0
+#define PS1_DCLINK_VOLTAGE        g_controller_mtoc.net_signals[0]   // ANI2
+#define PS1_LOAD_VOLTAGE          g_controller_mtoc.net_signals[4]   // ANI6
+#define PS1_TEMPERATURE           g_controller_mtoc.net_signals[8]  // I2C Add 0x48
 
 #define PS2_ID                    0x0001
 
-#define PS2_LOAD_CURRENT          g_controller_ctom.net_signals[1].u8    // HRADC1
-#define PS2_DCLINK_VOLTAGE        g_controller_mtoc.net_signals[1].u8    // ANI1
-#define PS2_LOAD_VOLTAGE          g_controller_mtoc.net_signals[5].u8   // ANI7
-#define PS2_TEMPERATURE           g_controller_mtoc.net_signals[9].u8   // I2C Add 0x49
+#define PS2_LOAD_CURRENT          g_controller_ctom.net_signals[1]    // HRADC1
+#define PS2_DCLINK_VOLTAGE        g_controller_mtoc.net_signals[1]    // ANI1
+#define PS2_LOAD_VOLTAGE          g_controller_mtoc.net_signals[5]   // ANI7
+#define PS2_TEMPERATURE           g_controller_mtoc.net_signals[9]   // I2C Add 0x49
 
 #define PS3_ID                    0x0002
 
-#define PS3_LOAD_CURRENT          g_controller_ctom.net_signals[2].u8    // HRADC2
-#define PS3_DCLINK_VOLTAGE        g_controller_mtoc.net_signals[2].u8    // ANI4
-#define PS3_LOAD_VOLTAGE          g_controller_mtoc.net_signals[6].u8   // ANI3
-#define PS3_TEMPERATURE           g_controller_mtoc.net_signals[10].u8   // I2C Add 0x4A
+#define PS3_LOAD_CURRENT          g_controller_ctom.net_signals[2]    // HRADC2
+#define PS3_DCLINK_VOLTAGE        g_controller_mtoc.net_signals[2]    // ANI4
+#define PS3_LOAD_VOLTAGE          g_controller_mtoc.net_signals[6]   // ANI3
+#define PS3_TEMPERATURE           g_controller_mtoc.net_signals[10]   // I2C Add 0x4A
 
 #define PS4_ID                    0x0003
 
-#define PS4_LOAD_CURRENT          g_controller_ctom.net_signals[3].u8   // HRADC3
-#define PS4_DCLINK_VOLTAGE        g_controller_mtoc.net_signals[3].u8    // ANI0
-#define PS4_LOAD_VOLTAGE          g_controller_mtoc.net_signals[7].u8   // ANI5
-#define PS4_TEMPERATURE           g_controller_mtoc.net_signals[11].u8   // I2C Add 0x4C
+#define PS4_LOAD_CURRENT          g_controller_ctom.net_signals[3]   // HRADC3
+#define PS4_DCLINK_VOLTAGE        g_controller_mtoc.net_signals[3]    // ANI0
+#define PS4_LOAD_VOLTAGE          g_controller_mtoc.net_signals[7]   // ANI5
+#define PS4_TEMPERATURE           g_controller_mtoc.net_signals[11]   // I2C Add 0x4C
 
 /**
  * Number of power supplies
@@ -99,42 +99,42 @@ static void adcp_channel_config(void)
     // PS1 VdcLink: 10V = 20V
     g_analog_ch_2.Enable = 1;
     g_analog_ch_2.Gain = 20.0/2048.0;
-    g_analog_ch_2.Value = &g_controller_mtoc.net_signals[0].f;
+    g_analog_ch_2.Value = &(PS1_DCLINK_VOLTAGE.f);
 
     // PS2 VdcLink: 10V = 20V
     g_analog_ch_1.Enable = 1;
     g_analog_ch_1.Gain = 20.0/2048.0;
-    g_analog_ch_1.Value = &g_controller_mtoc.net_signals[1].f;
+    g_analog_ch_1.Value = &(PS2_DCLINK_VOLTAGE.f);
 
     // PS3 VdcLink: 10V = 20V
     g_analog_ch_4.Enable = 1;
     g_analog_ch_4.Gain = 20.0/2048.0;
-    g_analog_ch_4.Value = &g_controller_mtoc.net_signals[2].f;
+    g_analog_ch_4.Value = &(PS3_DCLINK_VOLTAGE.f);
 
     // PS4 VdcLink: 10V = 20V
     g_analog_ch_0.Enable = 1;
     g_analog_ch_0.Gain = 20.0/2048.0;
-    g_analog_ch_0.Value = &g_controller_mtoc.net_signals[3].f;
+    g_analog_ch_0.Value = &(PS4_DCLINK_VOLTAGE.f);
 
     // PS1 Vload: 10V = 20.2V
     g_analog_ch_6.Enable = 1;
     g_analog_ch_6.Gain = 20.2/2048.0;
-    g_analog_ch_6.Value = &g_controller_mtoc.net_signals[4].f;
+    g_analog_ch_6.Value = &(PS1_LOAD_VOLTAGE.f);
 
     // PS2 Vload: 10V = 20.2V
     g_analog_ch_7.Enable = 1;
     g_analog_ch_7.Gain = 20.2/2048.0;
-    g_analog_ch_7.Value = &g_controller_mtoc.net_signals[5].f;
+    g_analog_ch_7.Value = &(PS2_LOAD_VOLTAGE.f);
 
     // PS3 Vload: 10V = 20.2V
     g_analog_ch_3.Enable = 1;
     g_analog_ch_3.Gain = 20.2/2048.0;
-    g_analog_ch_3.Value = &g_controller_mtoc.net_signals[6].f;
+    g_analog_ch_3.Value = &(PS3_LOAD_VOLTAGE.f);
 
     // PS4 Vload: 10V = 20.2V
     g_analog_ch_5.Enable = 1;
     g_analog_ch_5.Gain = 20.2/2048.0;
-    g_analog_ch_5.Value = &g_controller_mtoc.net_signals[7].f;
+    g_analog_ch_5.Value = &(PS4_LOAD_VOLTAGE.f);
 }
 
 /**
@@ -148,34 +148,34 @@ static void bsmp_init_server(void)
     bsmp_init(PS1_ID);
     set_bsmp_var_pointer(25, PS1_ID, g_ipc_ctom.ps_module[PS1_ID].ps_soft_interlock.u8);
     set_bsmp_var_pointer(26, PS1_ID, g_ipc_ctom.ps_module[PS1_ID].ps_hard_interlock.u8);
-    set_bsmp_var_pointer(27, PS1_ID, PS1_LOAD_CURRENT);
-    set_bsmp_var_pointer(28, PS1_ID, PS1_LOAD_VOLTAGE);
-    set_bsmp_var_pointer(29, PS1_ID, PS1_DCLINK_VOLTAGE);
-    set_bsmp_var_pointer(30, PS1_ID, PS1_TEMPERATURE);
+    set_bsmp_var_pointer(27, PS1_ID, PS1_LOAD_CURRENT.u8);
+    set_bsmp_var_pointer(28, PS1_ID, PS1_LOAD_VOLTAGE.u8);
+    set_bsmp_var_pointer(29, PS1_ID, PS1_DCLINK_VOLTAGE.u8);
+    set_bsmp_var_pointer(30, PS1_ID, PS1_TEMPERATURE.u8);
 
     bsmp_init(PS2_ID);
     set_bsmp_var_pointer(25, PS2_ID, g_ipc_ctom.ps_module[PS2_ID].ps_soft_interlock.u8);
     set_bsmp_var_pointer(26, PS2_ID, g_ipc_ctom.ps_module[PS2_ID].ps_hard_interlock.u8);
-    set_bsmp_var_pointer(27, PS2_ID, PS2_LOAD_CURRENT);
-    set_bsmp_var_pointer(28, PS2_ID, PS2_LOAD_VOLTAGE);
-    set_bsmp_var_pointer(29, PS2_ID, PS2_DCLINK_VOLTAGE);
-    set_bsmp_var_pointer(30, PS2_ID, PS2_TEMPERATURE);
+    set_bsmp_var_pointer(27, PS2_ID, PS2_LOAD_CURRENT.u8);
+    set_bsmp_var_pointer(28, PS2_ID, PS2_LOAD_VOLTAGE.u8);
+    set_bsmp_var_pointer(29, PS2_ID, PS2_DCLINK_VOLTAGE.u8);
+    set_bsmp_var_pointer(30, PS2_ID, PS2_TEMPERATURE.u8);
 
     bsmp_init(PS3_ID);
     set_bsmp_var_pointer(25, PS3_ID, g_ipc_ctom.ps_module[PS3_ID].ps_soft_interlock.u8);
     set_bsmp_var_pointer(26, PS3_ID, g_ipc_ctom.ps_module[PS3_ID].ps_hard_interlock.u8);
-    set_bsmp_var_pointer(27, PS3_ID, PS3_LOAD_CURRENT);
-    set_bsmp_var_pointer(28, PS3_ID, PS3_LOAD_VOLTAGE);
-    set_bsmp_var_pointer(29, PS3_ID, PS3_DCLINK_VOLTAGE);
-    set_bsmp_var_pointer(30, PS3_ID, PS3_TEMPERATURE);
+    set_bsmp_var_pointer(27, PS3_ID, PS3_LOAD_CURRENT.u8);
+    set_bsmp_var_pointer(28, PS3_ID, PS3_LOAD_VOLTAGE.u8);
+    set_bsmp_var_pointer(29, PS3_ID, PS3_DCLINK_VOLTAGE.u8);
+    set_bsmp_var_pointer(30, PS3_ID, PS3_TEMPERATURE.u8);
 
     bsmp_init(PS4_ID);
     set_bsmp_var_pointer(25, PS4_ID, g_ipc_ctom.ps_module[PS4_ID].ps_soft_interlock.u8);
     set_bsmp_var_pointer(26, PS4_ID, g_ipc_ctom.ps_module[PS4_ID].ps_hard_interlock.u8);
-    set_bsmp_var_pointer(27, PS4_ID, PS4_LOAD_CURRENT);
-    set_bsmp_var_pointer(28, PS4_ID, PS4_LOAD_VOLTAGE);
-    set_bsmp_var_pointer(29, PS4_ID, PS4_DCLINK_VOLTAGE);
-    set_bsmp_var_pointer(30, PS4_ID, PS4_TEMPERATURE);
+    set_bsmp_var_pointer(27, PS4_ID, PS4_LOAD_CURRENT.u8);
+    set_bsmp_var_pointer(28, PS4_ID, PS4_LOAD_VOLTAGE.u8);
+    set_bsmp_var_pointer(29, PS4_ID, PS4_DCLINK_VOLTAGE.u8);
+    set_bsmp_var_pointer(30, PS4_ID, PS4_TEMPERATURE.u8);
 }
 
 /**

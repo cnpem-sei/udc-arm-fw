@@ -64,7 +64,7 @@ void power_supply_1_temp_init(void)
 	data_temp[1] = CONFIG_REGISTER_VALUE;
 	write_i2c_offboard_isolated(I2C_SLV_ADDR_TEMP_SENSE_PS1, 0x02, data_temp);
 
-	tmp1 = &g_controller_mtoc.net_signals[13].f;
+	tmp1 = &g_controller_mtoc.net_signals[8].f;
 	*tmp1 = 0.0;
 }
 
@@ -74,7 +74,7 @@ void power_supply_2_temp_init(void)
 	data_temp[1] = CONFIG_REGISTER_VALUE;
 	write_i2c_offboard_isolated(I2C_SLV_ADDR_TEMP_SENSE_PS2, 0x02, data_temp);
 
-	tmp2 = &g_controller_mtoc.net_signals[14].f;
+	tmp2 = &g_controller_mtoc.net_signals[9].f;
 	*tmp2 = 0.0;
 }
 
@@ -84,7 +84,7 @@ void power_supply_3_temp_init(void)
 	data_temp[1] = CONFIG_REGISTER_VALUE;
 	write_i2c_offboard_isolated(I2C_SLV_ADDR_TEMP_SENSE_PS3, 0x02, data_temp);
 
-	tmp3 = &g_controller_mtoc.net_signals[15].f;
+	tmp3 = &g_controller_mtoc.net_signals[10].f;
 	*tmp3 = 0.0;
 }
 
@@ -94,7 +94,7 @@ void power_supply_4_temp_init(void)
 	data_temp[1] = CONFIG_REGISTER_VALUE;
 	write_i2c_offboard_isolated(I2C_SLV_ADDR_TEMP_SENSE_PS4, 0x02, data_temp);
 
-	tmp4 = &g_controller_mtoc.net_signals[16].f;
+	tmp4 = &g_controller_mtoc.net_signals[11].f;
 	*tmp4 = 0.0;
 }
 
