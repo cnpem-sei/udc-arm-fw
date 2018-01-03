@@ -127,7 +127,8 @@ typedef enum
 	FAP_DCDC_15kHz_225A,
 	FBPx4_100kHz,
 	FAP_6U_DCDC_20kHz,
-	JIGA_BASTIDOR
+	JIGA_BASTIDOR,
+	FBP_FAC_UFJF
 }ePSModel;
 
 typedef enum
