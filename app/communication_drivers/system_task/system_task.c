@@ -201,8 +201,11 @@ TaskCheck(void)
         else
         {
             LedStsCtrl(1);
-            LedItlkCtrl(1);
-            SoundSelCtrl(1);
+            if(IPC_CtoM_Msg.PSModule.HardInterlocks.u32 || IPC_CtoM_Msg.PSModule.SoftInterlocks.u32)
+            {
+                LedItlkCtrl(1);
+                SoundSelCtrl(1);
+            }
             LedCtrl = 1;
         }
 
