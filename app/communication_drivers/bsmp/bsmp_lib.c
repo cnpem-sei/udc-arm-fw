@@ -952,6 +952,7 @@ uint8_t ResetWfmRef (uint8_t *input, uint8_t *output)
 		*output = 6;
 	}
 	else{
+	    MessageError = 0;
 		SendIpcFlag(RESET_WFMREF);
 	    while ((HWREG(MTOCIPC_BASE + IPC_O_MTOCIPCFLG) & RESET_WFMREF)&&(ulTimeout<TIMEOUT_VALUE)){
 	    	ulTimeout++;
@@ -1453,6 +1454,12 @@ static  struct bsmp_var counterSetISlowRefx4 = {
         .value_ok      = NULL,
 };
 
+static  struct bsmp_var messageError = {
+        .info.size     = sizeof(MessageError),    // 1 byte (uint8)
+        .info.writable = true,                        // Read/write
+        .data          = &MessageError,            // Data pointer will be initialized
+        .value_ok      = NULL,
+};
 
 //*****************************************************************************
 // 							BSMP Initialization
@@ -1546,6 +1553,7 @@ BSMPInit(void)
 	bsmp_register_variable(&bsmp, &iRef3);                  // Var ID 47
 	bsmp_register_variable(&bsmp, &iRef4);                  // Var ID 48
 	bsmp_register_variable(&bsmp, &counterSetISlowRefx4);   // Var ID 49
+	bsmp_register_variable(&bsmp, &messageError);           // Var ID 50
 
 
 	//*****************************************************************************
@@ -1701,7 +1709,7 @@ BSMPInit(void)
             Init_BSMP_var(47,DP_Framework.NetSignals[3].u8);        // PS3 iRef
             Init_BSMP_var(48,DP_Framework.NetSignals[4].u8);        // PS4 iRef
             Init_BSMP_var(49,DP_Framework.NetSignals[13].u8);       // SetISlowRefx4 counter
-
+            Init_BSMP_var(50,&MessageError);                        // Messages Error counter
             break;
 
 		case JIGA_BASTIDOR:

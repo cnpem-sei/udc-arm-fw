@@ -11,7 +11,7 @@
 
 #ifndef RS485_H_
 #define RS485_H_
-
+extern uint8_t MessageError;
 extern void InitRS485(void);
 extern void RS485ProcessData(void);
 extern void ConfigRS485(uint32_t BaudRate);

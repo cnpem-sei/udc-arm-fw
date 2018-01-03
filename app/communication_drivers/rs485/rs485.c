@@ -80,6 +80,8 @@ static struct bsmp_raw_packet send_packet =
 
 static uint8_t MessageOverflow = 0;
 
+uint8_t MessageError = 0;
+
 //*****************************************************************************
 
 void
@@ -152,6 +154,7 @@ RS485IntHandler(void)
 			recv_buffer.csum  = 0;
 			send_buffer.index = 0;
 			send_buffer.csum  = 0;
+			MessageError++;
 		}
 
 
@@ -225,15 +228,21 @@ RS485ProcessData(void)
 
 	// Received less than HEADER + CSUM bytes
 	if(recv_buffer.index < (SERIAL_HEADER + SERIAL_CSUM))
+	{
+	    MessageError++;
 		goto exit;
-
+	}
 	// Checksum is not zero
 	if(recv_buffer.csum)
+	{
+	    MessageError++;
 		goto exit;
-
+	}
 	// Packet is not for me
 	if(recv_buffer.data[0] != SERIAL_ADDRESS && recv_buffer.data[0] != BCAST_ADDRESS)
-		goto exit;
+	{
+	    goto exit;
+	}
 
 	//GPIOPinWrite(EEPROM_WP_BASE, EEPROM_WP_PIN, ON);
 
@@ -247,7 +256,9 @@ RS485ProcessData(void)
 	//GPIOPinWrite(DEBUG_BASE, DEBUG_PIN, OFF);
 
 	if(recv_buffer.data[0]==SERIAL_ADDRESS)
-		RS485TxHandler();
+	{
+	    RS485TxHandler();
+	}
 
 	exit:
 	recv_buffer.index = 0;
