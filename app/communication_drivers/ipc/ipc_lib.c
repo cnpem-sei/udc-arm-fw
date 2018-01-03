@@ -43,6 +43,8 @@
 ipc_ctom_t g_ipc_ctom;
 ipc_mtoc_t g_ipc_mtoc;
 
+void isr_ipc_lowpriority_msg(void);
+
 unsigned short ipc_mtoc_busy (uint32_t ulFlags);
 /*
  * @brief Initialize IPC module and interrupts
@@ -52,13 +54,16 @@ void ipc_init()
     g_ipc_mtoc.error_ctom = No_Error_CtoM;
     g_ipc_mtoc.msg_ctom = 0;
     //g_ipc_mtoc.msg_id = 0;
+
     /**
      * TODO: Initialize IPC Interrupts
      */
+    IntRegister(INT_CTOMPIC1, isr_ipc_lowpriority_msg);
 
     /**
      * TODO: Enable IPC Interrupts
      */
+    IntEnable(INT_CTOMPIC1);
 }
 
 /**
@@ -74,7 +79,6 @@ void send_ipc_msg(uint16_t msg_id, uint32_t flag)
     g_ipc_mtoc.msg_id = msg_id;
     HWREG(MTOCIPC_BASE + IPC_O_MTOCIPCSET) |= flag;
 }
-
 
 /**
  * @brief Send IPC low priority message
@@ -142,6 +146,28 @@ inline uint32_t ipc_ctom_translate (uint32_t shared_add)
 /******************************************************************************
  * TODO: CtoM IPC INT1 Interrupt Handler
  *****************************************************************************/
+void isr_ipc_lowpriority_msg(void)
+{
+    static uint32_t msg;
+
+    g_ipc_mtoc.msg_ctom = HWREG(MTOCIPC_BASE + IPC_O_CTOMIPCSTS);
+    IPCCtoMFlagAcknowledge(g_ipc_mtoc.msg_ctom);
+
+    switch(GET_IPC_CTOM_LOWPRIORITY_MSG)
+    {
+        case Enable_HRADC_Boards:
+        {
+            hradc_rst_ctrl(0);
+            break;
+        }
+
+        case Disable_HRADC_Boards:
+        {
+            hradc_rst_ctrl(1);
+            break;
+        }
+    }
+}
 
 /******************************************************************************
  * TODO: CtoM IPC INT2 Interrupt Handler

@@ -122,8 +122,9 @@ void system_config(void)
 
 	if(HARDWARE_VERSION == 0x21) buffers_ctrl(1);
 
-	ipc_init();
+	hradc_rst_ctrl(1);
 
+	ipc_init();
 }
 
 void system_init(void)
