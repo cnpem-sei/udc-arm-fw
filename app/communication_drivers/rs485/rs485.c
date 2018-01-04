@@ -374,14 +374,14 @@ void config_rs485(uint32_t BaudRate)
 void init_rs485(void)
 {
 
-	if(HARDWARE_VERSION == 0x21) rs485_term_ctrl(1);
+	if(HARDWARE_VERSION == 0x21) rs485_term_ctrl(0);
 
 	// Load RS485 address from EEPROM and config it
 	//SetRS485Address(EepromReadRs485Add());
-    set_rs485_ch_0_address(eeprom_read_rs485_add(0));
-	set_rs485_ch_1_address(eeprom_read_rs485_add(1));
-	set_rs485_ch_2_address(eeprom_read_rs485_add(2));
-	set_rs485_ch_3_address(eeprom_read_rs485_add(3));
+    //set_rs485_ch_0_address(eeprom_read_rs485_add(0));
+	//set_rs485_ch_1_address(eeprom_read_rs485_add(1));
+	//set_rs485_ch_2_address(eeprom_read_rs485_add(2));
+	//set_rs485_ch_3_address(eeprom_read_rs485_add(3));
 
 
     #ifdef HIGH_SPEED_BAUD
