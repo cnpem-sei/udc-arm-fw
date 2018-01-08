@@ -72,7 +72,7 @@ static const uint8_t fbp_qtd = 2;
 */
 static void ipc_init_parameters(void)
 {
-    ipc_init(); //TODO: Refactor IPC module
+    init_ipc(); //TODO: Refactor IPC module
 
     volatile uint8_t uiloop;
 

@@ -49,7 +49,7 @@ unsigned short ipc_mtoc_busy (uint32_t ulFlags);
 /*
  * @brief Initialize IPC module and interrupts
  */
-void ipc_init()
+void init_ipc()
 {
     g_ipc_mtoc.error_ctom = No_Error_CtoM;
     g_ipc_mtoc.msg_ctom = 0;

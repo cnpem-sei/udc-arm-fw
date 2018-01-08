@@ -124,7 +124,7 @@ void system_config(void)
 
 	hradc_rst_ctrl(1);
 
-	ipc_init();
+	init_ipc();
 }
 
 void system_init(void)

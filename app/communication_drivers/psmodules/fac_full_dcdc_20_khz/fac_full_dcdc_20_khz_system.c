@@ -41,7 +41,7 @@
 */
 static void ipc_init_parameters(void)
 {
-    ipc_init();
+    init_ipc();
 
     /**
      * Just IPC for module 0.

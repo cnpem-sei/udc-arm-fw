@@ -41,7 +41,7 @@
 */
 static void ipc_init_parameters(void)
 {
-    ipc_init();
+    init_ipc();
 
     /**
      * Do nothing

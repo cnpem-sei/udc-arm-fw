@@ -41,7 +41,7 @@
 */
 static void ipc_init_parameters(void)
 {
-    ipc_init();
+    init_ipc();
 
     g_ipc_mtoc_msg[0].SigGen.Enable.u16 = 0;
     g_ipc_mtoc_msg[0].SigGen.Amplitude[0].f = 180.0;
