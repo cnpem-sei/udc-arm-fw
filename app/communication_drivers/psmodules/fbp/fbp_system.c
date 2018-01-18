@@ -62,7 +62,7 @@
 /**
  * Number of power supplies
  */
-static const uint8_t fbp_qtd = 2;
+static const uint8_t fbp_qtd = 4;
 
 /**
 * @brief Initialize IPC Parameters.
