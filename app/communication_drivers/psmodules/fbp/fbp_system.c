@@ -74,7 +74,7 @@ static void ipc_init_parameters(void)
 {
     init_ipc(); //TODO: Refactor IPC module
 
-    volatile uint8_t uiloop;
+    volatile uint8_t uiloop, uiloop2;
 
     for (uiloop = 0; uiloop < fbp_qtd; uiloop++)
     {
@@ -84,6 +84,18 @@ static void ipc_init_parameters(void)
         g_ipc_mtoc.ps_module[uiloop].ps_status.bit.state = Off;
 //        g_ipc_mtoc_msg[uiloop].WfmRef.SyncMode.enu = SampleBySample_Continuous;
 //        memcpy(0x20014000, get_wfm_ref_data_fbp(), 8192);
+
+        g_ipc_mtoc.siggen[uiloop].enable.u16 = 0;
+        g_ipc_mtoc.siggen[uiloop].type.enu = Sine;
+        g_ipc_mtoc.siggen[uiloop].num_cycles.u16 = 1;
+        g_ipc_mtoc.siggen[uiloop].freq.f = 1.0;
+        g_ipc_mtoc.siggen[uiloop].amplitude.f = 1.0;
+        g_ipc_mtoc.siggen[uiloop].offset.f = 0.0;
+
+        for(uiloop2 = 0; uiloop2 < NUM_SIGGEN_AUX_PARAM; uiloop2++)
+        {
+            g_ipc_mtoc.siggen[uiloop].aux_param[uiloop2].f = 0.0;
+        }
     }
 }
 

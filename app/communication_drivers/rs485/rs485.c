@@ -257,7 +257,8 @@ void rs485_process_data(void)
 	recv_packet.len = recv_buffer.index - SERIAL_HEADER - SERIAL_CSUM;
 
 
-    if (recv_buffer.data[0] == SERIAL_CH_0_ADDRESS)
+    if ((recv_buffer.data[0] == SERIAL_CH_0_ADDRESS) ||
+        (recv_buffer.data[0] == BCAST_ADDRESS))
     {
         g_current_ps_id = 0;
         g_ipc_mtoc.msg_id = 0;
@@ -374,7 +375,7 @@ void config_rs485(uint32_t BaudRate)
 void init_rs485(void)
 {
 
-	if(HARDWARE_VERSION == 0x21) rs485_term_ctrl(0);
+	if(HARDWARE_VERSION == 0x21) rs485_term_ctrl(1);
 
 	// Load RS485 address from EEPROM and config it
 	//SetRS485Address(EepromReadRs485Add());

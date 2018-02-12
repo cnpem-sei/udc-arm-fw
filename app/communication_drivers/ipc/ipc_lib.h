@@ -24,6 +24,7 @@
 #define IPC_LIB_H_
 
 #include <stdint.h>
+#include "board_drivers/version.h"
 #include "communication_drivers/psmodules/ps_modules.h"
 #include "communication_drivers/control/siggen/siggen.h"
 #include "communication_drivers/control/wfmref/wfmref.h"
@@ -64,9 +65,15 @@ typedef enum
     Select_WfmRef,
     Reset_WfmRef,
     Cfg_SigGen,
-    Scale_SigGen,
+    Set_SigGen,
     Enable_SigGen,
     Disable_SigGen,
+    Set_Param,
+    Get_Param,
+    Set_Param_Bank,
+    Get_Param_Bank,
+    Reset_Param_Bank,
+    Reset_Counter,
     CtoM_Message_Error
 } ipc_mtoc_lowpriority_msg_t;
 
@@ -102,6 +109,7 @@ typedef enum
  */
 typedef volatile struct
 {
+    char            udc_c28_version[2*SIZE_VERSION]; // C28 char = 2 bytes
     uint32_t        msg_mtoc;
     uint16_t        msg_id;
     error_mtoc_t    error_mtoc;
@@ -125,7 +133,7 @@ typedef volatile struct
 extern ipc_ctom_t g_ipc_ctom;
 extern ipc_mtoc_t g_ipc_mtoc;
 
-extern void init_ipc();
+extern void init_ipc(void);
 extern void send_ipc_msg(uint16_t msg_id, uint32_t flag);
 extern void send_ipc_lowpriority_msg(uint16_t msg_id,
                                      ipc_ctom_lowpriority_msg_t msg);
@@ -135,5 +143,6 @@ extern inline uint32_t ipc_mtoc_translate (uint32_t ulShareAddress);
 extern inline uint32_t ipc_ctom_translate (uint32_t ulShareAddress);
 extern uint16_t ipc_mtoc_busy (uint32_t ulFlags);
 
+extern void get_firmwares_version(void);
 
 #endif /* IPC_LIB_H_ */

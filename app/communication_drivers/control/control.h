@@ -27,7 +27,6 @@
 
 /* Library-wide limits */
 
-#define NUM_MAX_INPUT_SIGNALS       12
 #define NUM_MAX_NET_SIGNALS         32
 #define NUM_MAX_OUTPUT_SIGNALS      16
 

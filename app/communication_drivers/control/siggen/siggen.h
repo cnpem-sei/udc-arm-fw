@@ -28,35 +28,96 @@
 #include <stdint.h>
 
 #define NUM_SIGGEN_AUX_PARAM    4
-#define NUM_SIGGEN_AUX_VAR      4
+#define NUM_SIGGEN_AUX_VAR      8
 
-#define PARAM_DEFAULT_SINE      {}
-
+/**
+ * TODO: Implement square, triangular and prbs
+ */
 typedef enum
 {
     Sine,
     DampedSine,
     Trapezoidal,
-    PRBS
 } siggen_type_t;
 
 typedef volatile struct siggen_t siggen_t;
 
 struct siggen_t
 {
-    uint16_t 		enable;
-	siggen_type_t	type;
-	uint16_t		num_cycles;
-	float           freq;
-    float           amplitude;
-    float           offset;
-    float           n;
-    float           num_samples;
-	float			aux_param[NUM_SIGGEN_AUX_PARAM];
-	float           aux_var[NUM_SIGGEN_AUX_VAR];
-	float           freq_sampling;
-	volatile float 	*out;
-	void			(*run_siggen)(siggen_t *p_siggen);
+    union
+    {
+        uint8_t     u8[2];
+        uint16_t    u16;
+    } enable;
+
+    union
+    {
+        uint8_t         u8[2];
+        uint16_t        u16;
+        siggen_type_t   enu;
+    } type;
+
+    union
+    {
+        uint8_t     u8[2];
+        uint16_t    u16;
+    } num_cycles;
+
+    union
+    {
+        uint8_t     u8[4];
+        uint32_t    u32;
+        float       f;
+    } freq;
+
+    union
+    {
+        uint8_t     u8[4];
+        uint32_t    u32;
+        float       f;
+    } amplitude;
+
+    union
+    {
+        uint8_t     u8[4];
+        uint32_t    u32;
+        float       f;
+    } offset;
+
+    union
+    {
+        uint8_t     u8[4];
+        uint32_t    u32;
+        float       f;
+    } n;
+
+    union
+    {
+        uint8_t     u8[4];
+        uint32_t    u32;
+        float       f;
+    } num_samples;
+
+    union
+    {
+        uint8_t     u8[4];
+        uint32_t    u32;
+        float       f;
+    } aux_param[NUM_SIGGEN_AUX_PARAM];
+
+    union
+    {
+        uint8_t     u8[4];
+        uint32_t    u32;
+        float       f;
+    } aux_var[NUM_SIGGEN_AUX_VAR];
+
+    union
+    {
+        uint8_t     u8[4];
+        uint32_t    u32;
+        float       f;
+    } freq_sampling;
 };
 
 #endif

@@ -22,6 +22,7 @@
 #include<stdint.h>
 #include<stdbool.h>
 
+#include "board_drivers/version.h"
 #include "communication_drivers/system_task/system_task.h"
 #include "communication_drivers/ipc/ipc_lib.h"
 
@@ -40,6 +41,15 @@ void fbp_main(void)
     volatile uint32_t uiloop;
     fbp_system_config();
     IPCMtoCBootControlSystem(CBROM_MTOC_BOOTMODE_BOOT_FROM_FLASH);
+
+    for (uiloop = 0; uiloop < 1000; uiloop++)
+    {
+        TaskCheck();
+    }
+
+    SysCtlDelay(75000);
+
+    get_firmwares_version();
 
     for (;;)
     {

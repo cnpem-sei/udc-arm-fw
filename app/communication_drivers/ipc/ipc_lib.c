@@ -49,7 +49,7 @@ unsigned short ipc_mtoc_busy (uint32_t ulFlags);
 /*
  * @brief Initialize IPC module and interrupts
  */
-void init_ipc()
+void init_ipc(void)
 {
     g_ipc_mtoc.error_ctom = No_Error_CtoM;
     g_ipc_mtoc.msg_ctom = 0;
@@ -210,4 +210,23 @@ uint16_t ipc_mtoc_busy (uint32_t ulFlags)
 uint32_t low_priority_msg_to_reg(ipc_ctom_lowpriority_msg_t msg)
 {
     return ((msg << 4) | IPC_MTOC_LOWPRIORITY_MSG) & 0x0000FFFF;
+}
+
+/**
+ * @brief Get build version for all firmwares, according to ps_model.
+ */
+void get_firmwares_version(void)
+{
+    uint8_t i;
+
+    for(i = 0; i < SIZE_VERSION; i++)
+    {
+        firmwares_version.cores.udc_arm[i] = udc_arm_version[i];
+        firmwares_version.cores.udc_c28[i] = g_ipc_ctom.udc_c28_version[2*i];
+
+        /**
+         * TODO: Read version from HRADCs, IHM and IIB, according to ps_model
+         */
+    }
+
 }
