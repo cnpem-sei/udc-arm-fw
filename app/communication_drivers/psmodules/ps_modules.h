@@ -52,10 +52,10 @@ typedef enum
     Initializing,
     SlowRef,
     SlowRefSync,
-    FastRef,
+    Cycle,
     RmpWfm,
     MigWfm,
-    Cycle
+    FastRef
 } ps_state_t;
 
 
