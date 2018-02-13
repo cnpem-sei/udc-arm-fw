@@ -462,6 +462,49 @@ static struct bsmp_func bsmp_func_set_slowref_fbp = {
 };
 
 /**
+ * @brief Reset counters
+ *
+ * Reset all DSP counters
+ *
+ * @param uint8_t* Pointer to input packet of data
+ * @param uint8_t* Pointer to output packet of data
+ */
+uint8_t bsmp_reset_counters(uint8_t *input, uint8_t *output)
+{
+    ulTimeout=0;
+    if(ipc_mtoc_busy(low_priority_msg_to_reg(Reset_Counters)))
+    {
+        *output = 6;
+    }
+    else
+    {
+        send_ipc_lowpriority_msg(g_current_ps_id, Reset_Counters);
+        while ((HWREG(MTOCIPC_BASE + IPC_O_MTOCIPCFLG) &
+                low_priority_msg_to_reg(Reset_Counters)) &&
+                (ulTimeout<TIMEOUT_VALUE))
+        {
+            ulTimeout++;
+        }
+        if(ulTimeout==TIMEOUT_VALUE)
+        {
+            *output = 5;
+        }
+        else
+        {
+            *output = 0;
+        }
+    }
+    return *output;
+}
+
+static struct bsmp_func bsmp_func_reset_counters = {
+    .func_p           = bsmp_reset_counters,
+    .info.input_size  = 0,      // Nothing is read from the input parameter
+    .info.output_size = 1,      // command_ack
+};
+
+
+/**
  * @brief Configuration of SigGen BSMP function
  *
  * @param uint8_t* Pointer to input packet of data
@@ -679,6 +722,8 @@ static struct bsmp_var ps_status[NUMBER_OF_BSMP_SERVERS];
 static struct bsmp_var ps_setpoint[NUMBER_OF_BSMP_SERVERS];
 static struct bsmp_var ps_reference[NUMBER_OF_BSMP_SERVERS];
 static struct bsmp_var bsmp_firmwares_version[NUMBER_OF_BSMP_SERVERS];
+static struct bsmp_var bsmp_counter_set_slowref[NUMBER_OF_BSMP_SERVERS];
+static struct bsmp_var bsmp_counter_sync_pulse[NUMBER_OF_BSMP_SERVERS];
 static struct bsmp_var siggen_enable[NUMBER_OF_BSMP_SERVERS];
 static struct bsmp_var siggen_type[NUMBER_OF_BSMP_SERVERS];
 static struct bsmp_var siggen_num_cycles[NUMBER_OF_BSMP_SERVERS];
@@ -977,7 +1022,7 @@ void bsmp_init(uint8_t server)
     bsmp_register_function(&bsmp[server], &bsmp_func_sync_pulse);               // ID 15
     bsmp_register_function(&bsmp[server], &bsmp_func_set_slowref);              // ID 16
     bsmp_register_function(&bsmp[server], &bsmp_func_set_slowref_fbp);          // ID 17
-    bsmp_register_function(&bsmp[server], &dummy_func9);                        // ID 18
+    bsmp_register_function(&bsmp[server], &bsmp_func_reset_counters);           // ID 18
     bsmp_register_function(&bsmp[server], &dummy_func10);                       // ID 19
     bsmp_register_function(&bsmp[server], &dummy_func11);                       // ID 20
     bsmp_register_function(&bsmp[server], &dummy_func12);                       // ID 21
@@ -993,6 +1038,8 @@ void bsmp_init(uint8_t server)
     init_bsmp_var(&ps_setpoint[server], 4, &dummy_u8_memory, false);
     init_bsmp_var(&ps_reference[server], 4, &dummy_u8_memory, false);
     init_bsmp_var(&bsmp_firmwares_version[server], 128, &dummy_u8_memory, false);
+    init_bsmp_var(&bsmp_counter_set_slowref[server], 4, &dummy_u8_memory, false);
+    init_bsmp_var(&bsmp_counter_sync_pulse[server], 4, &dummy_u8_memory, false);
     init_bsmp_var(&siggen_enable[server], 2, &dummy_u8_memory, false);
     init_bsmp_var(&siggen_type[server], 2, &dummy_u8_memory, false);
     init_bsmp_var(&siggen_num_cycles[server], 2, &dummy_u8_memory, false);
@@ -1009,37 +1056,37 @@ void bsmp_init(uint8_t server)
     init_bsmp_var(&v_dclink[server], 4, &dummy_u8_memory, false);
     init_bsmp_var(&temp_switches[server], 4, &dummy_u8_memory, false);
 
-    bsmp_register_variable(&bsmp[server], &ps_status[server]);          // ID 0
-    bsmp_register_variable(&bsmp[server], &ps_setpoint[server]);        // ID 1
-    bsmp_register_variable(&bsmp[server], &ps_reference[server]);       // ID 2
-    bsmp_register_variable(&bsmp[server], &bsmp_firmwares_version[server]);     // ID3
-    bsmp_register_variable(&bsmp[server], &siggen_enable[server]);      // ID 4
-    bsmp_register_variable(&bsmp[server], &siggen_type[server]);        // ID 5
-    bsmp_register_variable(&bsmp[server], &siggen_num_cycles[server]);  // ID 6
-    bsmp_register_variable(&bsmp[server], &siggen_n[server]);           // ID 7
-    bsmp_register_variable(&bsmp[server], &siggen_freq[server]);        // ID 8
-    bsmp_register_variable(&bsmp[server], &siggen_amplitude[server]);   // ID 9
-    bsmp_register_variable(&bsmp[server], &siggen_offset[server]);      // ID 10
-    bsmp_register_variable(&bsmp[server], &siggen_aux_param[server]);   // ID 11
-    bsmp_register_variable(&bsmp[server], &vOutMod2);                   // ID 12
-    bsmp_register_variable(&bsmp[server], &vOutMod3);                   // ID 13
-    bsmp_register_variable(&bsmp[server], &vOutMod4);                   // ID 14
-    bsmp_register_variable(&bsmp[server], &temp1);                      // ID 15
-    bsmp_register_variable(&bsmp[server], &temp2);                      // ID 16
-    bsmp_register_variable(&bsmp[server], &temp3);                      // ID 17
-    bsmp_register_variable(&bsmp[server], &temp4);                      // ID 18
-    bsmp_register_variable(&bsmp[server], &ps_onoff);                   // ID 19
-    bsmp_register_variable(&bsmp[server], &ps_opmode);                  // ID 20
-    bsmp_register_variable(&bsmp[server], &ps_remote);                  // ID 21
-    bsmp_register_variable(&bsmp[server], &ps_OpenLoop);                // ID 22
-    bsmp_register_variable(&bsmp[server], &iRef);                       // ID 23
-    bsmp_register_variable(&bsmp[server], &wfmRef_Gain);                // ID 24
-    bsmp_register_variable(&bsmp[server], &ps_soft_interlocks[server]); // ID 25
-    bsmp_register_variable(&bsmp[server], &ps_hard_interlocks[server]); // ID 26
-    bsmp_register_variable(&bsmp[server], &i_load[server]);             // ID 27
-    bsmp_register_variable(&bsmp[server], &v_load[server]);             // ID 28
-    bsmp_register_variable(&bsmp[server], &v_dclink[server]);           // ID 29
-    bsmp_register_variable(&bsmp[server], &temp_switches[server]);      // ID 30
+    bsmp_register_variable(&bsmp[server], &ps_status[server]);                  // ID 0
+    bsmp_register_variable(&bsmp[server], &ps_setpoint[server]);                // ID 1
+    bsmp_register_variable(&bsmp[server], &ps_reference[server]);               // ID 2
+    bsmp_register_variable(&bsmp[server], &bsmp_firmwares_version[server]);     // ID 3
+    bsmp_register_variable(&bsmp[server], &bsmp_counter_set_slowref[server]);   // ID 4
+    bsmp_register_variable(&bsmp[server], &bsmp_counter_sync_pulse[server]);    // ID 5
+    bsmp_register_variable(&bsmp[server], &siggen_enable[server]);              // ID 6
+    bsmp_register_variable(&bsmp[server], &siggen_type[server]);                // ID 7
+    bsmp_register_variable(&bsmp[server], &siggen_num_cycles[server]);          // ID 8
+    bsmp_register_variable(&bsmp[server], &siggen_n[server]);                   // ID 9
+    bsmp_register_variable(&bsmp[server], &siggen_freq[server]);                // ID 10
+    bsmp_register_variable(&bsmp[server], &siggen_amplitude[server]);           // ID 11
+    bsmp_register_variable(&bsmp[server], &siggen_offset[server]);              // ID 12
+    bsmp_register_variable(&bsmp[server], &siggen_aux_param[server]);           // ID 13
+    bsmp_register_variable(&bsmp[server], &vOutMod2);                           // ID 14
+    bsmp_register_variable(&bsmp[server], &vOutMod3);                           // ID 15
+    bsmp_register_variable(&bsmp[server], &vOutMod4);                           // ID 16
+    bsmp_register_variable(&bsmp[server], &temp1);                              // ID 17
+    bsmp_register_variable(&bsmp[server], &temp2);                              // ID 18
+    bsmp_register_variable(&bsmp[server], &temp3);                              // ID 19
+    bsmp_register_variable(&bsmp[server], &temp4);                              // ID 20
+    bsmp_register_variable(&bsmp[server], &ps_onoff);                           // ID 21
+    bsmp_register_variable(&bsmp[server], &ps_opmode);                          // ID 22
+    bsmp_register_variable(&bsmp[server], &ps_remote);                          // ID 23
+    bsmp_register_variable(&bsmp[server], &ps_OpenLoop);                        // ID 24
+    bsmp_register_variable(&bsmp[server], &ps_soft_interlocks[server]);         // ID 25
+    bsmp_register_variable(&bsmp[server], &ps_hard_interlocks[server]);         // ID 26
+    bsmp_register_variable(&bsmp[server], &i_load[server]);                     // ID 27
+    bsmp_register_variable(&bsmp[server], &v_load[server]);                     // ID 28
+    bsmp_register_variable(&bsmp[server], &v_dclink[server]);                   // ID 29
+    bsmp_register_variable(&bsmp[server], &temp_switches[server]);              // ID 30
 
     //*************************************************************************
     //                  BSMP Variable Pointers Initialization
@@ -1048,14 +1095,16 @@ void bsmp_init(uint8_t server)
     set_bsmp_var_pointer(1, server, g_ipc_ctom.ps_module[server].ps_setpoint.u8);
     set_bsmp_var_pointer(2, server, g_ipc_ctom.ps_module[server].ps_reference.u8);
     set_bsmp_var_pointer(3, server, firmwares_version.u8);
-    set_bsmp_var_pointer(4, server, g_ipc_ctom.siggen[server].enable.u8);
-    set_bsmp_var_pointer(5, server, g_ipc_ctom.siggen[server].type.u8);
-    set_bsmp_var_pointer(6, server, g_ipc_ctom.siggen[server].num_cycles.u8);
-    set_bsmp_var_pointer(7, server, g_ipc_ctom.siggen[server].n.u8);
-    set_bsmp_var_pointer(8, server, g_ipc_ctom.siggen[server].freq.u8);
-    set_bsmp_var_pointer(9, server, g_ipc_ctom.siggen[server].amplitude.u8);
-    set_bsmp_var_pointer(10, server, g_ipc_ctom.siggen[server].offset.u8);
-    set_bsmp_var_pointer(11, server, g_ipc_ctom.siggen[server].aux_param[0].u8);
+    set_bsmp_var_pointer(4, server, g_ipc_ctom.counter_set_slowref.u8);
+    set_bsmp_var_pointer(5, server, g_ipc_ctom.counter_sync_pulse.u8);
+    set_bsmp_var_pointer(6, server, g_ipc_ctom.siggen[server].enable.u8);
+    set_bsmp_var_pointer(7, server, g_ipc_ctom.siggen[server].type.u8);
+    set_bsmp_var_pointer(8, server, g_ipc_ctom.siggen[server].num_cycles.u8);
+    set_bsmp_var_pointer(9, server, g_ipc_ctom.siggen[server].n.u8);
+    set_bsmp_var_pointer(10, server, g_ipc_ctom.siggen[server].freq.u8);
+    set_bsmp_var_pointer(11, server, g_ipc_ctom.siggen[server].amplitude.u8);
+    set_bsmp_var_pointer(12, server, g_ipc_ctom.siggen[server].offset.u8);
+    set_bsmp_var_pointer(13, server, g_ipc_ctom.siggen[server].aux_param[0].u8);
 }
 
 
