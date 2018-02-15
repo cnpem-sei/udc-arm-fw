@@ -375,7 +375,7 @@ void config_rs485(uint32_t BaudRate)
 void init_rs485(void)
 {
 
-	if(HARDWARE_VERSION == 0x21) rs485_term_ctrl(1);
+	if(HARDWARE_VERSION == 0x21) rs485_term_ctrl(0);
 
 	// Load RS485 address from EEPROM and config it
 	//SetRS485Address(EepromReadRs485Add());
