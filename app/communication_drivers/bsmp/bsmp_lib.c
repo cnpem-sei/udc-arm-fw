@@ -1023,13 +1023,14 @@ void bsmp_init(uint8_t server)
     bsmp_register_function(&bsmp[server], &bsmp_func_set_slowref);              // ID 16
     bsmp_register_function(&bsmp[server], &bsmp_func_set_slowref_fbp);          // ID 17
     bsmp_register_function(&bsmp[server], &bsmp_func_reset_counters);           // ID 18
-    bsmp_register_function(&bsmp[server], &dummy_func10);                       // ID 19
-    bsmp_register_function(&bsmp[server], &dummy_func11);                       // ID 20
-    bsmp_register_function(&bsmp[server], &dummy_func12);                       // ID 21
-    bsmp_register_function(&bsmp[server], &bsmp_func_cfg_siggen);               // ID 22
-    bsmp_register_function(&bsmp[server], &bsmp_func_set_siggen);               // ID 23
-    bsmp_register_function(&bsmp[server], &bsmp_func_enable_siggen);            // ID 24
-    bsmp_register_function(&bsmp[server], &bsmp_func_disable_siggen);           // ID 25
+    bsmp_register_function(&bsmp[server], &dummy_func9);                        // ID 19
+    bsmp_register_function(&bsmp[server], &dummy_func10);                       // ID 20
+    bsmp_register_function(&bsmp[server], &dummy_func11);                       // ID 21
+    bsmp_register_function(&bsmp[server], &dummy_func12);                       // ID 22
+    bsmp_register_function(&bsmp[server], &bsmp_func_cfg_siggen);               // ID 23
+    bsmp_register_function(&bsmp[server], &bsmp_func_set_siggen);               // ID 24
+    bsmp_register_function(&bsmp[server], &bsmp_func_enable_siggen);            // ID 25
+    bsmp_register_function(&bsmp[server], &bsmp_func_disable_siggen);           // ID 26
 
     /**
      * BSMP Variable Register
