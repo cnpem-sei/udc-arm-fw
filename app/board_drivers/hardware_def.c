@@ -338,7 +338,7 @@ static void port_control_setup(void)
      * Debug pin setup
      *********************************************************************/
     GPIOPinTypeGPIOOutput(DEBUG_BASE, DEBUG_PIN);
-    GPIOPinWrite(DEBUG_BASE, DEBUG_PIN, ON);
+    GPIOPinWrite(DEBUG_BASE, DEBUG_PIN, OFF);
 
     /**********************************************************************
      * Backplane RS-485 setup
@@ -428,7 +428,7 @@ static void pin_core_setup(void)
                                                                                    //GPIO38 - PF6 é utilizado para o USB0_GPIO38 (ARM)
                                                                                    //GPIO39 - PF7 é utilizado para o HRADC_INT_STS (C28)
 
-        GPIOPinConfigureCoreSelect(GPIO_PORTG_BASE, 0x00, GPIO_PIN_C_CORE_SELECT); //GPIO46 é utilizado pelo C28 (C28)
+        GPIOPinConfigureCoreSelect(GPIO_PORTG_BASE, 0x00, GPIO_PIN_C_CORE_SELECT); //GPIO46 é utilizado pelo ARM (ARM)
                                                                                    //GPIO40 - PG0 é utilizado para o SDRAM_BA0D13 (ARM)
                                                                                    //GPIO41 - PG1 é utilizado para o SDRAM_BA1D14 (ARM)
                                                                                    //GPIO42 - PG2 é utilizado para o USB0_GPIO42 (ARM)

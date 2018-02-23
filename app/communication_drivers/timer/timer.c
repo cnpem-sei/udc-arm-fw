@@ -50,7 +50,7 @@ void isr_global_timer(void)
 	// Apaga a interrup��o do timer 0 A
 	TimerIntClear(TIMER0_BASE, TIMER_TIMA_TIMEOUT);
 
-	GPIOPinWrite(DEBUG_BASE, DEBUG_PIN, ON);
+	//GPIOPinWrite(DEBUG_BASE, DEBUG_PIN, ON);
 
 	adcp_read();
 	//TaskSetNew(SAMPLE_ADCP);

@@ -26,18 +26,21 @@
 #include <string.h>
 
 #include "board_drivers/version.h"
+#include "board_drivers/hardware_def.h"
 #include "communication_drivers/i2c_onboard/eeprom.h"
 #include "communication_drivers/system_task/system_task.h"
 #include "communication_drivers/ipc/ipc_lib.h"
 #include "communication_drivers/can/can_bkp.h"
 #include "communication_drivers/rs485/rs485.h"
 #include "communication_drivers/i2c_onboard/exio.h"
+#include "communication_drivers/control/control.h"
 
 #include "inc/hw_memmap.h"
 #include "inc/hw_ipc.h"
 #include "inc/hw_types.h"
 #include "inc/hw_nvic.h"
 #include "inc/hw_types.h"
+#include "driverlib/gpio.h"
 #include "driverlib/ipc.h"
 #include "driverlib/systick.h"
 
@@ -60,7 +63,7 @@ volatile unsigned long ulTimeout;
 //#pragma CODE_SECTION(BSMPprocess, "ramfuncs");
 
 bsmp_server_t bsmp[NUMBER_OF_BSMP_SERVERS];
-uint16_t TIMEOUT_VALUE = 20;
+uint16_t TIMEOUT_VALUE = 30;
 
 /**
  * @brief Turn on BSMP Function
@@ -716,6 +719,120 @@ static struct bsmp_func bsmp_func_disable_siggen = {
 };
 
 /**
+ * @brief Set SlowRef setpoint BSMP Function and return load current
+ *
+ * Set setpoint for SlowRef operation mode in specified power supply and return
+ * load current
+ *
+ * @param uint8_t* Pointer to input packet of data
+ * @param uint8_t* Pointer to output packet of data
+ */
+uint8_t bsmp_set_slowref_readback(uint8_t *input, uint8_t *output)
+{
+    uint8_t result;
+
+    ulTimeout = 0;
+
+    if(ipc_mtoc_busy(low_priority_msg_to_reg(Set_SlowRef)))
+    {
+        result = 6;
+    }
+    else
+    {
+        g_ipc_mtoc.ps_module[g_current_ps_id].ps_setpoint.u32 = (input[3]<< 24) |
+                (input[2] << 16)|(input[1] << 8) | input[0];
+
+        send_ipc_lowpriority_msg(g_current_ps_id, Set_SlowRef);
+
+        while ((HWREG(MTOCIPC_BASE + IPC_O_MTOCIPCFLG) &
+                low_priority_msg_to_reg(Set_SlowRef)) &&
+                (ulTimeout<TIMEOUT_VALUE))
+        {
+            ulTimeout++;
+        }
+        if(ulTimeout==TIMEOUT_VALUE)
+        {
+            result = 5;
+        }
+        else
+        {
+            memcpy(output,g_controller_ctom.net_signals[g_current_ps_id].u8,4);
+            result = 0;
+        }
+    }
+
+    return result;
+}
+
+static struct bsmp_func bsmp_func_set_slowref_readback = {
+    .func_p           = bsmp_set_slowref_readback,
+    .info.input_size  = 4,
+    .info.output_size = 4,
+};
+
+/**
+ * @brief Set SlowRef FBP BSMP Function and return load currents
+ *
+ * Configure setpoint for all FBP power supplies in SlowRef mode and return
+ * load currents of each one.
+ *
+ * @param uint8_t* Pointer to input packet of data
+ * @param uint8_t* Pointer to output packet of data
+ */
+uint8_t bsmp_set_slowref_fbp_readback(uint8_t *input, uint8_t *output)
+{
+    uint8_t result;
+
+    ulTimeout=0;
+
+    if(ipc_mtoc_busy(low_priority_msg_to_reg(Set_SlowRef_All_PS)))
+    {
+        result = 6;
+    }
+    else
+    {
+        g_ipc_mtoc.ps_module[0].ps_setpoint.u32 = (input[3]<< 24)  |
+                (input[2] << 16)  | (input[1] << 8)  | input[0];
+        g_ipc_mtoc.ps_module[1].ps_setpoint.u32 = (input[7]<< 24)  |
+                (input[6] << 16)  | (input[5] << 8)  | input[4];
+        g_ipc_mtoc.ps_module[2].ps_setpoint.u32 = (input[11]<< 24) |
+                (input[10] << 16) | (input[9] << 8)  | input[8];
+        g_ipc_mtoc.ps_module[3].ps_setpoint.u32 = (input[15]<< 24) |
+                (input[14] << 16) | (input[13] << 8) | input[12];
+
+        GPIOPinWrite(DEBUG_BASE, DEBUG_PIN, ON);
+
+        send_ipc_lowpriority_msg(0, Set_SlowRef_All_PS);
+
+        while ((HWREG(MTOCIPC_BASE + IPC_O_MTOCIPCFLG) &
+                low_priority_msg_to_reg(Set_SlowRef_All_PS)) &&
+                (ulTimeout<TIMEOUT_VALUE))
+        {
+            ulTimeout++;
+        }
+
+        GPIOPinWrite(DEBUG_BASE, DEBUG_PIN, OFF);
+
+        if(ulTimeout==TIMEOUT_VALUE)
+        {
+            result = 5;
+        }
+        else
+        {
+            memcpy(output,g_controller_ctom.net_signals[0].u8,16);
+            result = 0;
+        }
+    }
+    return result;
+}
+
+static struct bsmp_func bsmp_func_set_slowref_fbp_readback = {
+    .func_p           = bsmp_set_slowref_fbp_readback,
+    .info.input_size  = 16,
+    .info.output_size = 16,
+};
+
+/**
  * BSMP Variables
  */
 static struct bsmp_var ps_status[NUMBER_OF_BSMP_SERVERS];
@@ -1031,6 +1148,8 @@ void bsmp_init(uint8_t server)
     bsmp_register_function(&bsmp[server], &bsmp_func_set_siggen);               // ID 24
     bsmp_register_function(&bsmp[server], &bsmp_func_enable_siggen);            // ID 25
     bsmp_register_function(&bsmp[server], &bsmp_func_disable_siggen);           // ID 26
+    bsmp_register_function(&bsmp[server], &bsmp_func_set_slowref_readback);     // ID 27
+    bsmp_register_function(&bsmp[server], &bsmp_func_set_slowref_fbp_readback); // ID 28
 
     /**
      * BSMP Variable Register
