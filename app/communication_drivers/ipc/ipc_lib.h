@@ -24,11 +24,12 @@
 #define IPC_LIB_H_
 
 #include <stdint.h>
+#include "../psmodules/ps_modules.h"
 #include "board_drivers/version.h"
-#include "communication_drivers/psmodules/ps_modules.h"
 #include "communication_drivers/control/siggen/siggen.h"
 #include "communication_drivers/control/wfmref/wfmref.h"
 #include "communication_drivers/common/structs.h"
+#include "communication_drivers/parameters/ps_parameters.h"
 
 /**
  * Shared resources defines
@@ -124,20 +125,25 @@ typedef volatile struct
         uint32_t    u32;
     } counter_sync_pulse;
     ps_module_t     ps_module[NUM_MAX_PS_MODULES];
-    siggen_t        siggen[NUM_MAX_PS_MODULES];
-    wfmref_t        wfmref[NUM_MAX_PS_MODULES];
+    siggen_t        siggen;
+    wfmref_t        wfmref;
     buf_t           buf_samples[NUM_MAX_PS_MODULES];
 } ipc_ctom_t;
 
 typedef volatile struct
 {
-    uint32_t        msg_ctom;
-    uint16_t        msg_id;
-    error_ctom_t    error_ctom;
-    ps_module_t     ps_module[NUM_MAX_PS_MODULES];
-    siggen_t        siggen[NUM_MAX_PS_MODULES];
-    wfmref_t        wfmref[NUM_MAX_PS_MODULES];
-    buf_t           buf_samples[NUM_MAX_PS_MODULES];
+    uint32_t                msg_ctom;
+    uint16_t                msg_id;
+    error_ctom_t            error_ctom;
+    ps_module_t             ps_module[NUM_MAX_PS_MODULES];
+    siggen_t                siggen;
+    wfmref_t                wfmref;
+    buf_t                   buf_samples[NUM_MAX_PS_MODULES];
+    param_communication_t   communication;
+    param_control_t         control;
+    param_pwm_t             pwm;
+    param_hradc_t           hradc;
+    param_analog_vars_t     analog_vars;
 } ipc_mtoc_t;
 
 extern ipc_ctom_t g_ipc_ctom;

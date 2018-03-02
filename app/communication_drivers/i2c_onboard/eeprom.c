@@ -39,8 +39,6 @@
 //
 //***********************************************************************************
 
-#define I2C_SLV_ADDR_EEPROM	0x50 // Endere�o 7 bits
-
 // Memory map
 #define	IP_ADDR			    0x0140
 #define IPMASK_ADDR		    0x0144

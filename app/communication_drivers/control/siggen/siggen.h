@@ -118,6 +118,9 @@ struct siggen_t
         uint32_t    u32;
         float       f;
     } freq_sampling;
+
+    volatile float  *p_out;
+    void            (*p_run_siggen)(siggen_t *p_siggen);
 };
 
 #endif

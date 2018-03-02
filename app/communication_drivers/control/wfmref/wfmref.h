@@ -35,10 +35,33 @@ typedef enum
 typedef volatile struct
 {
     buf_t           wfmref_data;
-    float           gain;
-    float           offset;
-    uint16_t        wfmref_selected;
-    sync_mode_t     sync_mode;
+
+    union
+    {
+        uint8_t     u8[4];
+        uint32_t    u32;
+        float       f;
+    } gain;
+
+    union
+    {
+        uint8_t     u8[4];
+        uint32_t    u32;
+        float       f;
+    } offset;
+
+    union
+    {
+        uint8_t     u8[2];
+        uint16_t    u16;
+    } wfmref_selected;
+
+    union
+    {
+        uint8_t     u8[2];
+        uint16_t    u16;
+        sync_mode_t enu;
+    } sync_mode;
 } wfmref_t;
 
 

@@ -33,7 +33,7 @@
 #include "communication_drivers/adcp/adcp.h"
 #include "communication_drivers/timer/timer.h"
 #include "communication_drivers/system_task/system_task.h"
-#include "communication_drivers//flash/flash_mem.h"
+#include "communication_drivers/flash/flash_mem.h"
 #include "communication_drivers/rs485/rs485.h"
 #include "communication_drivers/rs485_bkp/rs485_bkp.h"
 #include "communication_drivers/can/can_bkp.h"
@@ -44,6 +44,7 @@
 #include "communication_drivers/usb_to_serial/usb_to_serial.h"
 #include "communication_drivers/epi/sdram_mem.h"
 #include "communication_drivers/control/control.h"
+#include "communication_drivers/parameters/ps_parameters.h"
 
 #include "ethernet_uip.h"
 
@@ -171,5 +172,4 @@ void system_init(void)
 	init_i2c_offboard_external_devices();
 
 	global_timer_init();
-
 }

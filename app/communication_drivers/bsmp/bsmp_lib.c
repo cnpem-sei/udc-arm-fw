@@ -34,6 +34,7 @@
 #include "communication_drivers/rs485/rs485.h"
 #include "communication_drivers/i2c_onboard/exio.h"
 #include "communication_drivers/control/control.h"
+#include "communication_drivers/parameters/ps_parameters.h"
 
 #include "inc/hw_memmap.h"
 #include "inc/hw_ipc.h"
@@ -522,41 +523,41 @@ uint8_t bsmp_cfg_siggen(uint8_t *input, uint8_t *output)
     }
     else
     {
-        if(g_ipc_ctom.siggen[0].enable.u16)
+        if(g_ipc_ctom.siggen.enable.u16)
         {
             *output = 7;
         }
         else
         {
-            g_ipc_mtoc.siggen[0].type.u16       = (input[1] << 8) | input[0];
+            g_ipc_mtoc.siggen.type.u16       = (input[1] << 8) | input[0];
 
-            g_ipc_mtoc.siggen[0].num_cycles.u16 = (input[3] << 8) | input[2];
+            g_ipc_mtoc.siggen.num_cycles.u16 = (input[3] << 8) | input[2];
 
-            g_ipc_mtoc.siggen[0].freq.u32       = (input[7]<< 24) |
+            g_ipc_mtoc.siggen.freq.u32       = (input[7]<< 24) |
                                                   (input[6] << 16) |
                                                   (input[5] << 8) | input[4];
 
-            g_ipc_mtoc.siggen[0].amplitude.u32  = (input[11]<< 24) |
+            g_ipc_mtoc.siggen.amplitude.u32  = (input[11]<< 24) |
                                                   (input[10] << 16) |
                                                   (input[9] << 8) | input[8];
 
-            g_ipc_mtoc.siggen[0].offset.u32     = (input[15]<< 24) |
+            g_ipc_mtoc.siggen.offset.u32     = (input[15]<< 24) |
                                                   (input[14] << 16) |
                                                   (input[13] << 8) | input[12];
 
-            g_ipc_mtoc.siggen[0].aux_param[0].u32 = (input[19]<< 24) |
+            g_ipc_mtoc.siggen.aux_param[0].u32 = (input[19]<< 24) |
                                                     (input[18] << 16) |
                                                     (input[17] << 8) | input[16];
 
-            g_ipc_mtoc.siggen[0].aux_param[1].u32 = (input[23]<< 24) |
+            g_ipc_mtoc.siggen.aux_param[1].u32 = (input[23]<< 24) |
                                                     (input[22] << 16) |
                                                     (input[21] << 8) | input[20];
 
-            g_ipc_mtoc.siggen[0].aux_param[2].u32 = (input[27]<< 24) |
+            g_ipc_mtoc.siggen.aux_param[2].u32 = (input[27]<< 24) |
                                                     (input[26] << 16) |
                                                     (input[25] << 8) | input[24];
 
-            g_ipc_mtoc.siggen[0].aux_param[3].u32 = (input[31]<< 24) |
+            g_ipc_mtoc.siggen.aux_param[3].u32 = (input[31]<< 24) |
                                                     (input[30] << 16) |
                                                     (input[29] << 8) | input[28];
 
@@ -601,15 +602,15 @@ uint8_t bsmp_set_siggen(uint8_t *input, uint8_t *output)
     }
     else
     {
-        g_ipc_mtoc.siggen[0].freq.u32       = (input[3]<< 24) |
+        g_ipc_mtoc.siggen.freq.u32       = (input[3]<< 24) |
                                               (input[2] << 16) |
                                               (input[1] << 8) | input[0];
 
-        g_ipc_mtoc.siggen[0].amplitude.u32  = (input[7]<< 24) |
+        g_ipc_mtoc.siggen.amplitude.u32  = (input[7]<< 24) |
                                               (input[6] << 16) |
                                               (input[5] << 8) | input[4];
 
-        g_ipc_mtoc.siggen[0].offset.u32     = (input[11]<< 24) |
+        g_ipc_mtoc.siggen.offset.u32     = (input[11]<< 24) |
                                               (input[10] << 16) |
                                               (input[9] << 8) | input[8];
 
@@ -830,6 +831,143 @@ static struct bsmp_func bsmp_func_set_slowref_fbp_readback = {
     .func_p           = bsmp_set_slowref_fbp_readback,
     .info.input_size  = 16,
     .info.output_size = 16,
+};
+
+/**
+ * @brief
+ *
+ * @param uint8_t* Pointer to input packet of data
+ * @param uint8_t* Pointer to output packet of data
+ */
+uint8_t bsmp_set_param(uint8_t *input, uint8_t *output)
+{
+    u_uint16_t id, n;
+    u_float_t u_val;
+
+    id.u8[0] = input[0];
+    id.u8[1] = input[1];
+    n.u8[0] = input[2];
+    n.u8[1] = input[3];
+
+    memcpy(&u_val.u8[0], &input[4], 4);
+
+    if( set_param(id.u16, n.u16, u_val.f) )
+    {
+        *output = 0;
+    }
+    else
+    {
+        *output = 8;
+    }
+
+    return *output;
+}
+
+static struct bsmp_func bsmp_func_set_param = {
+    .func_p           = bsmp_set_param,
+    .info.input_size  = 8,
+    .info.output_size = 1,
+};
+
+/**
+ * @brief
+ *
+ * @param uint8_t* Pointer to input packet of data
+ * @param uint8_t* Pointer to output packet of data
+ */
+uint8_t bsmp_save_param_eeprom(uint8_t *input, uint8_t *output)
+{
+    u_uint16_t id, n;
+
+    id.u8[0] = input[0];
+    id.u8[1] = input[1];
+    n.u8[0] = input[2];
+    n.u8[1] = input[3];
+
+    if( save_param_eeprom(id.u16, n.u16) )
+    {
+        *output = 0;
+    }
+    else
+    {
+        *output = 8;
+    }
+
+    return *output;
+}
+
+static struct bsmp_func bsmp_func_save_param_eeprom = {
+    .func_p           = bsmp_save_param_eeprom,
+    .info.input_size  = 4,
+    .info.output_size = 1,
+};
+
+/**
+ * @brief
+ *
+ * @param uint8_t* Pointer to input packet of data
+ * @param uint8_t* Pointer to output packet of data
+ */
+uint8_t bsmp_get_param(uint8_t *input, uint8_t *output)
+{
+    u_uint16_t id, n;
+    u_float_t u_val;
+
+    id.u8[0] = input[0];
+    id.u8[1] = input[1];
+    n.u8[0] = input[2];
+    n.u8[1] = input[3];
+
+    u_val.f = get_param(id.u16, n.u16);
+    memcpy(output, &u_val.u8[0], 4);
+
+    if( isnan(u_val.f) )
+    {
+        return 8;
+    }
+    else
+    {
+        return 0;
+    }
+}
+
+static struct bsmp_func bsmp_func_get_param = {
+    .func_p           = bsmp_get_param,
+    .info.input_size  = 4,
+    .info.output_size = 4,
+};
+
+/**
+ * @brief
+ *
+ * @param uint8_t* Pointer to input packet of data
+ * @param uint8_t* Pointer to output packet of data
+ */
+uint8_t bsmp_load_param_eeprom(uint8_t *input, uint8_t *output)
+{
+    u_uint16_t id, n;
+
+    id.u8[0] = input[0];
+    id.u8[1] = input[1];
+    n.u8[0] = input[2];
+    n.u8[1] = input[3];
+
+    if( load_param_eeprom(id.u16, n.u16) )
+    {
+        *output = 0;
+    }
+    else
+    {
+        *output = 8;
+    }
+
+    return *output;
+}
+
+static struct bsmp_func bsmp_func_load_param_eeprom = {
+    .func_p           = bsmp_load_param_eeprom,
+    .info.input_size  = 4,
+    .info.output_size = 1,
 };
 
 /**
@@ -1150,6 +1288,10 @@ void bsmp_init(uint8_t server)
     bsmp_register_function(&bsmp[server], &bsmp_func_disable_siggen);           // ID 26
     bsmp_register_function(&bsmp[server], &bsmp_func_set_slowref_readback);     // ID 27
     bsmp_register_function(&bsmp[server], &bsmp_func_set_slowref_fbp_readback); // ID 28
+    bsmp_register_function(&bsmp[server], &bsmp_func_set_param);                // ID 29
+    bsmp_register_function(&bsmp[server], &bsmp_func_get_param);                // ID 30
+    bsmp_register_function(&bsmp[server], &bsmp_func_save_param_eeprom);        // ID 31
+    bsmp_register_function(&bsmp[server], &bsmp_func_load_param_eeprom);        // ID 32
 
     /**
      * BSMP Variable Register
@@ -1217,14 +1359,14 @@ void bsmp_init(uint8_t server)
     set_bsmp_var_pointer(3, server, firmwares_version.u8);
     set_bsmp_var_pointer(4, server, g_ipc_ctom.counter_set_slowref.u8);
     set_bsmp_var_pointer(5, server, g_ipc_ctom.counter_sync_pulse.u8);
-    set_bsmp_var_pointer(6, server, g_ipc_ctom.siggen[server].enable.u8);
-    set_bsmp_var_pointer(7, server, g_ipc_ctom.siggen[server].type.u8);
-    set_bsmp_var_pointer(8, server, g_ipc_ctom.siggen[server].num_cycles.u8);
-    set_bsmp_var_pointer(9, server, g_ipc_ctom.siggen[server].n.u8);
-    set_bsmp_var_pointer(10, server, g_ipc_ctom.siggen[server].freq.u8);
-    set_bsmp_var_pointer(11, server, g_ipc_ctom.siggen[server].amplitude.u8);
-    set_bsmp_var_pointer(12, server, g_ipc_ctom.siggen[server].offset.u8);
-    set_bsmp_var_pointer(13, server, g_ipc_ctom.siggen[server].aux_param[0].u8);
+    set_bsmp_var_pointer(6, server, g_ipc_ctom.siggen.enable.u8);
+    set_bsmp_var_pointer(7, server, g_ipc_ctom.siggen.type.u8);
+    set_bsmp_var_pointer(8, server, g_ipc_ctom.siggen.num_cycles.u8);
+    set_bsmp_var_pointer(9, server, g_ipc_ctom.siggen.n.u8);
+    set_bsmp_var_pointer(10, server, g_ipc_ctom.siggen.freq.u8);
+    set_bsmp_var_pointer(11, server, g_ipc_ctom.siggen.amplitude.u8);
+    set_bsmp_var_pointer(12, server, g_ipc_ctom.siggen.offset.u8);
+    set_bsmp_var_pointer(13, server, g_ipc_ctom.siggen.aux_param[0].u8);
 }
 
 

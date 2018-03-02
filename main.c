@@ -18,6 +18,7 @@
  *
  */
 
+#include <communication_drivers/psmodules/fbp/fbp_main.h>
 #include <stdint.h>
 #include <stdarg.h>
 #include <string.h>
@@ -58,8 +59,6 @@
 #include "communication_drivers/parameters/system/system.h"
 #include "communication_drivers/ipc/ipc_lib.h"
 #include "communication_drivers/bsmp/bsmp_lib.h"
-#include "communication_drivers/psmodules/fbp/fbp_main.h"
-
 #include "hardware_def.h"
 
 extern unsigned long RamfuncsLoadStart;

@@ -17,6 +17,8 @@
  *
  */
 
+#include <communication_drivers/psmodules/fbp/fbp_system.h>
+#include <communication_drivers/psmodules/ps_modules.h>
 #include<stdint.h>
 #include<stdbool.h>
 
@@ -24,8 +26,6 @@
 #include "inc/hw_ipc.h"
 #include "inc/hw_types.h"
 
-#include "communication_drivers/psmodules/ps_modules.h"
-#include "communication_drivers/psmodules/fbp/fbp_system.h"
 #include "communication_drivers/ipc/ipc_lib.h"
 #include "communication_drivers/adcp/adcp.h"
 #include "communication_drivers/bsmp/bsmp_lib.h"
@@ -164,17 +164,28 @@ static void ipc_init_parameters(void)
 //        g_ipc_mtoc_msg[uiloop].WfmRef.SyncMode.enu = SampleBySample_Continuous;
 //        memcpy(0x20014000, get_wfm_ref_data_fbp(), 8192);
 
-        g_ipc_mtoc.siggen[uiloop].enable.u16 = 0;
-        g_ipc_mtoc.siggen[uiloop].type.enu = SIGGEN_TYPE;
-        g_ipc_mtoc.siggen[uiloop].num_cycles.u16 = SIGGEN_NUM_CYCLES;
-        g_ipc_mtoc.siggen[uiloop].freq.f = SIGGEN_FREQ;
-        g_ipc_mtoc.siggen[uiloop].amplitude.f = SIGGEN_AMP;
-        g_ipc_mtoc.siggen[uiloop].offset.f = SIGGEN_OFFSET;
-        g_ipc_mtoc.siggen[uiloop].aux_param[0].f = SIGGEN_AUX_PARAM_0;
-        g_ipc_mtoc.siggen[uiloop].aux_param[1].f = SIGGEN_AUX_PARAM_1;
-        g_ipc_mtoc.siggen[uiloop].aux_param[2].f = SIGGEN_AUX_PARAM_2;
-        g_ipc_mtoc.siggen[uiloop].aux_param[3].f = SIGGEN_AUX_PARAM_3;
+//      g_ipc_mtoc.siggen[uiloop].enable.u16 = 0;
+//      g_ipc_mtoc.siggen[uiloop].type.enu = SIGGEN_TYPE;
+//      g_ipc_mtoc.siggen[uiloop].num_cycles.u16 = SIGGEN_NUM_CYCLES;
+//      g_ipc_mtoc.siggen[uiloop].freq.f = SIGGEN_FREQ;
+//      g_ipc_mtoc.siggen[uiloop].amplitude.f = SIGGEN_AMP;
+//      g_ipc_mtoc.siggen[uiloop].offset.f = SIGGEN_OFFSET;
+//      g_ipc_mtoc.siggen[uiloop].aux_param[0].f = SIGGEN_AUX_PARAM_0;
+//      g_ipc_mtoc.siggen[uiloop].aux_param[1].f = SIGGEN_AUX_PARAM_1;
+//      g_ipc_mtoc.siggen[uiloop].aux_param[2].f = SIGGEN_AUX_PARAM_2;
+//      g_ipc_mtoc.siggen[uiloop].aux_param[3].f = SIGGEN_AUX_PARAM_3;
     }
+
+    g_ipc_mtoc.siggen.enable.u16 = 0;
+    g_ipc_mtoc.siggen.type.enu = SIGGEN_TYPE;
+    g_ipc_mtoc.siggen.num_cycles.u16 = SIGGEN_NUM_CYCLES;
+    g_ipc_mtoc.siggen.freq.f = SIGGEN_FREQ;
+    g_ipc_mtoc.siggen.amplitude.f = SIGGEN_AMP;
+    g_ipc_mtoc.siggen.offset.f = SIGGEN_OFFSET;
+    g_ipc_mtoc.siggen.aux_param[0].f = SIGGEN_AUX_PARAM_0;
+    g_ipc_mtoc.siggen.aux_param[1].f = SIGGEN_AUX_PARAM_1;
+    g_ipc_mtoc.siggen.aux_param[2].f = SIGGEN_AUX_PARAM_2;
+    g_ipc_mtoc.siggen.aux_param[3].f = SIGGEN_AUX_PARAM_3;
 }
 
 /**

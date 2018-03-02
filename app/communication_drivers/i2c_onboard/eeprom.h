@@ -23,6 +23,8 @@
 #ifndef _EEPROM_H_
 #define _EEPROM_H_
 
+#define I2C_SLV_ADDR_EEPROM 0x50 // Endereco 7 bits
+
 extern uint32_t eeprom_read_ip(void);
 extern void save_ip_address(uint32_t IP);
 
