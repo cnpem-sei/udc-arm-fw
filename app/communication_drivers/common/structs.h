@@ -24,14 +24,13 @@
 
 #include <stdint.h>
 
+
 typedef enum
 {
     Idle,
     Buffering,
     Postmortem
 } buf_status_t;
-
-#define NUM_MAX_MATRIX_SIZE 16
 
 typedef struct
 {
@@ -41,11 +40,22 @@ typedef struct
     volatile float  *p_buf_idx;
 } buf_t;
 
-typedef volatile struct
+typedef union
 {
-    uint16_t        num_rows;
-    uint16_t        num_columns;
-    volatile float  data[NUM_MAX_MATRIX_SIZE][NUM_MAX_MATRIX_SIZE];
-} matrix_t;
+    uint8_t     u8[2];
+    uint16_t    u16;
+}  u_uint16_t;
+
+typedef union
+{
+    uint8_t     u8[4];
+    uint32_t    u32;
+}  u_uint32_t;
+
+typedef union
+{
+    uint8_t     u8[4];
+    float       f;
+}  u_float_t;
 
 #endif /* STRUCTS_H_ */

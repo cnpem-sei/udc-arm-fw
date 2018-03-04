@@ -31,14 +31,13 @@
 #define NUM_MAX_OUTPUT_SIGNALS      16
 
 #define NUM_MAX_DSP_ERROR           4
-#define NUM_MAX_DSP_SRLIM           3
+#define NUM_MAX_DSP_SRLIM           4
 #define NUM_MAX_DSP_LPF             4
 #define NUM_MAX_DSP_PI              6
 #define NUM_MAX_DSP_IIR_2P2Z        6
-#define NUM_MAX_DSP_IIR_3P3Z        3
+#define NUM_MAX_DSP_IIR_3P3Z        4
 #define NUM_MAX_DSP_VDCLINK_FF      2
 #define NUM_MAX_DSP_VECT_PRODUCT    2
-
 
 /**
  * Collection of DSP modules used by Control Framework
@@ -87,5 +86,11 @@ extern volatile control_framework_t g_controller_ctom;
 extern volatile control_framework_t g_controller_mtoc;
 
 extern void init_control_framework(volatile control_framework_t *p_controller);
+
+extern uint8_t set_dsp_coeffs(volatile control_framework_t *p_controller,
+                              dsp_class_t dsp_class, uint16_t id,
+                              float *p_coeffs);
+extern float get_dsp_coeff(volatile control_framework_t *p_controller,
+                           dsp_class_t dsp_class, uint16_t id, uint16_t coeff);
 
 #endif /* CONTROL_H_ */

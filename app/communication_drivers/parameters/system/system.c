@@ -97,15 +97,6 @@ void test_eeprom_memory(void)
 		// Write default RS485 Baud Rate
 		save_rs485_baud(115200);
 
-		// Write default Kp gain 0.0
-		save_kp1_gain(0.0);
-
-		// Write default Ki gain 0.0
-		save_ki1_gain(0.0);
-
-		// Write default Ki gain 0.0
-		save_kd1_gain(0.0);
-
 		// Write default PS_Model as 0 (FBP)
 		save_ps_model(0);
 

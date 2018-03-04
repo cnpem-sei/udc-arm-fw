@@ -202,6 +202,44 @@ uint8_t set_param(param_id_t id, uint16_t n, float val)
     }
 }
 
+float get_param(param_id_t id, uint16_t n)
+{
+    if(n < g_parameters[id].num_elements)
+    {
+        switch(g_parameters[id].type)
+        {
+            case is_uint8_t:
+            {
+                return (float) *(g_parameters[id].p_val.u8 + n);
+            }
+
+            case is_uint16_t:
+            {
+                return (float) *(g_parameters[id].p_val.u16 + n);
+            }
+
+            case is_uint32_t:
+            {
+                return (float) *(g_parameters[id].p_val.u32 + n);
+            }
+
+            case is_float:
+            {
+                return *(g_parameters[id].p_val.f + n);
+            }
+
+            default:
+            {
+                return NAN;
+            }
+        }
+    }
+    else
+    {
+        return NAN;
+    }
+}
+
 uint8_t save_param_eeprom(param_id_t id, uint16_t n)
 {
     static uint8_t size_type;
@@ -232,50 +270,6 @@ uint8_t save_param_eeprom(param_id_t id, uint16_t n)
     else
     {
         return 0;
-    }
-}
-
-float get_param(param_id_t id, uint16_t n)
-{
-    uint8_t size_type;
-
-    if(n < g_parameters[id].num_elements)
-    {
-        size_type = g_parameters[id].size_type;
-
-        switch(g_parameters[id].type)
-        {
-            case is_uint8_t:
-            {
-                return (float) *(g_parameters[id].p_val.u8 + n);
-                break;
-            }
-
-            case is_uint16_t:
-            {
-                return (float) *(g_parameters[id].p_val.u16 + n);
-                break;
-            }
-
-            case is_uint32_t:
-            {
-                return (float) *(g_parameters[id].p_val.u32 + n);
-            }
-
-            case is_float:
-            {
-                return *(g_parameters[id].p_val.f + n);
-            }
-
-            default:
-            {
-                return NAN;
-            }
-        }
-    }
-    else
-    {
-        return NAN;
     }
 }
 

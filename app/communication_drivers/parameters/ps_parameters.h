@@ -26,6 +26,7 @@
 #include <stdint.h>
 #include <math.h>
 #include "../psmodules/ps_modules.h"
+#include "communication_drivers/common/structs.h"
 #include "communication_drivers/control/siggen/siggen.h"
 
 #define NUM_MAX_TIMESLICERS     4
@@ -97,24 +98,6 @@ typedef enum
     is_uint32_t,
     is_float
 } param_type_t;
-
-typedef union
-{
-    uint8_t     u8[2];
-    uint16_t    u16;
-}  u_uint16_t;
-
-typedef union
-{
-    uint8_t     u8[4];
-    uint32_t    u32;
-}  u_uint32_t;
-
-typedef union
-{
-    uint8_t     u8[4];
-    float       f;
-}  u_float_t;
 
 typedef union
 {

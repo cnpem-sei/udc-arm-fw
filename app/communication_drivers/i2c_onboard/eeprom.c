@@ -30,6 +30,9 @@
 #include "hardware_def.h"
 #include "eeprom.h"
 
+#include "communication_drivers/common/structs.h"
+#include "communication_drivers/control/dsp.h"
+
 //***********************************************************************************
 //  The memory address is compose of 13bits (2 bytes)
 //  Byte MSB with 5 bits [---1 1111] and the LSB with 8 bits [1111 1111]
@@ -74,6 +77,29 @@
 
 #define PSMODEL			0x0100
 
+const uint16_t dsp_modules_eeprom_add[NUM_DSP_CLASSES] =
+{
+    [DSP_Error]         = 0x1FE0,
+    [DSP_SRLim]         = 0x0600,
+    [DSP_LPF]           = 0x0620,
+    [DSP_PI]            = 0x0640,
+    [DSP_IIR_2P2Z]      = 0x06E0,
+    [DSP_IIR_3P3Z]      = 0x07E0,
+    [DSP_VdcLink_FeedForward] = 0x08C0,
+    [DSP_Vect_Product]  = 0x1FE0,
+};
+
+const uint16_t num_coeffs_dsp_module[NUM_DSP_CLASSES] =
+{
+    [DSP_Error]         = 0,
+    [DSP_SRLim]         = NUM_COEFFS_DSP_SRLIM,
+    [DSP_LPF]           = NUM_COEFFS_DSP_LPF,
+    [DSP_PI]            = NUM_COEFFS_DSP_PI,
+    [DSP_IIR_2P2Z]      = NUM_COEFFS_DSP_IIR_2P2Z,
+    [DSP_IIR_3P3Z]      = NUM_COEFFS_DSP_IIR_3P3Z,
+    [DSP_VdcLink_FeedForward] = NUM_COEFFS_DSP_VDCLINK_FF,
+    [DSP_Vect_Product]  = NUM_COEFFS_DSP_MATRIX
+};
 
 uint8_t data_eeprom[32];
 uint16_t add = 0;
@@ -1148,3 +1174,32 @@ void eeprom_write_request_check(void)
 	eeprom_write_ps_model();
 }
 
+uint8_t save_dsp_coeffs_eeprom(dsp_class_t dsp_class, uint16_t id)
+{
+    static uint8_t size_type;
+    static u_uint16_t u_add;
+
+    // Increment element position on parameter address and prepare for EEPROM
+    u_add.u16 = dsp_modules_eeprom_add[dsp_class] +
+                4*(id*num_coeffs_dsp_module[dsp_class]);
+    data_eeprom[0] = u_add.u8[1];
+    data_eeprom[1] = u_add.u8[0];
+
+    // Prepare EEPROM data
+    //memcpy(&data_eeprom[2], (g_parameters[id].p_val.u8 + size_type*n),
+    //       size_type);
+
+    // Send new parameter to EEPROM
+    GPIOPinWrite(EEPROM_WP_BASE, EEPROM_WP_PIN, OFF);
+    write_i2c(I2C_SLV_ADDR_EEPROM, 2+size_type, data_eeprom);
+    for (ulLoop=0;ulLoop<100000;ulLoop++){};
+    GPIOPinWrite(EEPROM_WP_BASE, EEPROM_WP_PIN, ON);
+
+    return 1;
+
+}
+
+uint8_t load_dsp_coeffs_eeprom(dsp_class_t dsp_class, uint16_t id)
+{
+
+}

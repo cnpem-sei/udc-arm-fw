@@ -26,6 +26,7 @@
 #include <stdint.h>
 #include "../psmodules/ps_modules.h"
 #include "board_drivers/version.h"
+#include "communication_drivers/control/dsp.h"
 #include "communication_drivers/control/siggen/siggen.h"
 #include "communication_drivers/control/wfmref/wfmref.h"
 #include "communication_drivers/common/structs.h"
@@ -69,12 +70,9 @@ typedef enum
     Set_SigGen,
     Enable_SigGen,
     Disable_SigGen,
-    Set_Param,
-    Get_Param,
-    Set_Param_Bank,
-    Get_Param_Bank,
-    Reset_Param_Bank,
     Reset_Counters,
+    Set_Param,
+    Set_DSP_Coeffs,
     CtoM_Message_Error
 } ipc_mtoc_lowpriority_msg_t;
 
@@ -139,6 +137,7 @@ typedef volatile struct
     siggen_t                siggen;
     wfmref_t                wfmref;
     buf_t                   buf_samples[NUM_MAX_PS_MODULES];
+    dsp_module_t            dsp_module;
     param_communication_t   communication;
     param_control_t         control;
     param_pwm_t             pwm;

@@ -35,6 +35,7 @@
 #include "communication_drivers/i2c_onboard/exio.h"
 #include "communication_drivers/control/control.h"
 #include "communication_drivers/parameters/ps_parameters.h"
+#include "communication_drivers/common/structs.h"
 
 #include "inc/hw_memmap.h"
 #include "inc/hw_ipc.h"
@@ -851,7 +852,7 @@ uint8_t bsmp_set_param(uint8_t *input, uint8_t *output)
 
     memcpy(&u_val.u8[0], &input[4], 4);
 
-    if( set_param(id.u16, n.u16, u_val.f) )
+    if( set_param( (param_id_t) id.u16, n.u16, u_val.f) )
     {
         *output = 0;
     }
@@ -875,39 +876,6 @@ static struct bsmp_func bsmp_func_set_param = {
  * @param uint8_t* Pointer to input packet of data
  * @param uint8_t* Pointer to output packet of data
  */
-uint8_t bsmp_save_param_eeprom(uint8_t *input, uint8_t *output)
-{
-    u_uint16_t id, n;
-
-    id.u8[0] = input[0];
-    id.u8[1] = input[1];
-    n.u8[0] = input[2];
-    n.u8[1] = input[3];
-
-    if( save_param_eeprom(id.u16, n.u16) )
-    {
-        *output = 0;
-    }
-    else
-    {
-        *output = 8;
-    }
-
-    return *output;
-}
-
-static struct bsmp_func bsmp_func_save_param_eeprom = {
-    .func_p           = bsmp_save_param_eeprom,
-    .info.input_size  = 4,
-    .info.output_size = 1,
-};
-
-/**
- * @brief
- *
- * @param uint8_t* Pointer to input packet of data
- * @param uint8_t* Pointer to output packet of data
- */
 uint8_t bsmp_get_param(uint8_t *input, uint8_t *output)
 {
     u_uint16_t id, n;
@@ -918,7 +886,7 @@ uint8_t bsmp_get_param(uint8_t *input, uint8_t *output)
     n.u8[0] = input[2];
     n.u8[1] = input[3];
 
-    u_val.f = get_param(id.u16, n.u16);
+    u_val.f = get_param( (param_id_t) id.u16, n.u16);
     memcpy(output, &u_val.u8[0], 4);
 
     if( isnan(u_val.f) )
@@ -943,6 +911,39 @@ static struct bsmp_func bsmp_func_get_param = {
  * @param uint8_t* Pointer to input packet of data
  * @param uint8_t* Pointer to output packet of data
  */
+uint8_t bsmp_save_param_eeprom(uint8_t *input, uint8_t *output)
+{
+    u_uint16_t id, n;
+
+    id.u8[0] = input[0];
+    id.u8[1] = input[1];
+    n.u8[0] = input[2];
+    n.u8[1] = input[3];
+
+    if( save_param_eeprom( (param_id_t) id.u16, n.u16) )
+    {
+        *output = 0;
+    }
+    else
+    {
+        *output = 8;
+    }
+
+    return *output;
+}
+
+static struct bsmp_func bsmp_func_save_param_eeprom = {
+    .func_p           = bsmp_save_param_eeprom,
+    .info.input_size  = 4,
+    .info.output_size = 1,
+};
+
+/**
+ * @brief
+ *
+ * @param uint8_t* Pointer to input packet of data
+ * @param uint8_t* Pointer to output packet of data
+ */
 uint8_t bsmp_load_param_eeprom(uint8_t *input, uint8_t *output)
 {
     u_uint16_t id, n;
@@ -952,7 +953,7 @@ uint8_t bsmp_load_param_eeprom(uint8_t *input, uint8_t *output)
     n.u8[0] = input[2];
     n.u8[1] = input[3];
 
-    if( load_param_eeprom(id.u16, n.u16) )
+    if( load_param_eeprom( (param_id_t) id.u16, n.u16) )
     {
         *output = 0;
     }
@@ -968,6 +969,144 @@ static struct bsmp_func bsmp_func_load_param_eeprom = {
     .func_p           = bsmp_load_param_eeprom,
     .info.input_size  = 4,
     .info.output_size = 1,
+};
+
+/**
+ * @brief
+ *
+ * @param uint8_t* Pointer to input packet of data
+ * @param uint8_t* Pointer to output packet of data
+ */
+uint8_t bsmp_save_param_bank(uint8_t *input, uint8_t *output)
+{
+    *output = 0;
+    return *output;
+}
+
+static struct bsmp_func bsmp_func_save_param_bank = {
+    .func_p           = bsmp_save_param_bank,
+    .info.input_size  = 0,
+    .info.output_size = 1,
+};
+
+/**
+ * @brief
+ *
+ * @param uint8_t* Pointer to input packet of data
+ * @param uint8_t* Pointer to output packet of data
+ */
+uint8_t bsmp_load_param_bank(uint8_t *input, uint8_t *output)
+{
+    *output = 0;
+    return *output;
+}
+
+static struct bsmp_func bsmp_func_load_param_bank = {
+    .func_p           = bsmp_load_param_bank,
+    .info.input_size  = 0,
+    .info.output_size = 1,
+};
+
+/**
+ * @brief
+ *
+ * @param uint8_t* Pointer to input packet of data
+ * @param uint8_t* Pointer to output packet of data
+ */
+uint8_t bsmp_set_dsp_coeffs(uint8_t *input, uint8_t *output)
+{
+    u_uint16_t dsp_class, id;
+    u_float_t u_val[NUM_MAX_COEFFS_DSP];
+
+    ulTimeout = 0;
+    dsp_class.u8[0] = input[0];
+    dsp_class.u8[1] = input[1];
+    id.u8[0] = input[2];
+    id.u8[1] = input[3];
+
+    // Perform typecast of pointer to avoid local variable of size NUM_MAX_COEFFS_DSP
+    // TODO: use same technic over rest of code?
+    if( set_dsp_coeffs( &g_controller_mtoc, (dsp_class_t) dsp_class.u16, id.u16,
+                       (float *) &input[4]) )
+    {
+        if(ipc_mtoc_busy(low_priority_msg_to_reg(Set_DSP_Coeffs)))
+        {
+            *output = 6;
+        }
+
+        else
+        {
+            g_ipc_mtoc.dsp_module.dsp_class = (dsp_class_t) dsp_class.u16;
+            g_ipc_mtoc.dsp_module.id = id.u16;
+            send_ipc_lowpriority_msg(0, Set_DSP_Coeffs);
+            while ((HWREG(MTOCIPC_BASE + IPC_O_MTOCIPCFLG) &
+            low_priority_msg_to_reg(Set_DSP_Coeffs)) &&
+            (ulTimeout<TIMEOUT_VALUE))
+            {
+                ulTimeout++;
+            }
+
+            if(ulTimeout==TIMEOUT_VALUE)
+            {
+                *output = 5;
+            }
+
+            else
+            {
+                *output = 0;
+            }
+        }
+    }
+    else
+    {
+        *output = 8;
+    }
+
+    return *output;
+}
+
+static struct bsmp_func bsmp_func_set_dsp_coeffs = {
+    .func_p           = bsmp_set_dsp_coeffs,
+    .info.input_size  = 4 + 4*NUM_MAX_COEFFS_DSP,
+    .info.output_size = 1,
+};
+
+/**
+ * @brief
+ *
+ * @param uint8_t* Pointer to input packet of data
+ * @param uint8_t* Pointer to output packet of data
+ */
+uint8_t bsmp_get_dsp_coeff(uint8_t *input, uint8_t *output)
+{
+    u_uint16_t dsp_class, id, coeff;
+    u_float_t u_val;
+
+    dsp_class.u8[0] = input[0];
+    dsp_class.u8[1] = input[1];
+    id.u8[0] = input[2];
+    id.u8[1] = input[3];
+    coeff.u8[0] = input[4];
+    coeff.u8[1] = input[5];
+
+    u_val.f = get_dsp_coeff(&g_controller_ctom, (dsp_class_t) dsp_class.u16,
+                            id.u16, coeff.u16);
+    memcpy(output, &u_val.u8[0], 4);
+
+    if( isnan(u_val.f) )
+    {
+        return 8;
+    }
+    else
+    {
+        return 0;
+    }
+}
+
+static struct bsmp_func bsmp_func_get_dsp_coeff = {
+    .func_p           = bsmp_get_dsp_coeff,
+    .info.input_size  = 6,
+    .info.output_size = 4,
 };
 
 /**
@@ -1292,6 +1431,11 @@ void bsmp_init(uint8_t server)
     bsmp_register_function(&bsmp[server], &bsmp_func_get_param);                // ID 30
     bsmp_register_function(&bsmp[server], &bsmp_func_save_param_eeprom);        // ID 31
     bsmp_register_function(&bsmp[server], &bsmp_func_load_param_eeprom);        // ID 32
+    bsmp_register_function(&bsmp[server], &bsmp_func_save_param_bank);          // ID 33
+    bsmp_register_function(&bsmp[server], &bsmp_func_load_param_bank);          // ID 34
+    bsmp_register_function(&bsmp[server], &bsmp_func_set_dsp_coeffs);           // ID 35
+    bsmp_register_function(&bsmp[server], &bsmp_func_get_dsp_coeff);            // ID 36
+
 
     /**
      * BSMP Variable Register

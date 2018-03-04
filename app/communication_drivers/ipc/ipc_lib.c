@@ -30,6 +30,7 @@
 #include "driverlib/interrupt.h"
 
 #include "communication_drivers/i2c_onboard/eeprom.h"
+#include "communication_drivers/i2c_onboard/exio.h".h"
 
 #include "ipc_lib.h"
 
@@ -97,7 +98,6 @@ void send_ipc_lowpriority_msg(uint16_t msg_id,
     g_ipc_mtoc.msg_id = msg_id;
     HWREG(MTOCIPC_BASE + IPC_O_MTOCIPCSET) |= low_priority_msg_to_reg(msg);
 }
-
 
 /**
  * @brief Convert Low Priority Message to MTOC_IPCSET register value.
@@ -203,8 +203,6 @@ void get_firmwares_version(void)
  *****************************************************************************/
 void isr_ipc_lowpriority_msg(void)
 {
-    static uint32_t msg;
-
     g_ipc_mtoc.msg_ctom = HWREG(MTOCIPC_BASE + IPC_O_CTOMIPCSTS);
     IPCCtoMFlagAcknowledge(g_ipc_mtoc.msg_ctom);
 

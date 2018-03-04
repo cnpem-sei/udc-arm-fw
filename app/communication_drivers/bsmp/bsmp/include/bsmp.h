@@ -85,7 +85,7 @@ enum bsmp_err
 #define BSMP_CURVE_BLOCK_INFO       3
 #define BSMP_CURVE_CSUM_SIZE        16
 
-#define BSMP_FUNC_MAX_INPUT         32//15
+#define BSMP_FUNC_MAX_INPUT         64//32//15
 #define BSMP_FUNC_MAX_OUTPUT        32//15
 
 /**** Structures and lists ****/
