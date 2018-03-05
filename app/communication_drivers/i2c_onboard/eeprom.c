@@ -80,12 +80,12 @@
 const uint16_t dsp_modules_eeprom_add[NUM_DSP_CLASSES] =
 {
     [DSP_Error]         = 0x1FE0,
-    [DSP_SRLim]         = 0x0600,
-    [DSP_LPF]           = 0x0620,
-    [DSP_PI]            = 0x0640,
-    [DSP_IIR_2P2Z]      = 0x06E0,
-    [DSP_IIR_3P3Z]      = 0x07E0,
-    [DSP_VdcLink_FeedForward] = 0x08C0,
+    [DSP_SRLim]         = 0x0C00,
+    [DSP_LPF]           = 0x0C20,
+    [DSP_PI]            = 0x0C40,
+    [DSP_IIR_2P2Z]      = 0x0CE0,
+    [DSP_IIR_3P3Z]      = 0x0DE0,
+    [DSP_VdcLink_FeedForward] = 0x0EC0,
     [DSP_Vect_Product]  = 0x1FE0,
 };
 
@@ -101,7 +101,7 @@ const uint16_t num_coeffs_dsp_module[NUM_DSP_CLASSES] =
     [DSP_Vect_Product]  = NUM_COEFFS_DSP_MATRIX
 };
 
-uint8_t data_eeprom[32];
+uint8_t data_eeprom[64];
 uint16_t add = 0;
 
 // Split float in bytes
@@ -1176,30 +1176,130 @@ void eeprom_write_request_check(void)
 
 uint8_t save_dsp_coeffs_eeprom(dsp_class_t dsp_class, uint16_t id)
 {
-    static uint8_t size_type;
     static u_uint16_t u_add;
+    static uint8_t *p_val, size_coeffs;
+
+    size_coeffs = 4*num_coeffs_dsp_module[dsp_class];
 
     // Increment element position on parameter address and prepare for EEPROM
-    u_add.u16 = dsp_modules_eeprom_add[dsp_class] +
-                4*(id*num_coeffs_dsp_module[dsp_class]);
+    u_add.u16 = dsp_modules_eeprom_add[dsp_class] + id*size_coeffs;
     data_eeprom[0] = u_add.u8[1];
     data_eeprom[1] = u_add.u8[0];
 
+    // Perform typecast of pointer to coefficients avoid local copy of them
+    switch(dsp_class)
+    {
+        case DSP_SRLim:
+        {
+            p_val = (uint8_t *) &g_controller_mtoc.dsp_modules.dsp_srlim[id].coeffs.f;
+            break;
+        }
+
+        case DSP_LPF:
+        {
+            p_val = (uint8_t *) &g_controller_mtoc.dsp_modules.dsp_lpf[id].coeffs.f;
+            break;
+        }
+
+        case DSP_PI:
+        {
+            p_val = (uint8_t *) &g_controller_mtoc.dsp_modules.dsp_pi[id].coeffs.f;
+            break;
+        }
+        case DSP_IIR_2P2Z:
+        {
+            p_val = (uint8_t *) &g_controller_mtoc.dsp_modules.dsp_iir_2p2z[id].coeffs.f;
+            break;
+        }
+
+        case DSP_IIR_3P3Z:
+        {
+            p_val = (uint8_t *) &g_controller_mtoc.dsp_modules.dsp_iir_3p3z[id].coeffs.f;
+            break;
+        }
+
+        case DSP_VdcLink_FeedForward:
+        {
+            p_val = (uint8_t *) &g_controller_mtoc.dsp_modules.dsp_ff[id].coeffs.f;
+            break;
+        }
+
+        default:
+        {
+            return 0;
+        }
+    }
+
     // Prepare EEPROM data
-    //memcpy(&data_eeprom[2], (g_parameters[id].p_val.u8 + size_type*n),
-    //       size_type);
+    memcpy(&data_eeprom[2], p_val, size_coeffs);
 
     // Send new parameter to EEPROM
     GPIOPinWrite(EEPROM_WP_BASE, EEPROM_WP_PIN, OFF);
-    write_i2c(I2C_SLV_ADDR_EEPROM, 2+size_type, data_eeprom);
+    write_i2c(I2C_SLV_ADDR_EEPROM, 2+size_coeffs, data_eeprom);
     for (ulLoop=0;ulLoop<100000;ulLoop++){};
     GPIOPinWrite(EEPROM_WP_BASE, EEPROM_WP_PIN, ON);
 
     return 1;
-
 }
 
 uint8_t load_dsp_coeffs_eeprom(dsp_class_t dsp_class, uint16_t id)
 {
+    static u_uint16_t u_add;
+    static uint8_t *p_val, size_coeffs;
 
+    size_coeffs = 4*num_coeffs_dsp_module[dsp_class];
+
+    // Increment element position on parameter address and prepare for EEPROM
+    u_add.u16 = dsp_modules_eeprom_add[dsp_class] + id*size_coeffs;
+    data_eeprom[0] = u_add.u8[1];
+    data_eeprom[1] = u_add.u8[0];
+
+    // Perform typecast of pointer to coefficients avoid local copy of them
+    switch(dsp_class)
+    {
+        case DSP_SRLim:
+        {
+            p_val = (uint8_t *) &g_controller_mtoc.dsp_modules.dsp_srlim[id].coeffs.f;
+            break;
+        }
+
+        case DSP_LPF:
+        {
+            p_val = (uint8_t *) &g_controller_mtoc.dsp_modules.dsp_lpf[id].coeffs.f;
+            break;
+        }
+
+        case DSP_PI:
+        {
+            p_val = (uint8_t *) &g_controller_mtoc.dsp_modules.dsp_pi[id].coeffs.f;
+            break;
+        }
+        case DSP_IIR_2P2Z:
+        {
+            p_val = (uint8_t *) &g_controller_mtoc.dsp_modules.dsp_iir_2p2z[id].coeffs.f;
+            break;
+        }
+
+        case DSP_IIR_3P3Z:
+        {
+            p_val = (uint8_t *) &g_controller_mtoc.dsp_modules.dsp_iir_3p3z[id].coeffs.f;
+            break;
+        }
+
+        case DSP_VdcLink_FeedForward:
+        {
+            p_val = (uint8_t *) &g_controller_mtoc.dsp_modules.dsp_ff[id].coeffs.f;
+            break;
+        }
+
+        default:
+        {
+            return 0;
+        }
+    }
+
+    read_i2c(I2C_SLV_ADDR_EEPROM, DOUBLE_ADDRESS, size_coeffs, data_eeprom);
+    memcpy( p_val, &data_eeprom, size_coeffs);
+
+    return 1;
 }

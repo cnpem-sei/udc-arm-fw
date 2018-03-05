@@ -1110,6 +1110,98 @@ static struct bsmp_func bsmp_func_get_dsp_coeff = {
 };
 
 /**
+ * @brief
+ *
+ * @param uint8_t* Pointer to input packet of data
+ * @param uint8_t* Pointer to output packet of data
+ */
+uint8_t bsmp_save_dsp_coeffs_eeprom(uint8_t *input, uint8_t *output)
+{
+    u_uint16_t dsp_class, id;
+
+    dsp_class.u8[0] = input[0];
+    dsp_class.u8[1] = input[1];
+    id.u8[0] = input[2];
+    id.u8[1] = input[3];
+
+    if( save_dsp_coeffs_eeprom( (dsp_class_t) dsp_class.u16, id.u16) )
+    {
+        *output = 0;
+    }
+    else
+    {
+        *output = 8;
+    }
+
+    return *output;
+}
+
+static struct bsmp_func bsmp_func_save_dsp_coeffs_eeprom = {
+    .func_p           = bsmp_save_dsp_coeffs_eeprom,
+    .info.input_size  = 4,
+    .info.output_size = 1,
+};
+
+/**
+ * @brief
+ *
+ * @param uint8_t* Pointer to input packet of data
+ * @param uint8_t* Pointer to output packet of data
+ */
+uint8_t bsmp_load_dsp_coeffs_eeprom(uint8_t *input, uint8_t *output)
+{
+    u_uint16_t dsp_class, id;
+
+    dsp_class.u8[0] = input[0];
+    dsp_class.u8[1] = input[1];
+    id.u8[0] = input[2];
+    id.u8[1] = input[3];
+
+    if( load_dsp_coeffs_eeprom( (dsp_class_t) dsp_class.u16, id.u16) )
+    {
+        if(ipc_mtoc_busy(low_priority_msg_to_reg(Set_DSP_Coeffs)))
+        {
+            *output = 6;
+        }
+
+        else
+        {
+            g_ipc_mtoc.dsp_module.dsp_class = (dsp_class_t) dsp_class.u16;
+            g_ipc_mtoc.dsp_module.id = id.u16;
+            send_ipc_lowpriority_msg(0, Set_DSP_Coeffs);
+            while ((HWREG(MTOCIPC_BASE + IPC_O_MTOCIPCFLG) &
+            low_priority_msg_to_reg(Set_DSP_Coeffs)) &&
+            (ulTimeout<TIMEOUT_VALUE))
+            {
+                ulTimeout++;
+            }
+
+            if(ulTimeout==TIMEOUT_VALUE)
+            {
+                *output = 5;
+            }
+
+            else
+            {
+                *output = 0;
+            }
+        }
+    }
+    else
+    {
+        *output = 8;
+    }
+
+    return *output;
+}
+
+static struct bsmp_func bsmp_func_load_dsp_coeffs_eeprom = {
+    .func_p           = bsmp_load_dsp_coeffs_eeprom,
+    .info.input_size  = 4,
+    .info.output_size = 1,
+};
+
+/**
  * BSMP Variables
  */
 static struct bsmp_var ps_status[NUMBER_OF_BSMP_SERVERS];
@@ -1435,7 +1527,8 @@ void bsmp_init(uint8_t server)
     bsmp_register_function(&bsmp[server], &bsmp_func_load_param_bank);          // ID 34
     bsmp_register_function(&bsmp[server], &bsmp_func_set_dsp_coeffs);           // ID 35
     bsmp_register_function(&bsmp[server], &bsmp_func_get_dsp_coeff);            // ID 36
-
+    bsmp_register_function(&bsmp[server], &bsmp_func_save_dsp_coeffs_eeprom);   // ID 37
+    bsmp_register_function(&bsmp[server], &bsmp_func_load_dsp_coeffs_eeprom);   // ID 38
 
     /**
      * BSMP Variable Register
