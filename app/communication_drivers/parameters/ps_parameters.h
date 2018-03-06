@@ -9,7 +9,7 @@
  *****************************************************************************/
 
 /**
- * @file ps_parameters.c
+ * @file ps_parameters.h
  * @brief Power supply parameters bank module.
  * 
  * This module implements a data structure for initialization and configuration
@@ -170,7 +170,7 @@ typedef struct
     u_float_t   min[NUM_MAX_ANALOG_VAR];
 } param_analog_vars_t;
 
-volatile param_t g_parameters[NUM_MAX_PARAMETERS];
+extern volatile param_t g_parameters[NUM_MAX_PARAMETERS];
 
 extern void init_param(param_id_t id, param_type_t type, uint16_t num_elements, uint8_t *p_param);
 extern uint8_t set_param(param_id_t id, uint16_t n, float val);

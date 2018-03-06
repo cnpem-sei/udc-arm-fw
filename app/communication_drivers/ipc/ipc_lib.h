@@ -138,11 +138,11 @@ typedef volatile struct
     wfmref_t                wfmref;
     buf_t                   buf_samples[NUM_MAX_PS_MODULES];
     dsp_module_t            dsp_module;
-    param_communication_t   communication;
     param_control_t         control;
     param_pwm_t             pwm;
     param_hradc_t           hradc;
     param_analog_vars_t     analog_vars;
+    param_communication_t   communication;
 } ipc_mtoc_t;
 
 extern ipc_ctom_t g_ipc_ctom;
