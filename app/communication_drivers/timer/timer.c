@@ -66,7 +66,6 @@ void isr_global_timer(void)
 		time = 0;
 		TaskSetNew(SAMPLE_RTC);
 		TaskSetNew(POWER_TEMP_SAMPLE);
-		TaskSetNew(EEPROM_WRITE_REQUEST_CHECK);
 		#if HARDWARE_VERSION == 0x21
 		    TaskSetNew(LED_STATUS);
 			#endif

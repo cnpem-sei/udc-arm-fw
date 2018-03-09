@@ -44,7 +44,6 @@ volatile bool PROCESS_ETH_MESS = 0;
 volatile bool PROCESS_CAN_MESS = 0;
 volatile bool PROCESS_RS485_MESS = 0;
 volatile bool PROCESS_POWER_TEMP_SAMPLE = 0;
-volatile bool EEPROM_WRITE_REQUEST = 0;
 volatile bool LED_STATUS_REQUEST = 0;
 volatile bool SAMPLE_ADCP_REQUEST = 0;
 volatile bool ADCP_SAMPLE_AVAILABLE_REQUEST = 0;
@@ -84,10 +83,6 @@ TaskSetNew(uint8_t TaskNum)
 
 	case POWER_TEMP_SAMPLE:
 		PROCESS_POWER_TEMP_SAMPLE = 1;
-		break;
-
-	case EEPROM_WRITE_REQUEST_CHECK:
-		EEPROM_WRITE_REQUEST = 1;
 		break;
 
 	case LED_STATUS:
@@ -193,12 +188,6 @@ TaskCheck(void)
                 power_supply_4_temp_read();
                 break;
 		}
-	}
-
-	else if(EEPROM_WRITE_REQUEST)
-	{
-		EEPROM_WRITE_REQUEST = 0;
-		eeprom_write_request_check();
 	}
 
 	else if(LED_STATUS_REQUEST)

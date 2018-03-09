@@ -39,12 +39,16 @@
 
 static const uint16_t param_addresses[NUM_MAX_PARAMETERS] =
 {
+    [PS_Model] = 0x0020,
+    [Num_PS_Modules] = 0x0022,
+
     [RS485_Baudrate] = 0x0040,
     [RS485_Address] = 0x0044,
     [RS485_Termination] = 0x004C,
     [UDCNet_Address] = 0x004E,
     [Ethernet_IP] = 0x0050,
     [Ethernet_Subnet_Mask] = 0x0054,
+    [Command_Interface] = 0x0058,
 
     [Freq_ISR_Controller] = 0x0080,
     [Freq_TimeSlicer] = 0x0084,
@@ -115,7 +119,7 @@ void init_param(param_id_t id, param_type_t type, uint16_t num_elements, uint8_t
                 g_parameters[id].size_type = 1;
                 for(n = 0; n < num_elements; n++)
                 {
-                    *(g_parameters[id].p_val.u8 + n) = (uint8_t) n+5;
+                    *(g_parameters[id].p_val.u8 + n) = 0;
                 }
                 break;
             }
@@ -125,7 +129,7 @@ void init_param(param_id_t id, param_type_t type, uint16_t num_elements, uint8_t
                 g_parameters[id].size_type = 2;
                 for(n = 0; n < num_elements; n++)
                 {
-                    *(g_parameters[id].p_val.u16 + n) = (uint16_t) n+5;
+                    *(g_parameters[id].p_val.u16 + n) = 0;
                 }
                 break;
             }
@@ -135,7 +139,7 @@ void init_param(param_id_t id, param_type_t type, uint16_t num_elements, uint8_t
                 g_parameters[id].size_type = 4;
                 for(n = 0; n < num_elements; n++)
                 {
-                    *(g_parameters[id].p_val.u32 + n) = (uint32_t) n+5;
+                    *(g_parameters[id].p_val.u32 + n) = 0;
                 }
                 break;
             }
@@ -145,7 +149,7 @@ void init_param(param_id_t id, param_type_t type, uint16_t num_elements, uint8_t
                 g_parameters[id].size_type = 4;
                 for(n = 0; n < num_elements; n++)
                 {
-                    *(g_parameters[id].p_val.f + n) = (float) n+5;
+                    *(g_parameters[id].p_val.f + n) = 0.0;
                 }
                 break;
             }
@@ -290,7 +294,7 @@ uint8_t load_param_eeprom(param_id_t id, uint16_t n)
 
         read_i2c(I2C_SLV_ADDR_EEPROM, DOUBLE_ADDRESS, size_type, data_eeprom);
 
-        memcpy( (g_parameters[id].p_val.u8 + size_type*n), &data_eeprom[2],
+        memcpy( (g_parameters[id].p_val.u8 + size_type*n), &data_eeprom[0],
                 size_type);
 
         return 1;
@@ -303,15 +307,181 @@ uint8_t load_param_eeprom(param_id_t id, uint16_t n)
 
 void init_parameters_bank(void)
 {
-    init_param(SigGen_Type, is_uint16_t, 1, &g_ipc_mtoc.siggen.type.u8[0]);
-    init_param(SigGen_Num_Cycles, is_uint16_t, 1, &g_ipc_mtoc.siggen.num_cycles.u8[0]);
-    init_param(SigGen_Freq, is_float, 1, &g_ipc_mtoc.siggen.freq.u8[0]);
-    init_param(SigGen_Amplitude, is_float, 1, &g_ipc_mtoc.siggen.amplitude.u8[0]);
-    init_param(SigGen_Offset, is_float, 1, &g_ipc_mtoc.siggen.offset.u8[0]);
-    init_param(SigGen_Aux_Param, is_float, NUM_SIGGEN_AUX_PARAM, &g_ipc_mtoc.siggen.aux_param[0].u8[0]);
+    init_param(PS_Model, is_uint16_t, 1, (uint8_t *) &g_ipc_mtoc.ps_model);
 
-    init_param(WfmRef_ID_WfmRef, is_uint16_t, 1, &g_ipc_mtoc.wfmref.wfmref_selected.u8[0]);
-    init_param(WfmRef_SyncMode, is_uint16_t, 1, &g_ipc_mtoc.wfmref.sync_mode.u8[0]);
+    init_param(Num_PS_Modules, is_uint16_t, 1,
+               (uint8_t *) &g_ipc_mtoc.num_ps_modules);
+
+    /**
+     *  Communication parameters
+     */
+    init_param(RS485_Baudrate, is_float, 1,
+                &g_ipc_mtoc.communication.rs485_baud.u8[0]);
+
+    init_param(RS485_Address, is_uint16_t, NUM_MAX_PS_MODULES,
+                &g_ipc_mtoc.communication.rs485_address[0].u8[0]);
+
+    init_param(RS485_Termination, is_uint16_t, 1,
+                &g_ipc_mtoc.communication.rs485_termination.u8[0]);
+
+    init_param(UDCNet_Address, is_uint16_t, 1,
+                    &g_ipc_mtoc.communication.udcnet_address.u8[0]);
+
+    init_param(Ethernet_IP, is_uint8_t, 1,
+                &g_ipc_mtoc.communication.ethernet_ip[0]);
+
+    init_param(Ethernet_Subnet_Mask, is_uint8_t, 1,
+                &g_ipc_mtoc.communication.ethernet_mask[0]);
+
+    init_param(Command_Interface, is_uint16_t, 1,
+               (uint8_t *) &g_ipc_mtoc.communication.command_interface);
+
+    /**
+     * Controller parameters
+     */
+    init_param(Freq_ISR_Controller, is_float, 1,
+                &g_ipc_mtoc.control.freq_isr_control.u8[0]);
+
+    init_param(Freq_TimeSlicer, is_float, NUM_MAX_TIMESLICERS,
+                &g_ipc_mtoc.control.freq_timeslicer[0].u8[0]);
+
+    init_param(Max_Ref, is_float, 1, &g_ipc_mtoc.control.max_ref.u8[0]);
+
+    init_param(Min_Ref, is_float, 1, &g_ipc_mtoc.control.min_ref.u8[0]);
+
+    init_param(Max_Ref_OpenLoop, is_float, 1,
+                &g_ipc_mtoc.control.max_ref_openloop.u8[0]);
+
+    init_param(Min_Ref_OpenLoop, is_float, 1,
+                &g_ipc_mtoc.control.min_ref_openloop.u8[0]);
+
+    init_param(Max_SlewRate_SlowRef, is_float, 1,
+                &g_ipc_mtoc.control.slewrate_slowref.u8[0]);
+
+    init_param(Max_SlewRate_SigGen_Amp, is_float, 1,
+                &g_ipc_mtoc.control.slewrate_siggen_amp.u8[0]);
+
+    init_param(Max_SlewRate_SigGen_Offset, is_float, 1,
+                &g_ipc_mtoc.control.slewrate_siggen_offset.u8[0]);
+
+    init_param(Max_SlewRate_WfmRef, is_float, 1,
+                &g_ipc_mtoc.control.slewrate_wfmref.u8[0]);
+
+    /**
+     * PWM parameters
+     */
+    init_param(PWM_Freq, is_float, 1, &g_ipc_mtoc.pwm.freq_pwm.u8[0]);
+
+    init_param(PWM_DeadTime, is_float, 1, &g_ipc_mtoc.pwm.dead_time.u8[0]);
+
+    init_param(PWM_Max_Duty, is_float, 1, &g_ipc_mtoc.pwm.max_duty.u8[0]);
+
+    init_param(PWM_Min_Duty, is_float, 1, &g_ipc_mtoc.pwm.min_duty.u8[0]);
+
+    init_param(PWM_Max_Duty_OpenLoop, is_float, 1,
+                &g_ipc_mtoc.pwm.max_duty_openloop.u8[0]);
+
+    init_param(PWM_Min_Duty_OpenLoop, is_float, 1,
+                &g_ipc_mtoc.pwm.min_duty_openloop.u8[0]);
+
+    init_param(PWM_Lim_Duty_Share, is_float, 1,
+                &g_ipc_mtoc.pwm.lim_duty_share.u8[0]);
+
+    /**
+     * HRADC parameters
+     */
+    init_param(HRADC_Num_Boards, is_uint16_t, 1,
+                &g_ipc_mtoc.hradc.num_hradc.u8[0]);
+
+    init_param(HRADC_Freq_SPICLK, is_uint16_t, 1,
+                &g_ipc_mtoc.hradc.freq_spiclk.u8[0]);
+
+    init_param(HRADC_Freq_Sampling, is_float, 1,
+                &g_ipc_mtoc.hradc.freq_hradc_sampling.u8[0]);
+
+    init_param(HRADC_Enable_Heater, is_uint16_t, NUM_MAX_HRADC,
+                &g_ipc_mtoc.hradc.enable_heater[0].u8[0]);
+
+    init_param(HRADC_Enable_Monitor, is_uint16_t, NUM_MAX_HRADC,
+                &g_ipc_mtoc.hradc.enable_monitor[0].u8[0]);
+
+    init_param(HRADC_Type_Transducer, is_uint16_t, NUM_MAX_HRADC,
+                &g_ipc_mtoc.hradc.type_transducer_output[0].u8[0]);
+
+    init_param(HRADC_Gain_Transducer, is_float, NUM_MAX_HRADC,
+                &g_ipc_mtoc.hradc.gain_transducer[0].u8[0]);
+
+    init_param(HRADC_Offset_Transducer, is_float, NUM_MAX_HRADC,
+                &g_ipc_mtoc.hradc.offset_transducer[0].u8[0]);
+
+
+    /**
+     * SigGen parameters
+     */
+    init_param(SigGen_Type, is_uint16_t, 1, &g_ipc_mtoc.siggen.type.u8[0]);
+
+    init_param(SigGen_Num_Cycles, is_uint16_t, 1,
+                &g_ipc_mtoc.siggen.num_cycles.u8[0]);
+
+    init_param(SigGen_Freq, is_float, 1, &g_ipc_mtoc.siggen.freq.u8[0]);
+
+    init_param(SigGen_Amplitude, is_float, 1,
+                &g_ipc_mtoc.siggen.amplitude.u8[0]);
+
+    init_param(SigGen_Offset, is_float, 1, &g_ipc_mtoc.siggen.offset.u8[0]);
+
+    init_param(SigGen_Aux_Param, is_float, NUM_SIGGEN_AUX_PARAM,
+                &g_ipc_mtoc.siggen.aux_param[0].u8[0]);
+
+
+    /**
+     * WfmRef parameters
+     */
+    init_param(WfmRef_ID_WfmRef, is_uint16_t, 1,
+                &g_ipc_mtoc.wfmref.wfmref_selected.u8[0]);
+
+    init_param(WfmRef_SyncMode, is_uint16_t, 1,
+                &g_ipc_mtoc.wfmref.sync_mode.u8[0]);
+
     init_param(WfmRef_Gain, is_float, 1, &g_ipc_mtoc.wfmref.gain.u8[0]);
+
     init_param(WfmRef_Offset, is_float, 1, &g_ipc_mtoc.wfmref.offset.u8[0]);
+
+
+    /**
+     * Analog variables parameters
+     */
+    init_param(Analog_Var_Max, is_float, NUM_MAX_ANALOG_VAR,
+                &g_ipc_mtoc.analog_vars.max[0].u8[0]);
+
+    init_param(Analog_Var_Min, is_float, NUM_MAX_ANALOG_VAR,
+                &g_ipc_mtoc.analog_vars.min[0].u8[0]);
+}
+
+void save_param_bank(void)
+{
+    param_id_t id;
+    uint16_t n;
+
+    for(id = 0; id < NUM_PARAMETERS; id++)
+    {
+        for(n = 0; n < g_parameters[id].num_elements; n++)
+        {
+            save_param_eeprom(id, n);
+        }
+    }
+}
+
+void load_param_bank(void)
+{
+    param_id_t id;
+    uint16_t n;
+
+    for(id = 0; id < NUM_PARAMETERS; id++)
+    {
+        for(n = 0; n < g_parameters[id].num_elements; n++)
+        {
+            load_param_eeprom(id, n);
+        }
+    }
 }

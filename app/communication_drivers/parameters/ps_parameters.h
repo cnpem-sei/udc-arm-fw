@@ -35,12 +35,17 @@
 #define NUM_MAX_DIGITAL_VAR     12
 #define NUM_MAX_HRADC           4
 
+#define NUM_PARAMETERS          46
 #define NUM_MAX_PARAMETERS      64
 #define NUM_MAX_FLOATS          200
 
 typedef enum
 {
-    RS485_Baudrate = 1,
+    PS_Model,
+    Num_PS_Modules,
+
+    Command_Interface,
+    RS485_Baudrate,
     RS485_Address,
     RS485_Termination,
     UDCNet_Address,
@@ -119,12 +124,13 @@ typedef struct
 
 typedef struct
 {
-    u_float_t   rs485_baud;
-    u_uint16_t  rs485_address[NUM_MAX_PS_MODULES];
-    u_uint16_t  rs485_termination;
-    u_uint16_t  udcnet_address;
-    uint8_t     ethernet_ip[4];
-    uint8_t     ethernet_mask[4];
+    u_float_t       rs485_baud;
+    u_uint16_t      rs485_address[NUM_MAX_PS_MODULES];
+    u_uint16_t      rs485_termination;
+    u_uint16_t      udcnet_address;
+    uint8_t         ethernet_ip[4];
+    uint8_t         ethernet_mask[4];
+    ps_interface_t  command_interface;
 } param_communication_t;
 
 typedef struct
@@ -177,8 +183,10 @@ extern uint8_t set_param(param_id_t id, uint16_t n, float val);
 extern uint8_t save_param_eeprom(param_id_t id, uint16_t n);
 extern float get_param(param_id_t id, uint16_t n);
 extern uint8_t load_param_eeprom(param_id_t id, uint16_t n);
-extern void init_parameters_bank(void);
 
+extern void init_parameters_bank(void);
+extern void save_param_bank(void);
+extern void load_param_bank(void);
 
 #endif /* PS_PARAMETERS_H_ */
 

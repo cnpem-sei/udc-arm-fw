@@ -10,7 +10,7 @@
 #ifndef EXIO_H_
 #define EXIO_H_
 
-extern void extern_io_init(void);
+extern void init_extern_io(void);
 
 extern void display_pwr_ctrl(uint8_t sts);
 extern uint8_t display_pwr_oc_sts(void);

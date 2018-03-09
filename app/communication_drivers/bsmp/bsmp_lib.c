@@ -979,6 +979,7 @@ static struct bsmp_func bsmp_func_load_param_eeprom = {
  */
 uint8_t bsmp_save_param_bank(uint8_t *input, uint8_t *output)
 {
+    save_param_bank();
     *output = 0;
     return *output;
 }
@@ -997,6 +998,7 @@ static struct bsmp_func bsmp_func_save_param_bank = {
  */
 uint8_t bsmp_load_param_bank(uint8_t *input, uint8_t *output)
 {
+    load_param_bank();
     *output = 0;
     return *output;
 }
@@ -1198,6 +1200,44 @@ uint8_t bsmp_load_dsp_coeffs_eeprom(uint8_t *input, uint8_t *output)
 static struct bsmp_func bsmp_func_load_dsp_coeffs_eeprom = {
     .func_p           = bsmp_load_dsp_coeffs_eeprom,
     .info.input_size  = 4,
+    .info.output_size = 1,
+};
+
+/**
+ * @brief
+ *
+ * @param uint8_t* Pointer to input packet of data
+ * @param uint8_t* Pointer to output packet of data
+ */
+uint8_t bsmp_save_dsp_modules_eeprom(uint8_t *input, uint8_t *output)
+{
+    save_dsp_modules_eeprom();
+    *output = 0;
+    return *output;
+}
+
+static struct bsmp_func bsmp_func_save_dsp_modules_eeprom = {
+    .func_p           = bsmp_save_dsp_modules_eeprom,
+    .info.input_size  = 0,
+    .info.output_size = 1,
+};
+
+/**
+ * @brief
+ *
+ * @param uint8_t* Pointer to input packet of data
+ * @param uint8_t* Pointer to output packet of data
+ */
+uint8_t bsmp_load_dsp_modules_eeprom(uint8_t *input, uint8_t *output)
+{
+    load_dsp_modules_eeprom();
+    *output = 0;
+    return *output;
+}
+
+static struct bsmp_func bsmp_func_load_dsp_modules_eeprom = {
+    .func_p           = bsmp_load_dsp_modules_eeprom,
+    .info.input_size  = 0,
     .info.output_size = 1,
 };
 
@@ -1529,6 +1569,8 @@ void bsmp_init(uint8_t server)
     bsmp_register_function(&bsmp[server], &bsmp_func_get_dsp_coeff);            // ID 36
     bsmp_register_function(&bsmp[server], &bsmp_func_save_dsp_coeffs_eeprom);   // ID 37
     bsmp_register_function(&bsmp[server], &bsmp_func_load_dsp_coeffs_eeprom);   // ID 38
+    bsmp_register_function(&bsmp[server], &bsmp_func_save_dsp_modules_eeprom);  // ID 39
+    bsmp_register_function(&bsmp[server], &bsmp_func_load_dsp_modules_eeprom);  // ID 40
 
     /**
      * BSMP Variable Register

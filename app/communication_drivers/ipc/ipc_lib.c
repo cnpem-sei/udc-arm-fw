@@ -30,7 +30,7 @@
 #include "driverlib/interrupt.h"
 
 #include "communication_drivers/i2c_onboard/eeprom.h"
-#include "communication_drivers/i2c_onboard/exio.h".h"
+#include "communication_drivers/i2c_onboard/exio.h"
 
 #include "ipc_lib.h"
 
@@ -54,9 +54,7 @@ void init_ipc(void)
 {
     g_ipc_mtoc.error_ctom = No_Error_CtoM;
     g_ipc_mtoc.msg_ctom = 0;
-    //g_ipc_mtoc.msg_id = 0;
-
-    init_parameters();
+    g_ipc_mtoc.msg_id = 0;
 
     /**
      * TODO: Initialize IPC Interrupts
@@ -220,158 +218,4 @@ void isr_ipc_lowpriority_msg(void)
             break;
         }
     }
-}
-
-/******************************************************************************
- * TODO: CtoM IPC INT2 Interrupt Handler
- *****************************************************************************/
-
-/******************************************************************************
- * TODO: CtoM IPC INT3 Interrupt Handler
- *****************************************************************************/
-
-
-void init_parameters(void)
-{
-    /**
-     *  Communication parameters
-     */
-    init_param(RS485_Baudrate, is_float, 1,
-                &g_ipc_mtoc.communication.rs485_baud.u8[0]);
-
-    init_param(RS485_Address, is_uint16_t, NUM_MAX_PS_MODULES,
-                &g_ipc_mtoc.communication.rs485_address[0].u8[0]);
-
-    init_param(RS485_Termination, is_uint16_t, 1,
-                &g_ipc_mtoc.communication.rs485_termination.u8[0]);
-
-    init_param(UDCNet_Address, is_uint16_t, 1,
-                    &g_ipc_mtoc.communication.udcnet_address.u8[0]);
-
-    init_param(Ethernet_IP, is_uint8_t, 1,
-                &g_ipc_mtoc.communication.ethernet_ip[0]);
-
-    init_param(Ethernet_Subnet_Mask, is_uint8_t, 1,
-                &g_ipc_mtoc.communication.ethernet_mask[0]);
-
-    /**
-     * Controller parameters
-     */
-    init_param(Freq_ISR_Controller, is_float, 1,
-                &g_ipc_mtoc.control.freq_isr_control.u8[0]);
-
-    init_param(Freq_TimeSlicer, is_float, NUM_MAX_TIMESLICERS,
-                &g_ipc_mtoc.control.freq_timeslicer[0].u8[0]);
-
-    init_param(Max_Ref, is_float, 1, &g_ipc_mtoc.control.max_ref.u8[0]);
-
-    init_param(Min_Ref, is_float, 1, &g_ipc_mtoc.control.min_ref.u8[0]);
-
-    init_param(Max_Ref_OpenLoop, is_float, 1,
-                &g_ipc_mtoc.control.max_ref_openloop.u8[0]);
-
-    init_param(Min_Ref_OpenLoop, is_float, 1,
-                &g_ipc_mtoc.control.min_ref_openloop.u8[0]);
-
-    init_param(Max_SlewRate_SlowRef, is_float, 1,
-                &g_ipc_mtoc.control.slewrate_slowref.u8[0]);
-
-    init_param(Max_SlewRate_SigGen_Amp, is_float, 1,
-                &g_ipc_mtoc.control.slewrate_siggen_amp.u8[0]);
-
-    init_param(Max_SlewRate_SigGen_Offset, is_float, 1,
-                &g_ipc_mtoc.control.slewrate_siggen_offset.u8[0]);
-
-    init_param(Max_SlewRate_WfmRef, is_float, 1,
-                &g_ipc_mtoc.control.slewrate_wfmref.u8[0]);
-
-    /**
-     * PWM parameters
-     */
-    init_param(PWM_Freq, is_float, 1, &g_ipc_mtoc.pwm.freq_pwm.u8[0]);
-
-    init_param(PWM_DeadTime, is_float, 1, &g_ipc_mtoc.pwm.dead_time.u8[0]);
-
-    init_param(PWM_Max_Duty, is_float, 1, &g_ipc_mtoc.pwm.max_duty.u8[0]);
-
-    init_param(PWM_Min_Duty, is_float, 1, &g_ipc_mtoc.pwm.min_duty.u8[0]);
-
-    init_param(PWM_Max_Duty_OpenLoop, is_float, 1,
-                &g_ipc_mtoc.pwm.max_duty_openloop.u8[0]);
-
-    init_param(PWM_Min_Duty_OpenLoop, is_float, 1,
-                &g_ipc_mtoc.pwm.min_duty_openloop.u8[0]);
-
-    init_param(PWM_Lim_Duty_Share, is_float, 1,
-                &g_ipc_mtoc.pwm.lim_duty_share.u8[0]);
-
-    /**
-     * HRADC parameters
-     */
-    init_param(HRADC_Num_Boards, is_uint16_t, 1,
-                &g_ipc_mtoc.hradc.num_hradc.u8[0]);
-
-    init_param(HRADC_Freq_SPICLK, is_float, 1,
-                &g_ipc_mtoc.hradc.freq_spiclk.u8[0]);
-
-    init_param(HRADC_Freq_Sampling, is_float, 1,
-                &g_ipc_mtoc.hradc.freq_hradc_sampling.u8[0]);
-
-    init_param(HRADC_Enable_Heater, is_uint16_t, NUM_MAX_HRADC,
-                &g_ipc_mtoc.hradc.enable_heater[0].u8[0]);
-
-    init_param(HRADC_Enable_Monitor, is_uint16_t, NUM_MAX_HRADC,
-                &g_ipc_mtoc.hradc.enable_monitor[0].u8[0]);
-
-    init_param(HRADC_Type_Transducer, is_uint16_t, NUM_MAX_HRADC,
-                &g_ipc_mtoc.hradc.type_transducer_output[0].u8[0]);
-
-    init_param(HRADC_Gain_Transducer, is_float, NUM_MAX_HRADC,
-                &g_ipc_mtoc.hradc.gain_transducer[0].u8[0]);
-
-    init_param(HRADC_Offset_Transducer, is_float, NUM_MAX_HRADC,
-                &g_ipc_mtoc.hradc.offset_transducer[0].u8[0]);
-
-
-    /**
-     * SigGen parameters
-     */
-    init_param(SigGen_Type, is_uint16_t, 1, &g_ipc_mtoc.siggen.type.u8[0]);
-
-    init_param(SigGen_Num_Cycles, is_uint16_t, 1,
-                &g_ipc_mtoc.siggen.num_cycles.u8[0]);
-
-    init_param(SigGen_Freq, is_float, 1, &g_ipc_mtoc.siggen.freq.u8[0]);
-
-    init_param(SigGen_Amplitude, is_float, 1,
-                &g_ipc_mtoc.siggen.amplitude.u8[0]);
-
-    init_param(SigGen_Offset, is_float, 1, &g_ipc_mtoc.siggen.offset.u8[0]);
-
-    init_param(SigGen_Aux_Param, is_float, NUM_SIGGEN_AUX_PARAM,
-                &g_ipc_mtoc.siggen.aux_param[0].u8[0]);
-
-
-    /**
-     * WfmRef parameters
-     */
-    init_param(WfmRef_ID_WfmRef, is_uint16_t, 1,
-                &g_ipc_mtoc.wfmref.wfmref_selected.u8[0]);
-
-    init_param(WfmRef_SyncMode, is_uint16_t, 1,
-                &g_ipc_mtoc.wfmref.sync_mode.u8[0]);
-
-    init_param(WfmRef_Gain, is_float, 1, &g_ipc_mtoc.wfmref.gain.u8[0]);
-
-    init_param(WfmRef_Offset, is_float, 1, &g_ipc_mtoc.wfmref.offset.u8[0]);
-
-
-    /**
-     * Analog variables parameters
-     */
-    init_param(Analog_Var_Max, is_float, NUM_MAX_ANALOG_VAR,
-                &g_ipc_mtoc.analog_vars.max[0].u8[0]);
-
-    init_param(Analog_Var_Min, is_float, NUM_MAX_ANALOG_VAR,
-                &g_ipc_mtoc.analog_vars.min[0].u8[0]);
 }

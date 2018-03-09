@@ -113,15 +113,7 @@ int main(void) {
 	RAMMReqSharedMemAccess((S1_ACCESS | S2_ACCESS | S4_ACCESS |
 	                                    S5_ACCESS), C28_MASTER);
 
-	system_config();
-
-    //  Send boot command to allow the C28 application to begin execution
-    //IPCMtoCBootControlSystem(CBROM_MTOC_BOOTMODE_BOOT_FROM_FLASH);
-
-	// Delay
-	for (ulLoop=0;ulLoop<500000;ulLoop++){};
-
-	system_init();
+	init_system();
 
 	// Enable processor interrupts.
 	IntMasterEnable();
@@ -131,13 +123,13 @@ int main(void) {
 	    // TODO: Just when using IHM
 	    //g_ipc_mtoc.ps_module[0].ps_status.bit.state = loc_rem_update();
 
-	    switch(g_ipc_mtoc.ps_module[0].ps_status.bit.model)
+	    switch(g_ipc_mtoc.ps_model)
 	    {
 	        case FBP:
-
+	        {
 	            fbp_main();
-
-	        break;
+	            break;
+	        }
 
 	        //case FAP_DCDC_20kHz:
 	        //    fap_dcdc_20_khz_main();
@@ -170,7 +162,9 @@ int main(void) {
 	        //break;
 
 	        default:
-	            fbp_main();
+	        {
+	            break;
+	        }
 	    }
 	}
 

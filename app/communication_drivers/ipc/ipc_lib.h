@@ -132,7 +132,9 @@ typedef volatile struct
 {
     uint32_t                msg_ctom;
     uint16_t                msg_id;
-    error_ctom_t            error_ctom;
+    uint16_t                error_ctom;
+    uint16_t                ps_model;
+    uint16_t                num_ps_modules;
     ps_module_t             ps_module[NUM_MAX_PS_MODULES];
     siggen_t                siggen;
     wfmref_t                wfmref;
@@ -159,5 +161,7 @@ extern inline uint32_t ipc_ctom_translate (uint32_t ulShareAddress);
 extern uint16_t ipc_mtoc_busy (uint32_t ulFlags);
 
 extern void get_firmwares_version(void);
+
+extern void init_parameters_bank(void);
 
 #endif /* IPC_LIB_H_ */

@@ -68,7 +68,7 @@ typedef enum
 
 typedef enum
 {
-    FBP
+    FBP = 1,
 } ps_model_t;
 
 typedef struct

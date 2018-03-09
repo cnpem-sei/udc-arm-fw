@@ -143,7 +143,7 @@ uint8_t hardware_version_test(uint8_t ExNumber)
 	}
 }
 
-void extern_io_init(void)
+void init_extern_io(void)
 {
 
 	switch(HARDWARE_VERSION)

@@ -21,7 +21,6 @@
 #ifndef SYSTEM_H_
 #define SYSTEM_H_
 
-extern void system_init(void);
-extern void system_config(void);
+extern void init_system(void);
 
 #endif /* SYSTEM_H_ */

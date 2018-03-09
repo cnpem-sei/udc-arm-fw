@@ -50,84 +50,33 @@
 
 #include "system.h"
 
-/*
- *  This function test if the EEPROM memory is fully new and doesn't have data.
- *  if this is true, default data is write to initialize the system
- */
-void test_eeprom_memory(void)
-{
-	uint8_t var8 = 0;
-	uint32_t var32 = 0;
-
-	// Read RS485 address from EEPROM
-	// If data is equal to 0xFF than this is a new memory and needs parameterization
-	var8 = eeprom_read_rs485_add(1);
-
-	if(var8 == 0xFF)
-	{
-
-		// Write default IP address 10.0.28.203
-		var32 = 0x0A;		// 10
-		var32 = var32 << 8;
-		var32 |= 0x00;		// 0
-		var32 = var32 << 8;
-		var32 |= 0x1C;		// 28
-		var32 = var32 << 8;
-		var32 |= 0xCB;		// 203
-
-		save_ip_address(var32);
-
-		// Write default IP MASK 255.255.255.0
-		var32 = 0xFF;		// 255
-		var32 = var32 << 8;
-		var32 |= 0xFF;		// 255
-		var32 = var32 << 8;
-		var32 |= 0xFF;		// 255
-		var32 = var32 << 8;
-		var32 |= 0x00;		// 0
-
-		save_ip_mask(var32);
-
-		// Write default RS485 address
-        save_rs485_ch_0_add(01);
-		save_rs485_ch_1_add(33);
-		save_rs485_ch_2_add(34);
-		save_rs485_ch_3_add(35);
-
-		// Write default RS485 Baud Rate
-		save_rs485_baud(115200);
-
-		// Write default PS_Model as 0 (FBP)
-		save_ps_model(0);
-
-		eeprom_write_request_check();
-	}
-}
-
-void system_config(void)
+void init_system(void)
 {
     init_i2c_onboard();
 
-    test_eeprom_memory();
+	init_extern_io();
 
-	extern_io_init();
-
-	if(HARDWARE_VERSION == 0x21) buffers_ctrl(1);
+	if(HARDWARE_VERSION == 0x21)
+    {
+	    buffers_ctrl(1);
+    }
 
 	hradc_rst_ctrl(1);
 
-	init_ipc();
-}
+	init_parameters_bank();
 
-void system_init(void)
-{
+	init_ipc();
+
+	load_param_bank();
+
+	load_dsp_modules_eeprom();
 
     init_i2c_offboard_isolated();
 
 	flash_mem_init();
 
 	dcdc_pwr_ctrl(true);
-	// Não necessita da configuração da malha de controle, o dsp ja possui os dados
+
 	//CtrllawInit();
 
 	//init_display();
@@ -140,6 +89,7 @@ void system_init(void)
 
 	//init_can_bkp();
 
+	bsmp_init(0);
 	//BSMPInit();
 
 	ethernet_init();

@@ -141,7 +141,7 @@
 /**
  * Number of power supplies
  */
-static const uint8_t fbp_qtd = 4;
+//static const uint8_t fbp_qtd = 4;
 
 /**
 * @brief Initialize IPC Parameters.
@@ -151,41 +151,29 @@ static const uint8_t fbp_qtd = 4;
 */
 static void ipc_init_parameters(void)
 {
-    init_ipc(); //TODO: Refactor IPC module
+    //init_ipc(); //TODO: Refactor IPC module
 
     volatile uint8_t uiloop, uiloop2;
 
-    for (uiloop = 0; uiloop < fbp_qtd; uiloop++)
+    for (uiloop = 0; uiloop < (uint8_t) get_param(Num_PS_Modules,0); uiloop++)
     {
         g_ipc_mtoc.ps_module[uiloop].ps_status.bit.model = FBP;
         g_ipc_mtoc.ps_module[uiloop].ps_status.bit.active = 1;
         g_ipc_mtoc.ps_module[uiloop].ps_status.bit.openloop = 1;
         g_ipc_mtoc.ps_module[uiloop].ps_status.bit.state = Off;
-//        g_ipc_mtoc_msg[uiloop].WfmRef.SyncMode.enu = SampleBySample_Continuous;
-//        memcpy(0x20014000, get_wfm_ref_data_fbp(), 8192);
-
-//      g_ipc_mtoc.siggen[uiloop].enable.u16 = 0;
-//      g_ipc_mtoc.siggen[uiloop].type.enu = SIGGEN_TYPE;
-//      g_ipc_mtoc.siggen[uiloop].num_cycles.u16 = SIGGEN_NUM_CYCLES;
-//      g_ipc_mtoc.siggen[uiloop].freq.f = SIGGEN_FREQ;
-//      g_ipc_mtoc.siggen[uiloop].amplitude.f = SIGGEN_AMP;
-//      g_ipc_mtoc.siggen[uiloop].offset.f = SIGGEN_OFFSET;
-//      g_ipc_mtoc.siggen[uiloop].aux_param[0].f = SIGGEN_AUX_PARAM_0;
-//      g_ipc_mtoc.siggen[uiloop].aux_param[1].f = SIGGEN_AUX_PARAM_1;
-//      g_ipc_mtoc.siggen[uiloop].aux_param[2].f = SIGGEN_AUX_PARAM_2;
-//      g_ipc_mtoc.siggen[uiloop].aux_param[3].f = SIGGEN_AUX_PARAM_3;
     }
 
     g_ipc_mtoc.siggen.enable.u16 = 0;
-    g_ipc_mtoc.siggen.type.enu = SIGGEN_TYPE;
-    g_ipc_mtoc.siggen.num_cycles.u16 = SIGGEN_NUM_CYCLES;
-    g_ipc_mtoc.siggen.freq.f = SIGGEN_FREQ;
-    g_ipc_mtoc.siggen.amplitude.f = SIGGEN_AMP;
-    g_ipc_mtoc.siggen.offset.f = SIGGEN_OFFSET;
-    g_ipc_mtoc.siggen.aux_param[0].f = SIGGEN_AUX_PARAM_0;
-    g_ipc_mtoc.siggen.aux_param[1].f = SIGGEN_AUX_PARAM_1;
-    g_ipc_mtoc.siggen.aux_param[2].f = SIGGEN_AUX_PARAM_2;
-    g_ipc_mtoc.siggen.aux_param[3].f = SIGGEN_AUX_PARAM_3;
+    g_ipc_mtoc.siggen.type.enu = (siggen_type_t) get_param(SigGen_Type,0);
+    g_ipc_mtoc.siggen.num_cycles.u16 = (uint16_t) get_param(SigGen_Num_Cycles,0);
+    g_ipc_mtoc.siggen.freq.f = get_param(SigGen_Freq,0);
+    g_ipc_mtoc.siggen.amplitude.f = get_param(SigGen_Amplitude,0);
+    g_ipc_mtoc.siggen.offset.f = get_param(SigGen_Offset,0);
+
+    for(uiloop = 0; uiloop < NUM_SIGGEN_AUX_PARAM; uiloop++)
+    {
+        g_ipc_mtoc.siggen.aux_param[uiloop].f = get_param(SigGen_Aux_Param,uiloop);
+    }
 }
 
 /**
@@ -246,7 +234,7 @@ static void adcp_channel_config(void)
 */
 static void bsmp_init_server(void)
 {
-    bsmp_init(PS1_ID);
+    //bsmp_init(PS1_ID);
     set_bsmp_var_pointer(25, PS1_ID, g_ipc_ctom.ps_module[PS1_ID].ps_soft_interlock.u8);
     set_bsmp_var_pointer(26, PS1_ID, g_ipc_ctom.ps_module[PS1_ID].ps_hard_interlock.u8);
     set_bsmp_var_pointer(27, PS1_ID, PS1_LOAD_CURRENT.u8);

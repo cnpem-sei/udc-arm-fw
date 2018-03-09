@@ -350,7 +350,7 @@ void eth_load_param(void)
 
 
 	// Load IP from EEPROM
-	var = eeprom_read_ip();
+	//var = eeprom_read_ip();
 
 	IPADDR0 = var >> 24;
 	IPADDR1 = var >> 16;
@@ -358,7 +358,7 @@ void eth_load_param(void)
 	IPADDR3 = var;
 
 	// Load IP MASK from EEPROM
-	var = eeprom_read_ip_mask();
+	//var = eeprom_read_ip_mask();
 
 	IPMASK0 = var >> 24;
 	IPMASK1 = var >> 16;
