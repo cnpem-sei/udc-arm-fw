@@ -372,7 +372,6 @@ static void port_control_setup(void)
 
 static void pin_core_setup(void)
 {
-
     if(HARDWARE_VERSION == 0x20)
     {
         /**********************************************************************

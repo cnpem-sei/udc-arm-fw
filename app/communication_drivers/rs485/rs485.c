@@ -39,13 +39,15 @@
 #include "driverlib/debug.h"
 #include "driverlib/ram.h"
 
+#include "board_drivers/hardware_def.h"
+
 #include "communication_drivers/bsmp/bsmp_lib.h"
 #include "communication_drivers/i2c_onboard/eeprom.h"
 #include "communication_drivers/i2c_onboard/exio.h"
 #include "communication_drivers/rs485_bkp/rs485_bkp.h"
 #include "communication_drivers/system_task/system_task.h"
 #include "communication_drivers/ipc/ipc_lib.h"
-#include "board_drivers/hardware_def.h"
+#include "communication_drivers/parameters/ps_parameters.h"
 
 #include "rs485.h"
 
@@ -66,7 +68,7 @@
 #define SERIAL_MASTER_ADDRESS   0   // Master Address
 #define SERIAL_BUF_SIZE         (SERIAL_HEADER+3+3+16834+SERIAL_CSUM)
 
-#define HIGH_SPEED_BAUD         6000000
+//#define HIGH_SPEED_BAUD         6000000
 //#define LOW_SPEED_BAUD          115200
 
 static uint8_t SERIAL_CH_0_ADDRESS = 1;
@@ -125,7 +127,9 @@ void isr_rs485(void)
 	    // GPIO1 turn on
 	    //GPIOPinWrite(GPIO_PORTP_BASE, GPIO_PIN_7, ON);
 
-        #ifdef LOW_SPEED_BAUD
+        //#ifdef LOW_SPEED_BAUD
+	    if(g_ipc_mtoc.communication.rs485_baud.f < 1000000)
+	    {
             for(time_out = 0; time_out < 15; time_out++)
             {
                 // Loop while there are characters in the receive FIFO.
@@ -160,8 +164,10 @@ void isr_rs485(void)
 
                 MessageOverflow = 0;
             }
-
-        #elif HIGH_SPEED_BAUD
+	    }
+        //#elif HIGH_SPEED_BAUD
+	    else
+	    {
             for(time_out = 0; time_out < 15; time_out++)
             {
                 // Loop while there are characters in the receive FIFO.
@@ -192,7 +198,8 @@ void isr_rs485(void)
                 send_buffer.index = 0;
                 send_buffer.csum  = 0;
             }
-    #endif
+	    }
+    //#endif
 	}
 
     // Transmit Interrupt Mask
@@ -304,7 +311,6 @@ void set_rs485_ch_1_address(uint8_t addr)
     if(addr < 33 && addr > 0 && addr != SERIAL_CH_1_ADDRESS)
     {
         SERIAL_CH_1_ADDRESS = addr;
-        save_rs485_ch_1_add(SERIAL_CH_1_ADDRESS);
     }
 }
 
@@ -313,7 +319,6 @@ void set_rs485_ch_2_address(uint8_t addr)
     if(addr < 33 && addr > 0 && addr != SERIAL_CH_2_ADDRESS)
     {
         SERIAL_CH_2_ADDRESS = addr;
-        save_rs485_ch_2_add(SERIAL_CH_2_ADDRESS);
     }
 }
 
@@ -322,7 +327,6 @@ void set_rs485_ch_3_address(uint8_t addr)
     if(addr < 33 && addr > 0 && addr != SERIAL_CH_3_ADDRESS)
     {
         SERIAL_CH_3_ADDRESS = addr;
-        save_rs485_ch_3_add(SERIAL_CH_3_ADDRESS);
     }
 }
 
@@ -331,7 +335,6 @@ void set_rs485_ch_0_address(uint8_t addr)
     if(addr < 33 && addr > 0 && addr != SERIAL_CH_0_ADDRESS)
     {
         SERIAL_CH_0_ADDRESS = addr;
-        save_rs485_ch_0_add(SERIAL_CH_0_ADDRESS);
     }
 }
 
@@ -375,21 +378,21 @@ void config_rs485(uint32_t BaudRate)
 void init_rs485(void)
 {
 
-	if(HARDWARE_VERSION == 0x21) rs485_term_ctrl(0);
+	if(HARDWARE_VERSION == 0x21) rs485_term_ctrl(get_param(RS485_Termination,0));
 
 	// Load RS485 address from EEPROM and config it
-	//SetRS485Address(EepromReadRs485Add());
-    //set_rs485_ch_0_address(eeprom_read_rs485_add(0));
-	//set_rs485_ch_1_address(eeprom_read_rs485_add(1));
-	//set_rs485_ch_2_address(eeprom_read_rs485_add(2));
-	//set_rs485_ch_3_address(eeprom_read_rs485_add(3));
+    set_rs485_ch_0_address(get_param(RS485_Address,0));
+	set_rs485_ch_1_address(get_param(RS485_Address,1));
+	set_rs485_ch_2_address(get_param(RS485_Address,2));
+	set_rs485_ch_3_address(get_param(RS485_Address,3));
 
+	config_rs485(get_param(RS485_Baudrate,0));
 
-    #ifdef HIGH_SPEED_BAUD
+    /*#ifdef HIGH_SPEED_BAUD
 	    config_rs485(HIGH_SPEED_BAUD);
     #elif LOW_SPEED_BAUD
 	    config_rs485(LOW_SPEED_BAUD);
-    #endif
+    #endif*/
 
 	UARTFIFOEnable(RS485_UART_BASE);
 	UARTFIFOLevelSet(RS485_UART_BASE,UART_FIFO_TX1_8,UART_FIFO_RX1_8);

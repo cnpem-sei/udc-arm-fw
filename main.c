@@ -103,8 +103,6 @@ int main(void) {
     FlashInit();
 
     // Configure the board peripherals
-    //HardwareInit();
-
     pinout_setup();
 
     // assign S0 and S1 of the shared ram for use by the c28
@@ -117,6 +115,8 @@ int main(void) {
 
 	// Enable processor interrupts.
 	IntMasterEnable();
+
+	IPCMtoCBootControlSystem(CBROM_MTOC_BOOTMODE_BOOT_FROM_FLASH);
 
 	while(1)
 	{

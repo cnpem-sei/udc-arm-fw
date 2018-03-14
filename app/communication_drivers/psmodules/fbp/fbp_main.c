@@ -42,7 +42,7 @@ void fbp_main(void)
     volatile uint32_t uiloop;
     fbp_system_config();
 
-    IPCMtoCBootControlSystem(CBROM_MTOC_BOOTMODE_BOOT_FROM_FLASH);
+    //IPCMtoCBootControlSystem(CBROM_MTOC_BOOTMODE_BOOT_FROM_FLASH);
 
     for (uiloop = 0; uiloop < 1000; uiloop++)
     {

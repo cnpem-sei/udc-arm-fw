@@ -45,6 +45,7 @@
 #include "driverlib/gpio.h"
 #include "driverlib/ipc.h"
 #include "driverlib/systick.h"
+#include "driverlib/sysctl.h"
 
 #include "bsmp/include/server.h"
 #include "bsmp_lib.h"
@@ -319,6 +320,7 @@ static struct bsmp_func bsmp_func_reset_interlocks = {
  */
 uint8_t bsmp_set_serial_termination(uint8_t *input, uint8_t *output)
 {
+    set_param(RS485_Termination, 0, input[0]);
     rs485_term_ctrl(input[0]);
     *output = 0;
     return *output;
@@ -1242,6 +1244,43 @@ static struct bsmp_func bsmp_func_load_dsp_modules_eeprom = {
 };
 
 /**
+ * @brief
+ *
+ * @param uint8_t* Pointer to input packet of data
+ * @param uint8_t* Pointer to output packet of data
+ */
+uint8_t bsmp_reset_udc(uint8_t *input, uint8_t *output)
+{
+    uint8_t i, reset;
+
+    reset = 1;
+
+    for(i = 0; i < NUM_MAX_PS_MODULES; i++)
+    {
+        if(g_ipc_ctom.ps_module[i].ps_status.bit.state > Interlock)
+        {
+            reset = 0;
+        }
+    }
+
+    if(reset)
+    {
+        SysCtlHoldSubSystemInReset(SYSCTL_CONTROL_SYSTEM_RES_CNF);
+        SysCtlReset();
+    }
+
+    *output = 7;
+    return *output;
+}
+
+static struct bsmp_func bsmp_func_reset_udc = {
+    .func_p           = bsmp_reset_udc,
+    .info.input_size  = 0,
+    .info.output_size = 1,
+};
+
+
+/**
  * BSMP Variables
  */
 static struct bsmp_var ps_status[NUMBER_OF_BSMP_SERVERS];
@@ -1571,6 +1610,7 @@ void bsmp_init(uint8_t server)
     bsmp_register_function(&bsmp[server], &bsmp_func_load_dsp_coeffs_eeprom);   // ID 38
     bsmp_register_function(&bsmp[server], &bsmp_func_save_dsp_modules_eeprom);  // ID 39
     bsmp_register_function(&bsmp[server], &bsmp_func_load_dsp_modules_eeprom);  // ID 40
+    bsmp_register_function(&bsmp[server], &bsmp_func_reset_udc);                // ID 41
 
     /**
      * BSMP Variable Register

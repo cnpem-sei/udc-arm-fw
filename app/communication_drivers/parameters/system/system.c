@@ -59,6 +59,12 @@ void init_system(void)
 	if(HARDWARE_VERSION == 0x21)
     {
 	    buffers_ctrl(1);
+	    init_usb_to_serial();
+    }
+	else if(HARDWARE_VERSION == 0x20)
+    {
+        pwm_fiber_ctrl(true);
+        pwm_eletr_ctrl(true);
     }
 
 	hradc_rst_ctrl(1);
@@ -66,6 +72,8 @@ void init_system(void)
 	init_parameters_bank();
 
 	init_ipc();
+
+	init_control_framework(&g_controller_mtoc);
 
 	load_param_bank();
 
@@ -77,24 +85,13 @@ void init_system(void)
 
 	dcdc_pwr_ctrl(true);
 
-	//CtrllawInit();
-
-	//init_display();
-
 	init_rs485();
 
 	init_rs485_bkp();
 
-	if(HARDWARE_VERSION == 0x21) init_usb_to_serial();
-
-	//init_can_bkp();
-
 	bsmp_init(0);
-	//BSMPInit();
 
 	ethernet_init();
-
-	//InitUSBSerialDevice();
 
 	display_pwr_ctrl(true);
 
@@ -102,15 +99,14 @@ void init_system(void)
 
 	adcp_init();
 
-	if(HARDWARE_VERSION == 0x20)
-	{
-	    pwm_fiber_ctrl(true);
-	    pwm_eletr_ctrl(true);
-	}
-
-	//SdramInit();
-
 	init_i2c_offboard_external_devices();
+
+	/**
+	 * TODO: Initialization of IHM, CAN, USB and SDRAM
+	 */
+	//init_can_bkp();
+	//InitUSBSerialDevice();
+    //SdramInit();
 
 	global_timer_init();
 }

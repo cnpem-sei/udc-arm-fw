@@ -266,7 +266,7 @@ uint8_t save_param_eeprom(param_id_t id, uint16_t n)
         // Send new parameter to EEPROM
         GPIOPinWrite(EEPROM_WP_BASE, EEPROM_WP_PIN, OFF);
         write_i2c(I2C_SLV_ADDR_EEPROM, 2+size_type, data_eeprom);
-        for (ulLoop=0;ulLoop<100000;ulLoop++){};
+        SysCtlDelay(375000);                // Wait 5 ms for EEPROM write cycle
         GPIOPinWrite(EEPROM_WP_BASE, EEPROM_WP_PIN, ON);
 
         return 1;

@@ -68,7 +68,9 @@ typedef enum
 
 typedef enum
 {
-    FBP = 1,
+    Empty,
+    FBP,
+    Uninitialized = 0xFFFF      // Empty EEPROM
 } ps_model_t;
 
 typedef struct

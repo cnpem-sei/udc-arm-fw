@@ -52,9 +52,29 @@ void init_parameters(void);
  */
 void init_ipc(void)
 {
-    g_ipc_mtoc.error_ctom = No_Error_CtoM;
+    volatile uint8_t uiloop, uiloop2;
+
     g_ipc_mtoc.msg_ctom = 0;
     g_ipc_mtoc.msg_id = 0;
+    g_ipc_mtoc.error_ctom = No_Error_CtoM;
+
+    for (uiloop = 0; uiloop < NUM_MAX_PS_MODULES; uiloop++)
+    {
+        g_ipc_mtoc.ps_module[uiloop].ps_status.all = 0;
+        g_ipc_mtoc.ps_module[uiloop].ps_setpoint.f = 0.0;
+        g_ipc_mtoc.ps_module[uiloop].ps_reference.f = 0.0;
+        g_ipc_mtoc.ps_module[uiloop].ps_soft_interlock.u32 = 0;
+        g_ipc_mtoc.ps_module[uiloop].ps_hard_interlock.u32 = 0;
+    }
+
+    g_ipc_mtoc.siggen.enable.u16 = 0;
+
+    g_ipc_mtoc.dsp_module.dsp_class = 0;
+    g_ipc_mtoc.dsp_module.id = 0;
+
+    /**
+     * TODO: Initialize all MtoC modules (samples buffer, wfmref, etc)
+     */
 
     /**
      * TODO: Initialize IPC Interrupts
