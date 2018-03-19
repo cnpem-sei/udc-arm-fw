@@ -1,12 +1,22 @@
-//###########################################################################
-// FILE:   usb_serial_structs.c
-// TITLE:  Data structures defining this CDC USB device.
-//###########################################################################
-// $TI Release: F28M36x Support Library v206 $
-// $Release Date: Thu Mar  5 10:16:50 CST 2015 $
-// $Copyright: Copyright (C) 2012-2015 Texas Instruments Incorporated -
-//             http://www.ti.com/ ALL RIGHTS RESERVED $
-//###########################################################################
+/******************************************************************************
+ * Copyright (C) 2017 by LNLS - Brazilian Synchrotron Light Laboratory
+ *
+ * Redistribution, modification or use of this software in source or binary
+ * forms is permitted as long as the files maintain this copyright. LNLS and
+ * the Brazilian Center for Research in Energy and Materials (CNPEM) are not
+ * liable for any misuse of this material.
+ *
+ *****************************************************************************/
+
+/**
+ * @file usb_serial_structs.c
+ * @brief USB structs module.
+ *
+ * @author joao.rosa
+ *
+ * @date 05/03/2015
+ *
+ */
 
 #include "inc/hw_types.h"
 #include "driverlib/usb.h"
@@ -105,11 +115,11 @@ const unsigned char * const g_pStringDescriptors[] =
 //*****************************************************************************
 // CDC device callback function prototypes.
 //*****************************************************************************
-unsigned long RxHandler(void *pvCBData, unsigned long ulEvent,
+unsigned long rx_handler(void *pvCBData, unsigned long ulEvent,
                         unsigned long ulMsgValue, void *pvMsgData);
-unsigned long TxHandler(void *pvCBData, unsigned long ulEvent,
+unsigned long tx_handler(void *pvCBData, unsigned long ulEvent,
                         unsigned long ulMsgValue, void *pvMsgData);
-unsigned long ControlHandler(void *pvCBData, unsigned long ulEvent,
+unsigned long control_handler(void *pvCBData, unsigned long ulEvent,
                              unsigned long ulMsgValue, void *pvMsgData);
 
 //*****************************************************************************
@@ -133,7 +143,7 @@ const tUSBDCDCDevice g_sCDCDevice =
     USB_PID_SERIAL,
     0,
     USB_CONF_ATTR_SELF_PWR,
-    ControlHandler,
+    control_handler,
     (void *)&g_sCDCDevice,
     USBBufferEventCallback,
     (void *)&g_sRxBuffer,
@@ -152,7 +162,7 @@ unsigned char g_pucRxBufferWorkspace[USB_BUFFER_WORKSPACE_SIZE];
 const tUSBBuffer g_sRxBuffer =
 {
     false,                          // This is a receive buffer.
-    RxHandler,                      // pfnCallback
+    rx_handler,                      // pfnCallback
     (void *)&g_sCDCDevice,          // Callback data is our device pointer.
     USBDCDCPacketRead,              // pfnTransfer
     USBDCDCRxPacketAvailable,       // pfnAvailable
@@ -170,7 +180,7 @@ unsigned char g_pucTxBufferWorkspace[USB_BUFFER_WORKSPACE_SIZE];
 const tUSBBuffer g_sTxBuffer =
 {
     true,                           // This is a transmit buffer.
-    TxHandler,                      // pfnCallback
+    tx_handler,                      // pfnCallback
     (void *)&g_sCDCDevice,          // Callback data is our device pointer.
     USBDCDCPacketWrite,             // pfnTransfer
     USBDCDCTxPacketAvailable,       // pfnAvailable

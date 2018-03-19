@@ -1,12 +1,24 @@
-//###########################################################################
-// FILE:   usb_dev_serial.c
-// TITLE:  Main routines for the USB CDC serial example.
-//###########################################################################
-// $TI Release: F28M36x Support Library v206 $
-// $Release Date: Thu Mar  5 10:16:50 CST 2015 $
-// $Copyright: Copyright (C) 2012-2015 Texas Instruments Incorporated -
-//             http://www.ti.com/ ALL RIGHTS RESERVED $
-//###########################################################################
+/******************************************************************************
+ * Copyright (C) 2017 by LNLS - Brazilian Synchrotron Light Laboratory
+ *
+ * Redistribution, modification or use of this software in source or binary
+ * forms is permitted as long as the files maintain this copyright. LNLS and
+ * the Brazilian Center for Research in Energy and Materials (CNPEM) are not
+ * liable for any misuse of this material.
+ *
+ *****************************************************************************/
+
+/**
+ * @file usb_dev_serial.c
+ * @brief USB device serial.
+ *
+ * @author joao.rosa
+ *
+ * @date 05/03/2015
+ *
+ */
+
+#include <string.h>
 
 #include "inc/hw_ints.h"
 #include "inc/hw_types.h"
@@ -30,13 +42,10 @@
 #include "usb_serial_structs.h"
 #include "superv_cmd.h"
 #include "usb_dev_serial.h"
-#include <string.h>
 
-//#include "set_pinout_udc_v2.0.h"
-//#include "set_pinout_ctrl_card.h"
 #include "hardware_def.h"
 
-#pragma CODE_SECTION(ControlHandler, "ramfuncs");
+#pragma CODE_SECTION(control_handler, "ramfuncs");
 
 //*****************************************************************************
 // Flag indicating whether or not a Break condition is currently being sent.
@@ -55,8 +64,7 @@ __error__(char *pcFilename, unsigned long ulLine)
 #endif
 
 // Rotina dedicada a devolver o dado recebido pela usb
-static void
-USBloop(void)
+static void usb_loop(void)
 {
 	unsigned long ulRead;
 	unsigned char ucChar;
@@ -85,7 +93,7 @@ USBloop(void)
 
 	if(DadoUsb.counter < 100)// Testa se o numero de bytes recebidos está dentro do valor máximo especificado
 	{
-		SetNewData();
+	    set_new_data();
 	}
 
 
@@ -94,8 +102,7 @@ USBloop(void)
 //*****************************************************************************
 // Set the communication parameters to use on the UART.
 //*****************************************************************************
-static tBoolean
-SetLineCoding(tLineCoding *psLineCoding)
+static tBoolean set_line_coding(tLineCoding *psLineCoding)
 {
     unsigned long ulConfig;
     tBoolean bRetcode;
@@ -222,8 +229,7 @@ SetLineCoding(tLineCoding *psLineCoding)
 //*****************************************************************************
 // Get the communication parameters in use on the UART.
 //*****************************************************************************
-static void
-GetLineCoding(tLineCoding *psLineCoding)
+static void get_line_coding(tLineCoding *psLineCoding)
 {
     unsigned long ulConfig;
     unsigned long ulRate;
@@ -321,8 +327,7 @@ GetLineCoding(tLineCoding *psLineCoding)
 // \b true and persists until the function is called again with \e bSend set
 // to \b false.
 //*****************************************************************************
-static void
-SendBreak(tBoolean bSend)
+static void send_break(tBoolean bSend)
 {
     // Is this the start or stop of a break condition?
     if(!bSend)
@@ -351,8 +356,7 @@ SendBreak(tBoolean bSend)
 // states and sending break conditions.
 // \return The return value is event-specific.
 //*****************************************************************************
-unsigned long
-ControlHandler(void *pvCBData, unsigned long ulEvent, unsigned long ulMsgValue,
+unsigned long control_handler(void *pvCBData, unsigned long ulEvent, unsigned long ulMsgValue,
                void *pvMsgData)
 {
     // Which event was sent?
@@ -377,14 +381,14 @@ ControlHandler(void *pvCBData, unsigned long ulEvent, unsigned long ulMsgValue,
     // Return the current serial communication parameters.
     case USBD_CDC_EVENT_GET_LINE_CODING:
     {
-        GetLineCoding(pvMsgData);
+        get_line_coding(pvMsgData);
         break;
     }
 
     // Set the current serial communication parameters.
     case USBD_CDC_EVENT_SET_LINE_CODING:
     {
-        SetLineCoding(pvMsgData);
+        set_line_coding(pvMsgData);
         break;
     }
 
@@ -397,14 +401,14 @@ ControlHandler(void *pvCBData, unsigned long ulEvent, unsigned long ulMsgValue,
     // Send a break condition on the serial line.
     case USBD_CDC_EVENT_SEND_BREAK:
     {
-        SendBreak(true);
+        send_break(true);
         break;
     }
 
     // Clear the break condition on the serial line.
     case USBD_CDC_EVENT_CLEAR_BREAK:
     {
-        SendBreak(false);
+        send_break(false);
         break;
     }
 
@@ -437,8 +441,7 @@ ControlHandler(void *pvCBData, unsigned long ulEvent, unsigned long ulMsgValue,
 // data to the USB host).
 // \return The return value is event-specific.
 //*****************************************************************************
-unsigned long
-TxHandler(void *pvCBData, unsigned long ulEvent, unsigned long ulMsgValue,
+unsigned long tx_handler(void *pvCBData, unsigned long ulEvent, unsigned long ulMsgValue,
           void *pvMsgData)
 {
     // Which event was sent?
@@ -473,8 +476,7 @@ TxHandler(void *pvCBData, unsigned long ulEvent, unsigned long ulMsgValue,
 // data from the USB host).
 // \return The return value is event-specific.
 //*****************************************************************************
-unsigned long
-RxHandler(void *pvCBData, unsigned long ulEvent, unsigned long ulMsgValue,
+unsigned long rx_handler(void *pvCBData, unsigned long ulEvent, unsigned long ulMsgValue,
           void *pvMsgData)
 {
     unsigned long ulCount;
@@ -487,7 +489,7 @@ RxHandler(void *pvCBData, unsigned long ulEvent, unsigned long ulMsgValue,
     {
         // Feed some characters into the UART TX FIFO and enable the
         // interrupt.
-    	USBloop();
+        usb_loop();
         break;
     }
 
@@ -527,8 +529,7 @@ RxHandler(void *pvCBData, unsigned long ulEvent, unsigned long ulMsgValue,
 //*****************************************************************************
 // This is the main application entry function.
 //*****************************************************************************
-void
-InitUSBSerialDevice(void)
+void init_usb_serial_device(void)
 {
     // Set the default UART configuration.
     UARTConfigSetExpClk(UART1_BASE, SysCtlClockGet(SYSTEM_CLOCK_SPEED), 115200,

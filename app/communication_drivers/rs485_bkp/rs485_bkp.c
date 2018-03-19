@@ -1,9 +1,27 @@
-/*
- * rs485_bkp.c
+/******************************************************************************
+ * Copyright (C) 2017 by LNLS - Brazilian Synchrotron Light Laboratory
  *
- *  Created on: 17/06/2015
- *      Author: joao.rosa
+ * Redistribution, modification or use of this software in source or binary
+ * forms is permitted as long as the files maintain this copyright. LNLS and
+ * the Brazilian Center for Research in Energy and Materials (CNPEM) are not
+ * liable for any misuse of this material.
+ *
+ *****************************************************************************/
+
+/**
+ * @file rs485_bkp.c
+ * @brief Backplane RS485 module.
+ *
+ * Module to process data in RS485 bus for backplane.
+ *
+ * @author joao.rosa
+ *
+ * @date 17/06/2015
+ *
  */
+#include <stdint.h>
+#include <stdarg.h>
+#include <string.h>
 
 #include "inc/hw_types.h"
 #include "inc/hw_ints.h"
@@ -15,15 +33,9 @@
 #include "driverlib/uart.c"
 #include "driverlib/interrupt.h"
 
-//#include "set_pinout_udc_v2.0.h"
-//#include "set_pinout_ctrl_card.h"
-#include "../board_drivers/hardware_def.h"
+#include "board_drivers/hardware_def.h"
 
 #include "rs485_bkp.h"
-
-#include <stdint.h>
-#include <stdarg.h>
-#include <string.h>
 
 //*****************************************************************************
 
@@ -62,8 +74,7 @@ float Arm2 = 0.0;
 
 //*****************************************************************************
 
-void
-RS485BKPIntHandler(void)
+void isr_rs485_bkp(void)
 {
     unsigned long ulStatus;
 
@@ -97,8 +108,7 @@ RS485BKPIntHandler(void)
 
 }
 
-void
-RS485BKPTxHandler(void)
+void rs485_bkp_tx_handler(void)
 {
 	unsigned int i;
 
@@ -142,8 +152,7 @@ RS485BKPTxHandler(void)
 
 }
 
-void
-RS485BKPProcessData(void)
+void rs485_bkp_process_data(void)
 {
 	if(NewData)
 	{
@@ -183,7 +192,7 @@ RS485BKPProcessData(void)
 
 		//GPIOPinWrite(DEBUG_BASE, DEBUG_PIN, OFF);
 
-		//RS485BKPTxHandler();
+		//rs485_bkp_tx_handler();
 
 	exit:
 		recv_buffer.index = 0;
@@ -198,22 +207,21 @@ RS485BKPProcessData(void)
 
 }
 
-void
-InitRS485BKP(void)
+void init_rs485_bkp(void)
 {
-	// Configura UART0 com baud de 8Mbps, operação 8-N-1 devido as limitações do conversor usb/serial controle
+	// Configura UART0 com baud de 8Mbps, operaÃ§Ã£o 8-N-1 devido as limitaÃ§Ãµes do conversor usb/serial controle
 	UARTConfigSetExpClk(RS485_BKP_UART_BASE, SysCtlClockGet(SYSTEM_CLOCK_SPEED), 460800,
 						(UART_CONFIG_WLEN_8 | UART_CONFIG_STOP_ONE |
 						UART_CONFIG_PAR_NONE));
 
 	UARTFIFOEnable(RS485_BKP_UART_BASE);
 
-	//Habilita interrupção pela UART (RS-485 BKP)
-	IntRegister(RS485_BKP_INT, RS485BKPIntHandler);
+	//Habilita interrupÃ§Ã£o pela UART (RS-485 BKP)
+	IntRegister(RS485_BKP_INT, isr_rs485_bkp);
 	UARTIntEnable(RS485_BKP_UART_BASE, UART_INT_RX | UART_INT_TX | UART_INT_RT);
 	UARTTxIntModeSet(RS485_BKP_UART_BASE, UART_TXINT_MODE_EOT);
 
-	//Seta níveis de prioridade entre as interrupções
+	//Seta nÃ­veis de prioridade entre as interrupÃ§Ãµes
 	IntPrioritySet(RS485_BKP_INT, 1);
 
 	IntEnable(RS485_BKP_INT);

@@ -1,8 +1,21 @@
-/*
- * flash.h
+/******************************************************************************
+ * Copyright (C) 2017 by LNLS - Brazilian Synchrotron Light Laboratory
  *
- *  Created on: 14/07/2015
- *      Author: joao.rosa
+ * Redistribution, modification or use of this software in source or binary
+ * forms is permitted as long as the files maintain this copyright. LNLS and
+ * the Brazilian Center for Research in Energy and Materials (CNPEM) are not
+ * liable for any misuse of this material.
+ *
+ *****************************************************************************/
+
+/**
+ * @file flash_mem.h
+ * @brief Flash memory module.
+ *
+ * @author joao.rosa
+ *
+ * @date 14/07/2015
+ *
  */
 
 #ifndef FLASH_MEM_H_
@@ -45,10 +58,10 @@
 
  //extern void ManagFlashMemory(uint8_t Command);
 
-extern void FlashMemInit(void);
+extern void flash_mem_init(void);
 
-extern uint64_t FlashDeviceIDRead(void);
+extern uint64_t flash_device_id_read(void);
 
-extern void FlashMemReadSerialNumber(void);
+extern void flash_mem_read_serial_number(void);
 
 #endif /* _FLASH_MEM_H_ */

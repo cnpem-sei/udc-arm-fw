@@ -10,29 +10,29 @@
 #ifndef EXIO_H_
 #define EXIO_H_
 
-extern void ExIOInit(void);
+extern void init_extern_io(void);
 
-extern void DisplayPwrCtrl(uint8_t sts);
-extern uint8_t DisplayPwrOCSts(void);
+extern void display_pwr_ctrl(uint8_t sts);
+extern uint8_t display_pwr_oc_sts(void);
 
-extern uint8_t SdAttSts(void);
+extern uint8_t sd_att_sts(void);
 
-extern void DcdcPwrCtrl(uint8_t sts);
-extern uint8_t DcdcSts(void);
+extern void dcdc_pwr_ctrl(uint8_t sts);
+extern uint8_t dcdc_sts(void);
 
-extern void HradcRstCtrl(uint8_t sts);
+extern void hradc_rst_ctrl(uint8_t sts);
 
-extern void PwmFiberCtrl(uint8_t sts);
-extern void PwmEletrCtrl(uint8_t sts);
+extern void pwm_fiber_ctrl(uint8_t sts);
+extern void pwm_eletr_ctrl(uint8_t sts);
 
-extern uint8_t HardwareVersionTest(void);
+extern uint8_t hardware_version_test(uint8_t ExNumber);
 
 // Available only on 2.1 hardware release
-extern uint8_t DisplayAttSts(void);
-extern void BuffersCtrl(uint8_t sts);
-extern void LedItlkCtrl(uint8_t sts);
-extern void LedStsCtrl(uint8_t sts);
-extern void SoundSelCtrl(uint8_t sts);
-extern void Rs485TermCtrl(uint8_t sts);
+extern uint8_t display_att_sts(void);
+extern void buffers_ctrl(uint8_t sts);
+extern void led_itlk_ctrl(uint8_t sts);
+extern void led_sts_ctrl(uint8_t sts);
+extern void sound_sel_ctrl(uint8_t sts);
+extern void rs485_term_ctrl(uint8_t sts);
 
 #endif /* EXIO_H_ */

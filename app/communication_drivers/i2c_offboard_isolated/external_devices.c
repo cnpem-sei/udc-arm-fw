@@ -1,30 +1,37 @@
-/*
- * external_devices.c
+/******************************************************************************
+ * Copyright (C) 2017 by LNLS - Brazilian Synchrotron Light Laboratory
  *
- *  Created on: 25/01/2017
- *      Author: joao.rosa
+ * Redistribution, modification or use of this software in source or binary
+ * forms is permitted as long as the files maintain this copyright. LNLS and
+ * the Brazilian Center for Research in Energy and Materials (CNPEM) are not
+ * liable for any misuse of this material.
+ *
+ *****************************************************************************/
+
+/**
+ * @file external_devices.c
+ * @brief External devices module.
+ *
+ * @author joao.rosa
+ *
+ * @date 25/01/2017
+ *
  */
 
+#include "communication_drivers/ipc/ipc_lib.h"
+#include "communication_drivers/rs485/rs485.h"
+#include "temp_low_power_module.h"
 #include "external_devices.h"
 
-#include "temp_low_power_module.h"
-
-#include "../ipc/ipc_lib.h"
-
-void
-InitI2cOffboardExternalDevices(void)
+void init_i2c_offboard_external_devices(void)
 {
-	switch(IPC_MtoC_Msg.PSModule.Model.u16)
+    switch (g_ipc_mtoc.ps_module[0].ps_status.bit.model)
 	{
-		case FBP_100kHz:
-			//PowerSupply1TempInit();
-			break;
-		case FBPx4_100kHz:
-		case JIGA_BASTIDOR:
-			PowerSupply1TempInit();
-			PowerSupply2TempInit();
-			PowerSupply3TempInit();
-			PowerSupply4TempInit();
-			break;
+		case FBP:
+            power_supply_1_temp_init();
+            power_supply_2_temp_init();
+            power_supply_3_temp_init();
+            power_supply_4_temp_init();
+            break;
 	}
 }

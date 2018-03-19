@@ -1,10 +1,24 @@
-/*
- * ihm.c
+/******************************************************************************
+ * Copyright (C) 2017 by LNLS - Brazilian Synchrotron Light Laboratory
  *
- *  Created on: 17/06/2015
- *      Author: joao.rosa
+ * Redistribution, modification or use of this software in source or binary
+ * forms is permitted as long as the files maintain this copyright. LNLS and
+ * the Brazilian Center for Research in Energy and Materials (CNPEM) are not
+ * liable for any misuse of this material.
+ *
+ *****************************************************************************/
+
+/**
+ * @file ihm.c
+ * @brief IHM module.
+ *
+ * @author joao.rosa
+ *
+ * @date 17/06/2015
+ *
  */
 
+#include <stdint.h>
 
 #include "inc/hw_sysctl.h"
 #include "inc/hw_ints.h"
@@ -20,45 +34,34 @@
 #include "driverlib/systick.h"
 #include "driverlib/debug.h"
 
-//#include "set_pinout_udc_v2.0.h"
-//#include "set_pinout_ctrl_card.h"
-#include "../board_drivers/hardware_def.h"
+#include "communication_drivers/rs485/rs485.h"
+#include "communication_drivers/i2c_onboard/rtc.h"
+#include "communication_drivers/i2c_offboard_isolated/temp_low_power_module.h"
+#include "communication_drivers/shared_memory/ctrl_law.h"
+#include "communication_drivers/shared_memory/main_var.h"
+#include "communication_drivers/ethernet/ethernet_uip.h"
+#include "communication_drivers/shared_memory/main_var.h"
+#include "communication_drivers/can/can_bkp.h"
+#include "communication_drivers/system_task/system_task.h"
 
-#include "../rs485/rs485.h"
-
-#include "../i2c_onboard/rtc.h"
-
-#include "../i2c_offboard_isolated/temp_low_power_module.h"
-
-#include "../shared_memory/ctrl_law.h"
-#include "../shared_memory/main_var.h"
-
-#include "../ethernet/ethernet_uip.h"
-
-#include "../can/can_bkp.h"
-
-#include "../system_task/system_task.h"
-
+#include "board_drivers/hardware_def.h"
 #include "ihm.h"
-
-#include <stdint.h>
-
 
 #define STX 			0x02
 #define SERIAL_BUF_SIZE	256
 
 
- typedef struct
- {
+typedef struct
+{
 	 uint8_t buffer_rx [265];
 	 int16_t counter;
      uint8_t Start;
      uint8_t Ndado;
      uint8_t csum;
- }buffer_t;
+}buffer_t;
 
-  typedef struct
- {
+typedef struct
+{
 	 uint8_t CMD;
      uint8_t PDADO;
      uint8_t NDADO;
@@ -66,15 +69,13 @@
      uint8_t ACK;
      uint8_t CKS;
 
- }protocolo_t;
+}protocolo_t;
 
 buffer_t Dado;
 protocolo_t Mensagem;
 
 
 //*****************************************************************************
-
-static uint8_t NewData = 0;
 
 // Local = 1 Remote = 0
 static uint8_t LocRem = 0;
@@ -90,13 +91,13 @@ union
 
 /******************************************************************************************
  *
- * As sub rotinas contidas abaixo se referem a comunicação com o microcontrolador da IHM
+ * As sub rotinas contidas abaixo se referem a comunicaï¿½ï¿½o com o microcontrolador da IHM
  *
  *
  *******************************************************************************************/
 
-// Sub rotina para alocação dos dados recebidos
-void SeparaDado(void){
+// Sub rotina para alocaï¿½ï¿½o dos dados recebidos
+void separa_dado(void){
 
 	uint8_t count = 0;
 
@@ -117,12 +118,12 @@ void SeparaDado(void){
 
 }
 
-/**********************************************************************************************************************
+/*******************************************************************************
  *
  * Subrotina destinada a enviar dados para o display via UART2
  *
- **********************************************************************************************************************/
-void SendDisplay(void){
+ ******************************************************************************/
+void send_display(void){
 
 	unsigned int i;
 
@@ -157,38 +158,38 @@ void SendDisplay(void){
 
 }
 
-/********************************************************************************************************************
+/******************************************************************************
  *
  * Processa os comandos enviados pelo display
  *
- ********************************************************************************************************************/
-void ProcessCmd(){
-	uint8_t mani1, mani2, mani3 = 0;
+ ******************************************************************************/
+void process_cmd(){
+	volatile uint8_t mani2, mani3 = 0;
 	uint16_t uInt = 0;
 	uint64_t var64 = 0;
-	float Var = 0;
 
   switch(Mensagem.CMD){
 
-     // Comandos de consulta de parâmetros, pede que seja enviado o parametro requerido
-     // Endereço RS-485
+     // Comandos de consulta de parï¿½metros, pede que seja enviado o parametro requerido
+     // Endereï¿½o RS-485
      case 0x00:
     	 	   Mensagem.CMD = 0x00;
     	       Mensagem.PDADO = 0x00;
     	       Mensagem.NDADO = 0x01;
     	       //Mensagem.DADO[0] = Parametros.End;
-    	       Mensagem.DADO[0] = ReadRS485Address();
+    	       //Mensagem.DADO[0] = ReadRS485Address();
+    	       Mensagem.DADO[0] = get_rs485_ch_1_address();
     	       Mensagem.ACK = 0x00;
-    	       SendDisplay(); // Envia mensagem para o Display
+    	       send_display(); // Envia mensagem para o Display
                break;
      // Modelo da fonte
      case 0x01:
     	       Mensagem.CMD = 0x01;
     	       Mensagem.PDADO = 0x00;
     	       Mensagem.NDADO = 0x01;
-    	       Mensagem.DADO[0] = PowerSupplyModelRead();
+    	       Mensagem.DADO[0] = power_supply_model_read(0);
     	       Mensagem.ACK = 0x00;
-    	       SendDisplay(); // Envia mensagem para o Display
+    	       send_display(); // Envia mensagem para o Display
                break;
      // Data e hora
      case 0x02:
@@ -197,7 +198,7 @@ void ProcessCmd(){
 			   Mensagem.PDADO = 0x00;
 			   Mensagem.NDADO = 0x07;
 
-			   var64 = DataHourRead(); // Read actual date and hour
+			   var64 = data_hour_read(); // Read actual date and hour
 
 			   Mensagem.DADO[0] = var64 >> 48;
 			   Mensagem.DADO[1] = var64 >> 40;
@@ -207,13 +208,13 @@ void ProcessCmd(){
 			   Mensagem.DADO[5] = var64;
 			   Mensagem.DADO[6] = var64 >> 24;
 			   Mensagem.ACK = 0x00;
-			   SendDisplay(); // Envia mensagem para o Display
+			   send_display(); // Envia mensagem para o Display
                break;
      // Valor do PI
      case 0x03:
 
                break;
-     // Configuração do interlock
+     // Configuraï¿½ï¿½o do interlock
      case 0x04:
     	       Mensagem.CMD = 0x04;
 			   Mensagem.PDADO = 0x00;
@@ -221,9 +222,9 @@ void ProcessCmd(){
 			   //Mensagem.DADO[0] = Parametros.ItlkAnalog;
 			   //Mensagem.DADO[1] = Parametros.ItlkStatInput;
 			   Mensagem.ACK = 0x00;
-			   SendDisplay(); // Envia mensagem para o Display
+			   send_display(); // Envia mensagem para o Display
                break;
-     // Configuração de Alarme
+     // Configuraï¿½ï¿½o de Alarme
      case 0x05:
     	       Mensagem.CMD = 0x05;
 			   Mensagem.PDADO = 0x00;
@@ -231,7 +232,7 @@ void ProcessCmd(){
 			   //Mensagem.DADO[0] = Parametros.AlrmAnlog;
 			   //Mensagem.DADO[1] = Parametros.AlrmStatInput;
 			   Mensagem.ACK = 0x00;
-			   SendDisplay(); // Envia mensagem para o Display
+			   send_display(); // Envia mensagem para o Display
                break;
      // Status local/remoto
      case 0x06:
@@ -240,7 +241,7 @@ void ProcessCmd(){
 			   Mensagem.NDADO = 0x01;
 			   Mensagem.DADO[0] = LocRem; // Read ajust status
 			   Mensagem.ACK = 0x00;
-			   SendDisplay(); // Envia mensagem para o Display
+			   send_display(); // Envia mensagem para o Display
                break;
      // Senha
      case 0x07:
@@ -251,9 +252,9 @@ void ProcessCmd(){
 			   //Mensagem.DADO[1] = Parametros.Senha >> 8;
 			   //Mensagem.DADO[2] = Parametros.Senha;
 			   Mensagem.ACK = 0x00;
-			   SendDisplay(); // Envia mensagem para o Display
+			   send_display(); // Envia mensagem para o Display
                break;
-     // Setpoint das para geração de alarme ou interlock por meio das medidas analogicas
+     // Setpoint das para geraï¿½ï¿½o de alarme ou interlock por meio das medidas analogicas
      case 0x08:
     	       Mensagem.CMD = 0x08;
     	 	   Mensagem.PDADO = 0x00;
@@ -284,10 +285,10 @@ void ProcessCmd(){
     	 	   //Mensagem.DADO[15] = Parametros.SetPointAn8;
 
     	 	   Mensagem.ACK = 0x00;
-    	 	   SendDisplay(); // Envia mensagem para o Display
+    	 	   send_display(); // Envia mensagem para o Display
                break;
 
-	   // Numero de série
+	   // Numero de sï¿½rie
 	   case 0x09:
 			   Mensagem.CMD = 0x09;
 			   Mensagem.PDADO = 0x00;
@@ -302,27 +303,27 @@ void ProcessCmd(){
 			   //Mensagem.DADO[7] = Parametros.NSerie;
 			   Mensagem.ACK = 0x00;
 
-			   SendDisplay(); // Envia mensagem para o Display
+			   send_display(); // Envia mensagem para o Display
 			   break;
 
      // Comandos de leitura, pede para retornar os dados requeridos
-     // Corrente de saída
+     // Corrente de saï¿½da
      case 0x10:
     	 	   Mensagem.CMD = 0x10;
     	 	   Mensagem.PDADO = 0x00;
     	 	   Mensagem.NDADO = 0x04;
 			   //floatNchars.f = LeituraVarDin.IoutReadF;
-    	 	   floatNchars.f = IOutputRead();
+    	 	   floatNchars.f = current_output_read();
 			   Mensagem.DADO[0] = floatNchars.c[0];
 			   Mensagem.DADO[1] = floatNchars.c[1];
 			   Mensagem.DADO[2] = floatNchars.c[2];
 			   Mensagem.DADO[3] = floatNchars.c[3];
     	 	   Mensagem.ACK = 0x00;
 
-    	 	   SendDisplay(); // Envia mensagem para o Display
+    	 	   send_display(); // Envia mensagem para o Display
     	 	   break;
 
-     // Leitura da tensão na saída
+     // Leitura da tensï¿½o na saï¿½da
      case 0x11:
     	 	   Mensagem.CMD = 0x11;
 			   Mensagem.PDADO = 0x00;
@@ -333,7 +334,7 @@ void ProcessCmd(){
 			   Mensagem.DADO[1] = 6;
 			   Mensagem.ACK = 0x00;
 
-			   SendDisplay(); // Envia mensagem para o Display
+			   send_display(); // Envia mensagem para o Display
                break;
 
      // Leitura da corrente na entrada
@@ -348,7 +349,7 @@ void ProcessCmd(){
 			   //Mensagem.DADO[3] = LeituraVarDin.ItlkLeakageToGround;
 
 			   Mensagem.ACK = 0x00;
-			   SendDisplay(); // Envia mensagem para o Display
+			   send_display(); // Envia mensagem para o Display
 
                break;
      // Temperatura da placa
@@ -361,18 +362,19 @@ void ProcessCmd(){
     	       Mensagem.DADO[1] = 0x55;
 
     	       Mensagem.ACK = 0x00;
-    	       SendDisplay(); // Envia mensagem para o Display
+    	       send_display(); // Envia mensagem para o Display
 
                break;
-     // Leitura do status da malha de realimentação
+     // Leitura do status da malha de realimentaÃ§Ã£o
      case 0x14:
 			   Mensagem.CMD = 0x14;
 			   Mensagem.PDADO = 0x00;
 			   Mensagem.NDADO = 0x01;
-			   Mensagem.DADO[0] = CtrlLoopRead();
+
+			   Mensagem.DADO[0] = control_loop_read();
 
 			   Mensagem.ACK = 0x00;
-			   SendDisplay(); // Envia mensagem para o Display
+			   send_display(); // Envia mensagem para o Display
 
                break;
      // Status da chave de saida
@@ -380,24 +382,24 @@ void ProcessCmd(){
     	       Mensagem.CMD = 0x15;
     	 	   Mensagem.PDADO = 0x00;
     	 	   Mensagem.NDADO = 0x01;
-    	 	   Mensagem.DADO[0] = OutputStsRead();
+    	 	   Mensagem.DADO[0] = output_sts_read(0);
 
     	 	   Mensagem.ACK = 0x00;
-    	 	   SendDisplay(); // Envia mensagem para o Display
+    	 	   send_display(); // Envia mensagem para o Display
                break;
      // Envia Setpoint de corrente atual
      case 0x16:
 			   Mensagem.CMD = 0x16;
 			   Mensagem.PDADO = 0x00;
 			   Mensagem.NDADO = 0x04;
-			   floatNchars.f = ISetpointRead();
+			   floatNchars.f = current_setpoint_read(0);
 			   Mensagem.DADO[0] = floatNchars.c[0];
 			   Mensagem.DADO[1] = floatNchars.c[1];
 			   Mensagem.DADO[2] = floatNchars.c[2];
 			   Mensagem.DADO[3] = floatNchars.c[3];
 			   Mensagem.ACK = 0x00;
 
-			   SendDisplay(); // Envia mensagem para o Display
+			   send_display(); // Envia mensagem para o Display
                break;
      // Envia o valor do ganho proporcional atual da malha de controle
      case 0x17:
@@ -411,7 +413,7 @@ void ProcessCmd(){
     	 	   Mensagem.DADO[3] = floatNchars.c[3];
     	       Mensagem.ACK = 0x00;
 
-    	       SendDisplay(); // Envia mensagem para o Display
+    	       send_display(); // Envia mensagem para o Display
                break;
      // Envia o valor do ganho integral atual da malha de controle
      case 0x18:
@@ -425,23 +427,23 @@ void ProcessCmd(){
 			   Mensagem.DADO[3] = floatNchars.c[3];
 			   Mensagem.ACK = 0x00;
 
-			   SendDisplay(); // Envia mensagem para o Display
+			   send_display(); // Envia mensagem para o Display
                break;
-	 // Envia Setpoint de tensão atual
+	 // Envia Setpoint de tensï¿½o atual
 	 case 0x19:
 			   Mensagem.CMD = 0x19;
 			   Mensagem.PDADO = 0x00;
 			   Mensagem.NDADO = 0x04;
-			   floatNchars.f = ISetpointRead();
-			   Mensagem.DADO[0] = floatNchars.c[0];
+			   floatNchars.f = current_setpoint_read(0);
+ 			   Mensagem.DADO[0] = floatNchars.c[0];
 			   Mensagem.DADO[1] = floatNchars.c[1];
 			   Mensagem.DADO[2] = floatNchars.c[2];
 			   Mensagem.DADO[3] = floatNchars.c[3];
 			   Mensagem.ACK = 0x00;
 
-			   SendDisplay(); // Envia mensagem para o Display
+			   send_display(); // Envia mensagem para o Display
 			   break;
-	 // Envia o valor do ganho proporcional atual da malha de tensão
+	 // Envia o valor do ganho proporcional atual da malha de tensï¿½o
 	 case 0x1A:
 			   Mensagem.CMD = 0x1A;
 			   Mensagem.PDADO = 0x00;
@@ -453,9 +455,9 @@ void ProcessCmd(){
 			   Mensagem.DADO[3] = floatNchars.c[3];
 			   Mensagem.ACK = 0x00;
 
-			   SendDisplay(); // Envia mensagem para o Display
+			   send_display(); // Envia mensagem para o Display
 			   break;
-	 // Envia o valor do ganho integral atual da malha de tensão
+	 // Envia o valor do ganho integral atual da malha de tensï¿½o
 	 case 0x1B:
 			   Mensagem.CMD = 0x1B;
 			   Mensagem.PDADO = 0x00;
@@ -467,7 +469,7 @@ void ProcessCmd(){
 			   Mensagem.DADO[3] = floatNchars.c[3];
 			   Mensagem.ACK = 0x00;
 
-			   SendDisplay(); // Envia mensagem para o Display
+			   send_display(); // Envia mensagem para o Display
 			   break;
 	 // Envia o valor do ganho proporcional atual da malha de corrente
 	 case 0x1C:
@@ -481,7 +483,7 @@ void ProcessCmd(){
 			   Mensagem.DADO[3] = floatNchars.c[3];
 			   Mensagem.ACK = 0x00;
 
-			   SendDisplay(); // Envia mensagem para o Display
+			   send_display(); // Envia mensagem para o Display
 			   break;
 	 // Envia o valor do ganho integral atual da malha de corrente
 	 case 0x1D:
@@ -495,12 +497,12 @@ void ProcessCmd(){
 			   Mensagem.DADO[3] = floatNchars.c[3];
 			   Mensagem.ACK = 0x00;
 
-			   SendDisplay(); // Envia mensagem para o Display
+			   send_display(); // Envia mensagem para o Display
 			   break;
-     // Comandos de atuação
-     // Seta corrente de saída
+     // Comandos de atuaÃ§Ã£o
+     // Seta corrente de saÃ­da
 	 case 0x20:
-		       if(LocRem) // Testa se está em Local(0x01)
+		       if(LocRem) // Testa se estÃ¡ em Local(0x01)
 		       {
 		    	   floatNchars.c[0] = Mensagem.DADO[0];
 				   floatNchars.c[1] = Mensagem.DADO[1];
@@ -508,14 +510,13 @@ void ProcessCmd(){
 				   floatNchars.c[3] = Mensagem.DADO[3];
 
 				   //SoftStarterIRef(floatNchars.f);
-				   ISetpointWrite(floatNchars.f);
-
+				   current_setpoint_write(floatNchars.f, 0);
 		       }
 		 	   break;
 
-	 // Seta tensão de saída
+	 // Seta tensÃ£o de saÃ­da
 	 case 0x21:
-			   if(LocRem) // Testa se está em Local(0x01)
+			   if(LocRem) // Testa se estÃ¡ em Local(0x01)
 			   {
 				   floatNchars.c[0] = Mensagem.DADO[0];
 				   floatNchars.c[1] = Mensagem.DADO[1];
@@ -523,29 +524,29 @@ void ProcessCmd(){
 				   floatNchars.c[3] = Mensagem.DADO[3];
 
 				   //SoftStarterIRef(floatNchars.f);
-				   ISetpointWrite(floatNchars.f);
+				   current_setpoint_write(floatNchars.f, 0);
 
 			   }
 			   break;
 
      // Liga/desliga saida da fonte
 	 case 0x22:
-		 	   if(LocRem) // Testa se está em Local(0x01)
+		 	   if(LocRem) // Testa se estï¿½ em Local(0x01)
 		 	   {
 		 		   //ShmSetStatusFonteOp(Mensagem.DADO[0]);
 
-		 		   OutputStsWrite(Mensagem.DADO[0]);
+		 	      output_sts_write(Mensagem.DADO[0], 0);
 
 		 	   }
     	 	   // Retornar ACK para PIC32 sinalizando que a tarefa foi executada com sucesso
 			   break;
 
-     // Liga/desliga malha de realimentação da Fonte
+     // Liga/desliga malha de realimentaï¿½ï¿½o da Fonte
 	 case 0x23:
-		 	   if(LocRem) // Testa se está em Local(0x01)
+		 	   if(LocRem) // Testa se estï¿½ em Local(0x01)
 			   {
 
-		 		  CtrlLoopWrite(Mensagem.DADO[0]);
+		 	      control_loop_write(Mensagem.DADO[0]);
 			   }
 			   break;
 
@@ -556,105 +557,106 @@ void ProcessCmd(){
 
 	 // Altera o ganho proporcional da malha de controle "Kp"
 	 case 0x27:
-		 	   if(LocRem) // Testa se está em Local(0x01)
+		 	   if(LocRem) // Testa se estï¿½ em Local(0x01)
 			   {
 		 		   floatNchars.c[0] = Mensagem.DADO[0];
 				   floatNchars.c[1] = Mensagem.DADO[1];
 				   floatNchars.c[2] = Mensagem.DADO[2];
 				   floatNchars.c[3] = Mensagem.DADO[3];
 
-				   KpWrite(floatNchars.f);
+				   KpWrite(floatNchars.f, 0);
 
 				   //ShmSetControlKp(floatNchars.f);
 			   }
 		 	   break;
 	 //	Altera o ganho integral da malha de controle "Ki"
 	 case 0x28:
-		 	   if(LocRem) // Testa se está em Local(0x01)
+		 	   if(LocRem) // Testa se estï¿½ em Local(0x01)
 		 	   {
 		 		   floatNchars.c[0] = Mensagem.DADO[0];
 				   floatNchars.c[1] = Mensagem.DADO[1];
 				   floatNchars.c[2] = Mensagem.DADO[2];
 				   floatNchars.c[3] = Mensagem.DADO[3];
 
-				   KiWrite(floatNchars.f);
+				   KiWrite(floatNchars.f, 0);
 
 				   //ShmSetControlKi(floatNchars.f);
 		 	   }
 		 	   break;
-	 // Altera o ganho proporcional da malha de tensão "Kp"
+	 // Altera o ganho proporcional da malha de tensï¿½o "Kp"
 	 case 0x29:
-			   if(LocRem) // Testa se está em Local(0x01)
+			   if(LocRem) // Testa se estï¿½ em Local(0x01)
 			   {
 				   floatNchars.c[0] = Mensagem.DADO[0];
 				   floatNchars.c[1] = Mensagem.DADO[1];
 				   floatNchars.c[2] = Mensagem.DADO[2];
 				   floatNchars.c[3] = Mensagem.DADO[3];
 
-				   KpWrite(floatNchars.f);
+				   KpWrite(floatNchars.f, 0);
 
 				   //ShmSetControlKp(floatNchars.f);
 			   }
 			   break;
-	 //	Altera o ganho integral da malha de tensão "Ki"
+	 //	Altera o ganho integral da malha de tensï¿½o "Ki"
 	 case 0x2A:
-			   if(LocRem) // Testa se está em Local(0x01)
+			   if(LocRem) // Testa se estï¿½ em Local(0x01)
 			   {
 				   floatNchars.c[0] = Mensagem.DADO[0];
 				   floatNchars.c[1] = Mensagem.DADO[1];
 				   floatNchars.c[2] = Mensagem.DADO[2];
 				   floatNchars.c[3] = Mensagem.DADO[3];
 
-				   KiWrite(floatNchars.f);
+				   KiWrite(floatNchars.f, 0);
 
 				   //ShmSetControlKi(floatNchars.f);
 			   }
 			   break;
 	 // Altera o ganho proporcional da malha de corrente "Kp"
 	 case 0x2B:
-			   if(LocRem) // Testa se está em Local(0x01)
+			   if(LocRem) // Testa se estï¿½ em Local(0x01)
 			   {
 				   floatNchars.c[0] = Mensagem.DADO[0];
 				   floatNchars.c[1] = Mensagem.DADO[1];
 				   floatNchars.c[2] = Mensagem.DADO[2];
 				   floatNchars.c[3] = Mensagem.DADO[3];
 
-				   KpWrite(floatNchars.f);
+				   KpWrite(floatNchars.f, 0);
 
 				   //ShmSetControlKp(floatNchars.f);
 			   }
 			   break;
 	 //	Altera o ganho integral da malha de corrente "Ki"
 	 case 0x2C:
-			   if(LocRem) // Testa se está em Local(0x01)
+			   if(LocRem) // Testa se estï¿½ em Local(0x01)
 			   {
 				   floatNchars.c[0] = Mensagem.DADO[0];
 				   floatNchars.c[1] = Mensagem.DADO[1];
 				   floatNchars.c[2] = Mensagem.DADO[2];
 				   floatNchars.c[3] = Mensagem.DADO[3];
 
-				   KiWrite(floatNchars.f);
+				   KiWrite(floatNchars.f, 0);
 
 				   //ShmSetControlKi(floatNchars.f);
 			   }
 			   break;
 
-     // Comandos de alteração de parâmetro - essas funções são utilizadas para tratar o ACK
+     // Comandos de alteraï¿½ï¿½o de parï¿½metro - essas funï¿½ï¿½es sï¿½o utilizadas para tratar o ACK
      // Os valores recebidos devem ser ajustados
-     // Endereço RS-485
+     // Endereï¿½o RS-485
      case 0x30:
 
-    	 	   if(LocRem) // Testa se está em Local(0x01)
+    	 	   if(LocRem) // Testa se estï¿½ em Local(0x01)
     	 	   {
-    	 		   SetRS485Address(Mensagem.DADO[0]);
+    	 		   //SetRS485Address(Mensagem.DADO[0]);
+    	 		   set_rs485_ch_1_address(Mensagem.DADO[0]);
     	 	   }
 
-               // Chama subrotina para salvar o novo dado na memória não volátil
+               // Chama subrotina para salvar o novo dado na memï¿½ria nï¿½o volï¿½til
                // Retornar ACK para PIC32 sinalizando que a tarefa foi executada com sucesso
                break;
      // Data e hora
      case 0x32:
-    	 	   /*if(Parametros.LocRem) // Testa se está em Local(0x01)
+    	 	   /*if(Parametros.LocRem) // Testa se estï¿½ em Local(0x01)
     	 	   {
     	 		   Rtc.RTCano = Mensagem.DADO[0];
 				   Rtc.RTCmes = Mensagem.DADO[1];
@@ -670,14 +672,14 @@ void ProcessCmd(){
      // Valor PI
      case 0x33:
 
-               // Chama subrotina para salvar o novo dado na memória FLASH
+               // Chama subrotina para salvar o novo dado na memï¿½ria FLASH
                // Retornar ACK para PIC32 sinalizando que a tarefa foi executada com sucesso
                break;
-     // Configuração do interlock
+     // Configuraï¿½ï¿½o do interlock
      case 0x34:
 
                break;
-     // Configuração do alarme
+     // Configuraï¿½ï¿½o do alarme
      case 0x35:
 
                break;
@@ -695,7 +697,7 @@ void ProcessCmd(){
     	       //Parametros.Senha |= mani2;
     	       //Parametros.Senha = Parametros.Senha << 8;
     	       //Parametros.Senha |= mani3;
-    	       // Chamar função que salva a nova senha na memória FLASH
+    	       // Chamar funï¿½ï¿½o que salva a nova senha na memï¿½ria FLASH
     	       // Retornar ACK para PIC32 sinalizando que a tarefa foi executada com sucesso
                break;
      // Salva novo ajuste de setpoint para ADC
@@ -731,8 +733,8 @@ void ProcessCmd(){
 			   Parametros.SetPointAn8 = Mensagem.DADO[14];
 			   Parametros.SetPointAn8 = Parametros.SetPointAn8 << 8;
 			   Parametros.SetPointAn8 |= Mensagem.DADO[15];*/
-			   // Chama função que grava o setpoint na memória FLASH
-			   // Chamar função que envia os setpoints para o ADCP
+			   // Chama funï¿½ï¿½o que grava o setpoint na memï¿½ria FLASH
+			   // Chamar funï¿½ï¿½o que envia os setpoints para o ADCP
 			   // Retornar ACK para PIC32 sinalizando que a tarefa foi executada com sucesso
                break;
 
@@ -751,7 +753,7 @@ void ProcessCmd(){
 
                break;
 
-     // Comandos de ajuste para curva - essas funções são utilizadas para tratar o ACK
+     // Comandos de ajuste para curva - essas funï¿½ï¿½es sï¿½o utilizadas para tratar o ACK
      // Seleciona curva
      case 0x50:
 
@@ -764,7 +766,7 @@ void ProcessCmd(){
      case 0x52:
 
                break;
-     // Envia o valor de tensão do DC link em 12 bits
+     // Envia o valor de tensï¿½o do DC link em 12 bits
      case 0x60:
     	       Mensagem.CMD = 0x60;
 			   Mensagem.PDADO = 0x00;
@@ -778,9 +780,9 @@ void ProcessCmd(){
 
 			   Mensagem.ACK = 0x00;
 
-			   SendDisplay(); // Envia mensagem para o Display
+			   send_display(); // Envia mensagem para o Display
     	 	   break;
-	 // Envia o valor de tensão na carga em 12 bits
+	 // Envia o valor de tensï¿½o na carga em 12 bits
 	 case 0x61:
 		 	   Mensagem.CMD = 0x61;
 			   Mensagem.PDADO = 0x00;
@@ -794,18 +796,18 @@ void ProcessCmd(){
 
 			   Mensagem.ACK = 0x00;
 
-			   SendDisplay(); // Envia mensagem para o Display
+			   send_display(); // Envia mensagem para o Display
 			   break;
-	 // Envia o valor da temperatura no dissipador do módulo de potencia em 8 bits
+	 // Envia o valor da temperatura no dissipador do mï¿½dulo de potencia em 8 bits
 	 case 0x62:
 		 	   Mensagem.CMD = 0x62;
 			   Mensagem.PDADO = 0x00;
 			   Mensagem.NDADO = 0x01;
 			   //Mensagem.DADO[0] = LeituraVarDin.TempDig;
-			   Mensagem.DADO[0] = PowerSupply1Temp();
+			   Mensagem.DADO[0] = power_supply_1_temp();
 			   Mensagem.ACK = 0x00;
 
-			   SendDisplay(); // Envia mensagem para o Display
+			   send_display(); // Envia mensagem para o Display
 			   break;
 	 // Envia o valor lido no ch3 do conversor AD
 	 case 0x63:
@@ -827,28 +829,28 @@ void ProcessCmd(){
      case 0x67:
 
 			   break;
-	 // Envia o endereço IP
+	 // Envia o endereï¿½o IP
      case 0x70:
     	 	   Mensagem.CMD = 0x70;
     	 	   Mensagem.PDADO = 0x00;
 			   Mensagem.NDADO = 0x04;
 
-			   IPAddressRead(&Mensagem.DADO[0], &Mensagem.DADO[1], &Mensagem.DADO[2], &Mensagem.DADO[3]);
+			   ip_address_read(&Mensagem.DADO[0], &Mensagem.DADO[1], &Mensagem.DADO[2], &Mensagem.DADO[3]);
 
 			   Mensagem.ACK = 0x00;
 
-    	 	   SendDisplay(); // Envia mensagem para o Display
+			   send_display(); // Envia mensagem para o Display
     	 	   break;
 
      case 0x71:
 
-			   IPAddressWrite(Mensagem.DADO[0], Mensagem.DADO[1], Mensagem.DADO[2], Mensagem.DADO[3]);
+			   ip_address_write(Mensagem.DADO[0], Mensagem.DADO[1], Mensagem.DADO[2], Mensagem.DADO[3]);
 
 			   break;
 
      // Recebe os dados de ajuste de frequencia e amplitude do gerador de frequencia
      case 0x80:
-    	 	   /*if(Parametros.LocRem) // Testa se está em Local(0x01)
+    	 	   /*if(Parametros.LocRem) // Testa se estï¿½ em Local(0x01)
     	 	   {
     	 		   // Frequencia
 				   uInt = Mensagem.DADO[0];
@@ -866,14 +868,14 @@ void ProcessCmd(){
     	 	   break;
      // Liga/desliga o gerador de frequencia
      case 0x81:
-    	 	   /*if(Parametros.LocRem) // Testa se está em Local(0x01)
+    	 	   /*if(Parametros.LocRem) // Testa se estï¿½ em Local(0x01)
     	 	   {
     	 		   ShmSetStsFreqGen(Mensagem.DADO[0]);
     	 	   }*/
     	 	   break;
-     // Liga/desliga a função "Sweep" para levantar a resposta em frequencia da fonte
+     // Liga/desliga a funï¿½ï¿½o "Sweep" para levantar a resposta em frequencia da fonte
      case 0x82:
-    	 	   /*if(Parametros.LocRem) // Testa se está em Local(0x01)
+    	 	   /*if(Parametros.LocRem) // Testa se estï¿½ em Local(0x01)
     	 	   {
     	 		   if(Mensagem.DADO[0] && !LeituraVarDin.RunningFunction)InitSweep();
 				   else if(!Mensagem.DADO[0]) StopSweep();
@@ -893,19 +895,19 @@ void ProcessCmd(){
     	 	   Mensagem.DADO[2] = uInt;
 
 			   Mensagem.ACK = 0x00;
-			   SendDisplay(); // Envia mensagem para o Display
+			   send_display(); // Envia mensagem para o Display
 
     	 	   break;
-     // Liga/desliga a função para teste de linearidade
+     // Liga/desliga a funï¿½ï¿½o para teste de linearidade
      case 0x85:
-    	 	   /*if(Parametros.LocRem) // Testa se está em Local(0x01)
+    	 	   /*if(Parametros.LocRem) // Testa se estï¿½ em Local(0x01)
     	 	   {
     	 		   if(Mensagem.DADO[0] && !LeituraVarDin.RunningFunction)SoftStarterStartRamp();
     	 		   else if(!Mensagem.DADO[0]) SoftStarterStopRamp();
     	 	   }*/
 
     	 	   break;
-     // Envia o status de funcionamento da função linearidade
+     // Envia o status de funcionamento da funï¿½ï¿½o linearidade
      case 0x86:
     	       Mensagem.CMD = 0x86;
 			   Mensagem.PDADO = 0x00;
@@ -914,12 +916,12 @@ void ProcessCmd(){
 			   //Mensagem.DADO[0] = LeituraVarDin.Ramp1h;
 
 			   Mensagem.ACK = 0x00;
-			   SendDisplay(); // Envia mensagem para o Display
+			   send_display(); // Envia mensagem para o Display
     	 	   break;
 
-     // Recebe a configuração de amplitude do Step para o ensaio de resposta ao degrau
+     // Recebe a configuraï¿½ï¿½o de amplitude do Step para o ensaio de resposta ao degrau
      case 0x90:
-    	 	   /*if(Parametros.LocRem) // Testa se está em Local(0x01)
+    	 	   /*if(Parametros.LocRem) // Testa se estï¿½ em Local(0x01)
 			   {
     	 		   ConfigStepResponse(Mensagem.DADO[0]);
 			   }*/
@@ -927,7 +929,7 @@ void ProcessCmd(){
 
      // Recebe o comando para ligar/desligar o ensaio de resposta ao degrau
      case 0x91:
-    	 	   /*if(Parametros.LocRem) // Testa se está em Local(0x01)
+    	 	   /*if(Parametros.LocRem) // Testa se estï¿½ em Local(0x01)
 			   {
 				   if(Mensagem.DADO[0] && !LeituraVarDin.RunningFunction) InitStepResponse();
 				   else if(!Mensagem.DADO[0]) StopTimerStepResponse();
@@ -944,12 +946,12 @@ void ProcessCmd(){
 			   //Mensagem.DADO[1] = ReadConfigStepResponse();
 
 			   Mensagem.ACK = 0x00;
-			   SendDisplay(); // Envia mensagem para o Display
+			   send_display(); // Envia mensagem para o Display
 			   break;
 
 	 // Envia os dados referentes ao status do alarme
 	 case 0xA0:
-		       var64 = AlarmStatusRead();
+		       var64 = alarm_status_read();
 
 		 	   Mensagem.CMD = 0xA0;
 			   Mensagem.PDADO = 0x00;
@@ -961,7 +963,7 @@ void ProcessCmd(){
 			   Mensagem.DADO[3] = var64 >> 24;
 
 			   Mensagem.ACK = 0x00;
-			   SendDisplay(); // Envia mensagem para o Display
+			   send_display(); // Envia mensagem para o Display
 
 		   	   break;
 
@@ -977,17 +979,17 @@ void ProcessCmd(){
 			   Mensagem.PDADO = 0x00;
 			   Mensagem.NDADO = 0x08;
 
-			   Mensagem.DADO[0] = HardInterlockSts(0);
-			   Mensagem.DADO[1] = HardInterlockSts(1);
-			   Mensagem.DADO[2] = HardInterlockSts(2);
-			   Mensagem.DADO[3] = HardInterlockSts(3);
-			   Mensagem.DADO[4] = SoftInterlockSts(0);
-			   Mensagem.DADO[5] = SoftInterlockSts(1);
-			   Mensagem.DADO[6] = SoftInterlockSts(2);
-			   Mensagem.DADO[7] = SoftInterlockSts(3);
+			   Mensagem.DADO[0] = hard_interlock_sts(0, 0);
+			   Mensagem.DADO[1] = hard_interlock_sts(1, 0);
+			   Mensagem.DADO[2] = hard_interlock_sts(2, 0);
+			   Mensagem.DADO[3] = hard_interlock_sts(3, 0);
+			   Mensagem.DADO[4] = soft_interlock_sts(0, 0);
+			   Mensagem.DADO[5] = soft_interlock_sts(1, 0);
+			   Mensagem.DADO[6] = soft_interlock_sts(2, 0);
+			   Mensagem.DADO[7] = soft_interlock_sts(3, 0);
 
 			   Mensagem.ACK = 0x00;
-			   SendDisplay(); // Envia mensagem para o Display
+			   send_display(); // Envia mensagem para o Display
 
 			   break;
 
@@ -1000,10 +1002,7 @@ void ProcessCmd(){
 
 }
 
-
-
-void
-IHMIntHandler(void)
+void ihm_int_handler(void)
 {
     unsigned long ulStatus;
 
@@ -1029,16 +1028,15 @@ IHMIntHandler(void)
 
 }
 
-void
-DisplayProcessData(void)
+void display_process_data(void)
 {
 
 	// Checksum is not zero
 	if(Dado.csum)
 		goto exit;
 
-	SeparaDado(); // Chama sub rotina que tira os dados do buffer e aloca na estrutura
-	ProcessCmd(); // Chama Sub rotina para interpretação dos dados recebidos
+	separa_dado(); // Chama sub rotina que tira os dados do buffer e aloca na estrutura
+	process_cmd(); // Chama Sub rotina para interpretaï¿½ï¿½o dos dados recebidos
 
 	exit:
 	Dado.counter = 0;
@@ -1050,27 +1048,26 @@ DisplayProcessData(void)
 
 }
 
-void
-InitDisplay(void)
+void init_display(void)
 {
-	// Configura UART0 com baud de 8Mbps, operação 8-N-1 devido as limitações do conversor usb/serial controle
+	// Configura UART0 com baud de 8Mbps, operaï¿½ï¿½o 8-N-1 devido as limitaï¿½ï¿½es do conversor usb/serial controle
 	UARTConfigSetExpClk(DISPLAY_UART_BASE, SysCtlClockGet(SYSTEM_CLOCK_SPEED), 1000000,
 						(UART_CONFIG_WLEN_8 | UART_CONFIG_STOP_ONE |
 						UART_CONFIG_PAR_NONE));
 
 	UARTFIFOEnable(DISPLAY_UART_BASE);
 
-	//Habilita interrupção pela UART (RS-485 BKP)
-	IntRegister(DISPLAY_INT, IHMIntHandler);
+	//Habilita interrupï¿½ï¿½o pela UART (RS-485 BKP)
+	IntRegister(DISPLAY_INT, ihm_int_handler);
 	UARTIntEnable(DISPLAY_UART_BASE, UART_INT_RX | UART_INT_RT);
 
-	//Seta níveis de prioridade entre as interrupções
+	//Seta nï¿½veis de prioridade entre as interrupï¿½ï¿½es
 	IntPrioritySet(DISPLAY_INT, 2);
 
 	IntEnable(DISPLAY_INT);
 }
 
-uint8_t LocRemUpdate(void)
+uint8_t loc_rem_update(void)
 {
 	return LocRem;
 }

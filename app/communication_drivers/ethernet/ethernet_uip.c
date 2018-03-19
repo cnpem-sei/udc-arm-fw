@@ -1,16 +1,26 @@
-//###########################################################################
-// FILE:   enet_uip.c
-// TITLE:  Ethernet GPIO control using uIP TCP/IP stack
-//###########################################################################
-// $TI Release: F28M36x Support Library v202 $
-// $Release Date: Tue Apr  8 12:36:34 CDT 2014 $
-//###########################################################################
+/******************************************************************************
+ * Copyright (C) 2017 by LNLS - Brazilian Synchrotron Light Laboratory
+ *
+ * Redistribution, modification or use of this software in source or binary
+ * forms is permitted as long as the files maintain this copyright. LNLS and
+ * the Brazilian Center for Research in Energy and Materials (CNPEM) are not
+ * liable for any misuse of this material.
+ *
+ *****************************************************************************/
 
-/***************************************************************************
- * Funcionando perfeitamente
- * UDP não foi testado ainda
- * João Nilton H. da Rosa 07/08/2014
- ***************************************************************************/
+/**
+ * @file ethernet_uip.c
+ * @brief Ethernet module.
+ *
+ * @author joao.rosa
+ *
+ * @date 07/08/2014
+ *
+ */
+
+#include <stdint.h>
+#include <stdarg.h>
+#include <string.h>
 
 #include "inc/hw_ints.h"
 #include "inc/hw_nvic.h"
@@ -21,10 +31,6 @@
 #include "inc/hw_sysctl.h"
 #include "inc/hw_ethernet.h"
 
-//#include "set_pinout_udc_v2.0.h"
-//#include "set_pinout_ctrl_card.h"
-#include "../board_drivers/hardware_def.h"
-
 #include "driverlib/udma.h"
 #include "driverlib/gpio.h"
 #include "driverlib/debug.h"
@@ -32,29 +38,21 @@
 #include "driverlib/systick.h"
 #include "driverlib/ethernet.h"
 #include "driverlib/interrupt.h"
-//#include "driverlib/uart.h"
-
 #include "driverlib/timer.h"
 #include "driverlib/ipc.h"
 #include "driverlib/usb.h"
 
-//#include "utils/ustdlib.h"
-//#include "utils/uartstdio.h"
-
-#include "ethernet_uip.h"
-#include "../bsmp/bsmp_lib.h"
-
-#include "../i2c_onboard/eeprom.h"
-#include "../flash/flash_mem.h"
+#include "board_drivers/hardware_def.h"
+#include "communication_drivers/i2c_onboard/eeprom.h"
+#include "communication_drivers/flash/flash_mem.h"
+#include "communication_drivers/bsmp/bsmp_lib.h"
 
 #include "uip/uip.h"
 #include "uip/uip_arp.h"
 #include "httpd.h"
 #include "dhcpc/dhcpc.h"
 
-#include <stdint.h>
-#include <stdarg.h>
-#include <string.h>
+#include "ethernet_uip.h"
 
 //#pragma CODE_SECTION(EthernetProcessData, "ramfuncs");
 #pragma DATA_SECTION(send_buffer, "ETHERNETBUFFER")
@@ -112,7 +110,7 @@ uint16_t loop_count;
 //! - Connect the MAC with the PHY using the provided jumpers.
 //!	  Connect the first 15 pins of Row C to Row B using the jumpers.
 //!
-//! - All EMAC examples use a generic TI’s MAC address A8-63-F2-00-00-80. 
+//! - All EMAC examples use a generic TIï¿½s MAC address A8-63-F2-00-00-80. 
 //!   User defined MAC address can be programmed in a fixed non-volatile memory 
 //!   location. Refer to device data sheet and reference guides for details.
 //!
@@ -229,8 +227,7 @@ uint8_t IPMASK3 = 0;
 //*****************************************************************************
 
 //__________________ ip_addr0.ip_addr1.ip_addr2.ip_addr3 ____________________________
-void
-IPAddressRead(uint8_t *ip_addr0, uint8_t *ip_addr1, uint8_t *ip_addr2, uint8_t *ip_addr3)
+void ip_address_read(uint8_t *ip_addr0, uint8_t *ip_addr1, uint8_t *ip_addr2, uint8_t *ip_addr3)
 {
 	*ip_addr0 = IPADDR0;
 	*ip_addr1 = IPADDR1;
@@ -238,8 +235,7 @@ IPAddressRead(uint8_t *ip_addr0, uint8_t *ip_addr1, uint8_t *ip_addr2, uint8_t *
 	*ip_addr3 = IPADDR3;
 }
 
-void
-IPAddressWrite(uint8_t ip_addr0, uint8_t ip_addr1, uint8_t ip_addr2, uint8_t ip_addr3)
+void ip_address_write(uint8_t ip_addr0, uint8_t ip_addr1, uint8_t ip_addr2, uint8_t ip_addr3)
 {
 	uint32_t ipvar = 0;
 
@@ -262,7 +258,7 @@ IPAddressWrite(uint8_t ip_addr0, uint8_t ip_addr1, uint8_t ip_addr2, uint8_t ip_
 		ipvar = ipvar << 8;
 		ipvar |= IPADDR3;
 
-		SaveIpAddress(ipvar);
+		save_ip_address(ipvar);
 
 	}
 }
@@ -273,8 +269,7 @@ IPAddressWrite(uint8_t ip_addr0, uint8_t ip_addr1, uint8_t ip_addr2, uint8_t ip_
 //*****************************************************************************
 
 //__________________ ip_mask0.ip_mask1.ip_mask2.ip_mask3 ____________________________
-void
-IPMaskRead(uint8_t *ip_mask0, uint8_t *ip_mask1, uint8_t *ip_mask2, uint8_t *ip_mask3)
+void ip_mask_read(uint8_t *ip_mask0, uint8_t *ip_mask1, uint8_t *ip_mask2, uint8_t *ip_mask3)
 {
 	*ip_mask0 = IPMASK0;
 	*ip_mask1 = IPMASK1;
@@ -282,8 +277,7 @@ IPMaskRead(uint8_t *ip_mask0, uint8_t *ip_mask1, uint8_t *ip_mask2, uint8_t *ip_
 	*ip_mask3 = IPMASK3;
 }
 
-void
-IPMaskWrite(uint8_t ip_mask0, uint8_t ip_mask1, uint8_t ip_mask2, uint8_t ip_mask3)
+void ip_mask_write(uint8_t ip_mask0, uint8_t ip_mask1, uint8_t ip_mask2, uint8_t ip_mask3)
 {
 	uint32_t mskvar = 0;
 
@@ -306,7 +300,7 @@ IPMaskWrite(uint8_t ip_mask0, uint8_t ip_mask1, uint8_t ip_mask2, uint8_t ip_mas
 		mskvar = mskvar << 8;
 		mskvar |= IPMASK3;
 
-		SaveIpMask(mskvar);
+		save_ip_mask(mskvar);
 
 	}
 }
@@ -315,14 +309,12 @@ IPMaskWrite(uint8_t ip_mask0, uint8_t ip_mask1, uint8_t ip_mask2, uint8_t ip_mas
 // ETHERNET PORT address range: 0 up to 65535
 //*****************************************************************************
 static uint16_t Ethernetport = 80;
-uint16_t
-EthPortRead(void)
+uint16_t eth_port_read(void)
 {
 	return Ethernetport;
 }
 
-void
-EthPortWrite(uint16_t EthP)
+void eth_port_write(uint16_t EthP)
 {
 	Ethernetport = EthP;
 }
@@ -333,21 +325,19 @@ EthPortWrite(uint16_t EthP)
 //  MAC1  MAC2  MAC3  MAC4  MAC5  MAC6
 //  0xFF   FF    FF    FF    FF    FF
 
-uint64_t
-MacAddressRead(void)
+uint64_t mac_address_read(void)
 {
 	return MAC_ADDRESS;
 }
 
 //*******************************************************************************************************************************************************************************
 
-void
-EthLoadParam(void)
+void eth_load_param(void)
 {
 	uint32_t var = 0;
 
 	// Use FLASH serial number as a MAC address
-	MAC_ADDRESS = FlashDeviceIDRead();
+	MAC_ADDRESS = flash_device_id_read();
 
 	MAC_ADDRESS = MAC_ADDRESS & 0xFFFFFFFFFFFF;
 
@@ -360,7 +350,7 @@ EthLoadParam(void)
 
 
 	// Load IP from EEPROM
-	var = EepromReadIP();
+	//var = eeprom_read_ip();
 
 	IPADDR0 = var >> 24;
 	IPADDR1 = var >> 16;
@@ -368,7 +358,7 @@ EthLoadParam(void)
 	IPADDR3 = var;
 
 	// Load IP MASK from EEPROM
-	var = EepromReadIPMask();
+	//var = eeprom_read_ip_mask();
 
 	IPMASK0 = var >> 24;
 	IPMASK1 = var >> 16;
@@ -395,8 +385,7 @@ __error__(char *pcFilename, unsigned long ulLine)
 //*****************************************************************************
 // The interrupt handler for the SysTick interrupt.
 //*****************************************************************************
-void
-SysTickIntHandler(void)
+void isr_systick(void)
 {
 
 	// Increment the system tick count.
@@ -425,8 +414,7 @@ SysTickIntHandler(void)
 //! by the application, and define CLOCK_CONF_SECONDS as the number of ticks
 //! per second, and must also define the typedef "clock_time_t".
 //*****************************************************************************
-clock_time_t
-clock_time(void)
+clock_time_t clock_time(void)
 {
     return((clock_time_t)g_ulTickCounter);
 }
@@ -434,8 +422,7 @@ clock_time(void)
 //*****************************************************************************
 // The interrupt handler for the Ethernet interrupt.
 //*****************************************************************************
-void
-EthernetIntHandler(void)
+void isr_ethernet(void)
 {
     unsigned long ulTemp;
 
@@ -482,8 +469,7 @@ EthernetIntHandler(void)
 //*****************************************************************************
 // Callback for when DHCP client has been configured.
 //*****************************************************************************
-void
-dhcpc_configured(const struct dhcpc_state *s)
+void dhcpc_configured(const struct dhcpc_state *s)
 {
     uip_sethostaddr(&s->ipaddr);
     uip_setnetmask(&s->netmask);
@@ -495,8 +481,7 @@ dhcpc_configured(const struct dhcpc_state *s)
 // Read a packet using DMA instead of directly reading the FIFO if the
 // alignment will allow it.
 //*****************************************************************************
-long
-EthernetPacketGetDMA(unsigned long ulBase, unsigned char *pucBuf, long lBufLen)
+long ethernet_packet_get_dma(unsigned long ulBase, unsigned char *pucBuf, long lBufLen)
 {
     unsigned long ulTemp;
     unsigned char pucData[4];
@@ -609,8 +594,7 @@ EthernetPacketGetDMA(unsigned long ulBase, unsigned char *pucBuf, long lBufLen)
 // Transmit a packet using DMA instead of directly writing the FIFO if the
 // alignment will allow it.
 //*****************************************************************************
-static long
-EthernetPacketPutDMA(unsigned long ulBase, unsigned char *pucBuf,
+static long ethernet_packet_put_dma(unsigned long ulBase, unsigned char *pucBuf,
                      long lBufLen)
 {
     unsigned long ulTemp;
@@ -672,7 +656,7 @@ EthernetPacketPutDMA(unsigned long ulBase, unsigned char *pucBuf,
 // respond to commands sent by the user (client)
 //
 //*****************************************************************************
-void EthernetProcessCMD(void)
+void ethernet_process_cmd(void)
 {
 
     // receive the buffer adress and the length
@@ -680,7 +664,8 @@ void EthernetProcessCMD(void)
     recv_packet.data = BufferAdress();
 
     // Library will process the packet
-    BSMPprocess(&recv_packet, &send_packet);
+    // TODO: Process 4 BSMP servers
+    BSMPprocess(&recv_packet, &send_packet, 0);
 
     httpd_insert_response(send_packet.len,(uint8_t *)send_packet.data);
 
@@ -693,10 +678,9 @@ void EthernetProcessCMD(void)
 // This example demonstrates the use of the Ethernet Controller with the uIP
 // TCP/IP stack.
 //*****************************************************************************
-void
-EthernetInit(void)
+void ethernet_init(void)
 {
-	EthLoadParam();
+	eth_load_param();
 
 	// Adjust the pointer to be aligned on an odd half word address so that
     // DMA can be used.
@@ -733,7 +717,7 @@ EthernetInit(void)
     SysTickPeriodSet(SysCtlClockGet(SYSTEM_CLOCK_SPEED) / SYSTICKHZ);
 
     SysTickEnable();
-    IntRegister(FAULT_SYSTICK, SysTickIntHandler);
+    IntRegister(FAULT_SYSTICK, isr_systick);
     SysTickIntEnable();
 
     // Configure the DMA channel for Ethernet receive.
@@ -771,10 +755,10 @@ EthernetInit(void)
     
 
     // Enable and register the Ethernet interrupt.
-    IntRegister(INT_ETH, EthernetIntHandler);
+    IntRegister(INT_ETH, isr_ethernet);
     IntEnable(INT_ETH);
 #ifndef REV_0_SILICON
-    IntRegister(INT_UDMA, EthernetIntHandler);
+    IntRegister(INT_UDMA, isr_ethernet);
     IntEnable(INT_UDMA);
 #endif	
     // Enable the Ethernet RX Packet interrupt source.
@@ -821,8 +805,7 @@ EthernetInit(void)
 
 }
 
-void
-EthernetProcessData(void)
+void ethernet_process_data(void)
 {
 
     // Wait for an event to occur.  This can be either a System Tick event,
@@ -843,7 +826,7 @@ EthernetProcessData(void)
         if(HWREGBITW(&g_ulFlags, FLAG_RXPKT))
         {
             // Get the packet and set uip_len for uIP stack usage.
-            uip_len = (unsigned short)EthernetPacketGetDMA(ETH_BASE, uip_buf,
+            uip_len = (unsigned short) ethernet_packet_get_dma(ETH_BASE, uip_buf,
                                                            sizeof(ucUIPBuffer));
 
             // Clear the RX Packet event and re-enable RX Packet interrupts.
@@ -863,7 +846,7 @@ EthernetProcessData(void)
                 if(httpd_get_command())
                 {
                     httpd_clear_command();
-                    EthernetProcessCMD();
+                    ethernet_process_cmd();
                 }
                 // If the above function invocation resulted in data that
                 // should be sent out on the network, the global variable
@@ -871,7 +854,7 @@ EthernetProcessData(void)
                 if(uip_len > 0)
                 {
                     uip_arp_out();
-                    EthernetPacketPutDMA(ETH_BASE, uip_buf, uip_len);
+                    ethernet_packet_put_dma(ETH_BASE, uip_buf, uip_len);
                     uip_len = 0;
                     loop_count++;
                 }
@@ -887,7 +870,7 @@ EthernetProcessData(void)
                 // uip_len is set to a value > 0.
                 if(uip_len > 0)
                 {
-                    EthernetPacketPutDMA(ETH_BASE, uip_buf, uip_len);
+                    ethernet_packet_put_dma(ETH_BASE, uip_buf, uip_len);
                     uip_len = 0;
                 }
             }
@@ -907,7 +890,7 @@ EthernetProcessData(void)
                 if(uip_len > 0)
                 {
                     uip_arp_out();
-                    EthernetPacketPutDMA(ETH_BASE, uip_buf, uip_len);
+                    ethernet_packet_put_dma(ETH_BASE, uip_buf, uip_len);
                     uip_len = 0;
                 }
             }
@@ -923,7 +906,7 @@ EthernetProcessData(void)
                 if(uip_len > 0)
                 {
                     uip_arp_out();
-                    EthernetPacketPutDMA(ETH_BASE, uip_buf, uip_len);
+                    ethernet_packet_put_dma(ETH_BASE, uip_buf, uip_len);
                     uip_len = 0;
                 }
             }

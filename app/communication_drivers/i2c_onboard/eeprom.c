@@ -1,29 +1,37 @@
-/*
- * eeprom.c
+/******************************************************************************
+ * Copyright (C) 2017 by LNLS - Brazilian Synchrotron Light Laboratory
  *
- *  Created on: 13/07/2015
- *      Author: joao.rosa
+ * Redistribution, modification or use of this software in source or binary
+ * forms is permitted as long as the files maintain this copyright. LNLS and
+ * the Brazilian Center for Research in Energy and Materials (CNPEM) are not
+ * liable for any misuse of this material.
  *
- *      Memory PN: AT24C64D-SSHM-T
+ *****************************************************************************/
+
+/**
+ * @file eeprom.c
+ * @brief EEPROM module.
  *
- *      Routines working fine!!
- *      Tested 15/07/2015
+ * @author joao.rosa
+ *
+ * @date 15/07/2015
+ *
  */
 
+#include <stdint.h>
 
 #include "inc/hw_memmap.h"
 #include "inc/hw_types.h"
 #include "inc/hw_gpio.h"
+
 #include "driverlib/gpio.h"
 
-
-#include "eeprom.h"
 #include "i2c_onboard.h"
-
-//#include "set_pinout_udc_v2.0.h"
 #include "hardware_def.h"
+#include "eeprom.h"
 
-#include <stdint.h>
+#include "communication_drivers/common/structs.h"
+#include "communication_drivers/control/dsp.h"
 
 //***********************************************************************************
 //  The memory address is compose of 13bits (2 bytes)
@@ -34,1017 +42,248 @@
 //
 //***********************************************************************************
 
-#define I2C_SLV_ADDR_EEPROM	0x50 // Endereço 7 bits
-
-// Memory map
-#define	IP_ADDR			0x0140
-#define IPMASK_ADDR		0x0144
-
-#define	RS485_ADDR		0x0160
-#define	RS485_BR		0x0161
-#define RS485BKP_ADDR	0x0165
-#define	RS485BKP_BR		0x0166
-
-#define GAIN_KP1		0x0200
-#define	GAIN_KI1		0x0204
-#define	GAIN_KD1		0x0208
-
-#define GAIN_KP2		0x0210
-#define	GAIN_KI2		0x0214
-#define	GAIN_KD2		0x0218
-
-#define GAIN_KP3		0x0220
-#define	GAIN_KI3		0x0224
-#define	GAIN_KD3		0x0228
-
-#define GAIN_KP4		0x0230
-#define	GAIN_KI4		0x0234
-#define	GAIN_KD4		0x0238
-
-
-#define PSMODEL			0x0100
-
-
-uint8_t data_eeprom[32];
-uint16_t add = 0;
-
-// Split float in bytes
-union
+const uint16_t dsp_modules_eeprom_add[NUM_DSP_CLASSES] =
 {
-   float f;
-   char c[4];
-} floatNchars;
+    [DSP_Error]         = 0x1FE0,
+    [DSP_SRLim]         = 0x0C00,
+    [DSP_LPF]           = 0x0C20,
+    [DSP_PI]            = 0x0C40,
+    [DSP_IIR_2P2Z]      = 0x0CE0,
+    [DSP_IIR_3P3Z]      = 0x0DE0,
+    [DSP_VdcLink_FeedForward] = 0x0EE0,
+    [DSP_Vect_Product]  = 0x1FE0,
+};
 
+const uint16_t num_coeffs_dsp_module[NUM_DSP_CLASSES] =
+{
+    [DSP_Error]         = 0,
+    [DSP_SRLim]         = NUM_COEFFS_DSP_SRLIM,
+    [DSP_LPF]           = NUM_COEFFS_DSP_LPF,
+    [DSP_PI]            = NUM_COEFFS_DSP_PI,
+    [DSP_IIR_2P2Z]      = NUM_COEFFS_DSP_IIR_2P2Z,
+    [DSP_IIR_3P3Z]      = NUM_COEFFS_DSP_IIR_3P3Z,
+    [DSP_VdcLink_FeedForward] = NUM_COEFFS_DSP_VDCLINK_FF,
+    [DSP_Vect_Product]  = NUM_COEFFS_DSP_MATRIX
+};
+
+const uint16_t num_dsp_modules[NUM_DSP_CLASSES] =
+{
+    [DSP_Error]         = NUM_MAX_DSP_ERROR,
+    [DSP_SRLim]         = NUM_MAX_DSP_SRLIM,
+    [DSP_LPF]           = NUM_MAX_DSP_LPF,
+    [DSP_PI]            = NUM_MAX_DSP_PI,
+    [DSP_IIR_2P2Z]      = NUM_MAX_DSP_IIR_2P2Z,
+    [DSP_IIR_3P3Z]      = NUM_MAX_DSP_IIR_3P3Z,
+    [DSP_VdcLink_FeedForward] = NUM_MAX_DSP_VDCLINK_FF,
+    [DSP_Vect_Product]  = NUM_MAX_DSP_VECT_PRODUCT
+};
+
+static uint8_t data_eeprom[64];
 volatile unsigned long ulLoop;
 
-
-//***********************************************************************************
-//                            IP DATA
-//***********************************************************************************
-uint32_t
-EepromReadIP(void)
-{
-	uint32_t IP = 0;
-	data_eeprom[0] = IP_ADDR >> 8; //Memory address MSB
-	data_eeprom[1] = (uint8_t)IP_ADDR; //Memory address LSB
-	ReadI2C(I2C_SLV_ADDR_EEPROM, DOUBLE_ADDRESS, 0x04, data_eeprom);
-
-	IP = data_eeprom[0];
-	IP = IP << 8;
-	IP |= data_eeprom[1];
-	IP = IP << 8;
-	IP |= data_eeprom[2];
-	IP = IP << 8;
-	IP |= data_eeprom[3];
-
-	return IP;
-
-}
-
-static uint32_t ip_address_data = 0;
-static uint8_t ip_new_data = 0;
-
-void
-SaveIpAddress(uint32_t IP)
-{
-	ip_address_data = IP;
-	ip_new_data = 1;
-}
-
-void
-EepromWriteIP(void)
-{
-	if(ip_new_data)
-	{
-		data_eeprom[0] = IP_ADDR >> 8; //Memory address MSB
-		data_eeprom[1] = (uint8_t)IP_ADDR; //Memory address LSB
-		data_eeprom[2] = ip_address_data >> 24;
-		data_eeprom[3] = ip_address_data >> 16;
-		data_eeprom[4] = ip_address_data >> 8;
-		data_eeprom[5] = ip_address_data;
-
-		GPIOPinWrite(EEPROM_WP_BASE, EEPROM_WP_PIN, OFF); // Disable Write protection
-
-		WriteI2C(I2C_SLV_ADDR_EEPROM, 0x06, data_eeprom);
-
-		for (ulLoop=0;ulLoop<100000;ulLoop++){}; // wait 5ms
-
-		GPIOPinWrite(EEPROM_WP_BASE, EEPROM_WP_PIN, ON); // Enable Write protection
-
-		ip_new_data = 0;
-	}
-
-}
-
-//**********
-
-uint32_t
-EepromReadIPMask(void)
-{
-	uint32_t IPMASK = 0;
-	data_eeprom[0] = IPMASK_ADDR >> 8; // Memory address MSB
-	data_eeprom[1] = (uint8_t)IPMASK_ADDR; // Memory address LSB
-	ReadI2C(I2C_SLV_ADDR_EEPROM, DOUBLE_ADDRESS, 0x04, data_eeprom);
-
-	IPMASK = data_eeprom[0];
-	IPMASK = IPMASK << 8;
-	IPMASK |= data_eeprom[1];
-	IPMASK = IPMASK << 8;
-	IPMASK |= data_eeprom[2];
-	IPMASK = IPMASK << 8;
-	IPMASK |= data_eeprom[3];
-
-	return IPMASK;
-}
-
-static uint32_t ip_mask_data = 0;
-static uint8_t	ip_mask_new_data = 0;
-
-void
-SaveIpMask(uint32_t IP_MASK)
-{
-	ip_mask_data = IP_MASK;
-	ip_mask_new_data = 1;
-}
-
-void
-EepromWriteIPMask(void)
-{
-	if(ip_mask_new_data)
-	{
-		data_eeprom[0] = IPMASK_ADDR >> 8; // Memory address MSB
-		data_eeprom[1] = (uint8_t)IPMASK_ADDR; // Memory address LSB
-		data_eeprom[2] = ip_mask_data >> 24;
-		data_eeprom[3] = ip_mask_data >> 16;
-		data_eeprom[4] = ip_mask_data >> 8;
-		data_eeprom[5] = ip_mask_data;
-
-		GPIOPinWrite(EEPROM_WP_BASE, EEPROM_WP_PIN, OFF); // Disable Write protection
-
-		WriteI2C(I2C_SLV_ADDR_EEPROM, 0x06, data_eeprom);
-
-		for (ulLoop=0;ulLoop<100000;ulLoop++){}; // wait 5ms
-
-		GPIOPinWrite(EEPROM_WP_BASE, EEPROM_WP_PIN, ON); // Enable Write protection
-
-		ip_mask_new_data = 0;
-	}
-
-}
-
 //***********************************************************************************
 
-//***********************************************************************************
-//                            RS-485 DATA
-//***********************************************************************************
-
-uint8_t
-EepromReadRs485Add(void)
+uint8_t save_dsp_coeffs_eeprom(dsp_class_t dsp_class, uint16_t id)
 {
-	data_eeprom[0] = RS485_ADDR >> 8; //Memory address MSB
-	data_eeprom[1] = (uint8_t)RS485_ADDR; //Memory address LSB
-	ReadI2C(I2C_SLV_ADDR_EEPROM, DOUBLE_ADDRESS, 0x02, data_eeprom);
+    static u_uint16_t u_add;
+    static uint8_t *p_val, size_coeffs;
 
-	return data_eeprom[0];
+    size_coeffs = 4*num_coeffs_dsp_module[dsp_class];
+
+    // Increment element position on parameter address and prepare for EEPROM
+    u_add.u16 = dsp_modules_eeprom_add[dsp_class] + id*size_coeffs;
+    data_eeprom[0] = u_add.u8[1];
+    data_eeprom[1] = u_add.u8[0];
+
+    // Perform typecast of pointer to coefficients avoid local copy of them
+    switch(dsp_class)
+    {
+        case DSP_SRLim:
+        {
+            p_val = (uint8_t *) &g_controller_mtoc.dsp_modules.dsp_srlim[id].coeffs.f;
+            break;
+        }
+
+        case DSP_LPF:
+        {
+            p_val = (uint8_t *) &g_controller_mtoc.dsp_modules.dsp_lpf[id].coeffs.f;
+            break;
+        }
+
+        case DSP_PI:
+        {
+            p_val = (uint8_t *) &g_controller_mtoc.dsp_modules.dsp_pi[id].coeffs.f;
+            break;
+        }
+        case DSP_IIR_2P2Z:
+        {
+            p_val = (uint8_t *) &g_controller_mtoc.dsp_modules.dsp_iir_2p2z[id].coeffs.f;
+            break;
+        }
+
+        case DSP_IIR_3P3Z:
+        {
+            p_val = (uint8_t *) &g_controller_mtoc.dsp_modules.dsp_iir_3p3z[id].coeffs.f;
+            break;
+        }
+
+        case DSP_VdcLink_FeedForward:
+        {
+            p_val = (uint8_t *) &g_controller_mtoc.dsp_modules.dsp_ff[id].coeffs.f;
+            break;
+        }
+
+        default:
+        {
+            return 0;
+        }
+    }
+
+    // Prepare EEPROM data
+    memcpy(&data_eeprom[2], p_val, size_coeffs);
+
+    if( size_coeffs > 32 )
+    {
+        // Send new parameter to EEPROM
+        GPIOPinWrite(EEPROM_WP_BASE, EEPROM_WP_PIN, OFF);
+        write_i2c(I2C_SLV_ADDR_EEPROM, 2+32, data_eeprom);
+        for (ulLoop=0;ulLoop<100000;ulLoop++){};
+        GPIOPinWrite(EEPROM_WP_BASE, EEPROM_WP_PIN, ON);
+
+        u_add.u16 += 32;
+        data_eeprom[0] = u_add.u8[1];
+        data_eeprom[1] = u_add.u8[0];
+        memcpy(&data_eeprom[2], &data_eeprom[34], size_coeffs-32);
+
+        // Send new parameter to EEPROM
+        GPIOPinWrite(EEPROM_WP_BASE, EEPROM_WP_PIN, OFF);
+        write_i2c(I2C_SLV_ADDR_EEPROM, 2+(size_coeffs-32), data_eeprom);
+        for (ulLoop=0;ulLoop<100000;ulLoop++){};
+        GPIOPinWrite(EEPROM_WP_BASE, EEPROM_WP_PIN, ON);
+    }
+    else
+    {
+        // Send new parameter to EEPROM
+        GPIOPinWrite(EEPROM_WP_BASE, EEPROM_WP_PIN, OFF);
+        write_i2c(I2C_SLV_ADDR_EEPROM, 2+size_coeffs, data_eeprom);
+        for (ulLoop=0;ulLoop<100000;ulLoop++){};
+        GPIOPinWrite(EEPROM_WP_BASE, EEPROM_WP_PIN, ON);
+    }
+
+    return 1;
 }
 
-static uint8_t rs485_add_data = 0;
-static uint8_t	rs485_add_new_data = 0;
-
-void
-SaveRs485Add(uint32_t RS485_ADD)
+uint8_t load_dsp_coeffs_eeprom(dsp_class_t dsp_class, uint16_t id)
 {
-	rs485_add_data = RS485_ADD;
-	rs485_add_new_data = 1;
+    static u_uint16_t u_add;
+    static uint8_t *p_val, size_coeffs;
+
+    size_coeffs = 4*num_coeffs_dsp_module[dsp_class];
+
+    // Increment element position on parameter address and prepare for EEPROM
+    u_add.u16 = dsp_modules_eeprom_add[dsp_class] + id*size_coeffs;
+    data_eeprom[0] = u_add.u8[1];
+    data_eeprom[1] = u_add.u8[0];
+
+    // Perform typecast of pointer to coefficients avoid local copy of them
+    switch(dsp_class)
+    {
+        case DSP_SRLim:
+        {
+            p_val = (uint8_t *) &g_controller_mtoc.dsp_modules.dsp_srlim[id].coeffs.f;
+            break;
+        }
+
+        case DSP_LPF:
+        {
+            p_val = (uint8_t *) &g_controller_mtoc.dsp_modules.dsp_lpf[id].coeffs.f;
+            break;
+        }
+
+        case DSP_PI:
+        {
+            p_val = (uint8_t *) &g_controller_mtoc.dsp_modules.dsp_pi[id].coeffs.f;
+            break;
+        }
+        case DSP_IIR_2P2Z:
+        {
+            p_val = (uint8_t *) &g_controller_mtoc.dsp_modules.dsp_iir_2p2z[id].coeffs.f;
+            break;
+        }
+
+        case DSP_IIR_3P3Z:
+        {
+            p_val = (uint8_t *) &g_controller_mtoc.dsp_modules.dsp_iir_3p3z[id].coeffs.f;
+            break;
+        }
+
+        case DSP_VdcLink_FeedForward:
+        {
+            p_val = (uint8_t *) &g_controller_mtoc.dsp_modules.dsp_ff[id].coeffs.f;
+            break;
+        }
+
+        default:
+        {
+            return 0;
+        }
+    }
+
+    if( size_coeffs > 32 )
+    {
+        // Send new parameter to EEPROM
+        GPIOPinWrite(EEPROM_WP_BASE, EEPROM_WP_PIN, OFF);
+        read_i2c(I2C_SLV_ADDR_EEPROM, DOUBLE_ADDRESS, 32, data_eeprom);
+        for (ulLoop=0;ulLoop<100000;ulLoop++){};
+        GPIOPinWrite(EEPROM_WP_BASE, EEPROM_WP_PIN, ON);
+
+        memcpy(p_val, &data_eeprom, 32);
+
+        u_add.u16 += 32;
+        data_eeprom[0] = u_add.u8[1];
+        data_eeprom[1] = u_add.u8[0];
+
+        // Send new parameter to EEPROM
+        GPIOPinWrite(EEPROM_WP_BASE, EEPROM_WP_PIN, OFF);
+        read_i2c(I2C_SLV_ADDR_EEPROM, DOUBLE_ADDRESS, size_coeffs-32, data_eeprom);
+        for (ulLoop=0;ulLoop<100000;ulLoop++){};
+        GPIOPinWrite(EEPROM_WP_BASE, EEPROM_WP_PIN, ON);
+
+        memcpy(p_val+32, &data_eeprom, size_coeffs-32);
+    }
+    else
+    {
+        read_i2c(I2C_SLV_ADDR_EEPROM, DOUBLE_ADDRESS, size_coeffs, data_eeprom);
+        memcpy( p_val, &data_eeprom, size_coeffs);
+    }
+
+    return 1;
 }
 
-void
-EepromWriteRs485Add(void)
+void save_dsp_modules_eeprom(void)
 {
+    dsp_class_t dsp_class;
+    uint16_t    id;
 
-	if(rs485_add_new_data)
-	{
-		data_eeprom[0] = RS485_ADDR >> 8; //Memory address MSB
-		data_eeprom[1] = (uint8_t)RS485_ADDR; //Memory address LSB
-		data_eeprom[2] = rs485_add_data;
-
-		GPIOPinWrite(EEPROM_WP_BASE, EEPROM_WP_PIN, OFF); // Disable Write protection
-
-		WriteI2C(I2C_SLV_ADDR_EEPROM, 0x03, data_eeprom);
-
-		for (ulLoop=0;ulLoop<100000;ulLoop++){}; // wait 5ms
-
-		GPIOPinWrite(EEPROM_WP_BASE, EEPROM_WP_PIN, ON); // Enable Write protection
-
-		rs485_add_new_data = 0;
-	}
-
+    for(dsp_class = 0; dsp_class < NUM_DSP_CLASSES; dsp_class++)
+    {
+        for(id = 0; id < num_dsp_modules[dsp_class]; id++)
+        {
+            save_dsp_coeffs_eeprom(dsp_class, id);
+        }
+    }
 }
 
-//*********
-
-uint32_t
-EepromReadRs485BaudRate(void)
+void load_dsp_modules_eeprom(void)
 {
-	uint32_t BAUD = 0;
-	data_eeprom[0] = RS485_BR >> 8; // Memory address MSB
-	data_eeprom[1] = (uint8_t)RS485_BR; // Memory address LSB
-	ReadI2C(I2C_SLV_ADDR_EEPROM, DOUBLE_ADDRESS, 0x04, data_eeprom);
+    dsp_class_t dsp_class;
+    uint16_t    id;
 
-	BAUD = data_eeprom[0];
-	BAUD = BAUD << 8;
-	BAUD |= data_eeprom[1];
-	BAUD = BAUD << 8;
-	BAUD |= data_eeprom[2];
-	BAUD = BAUD << 8;
-	BAUD |= data_eeprom[3];
-
-	return BAUD;
+    for(dsp_class = 0; dsp_class < NUM_DSP_CLASSES; dsp_class++)
+    {
+        for(id = 0; id < num_dsp_modules[dsp_class]; id++)
+        {
+            load_dsp_coeffs_eeprom(dsp_class, id);
+        }
+    }
 }
-
-static uint32_t rs485_baud_data = 0;
-static uint8_t	rs485_baud_new_data = 0;
-
-void
-SaveRs485Baud(uint32_t RS485_BAUD)
-{
-	rs485_baud_data = RS485_BAUD;
-	rs485_baud_new_data = 1;
-}
-
-void
-EepromWriteRs485BaudRate(void)
-{
-	if(rs485_baud_new_data)
-	{
-		data_eeprom[0] = RS485_BR >> 8; // Memory address MSB
-		data_eeprom[1] = (uint8_t)RS485_BR; // Memory address LSB
-		data_eeprom[2] = rs485_baud_data >> 24;
-		data_eeprom[3] = rs485_baud_data >> 16;
-		data_eeprom[4] = rs485_baud_data >> 8;
-		data_eeprom[5] = rs485_baud_data;
-
-		GPIOPinWrite(EEPROM_WP_BASE, EEPROM_WP_PIN, OFF); // Disable Write protection
-
-		WriteI2C(I2C_SLV_ADDR_EEPROM, 0x06, data_eeprom);
-
-		for (ulLoop=0;ulLoop<100000;ulLoop++){}; // wait 5ms
-
-		GPIOPinWrite(EEPROM_WP_BASE, EEPROM_WP_PIN, ON); // Enable Write protection
-
-		rs485_baud_new_data = 0;
-	}
-
-
-
-}
-
-//***********************************************************************************
-
-//***********************************************************************************
-//                            Control Law DATA - PID1
-//***********************************************************************************
-
-float
-EepromReadKp1(void)
-{
-	data_eeprom[0] = GAIN_KP1 >> 8; // Memory address MSB
-	data_eeprom[1] = (uint8_t)GAIN_KP1; // Memory address LSB
-	ReadI2C(I2C_SLV_ADDR_EEPROM, DOUBLE_ADDRESS, 0x04, data_eeprom);
-
-	floatNchars.c[0] = data_eeprom[0];
-	floatNchars.c[1] = data_eeprom[1];
-	floatNchars.c[2] = data_eeprom[2];
-	floatNchars.c[3] = data_eeprom[3];
-
-	return floatNchars.f;
-}
-
-static float kp1_data = 0;
-static uint8_t kp1_new_data = 0;
-
-void
-SaveKp1Gain(float KP1)
-{
-	kp1_data = KP1;
-	kp1_new_data = 1;
-}
-
-void
-EepromWriteKp1(void)
-{
-	if(kp1_new_data)
-	{
-		floatNchars.f = kp1_data;
-
-		data_eeprom[0] = GAIN_KP1 >> 8; // Memory address MSB
-		data_eeprom[1] = (uint8_t)GAIN_KP1; // Memory address LSB
-
-		data_eeprom[2] = floatNchars.c[0];
-		data_eeprom[3] = floatNchars.c[1];
-		data_eeprom[4] = floatNchars.c[2];
-		data_eeprom[5] = floatNchars.c[3];
-
-		GPIOPinWrite(EEPROM_WP_BASE, EEPROM_WP_PIN, OFF); // Disable Write protection
-
-		WriteI2C(I2C_SLV_ADDR_EEPROM, 0x06, data_eeprom);
-
-		for (ulLoop=0;ulLoop<100000;ulLoop++){}; // wait 5ms
-
-		GPIOPinWrite(EEPROM_WP_BASE, EEPROM_WP_PIN, ON); // Enable Write protection
-
-		kp1_new_data = 0;
-	}
-
-}
-
-//***********
-
-float
-EepromReadKi1(void)
-{
-	data_eeprom[0] = GAIN_KI1 >> 8; // Memory address MSB
-	data_eeprom[1] = (uint8_t)GAIN_KI1; // Memory address LSB
-	ReadI2C(I2C_SLV_ADDR_EEPROM, DOUBLE_ADDRESS, 0x04, data_eeprom);
-
-	floatNchars.c[0] = data_eeprom[0];
-	floatNchars.c[1] = data_eeprom[1];
-	floatNchars.c[2] = data_eeprom[2];
-	floatNchars.c[3] = data_eeprom[3];
-
-	return floatNchars.f;
-}
-
-static float ki1_data = 0;
-static uint8_t	ki1_new_data = 0;
-
-void
-SaveKi1Gain(float KI1)
-{
-	ki1_data = KI1;
-	ki1_new_data = 1;
-}
-
-void
-EepromWriteKi1(void)
-{
-	if(ki1_new_data)
-	{
-		floatNchars.f = ki1_data;
-
-		data_eeprom[0] = GAIN_KI1 >> 8; // Memory address MSB
-		data_eeprom[1] = (uint8_t)GAIN_KI1; // Memory address LSB
-
-		data_eeprom[2] = floatNchars.c[0];
-		data_eeprom[3] = floatNchars.c[1];
-		data_eeprom[4] = floatNchars.c[2];
-		data_eeprom[5] = floatNchars.c[3];
-
-		GPIOPinWrite(EEPROM_WP_BASE, EEPROM_WP_PIN, OFF); // Disable Write protection
-
-		WriteI2C(I2C_SLV_ADDR_EEPROM, 0x06, data_eeprom);
-
-		for (ulLoop=0;ulLoop<100000;ulLoop++){}; // wait 5ms
-
-		GPIOPinWrite(EEPROM_WP_BASE, EEPROM_WP_PIN, ON); // Enable Write protection
-
-		ki1_new_data = 0;
-	}
-
-}
-
-//******
-
-float
-EepromReadKd1(void)
-{
-	data_eeprom[0] = GAIN_KD1 >> 8; // Memory address MSB
-	data_eeprom[1] = (uint8_t)GAIN_KD1; // Memory address LSB
-	ReadI2C(I2C_SLV_ADDR_EEPROM, DOUBLE_ADDRESS, 0x04, data_eeprom);
-
-	floatNchars.c[0] = data_eeprom[0];
-	floatNchars.c[1] = data_eeprom[1];
-	floatNchars.c[2] = data_eeprom[2];
-	floatNchars.c[3] = data_eeprom[3];
-
-	return floatNchars.f;
-}
-
-static float kd1_data = 0;
-static uint8_t	kd1_new_data = 0;
-
-void
-SaveKd1Gain(float KD1)
-{
-	kd1_data = KD1;
-	kd1_new_data = 1;
-}
-
-void
-EepromWriteKd1(void)
-{
-	if(kd1_new_data)
-	{
-		floatNchars.f = kd1_data;
-
-		data_eeprom[0] = GAIN_KD1 >> 8; // Memory address MSB
-		data_eeprom[1] = (uint8_t)GAIN_KD1; // Memory address LSB
-
-		data_eeprom[2] = floatNchars.c[0];
-		data_eeprom[3] = floatNchars.c[1];
-		data_eeprom[4] = floatNchars.c[2];
-		data_eeprom[5] = floatNchars.c[3];
-
-		GPIOPinWrite(EEPROM_WP_BASE, EEPROM_WP_PIN, OFF); // Disable Write protection
-
-		WriteI2C(I2C_SLV_ADDR_EEPROM, 0x06, data_eeprom);
-
-		for (ulLoop=0;ulLoop<100000;ulLoop++){}; // wait 5ms
-
-		GPIOPinWrite(EEPROM_WP_BASE, EEPROM_WP_PIN, ON); // Enable Write protection
-
-		kd1_new_data = 0;
-	}
-
-}
-
-//***********************************************************************************
-//                            Control Law DATA - PID2
-//***********************************************************************************
-
-float
-EepromReadKp2(void)
-{
-	data_eeprom[0] = GAIN_KP2 >> 8; // Memory address MSB
-	data_eeprom[1] = (uint8_t)GAIN_KP2; // Memory address LSB
-	ReadI2C(I2C_SLV_ADDR_EEPROM, DOUBLE_ADDRESS, 0x04, data_eeprom);
-
-	floatNchars.c[0] = data_eeprom[0];
-	floatNchars.c[1] = data_eeprom[1];
-	floatNchars.c[2] = data_eeprom[2];
-	floatNchars.c[3] = data_eeprom[3];
-
-	return floatNchars.f;
-}
-
-static float kp2_data = 0;
-static uint8_t	kp2_new_data = 0;
-
-void
-SaveKp2Gain(float KP2)
-{
-	kp2_data = KP2;
-	kp2_new_data = 1;
-}
-
-void
-EepromWriteKp2(void)
-{
-	if(kp2_new_data)
-	{
-		floatNchars.f = kp2_data;
-
-		data_eeprom[0] = GAIN_KP2 >> 8; // Memory address MSB
-		data_eeprom[1] = (uint8_t)GAIN_KP2; // Memory address LSB
-
-		data_eeprom[2] = floatNchars.c[0];
-		data_eeprom[3] = floatNchars.c[1];
-		data_eeprom[4] = floatNchars.c[2];
-		data_eeprom[5] = floatNchars.c[3];
-
-		GPIOPinWrite(EEPROM_WP_BASE, EEPROM_WP_PIN, OFF); // Disable Write protection
-
-		WriteI2C(I2C_SLV_ADDR_EEPROM, 0x06, data_eeprom);
-
-		for (ulLoop=0;ulLoop<100000;ulLoop++){}; // wait 5ms
-
-		GPIOPinWrite(EEPROM_WP_BASE, EEPROM_WP_PIN, ON); // Enable Write protection
-
-		kp2_new_data = 0;
-	}
-
-}
-
-float
-EepromReadKi2(void)
-{
-	data_eeprom[0] = GAIN_KI2 >> 8; // Memory address MSB
-	data_eeprom[1] = (uint8_t)GAIN_KI2; // Memory address LSB
-	ReadI2C(I2C_SLV_ADDR_EEPROM, DOUBLE_ADDRESS, 0x04, data_eeprom);
-
-	floatNchars.c[0] = data_eeprom[0];
-	floatNchars.c[1] = data_eeprom[1];
-	floatNchars.c[2] = data_eeprom[2];
-	floatNchars.c[3] = data_eeprom[3];
-
-	return floatNchars.f;
-}
-
-static float ki2_data = 0;
-static uint8_t	ki2_new_data = 0;
-
-void
-SaveKi2Gain(float KI2)
-{
-	ki2_data = KI2;
-	ki2_new_data = 1;
-}
-
-void
-EepromWriteKi2(void)
-{
-	if(ki2_new_data)
-	{
-		floatNchars.f = ki2_data;
-
-		data_eeprom[0] = GAIN_KI2 >> 8; // Memory address MSB
-		data_eeprom[1] = (uint8_t)GAIN_KI2; // Memory address LSB
-
-		data_eeprom[2] = floatNchars.c[0];
-		data_eeprom[3] = floatNchars.c[1];
-		data_eeprom[4] = floatNchars.c[2];
-		data_eeprom[5] = floatNchars.c[3];
-
-		GPIOPinWrite(EEPROM_WP_BASE, EEPROM_WP_PIN, OFF); // Disable Write protection
-
-		WriteI2C(I2C_SLV_ADDR_EEPROM, 0x06, data_eeprom);
-
-		for (ulLoop=0;ulLoop<100000;ulLoop++){}; // wait 5ms
-
-		GPIOPinWrite(EEPROM_WP_BASE, EEPROM_WP_PIN, ON); // Enable Write protection
-
-		ki2_new_data = 0;
-	}
-
-}
-
-//******
-
-float
-EepromReadKd2(void)
-{
-	data_eeprom[0] = GAIN_KD2 >> 8; // Memory address MSB
-	data_eeprom[1] = (uint8_t)GAIN_KD2; // Memory address LSB
-	ReadI2C(I2C_SLV_ADDR_EEPROM, DOUBLE_ADDRESS, 0x04, data_eeprom);
-
-	floatNchars.c[0] = data_eeprom[0];
-	floatNchars.c[1] = data_eeprom[1];
-	floatNchars.c[2] = data_eeprom[2];
-	floatNchars.c[3] = data_eeprom[3];
-
-	return floatNchars.f;
-}
-
-static float kd2_data = 0;
-static uint8_t	kd2_new_data = 0;
-
-void
-SaveKd2Gain(float KD2)
-{
-	kd2_data = KD2;
-	kd2_new_data = 1;
-}
-
-void
-EepromWriteKd2(void)
-{
-	if(kd2_new_data)
-	{
-		floatNchars.f = kd2_data;
-
-		data_eeprom[0] = GAIN_KD2 >> 8; // Memory address MSB
-		data_eeprom[1] = (uint8_t)GAIN_KD2; // Memory address LSB
-
-		data_eeprom[2] = floatNchars.c[0];
-		data_eeprom[3] = floatNchars.c[1];
-		data_eeprom[4] = floatNchars.c[2];
-		data_eeprom[5] = floatNchars.c[3];
-
-		GPIOPinWrite(EEPROM_WP_BASE, EEPROM_WP_PIN, OFF); // Disable Write protection
-
-		WriteI2C(I2C_SLV_ADDR_EEPROM, 0x06, data_eeprom);
-
-		for (ulLoop=0;ulLoop<100000;ulLoop++){}; // wait 5ms
-
-		GPIOPinWrite(EEPROM_WP_BASE, EEPROM_WP_PIN, ON); // Enable Write protection
-
-		kd2_new_data = 0;
-	}
-
-
-
-}
-
-//***********************************************************************************
-//                            Control Law DATA - PID3
-//***********************************************************************************
-
-float
-EepromReadKp3(void)
-{
-	data_eeprom[0] = GAIN_KP3 >> 8; // Memory address MSB
-	data_eeprom[1] = (uint8_t)GAIN_KP3; // Memory address LSB
-	ReadI2C(I2C_SLV_ADDR_EEPROM, DOUBLE_ADDRESS, 0x04, data_eeprom);
-
-	floatNchars.c[0] = data_eeprom[0];
-	floatNchars.c[1] = data_eeprom[1];
-	floatNchars.c[2] = data_eeprom[2];
-	floatNchars.c[3] = data_eeprom[3];
-
-	return floatNchars.f;
-}
-
-static float kp3_data = 0;
-static uint8_t	kp3_new_data = 0;
-
-void
-SaveKp3Gain(float KP3)
-{
-	kp3_data = KP3;
-	kp3_new_data = 1;
-}
-
-void
-EepromWriteKp3(void)
-{
-	if(kp3_new_data)
-	{
-		floatNchars.f = kp3_data;
-
-		data_eeprom[0] = GAIN_KP3 >> 8; // Memory address MSB
-		data_eeprom[1] = (uint8_t)GAIN_KP3; // Memory address LSB
-
-		data_eeprom[2] = floatNchars.c[0];
-		data_eeprom[3] = floatNchars.c[1];
-		data_eeprom[4] = floatNchars.c[2];
-		data_eeprom[5] = floatNchars.c[3];
-
-		GPIOPinWrite(EEPROM_WP_BASE, EEPROM_WP_PIN, OFF); // Disable Write protection
-
-		WriteI2C(I2C_SLV_ADDR_EEPROM, 0x06, data_eeprom);
-
-		for (ulLoop=0;ulLoop<100000;ulLoop++){}; // wait 5ms
-
-		GPIOPinWrite(EEPROM_WP_BASE, EEPROM_WP_PIN, ON); // Enable Write protection
-
-		kp3_new_data = 0;
-	}
-
-}
-
-//*******
-
-float
-EepromReadKi3(void)
-{
-	data_eeprom[0] = GAIN_KI3 >> 8; // Memory address MSB
-	data_eeprom[1] = (uint8_t)GAIN_KI3; // Memory address LSB
-	ReadI2C(I2C_SLV_ADDR_EEPROM, DOUBLE_ADDRESS, 0x04, data_eeprom);
-
-	floatNchars.c[0] = data_eeprom[0];
-	floatNchars.c[1] = data_eeprom[1];
-	floatNchars.c[2] = data_eeprom[2];
-	floatNchars.c[3] = data_eeprom[3];
-
-	return floatNchars.f;
-}
-
-static float ki3_data = 0;
-static uint8_t	ki3_new_data = 0;
-
-void
-SaveKi3Gain(float KI3)
-{
-	ki3_data = KI3;
-	ki3_new_data = 1;
-}
-
-void
-EepromWriteKi3(void)
-{
-	if(ki3_new_data)
-	{
-		floatNchars.f = ki3_data;
-
-		data_eeprom[0] = GAIN_KI3 >> 8; // Memory address MSB
-		data_eeprom[1] = (uint8_t)GAIN_KI3; // Memory address LSB
-
-		data_eeprom[2] = floatNchars.c[0];
-		data_eeprom[3] = floatNchars.c[1];
-		data_eeprom[4] = floatNchars.c[2];
-		data_eeprom[5] = floatNchars.c[3];
-
-		GPIOPinWrite(EEPROM_WP_BASE, EEPROM_WP_PIN, OFF); // Disable Write protection
-
-		WriteI2C(I2C_SLV_ADDR_EEPROM, 0x06, data_eeprom);
-
-		for (ulLoop=0;ulLoop<100000;ulLoop++){}; // wait 5ms
-
-		GPIOPinWrite(EEPROM_WP_BASE, EEPROM_WP_PIN, ON); // Enable Write protection
-
-		ki3_new_data = 0;
-	}
-
-}
-
-//*******
-
-float
-EepromReadKd3(void)
-{
-	data_eeprom[0] = GAIN_KD3 >> 8; // Memory address MSB
-	data_eeprom[1] = (uint8_t)GAIN_KD3; // Memory address LSB
-	ReadI2C(I2C_SLV_ADDR_EEPROM, DOUBLE_ADDRESS, 0x04, data_eeprom);
-
-	floatNchars.c[0] = data_eeprom[0];
-	floatNchars.c[1] = data_eeprom[1];
-	floatNchars.c[2] = data_eeprom[2];
-	floatNchars.c[3] = data_eeprom[3];
-
-	return floatNchars.f;
-}
-
-static float kd3_data = 0;
-static uint8_t	kd3_new_data = 0;
-
-void
-SaveKd3Gain(float KD3)
-{
-	kd3_data = KD3;
-	kd3_new_data = 1;
-}
-
-void
-EepromWriteKd3(void)
-{
-	if(kd3_new_data)
-	{
-		floatNchars.f = kd3_data;
-
-		data_eeprom[0] = GAIN_KD3 >> 8; // Memory address MSB
-		data_eeprom[1] = (uint8_t)GAIN_KD3; // Memory address LSB
-
-		data_eeprom[2] = floatNchars.c[0];
-		data_eeprom[3] = floatNchars.c[1];
-		data_eeprom[4] = floatNchars.c[2];
-		data_eeprom[5] = floatNchars.c[3];
-
-		GPIOPinWrite(EEPROM_WP_BASE, EEPROM_WP_PIN, OFF); // Disable Write protection
-
-		WriteI2C(I2C_SLV_ADDR_EEPROM, 0x06, data_eeprom);
-
-		for (ulLoop=0;ulLoop<100000;ulLoop++){}; // wait 5ms
-
-		GPIOPinWrite(EEPROM_WP_BASE, EEPROM_WP_PIN, ON); // Enable Write protection
-
-		kd3_new_data = 0;
-	}
-
-}
-
-//***********************************************************************************
-//                            Control Law DATA - PID4
-//***********************************************************************************
-
-float
-EepromReadKp4(void)
-{
-	data_eeprom[0] = GAIN_KP4 >> 8; // Memory address MSB
-	data_eeprom[1] = (uint8_t)GAIN_KP4; // Memory address LSB
-	ReadI2C(I2C_SLV_ADDR_EEPROM, DOUBLE_ADDRESS, 0x04, data_eeprom);
-
-	floatNchars.c[0] = data_eeprom[0];
-	floatNchars.c[1] = data_eeprom[1];
-	floatNchars.c[2] = data_eeprom[2];
-	floatNchars.c[3] = data_eeprom[3];
-
-	return floatNchars.f;
-}
-
-static float kp4_data = 0;
-static uint8_t	kp4_new_data = 0;
-
-void
-SaveKp4Gain(float KP4)
-{
-	kp4_data = KP4;
-	kp4_new_data = 1;
-}
-
-void
-EepromWriteKp4(void)
-{
-	if(kp4_new_data)
-	{
-		floatNchars.f = kp4_data;
-
-		data_eeprom[0] = GAIN_KP4 >> 8; // Memory address MSB
-		data_eeprom[1] = (uint8_t)GAIN_KP4; // Memory address LSB
-
-		data_eeprom[2] = floatNchars.c[0];
-		data_eeprom[3] = floatNchars.c[1];
-		data_eeprom[4] = floatNchars.c[2];
-		data_eeprom[5] = floatNchars.c[3];
-
-		GPIOPinWrite(EEPROM_WP_BASE, EEPROM_WP_PIN, OFF); // Disable Write protection
-
-		WriteI2C(I2C_SLV_ADDR_EEPROM, 0x06, data_eeprom);
-
-		for (ulLoop=0;ulLoop<100000;ulLoop++){}; // wait 5ms
-
-		GPIOPinWrite(EEPROM_WP_BASE, EEPROM_WP_PIN, ON); // Enable Write protection
-
-		kp4_new_data = 0;
-	}
-
-}
-
-//*****
-
-float
-EepromReadKi4(void)
-{
-	data_eeprom[0] = GAIN_KI4 >> 8; // Memory address MSB
-	data_eeprom[1] = (uint8_t)GAIN_KI4; // Memory address LSB
-	ReadI2C(I2C_SLV_ADDR_EEPROM, DOUBLE_ADDRESS, 0x04, data_eeprom);
-
-	floatNchars.c[0] = data_eeprom[0];
-	floatNchars.c[1] = data_eeprom[1];
-	floatNchars.c[2] = data_eeprom[2];
-	floatNchars.c[3] = data_eeprom[3];
-
-	return floatNchars.f;
-}
-
-static float ki4_data = 0;
-static uint8_t	ki4_new_data = 0;
-
-void
-SaveKi4Gain(float KI4)
-{
-	ki4_data = KI4;
-	ki4_new_data = 1;
-}
-
-void
-EepromWriteKi4(void)
-{
-	if(ki4_new_data)
-	{
-		floatNchars.f = ki4_data;
-
-		data_eeprom[0] = GAIN_KI4 >> 8; // Memory address MSB
-		data_eeprom[1] = (uint8_t)GAIN_KI4; // Memory address LSB
-
-		data_eeprom[2] = floatNchars.c[0];
-		data_eeprom[3] = floatNchars.c[1];
-		data_eeprom[4] = floatNchars.c[2];
-		data_eeprom[5] = floatNchars.c[3];
-
-		GPIOPinWrite(EEPROM_WP_BASE, EEPROM_WP_PIN, OFF); // Disable Write protection
-
-		WriteI2C(I2C_SLV_ADDR_EEPROM, 0x06, data_eeprom);
-
-		for (ulLoop=0;ulLoop<100000;ulLoop++){}; // wait 5ms
-
-		GPIOPinWrite(EEPROM_WP_BASE, EEPROM_WP_PIN, ON); // Enable Write protection
-
-		ki4_new_data = 0;
-	}
-
-}
-
-//*****
-
-float
-EepromReadKd4(void)
-{
-	data_eeprom[0] = GAIN_KD4 >> 8; // Memory address MSB
-	data_eeprom[1] = (uint8_t)GAIN_KD4; // Memory address LSB
-	ReadI2C(I2C_SLV_ADDR_EEPROM, DOUBLE_ADDRESS, 0x04, data_eeprom);
-
-	floatNchars.c[0] = data_eeprom[0];
-	floatNchars.c[1] = data_eeprom[1];
-	floatNchars.c[2] = data_eeprom[2];
-	floatNchars.c[3] = data_eeprom[3];
-
-	return floatNchars.f;
-}
-
-static float kd4_data = 0;
-static uint8_t kd4_new_data = 0;
-
-void
-SaveKd4Gain(float KD4)
-{
-	kd4_data = KD4;
-	kd4_new_data = 1;
-}
-
-void
-EepromWriteKd4(void)
-{
-	if(kd4_new_data)
-	{
-		floatNchars.f = kd4_data;
-
-		data_eeprom[0] = GAIN_KD4 >> 8; // Memory address MSB
-		data_eeprom[1] = (uint8_t)GAIN_KD4; // Memory address LSB
-
-		data_eeprom[2] = floatNchars.c[0];
-		data_eeprom[3] = floatNchars.c[1];
-		data_eeprom[4] = floatNchars.c[2];
-		data_eeprom[5] = floatNchars.c[3];
-
-		GPIOPinWrite(EEPROM_WP_BASE, EEPROM_WP_PIN, OFF); // Disable Write protection
-
-		WriteI2C(I2C_SLV_ADDR_EEPROM, 0x06, data_eeprom);
-
-		for (ulLoop=0;ulLoop<100000;ulLoop++){}; // wait 5ms
-
-		GPIOPinWrite(EEPROM_WP_BASE, EEPROM_WP_PIN, ON); // Enable Write protection
-
-		kd4_new_data = 0;
-	}
-
-}
-
-//***********************************************************************************
-//                            Power Supply Model
-//***********************************************************************************
-
-uint8_t
-EepromReadPSModel(void)
-{
-
-	data_eeprom[0] = PSMODEL >> 8; // Memory address MSB
-	data_eeprom[1] = (uint8_t)PSMODEL; // Memory address LSB
-
-	ReadI2C(I2C_SLV_ADDR_EEPROM, DOUBLE_ADDRESS, 0x02, data_eeprom);
-
-	return data_eeprom[0];
-}
-
-static uint8_t ps_model_data = 0;
-static uint8_t ps_model_new_data = 0;
-
-void
-SavePsModel(uint8_t PS_MODEL)
-{
-	ps_model_data = PS_MODEL;
-	ps_model_new_data = 1;
-}
-
-void
-EepromWritePSModel(void)
-{
-	if(ps_model_new_data)
-	{
-		data_eeprom[0] = PSMODEL >> 8; // Memory address MSB
-		data_eeprom[1] = (uint8_t)PSMODEL;      // Memory address LSB
-		data_eeprom[2] = ps_model_data;
-
-		GPIOPinWrite(EEPROM_WP_BASE, EEPROM_WP_PIN, OFF); // Disable Write protection
-
-		WriteI2C(I2C_SLV_ADDR_EEPROM, 0x03, data_eeprom);
-
-		for (ulLoop=0;ulLoop<100000;ulLoop++){}; // wait 5ms
-
-		GPIOPinWrite(EEPROM_WP_BASE, EEPROM_WP_PIN, ON); // Enable Write protection,
-
-		ps_model_new_data = 0;
-	}
-
-}
-
-
-//***********************************************************************************
-
-void
-EepromWriteRequestCheck(void)
-{
-	EepromWriteIP();
-	EepromWriteIPMask();
-
-	EepromWriteRs485Add();
-	EepromWriteRs485BaudRate();
-
-	EepromWriteKp1();
-	EepromWriteKi1();
-	EepromWriteKd1();
-
-	EepromWriteKp2();
-	EepromWriteKi2();
-	EepromWriteKd2();
-
-	EepromWriteKp3();
-	EepromWriteKi3();
-	EepromWriteKd3();
-
-	EepromWriteKp4();
-	EepromWriteKi4();
-	EepromWriteKd4();
-
-	EepromWritePSModel();
-}
-

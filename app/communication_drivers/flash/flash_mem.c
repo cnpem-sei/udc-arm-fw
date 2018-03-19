@@ -1,12 +1,21 @@
-/*
- * flash.c
+/******************************************************************************
+ * Copyright (C) 2017 by LNLS - Brazilian Synchrotron Light Laboratory
  *
- *  Created on: 14/07/2015
- *      Author: joao.rosa
+ * Redistribution, modification or use of this software in source or binary
+ * forms is permitted as long as the files maintain this copyright. LNLS and
+ * the Brazilian Center for Research in Energy and Materials (CNPEM) are not
+ * liable for any misuse of this material.
  *
- *      Sts: problems with the SSI1 peripheral, it doesn't work
+ *****************************************************************************/
+
+/**
+ * @file flash_mem.c
+ * @brief Flash memory module.
  *
- *      Memory Device: W25Q128FVSIG
+ * @author joao.rosa
+ *
+ * @date 14/07/2015
+ *
  */
 
 #include "flash_mem.h"
@@ -23,7 +32,7 @@
 #include <stdint.h>
 
 //#include "set_pinout_udc_v2.0.h"
-#include "../board_drivers/hardware_def.h"
+#include "board_drivers/hardware_def.h"
 
 
 dataflash_t DataFlash;
@@ -109,8 +118,7 @@ WriteDisableFlash(void)
 
 // Faz a leitura do número serial da memória flash para usar como ID de rastreamento do cartão de controle
 // O SN é composto por 64bits, estes serão salvos em uma variável de 64bits
-void
-FlashMemReadSerialNumber(void)
+void flash_mem_read_serial_number(void)
 {
 	unsigned long ulindex;
 	uint8_t uChar;
@@ -199,13 +207,13 @@ FlashMemReadSerialNumber(void)
 	SerialNumber |= uChar;
 }
 
-uint64_t FlashDeviceIDRead(void)
+uint64_t flash_device_id_read(void)
 {
 	return SerialNumber;
 }
 
 void
-FlashMemInit(void)
+flash_mem_init(void)
 {
 	// Configuration SSI (ADCP)
 	SSIConfigSetExpClk(FLASH_MEM_BASE, SysCtlClockGet(SYSTEM_CLOCK_SPEED),
@@ -215,7 +223,7 @@ FlashMemInit(void)
 	// Enable the FLASH module
 	SSIEnable(FLASH_MEM_BASE);
 
-	FlashMemReadSerialNumber();
+	flash_mem_read_serial_number();
 }
 
 /*

@@ -1,12 +1,22 @@
-//###########################################################################
-// FILE:   usb_serial_structs.h
-// TITLE:  Data structures defining this USB CDC device.
-//###########################################################################
-// $TI Release: F28M36x Support Library v206 $
-// $Release Date: Thu Mar  5 10:16:50 CST 2015 $
-// $Copyright: Copyright (C) 2012-2015 Texas Instruments Incorporated -
-//             http://www.ti.com/ ALL RIGHTS RESERVED $
-//###########################################################################
+/******************************************************************************
+ * Copyright (C) 2017 by LNLS - Brazilian Synchrotron Light Laboratory
+ *
+ * Redistribution, modification or use of this software in source or binary
+ * forms is permitted as long as the files maintain this copyright. LNLS and
+ * the Brazilian Center for Research in Energy and Materials (CNPEM) are not
+ * liable for any misuse of this material.
+ *
+ *****************************************************************************/
+
+/**
+ * @file usb_serial_structs.c
+ * @brief USB structs module.
+ *
+ * @author joao.rosa
+ *
+ * @date 05/03/2015
+ *
+ */
 
 #ifndef __USB_SERIAL_STRUCTS_H__
 #define __USB_SERIAL_STRUCTS_H__
@@ -19,9 +29,9 @@
 //*****************************************************************************
 #define UART_BUFFER_SIZE 256
 
-extern unsigned long RxHandler(void *pvCBData, unsigned long ulEvent,
+extern unsigned long rx_handler(void *pvCBData, unsigned long ulEvent,
                                unsigned long ulMsgValue, void *pvMsgData);
-extern unsigned long TxHandler(void *pvlCBData, unsigned long ulEvent,
+extern unsigned long tx_handler(void *pvlCBData, unsigned long ulEvent,
                                unsigned long ulMsgValue, void *pvMsgData);
 
 extern const tUSBBuffer g_sTxBuffer;

@@ -1,0 +1,25 @@
+/******************************************************************************
+ * Copyright (C) 2017 by LNLS - Brazilian Synchrotron Light Laboratory
+ *
+ * Redistribution, modification or use of this software in source or binary
+ * forms is permitted as long as the files maintain this copyright. LNLS and
+ * the Brazilian Center for Research in Energy and Materials (CNPEM) are not
+ * liable for any misuse of this material.
+ *
+ *****************************************************************************/
+
+/**
+ * @file fbpmain.h
+ * @brief Settings system for operation as FBP
+ *
+ * @author allef.silva
+ * @date 18/10/2017
+ *
+ */
+
+#ifndef FBP_MAIN_H_
+#define FBP_MAIN_H_
+
+void fbp_main(void);
+
+#endif /* FBP_100_KHZ_MAIN_H_ */

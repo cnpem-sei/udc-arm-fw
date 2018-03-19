@@ -1,8 +1,21 @@
-/*
- * superv_cmd.c
+/******************************************************************************
+ * Copyright (C) 2017 by LNLS - Brazilian Synchrotron Light Laboratory
  *
- *  Created on: 16/09/2013
- *      Author: joao.rosa
+ * Redistribution, modification or use of this software in source or binary
+ * forms is permitted as long as the files maintain this copyright. LNLS and
+ * the Brazilian Center for Research in Energy and Materials (CNPEM) are not
+ * liable for any misuse of this material.
+ *
+ *****************************************************************************/
+
+/**
+ * @file USB Supervisor.c
+ * @brief USB Supervisory.
+ *
+ * @author joao.rosa
+ *
+ * @date 16/09/2013
+ *
  */
 
 #include <string.h>
@@ -14,12 +27,14 @@
 #include "inc/hw_types.h"
 #include "inc/hw_sysctl.h"
 #include "inc/hw_uart.h"
+
 #include "driverlib/debug.h"
 #include "driverlib/gpio.h"
 #include "driverlib/interrupt.h"
 #include "driverlib/sysctl.h"
 #include "driverlib/uart.h"
 #include "driverlib/usb.h"
+
 #include "usblib/usblib.h"
 #include "usblib/usbcdc.h"
 #include "usblib/device/usbdevice.h"
@@ -29,12 +44,10 @@
 
 
 
-/*********************************************************************************************************
- *                          Comandos da comunicação com o com o supervisório via usb
+/******************************************************************************
+ *              Comandos da comunicação com o com o supervisório via usb
  *
- *
- *
- *********************************************************************************************************/
+ *****************************************************************************/
 #include "superv_cmd.h"
 
 buffer_usb_t DadoUsb;
@@ -51,8 +64,7 @@ static uint8_t NewData = 0;
  *
  *******************************************************************************************/
 
-void
-SetNewData(void)
+void set_new_data(void)
 {
 	NewData = 1;
 }
@@ -72,7 +84,7 @@ uint8_t CheckSumTestUsb(void)
 }
 
 // Sub rotina para alocação dos dados recebidos
-void SeparaDadoUsb(void){
+void separa_dado_usb(void){
 
 	uint8_t count = 0;
 
@@ -93,7 +105,7 @@ void SeparaDadoUsb(void){
 }
 
 // Sub rotina para calculo do Checksum para envio da mensagem
-void CheckSumCalcUsb(void){
+void checksum_calc_usb(void){
 	uint8_t count;
 
 	MensagemUsb.CKS = MensagemUsb.CMD;
@@ -116,11 +128,11 @@ void CheckSumCalcUsb(void){
  * Subrotina destinada a enviar dados para o display via UART2
  *
  **********************************************************************************************************************/
-void SendUsb(void){
+void send_usb(void){
 
    uint8_t count;
 
-   CheckSumCalcUsb();            // Rotina de calculo de CheckSum
+   checksum_calc_usb();            // Rotina de calculo de CheckSum
 
    USBBufferWrite(&g_sTxBuffer, &MensagemUsb.CMD, 1);
    USBBufferWrite(&g_sTxBuffer, &MensagemUsb.NDADO, 1);
@@ -138,7 +150,7 @@ void SendUsb(void){
 }
 
 // Sub rotina que limba o buffer de entrada para UART2
-void ClearBufferUsb(void){
+void clear_buffer_usb(void){
 	unsigned char ucChar;
 	while (USBBufferDataAvailable(&g_sRxBuffer))// Testa se há bytes no buffer de entrada
    {
@@ -151,9 +163,9 @@ void ClearBufferUsb(void){
  * Processa os comandos enviados pelo display
  *
  ********************************************************************************************************************/
-void ProcessCmdUsb(){
-	uint8_t mani1, mani2, mani3 = 0;
-	uint8_t Rx[11] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0,};
+void process_cmd_usb(){
+	uint8_t mani2, mani3 = 0;
+	//uint8_t Rx[11] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0,};
 	uint32_t uLong = 0;
 
   switch(MensagemUsb.CMD){
@@ -164,14 +176,14 @@ void ProcessCmdUsb(){
 			   MensagemUsb.CMD = 0x00;
 			   MensagemUsb.NDADO = 0x01;
 			   //MensagemUsb.DADO[0] = Parametros.End;
-			   SendUsb(); // Envia mensagem para a usb
+			   send_usb(); // Envia mensagem para a usb
                break;
      // Modelo da fonte
      case 0x01:
     	       MensagemUsb.CMD = 0x01;
     	       MensagemUsb.NDADO = 0x01;
     	       //MensagemUsb.DADO[0] = Parametros.MdFnt;
-    	       SendUsb(); // Envia mensagem para a usb
+    	       send_usb(); // Envia mensagem para a usb
                break;
      // Data e hora
      case 0x02:
@@ -185,7 +197,7 @@ void ProcessCmdUsb(){
     	       //MensagemUsb.DADO[3] = Rtc.RTChora;
     	       //MensagemUsb.DADO[4] = Rtc.RTCmin;
     	       //MensagemUsb.DADO[5] = Rtc.RTCseg;
-    	       SendUsb(); // Envia mensagem para a usb
+    	       send_usb(); // Envia mensagem para a usb
                break;
      //
      case 0x03:
@@ -197,7 +209,7 @@ void ProcessCmdUsb(){
     	       MensagemUsb.NDADO = 0x02;
     	       //MensagemUsb.DADO[0] = Parametros.ItlkAnalog;
     	       //MensagemUsb.DADO[1] = Parametros.ItlkStatInput;
-    	       SendUsb(); // Envia mensagem para a usb
+    	       send_usb(); // Envia mensagem para a usb
                break;
      // Configuração de Alarme
      case 0x05:
@@ -205,14 +217,14 @@ void ProcessCmdUsb(){
     	       MensagemUsb.NDADO = 0x02;
     	       //MensagemUsb.DADO[0] = Parametros.AlrmAnlog;
     	       //MensagemUsb.DADO[1] = Parametros.AlrmStatInput;
-    	       SendUsb(); // Envia mensagem para a usb
+    	       send_usb(); // Envia mensagem para a usb
                break;
      // Status local/remoto
      case 0x06:
     	       MensagemUsb.CMD = 0x06;
     	       MensagemUsb.NDADO = 0x01;
     	       //MensagemUsb.DADO[0] = Parametros.LocRem;
-    	       SendUsb(); // Envia mensagem para a usb
+    	       send_usb(); // Envia mensagem para a usb
                break;
      // Senha
      case 0x07:
@@ -221,7 +233,7 @@ void ProcessCmdUsb(){
     	       //MensagemUsb.DADO[0] = Parametros.Senha >> 16;
     	       //MensagemUsb.DADO[1] = Parametros.Senha >> 8;
     	       //MensagemUsb.DADO[2] = Parametros.Senha;
-    	       SendUsb(); // Envia mensagem para a usb
+    	       send_usb(); // Envia mensagem para a usb
                break;
      // Setpoint das para geração de alarme ou interlock por meio das medidas analogicas
      case 0x08:
@@ -252,7 +264,7 @@ void ProcessCmdUsb(){
     	       MensagemUsb.DADO[14] = Parametros.SetPointAn8 >> 8;
     	       MensagemUsb.DADO[15] = Parametros.SetPointAn8; */
 
-    	       SendUsb(); // Envia mensagem para a usb
+    	       send_usb(); // Envia mensagem para a usb
                break;
 
 	   // Numero de série
@@ -268,7 +280,7 @@ void ProcessCmdUsb(){
 		   	   //MensagemUsb.DADO[6] = Parametros.NSerie >> 8;
 		   	   //MensagemUsb.DADO[7] = Parametros.NSerie;
 
-		   	   SendUsb(); // Envia mensagem para a usb
+		   	   send_usb(); // Envia mensagem para a usb
 			   break;
 
      // Comandos de leitura, pede para retornar os dados requeridos
@@ -281,7 +293,7 @@ void ProcessCmdUsb(){
 			   //MensagemUsb.DADO[1] = LeituraVarDin.IoutReadI >> 8;
 			   //MensagemUsb.DADO[2] = LeituraVarDin.IoutReadI;
 
-			   SendUsb(); // Envia mensagem para a usb
+    	       send_usb(); // Envia mensagem para a usb
     	 	   break;
      //
      case 0x11:
@@ -297,7 +309,7 @@ void ProcessCmdUsb(){
     	 	   //MensagemUsb.DADO[0] = LeituraVarDin.SobreCorrente;
     	 	   //MensagemUsb.DADO[1] = LeituraVarDin.Fusivel;
 
-    	 	   SendUsb(); // Envia mensagem para a usb
+    	 	  send_usb(); // Envia mensagem para a usb
 
                break;
      // Log de eventos
@@ -465,20 +477,18 @@ void ProcessCmdUsb(){
      default:
 
     	 	   break;
-
-
      }
 
 }
 
-void MensagUsb(void)
+void mensagem_usb(void)
 {
    if(NewData)// Testa a integridade da Mensagem
    {
-	   SeparaDadoUsb(); // Chama sub rotina que tira os dados do buffer e aloca na estrutura
-	   ProcessCmdUsb(); // Chama Sub rotina para interpretação dos dados recebidos
+       separa_dado_usb(); // Chama sub rotina que tira os dados do buffer e aloca na estrutura
+       process_cmd_usb(); // Chama Sub rotina para interpretação dos dados recebidos
 	   NewData = 0;
-	   ClearBufferUsb();  // Limpa buffer antes de voltar para a operação normal
+	   clear_buffer_usb();  // Limpa buffer antes de voltar para a operação normal
    }
 
 

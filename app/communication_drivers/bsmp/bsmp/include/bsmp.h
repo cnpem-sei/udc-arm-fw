@@ -85,7 +85,7 @@ enum bsmp_err
 #define BSMP_CURVE_BLOCK_INFO       3
 #define BSMP_CURVE_CSUM_SIZE        16
 
-#define BSMP_FUNC_MAX_INPUT         32//15
+#define BSMP_FUNC_MAX_INPUT         64//32//15
 #define BSMP_FUNC_MAX_OUTPUT        32//15
 
 /**** Structures and lists ****/
@@ -103,7 +103,7 @@ struct bsmp_var
 {
     struct bsmp_var_info info;  // Information about the variable identification
     bool                 (*value_ok) (struct bsmp_var *, uint8_t *);  // Checker
-    uint8_t              *data; // Pointer to the value of the variable.
+    volatile uint8_t     *data; // Pointer to the value of the variable.
     void                 *user; // The user can make use of this pointer at
                                 // will. It is not touched by BSMP.
 };

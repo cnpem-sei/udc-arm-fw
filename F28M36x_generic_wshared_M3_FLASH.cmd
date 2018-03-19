@@ -26,7 +26,6 @@
 /* --stack_size=256                                                          */
 /* --library=rtsv7M3_T_le_eabi.lib                                           */
 
-
 /* The following options allow the user to program Z1 and Z2 DCSM security   */
 /* values, include CSM PSWD, ECSL PSWD, GRABSECT, GRABRAM, and FLASH EXEONLY */
 /* The driverlib/dcsm_z1_secvalues.s and driverlib/dcsm_z2_secvalues.s files */
@@ -71,12 +70,12 @@ MEMORY
     //S6 (RWX)        : origin = 0x20014000, length = 0x2000
     //S7 (RWX)        : origin = 0x20016000, length = 0x2000
     S67 (RWX)       : origin = 0x20014000, length = 0x4000
-    
-    C4  (RWX)        : origin = 0x20018000, length = 0x2000
-    C5  (RWX)        : origin = 0x2001A000, length = 0x2000
-    C6  (RWX)        : origin = 0x2001C000, length = 0x2000
-    C7  (RWX)        : origin = 0x2001E000, length = 0x2000
-    C8  (RWX)        : origin = 0x20020000, length = 0x2000
+    C0408  (RWX)        : origin = 0x20018000, length = 0xA000
+    //C4  (RWX)        : origin = 0x20018000, length = 0x2000
+    //C5  (RWX)        : origin = 0x2001A000, length = 0x2000
+    //C6  (RWX)        : origin = 0x2001C000, length = 0x2000
+    //C7  (RWX)        : origin = 0x2001E000, length = 0x2000
+    //C8  (RWX)        : origin = 0x20020000, length = 0x2000
     //C9  (RWX)        : origin = 0x20022000, length = 0x2000
     //C10 (RWX)        : origin = 0x20024000, length = 0x2000
     //C11 (RWX)        : origin = 0x20026000, length = 0x2000
@@ -117,7 +116,7 @@ SECTIONS
 
     .vtable :   >  C0 | C1 | C2 | C3
     .data   :   >  C2 | C3
-    .bss    :   >> C4 | C5 | C6 | C7 | C8 | C9 | C10
+    .bss    :   >  C0408// | C5 | C6 | C7 | C8
     .sysmem :   >  C0 | C1 | C2 | C3
     .stack  :   >  C0 | C1 | C2 | C3
     
