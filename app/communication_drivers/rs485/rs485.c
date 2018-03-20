@@ -23,6 +23,7 @@
 #include <stdint.h>
 #include <stdarg.h>
 #include <string.h>
+#include <math.h>
 
 #include "inc/hw_sysctl.h"
 #include "inc/hw_ints.h"
@@ -367,7 +368,12 @@ uint8_t get_rs485_ch_0_address()
 void config_rs485(uint32_t BaudRate)
 {
 	// Baudrate limit
-	if(BaudRate > 6000000) BaudRate = 6000000;
+	if( (BaudRate > 6000000) || isinf(BaudRate) || isnan(BaudRate) )
+	{
+	    BaudRate = 6000000;
+	    set_param(RS485_Baudrate,0,BaudRate);
+	    save_param_eeprom(RS485_Baudrate,0);
+	}
 
 	// RS485 serial configuration, operation mode 8-N-1
 	UARTConfigSetExpClk(RS485_UART_BASE, SysCtlClockGet(SYSTEM_CLOCK_SPEED), BaudRate,
@@ -377,7 +383,6 @@ void config_rs485(uint32_t BaudRate)
 
 void init_rs485(void)
 {
-
 	if(HARDWARE_VERSION == 0x21) rs485_term_ctrl(get_param(RS485_Termination,0));
 
 	// Load RS485 address from EEPROM and config it
