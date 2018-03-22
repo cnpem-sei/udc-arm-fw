@@ -61,10 +61,16 @@ void init_ipc(void)
     for (uiloop = 0; uiloop < NUM_MAX_PS_MODULES; uiloop++)
     {
         g_ipc_mtoc.ps_module[uiloop].ps_status.all = 0;
+        g_ipc_mtoc.ps_module[uiloop].ps_status.bit.model = get_param(PS_Model,0);
         g_ipc_mtoc.ps_module[uiloop].ps_setpoint.f = 0.0;
         g_ipc_mtoc.ps_module[uiloop].ps_reference.f = 0.0;
         g_ipc_mtoc.ps_module[uiloop].ps_soft_interlock.u32 = 0;
         g_ipc_mtoc.ps_module[uiloop].ps_hard_interlock.u32 = 0;
+    }
+
+    for (uiloop = 0; uiloop < (uint8_t) get_param(Num_PS_Modules,0); uiloop++)
+    {
+        g_ipc_mtoc.ps_module[uiloop].ps_status.bit.active = 1;
     }
 
     g_ipc_mtoc.siggen.enable.u16 = 0;

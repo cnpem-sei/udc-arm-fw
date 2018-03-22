@@ -71,11 +71,11 @@ void init_system(void)
 
 	init_parameters_bank();
 
+	load_param_bank();
+
 	init_ipc();
 
 	init_control_framework(&g_controller_mtoc);
-
-	load_param_bank();
 
 	load_dsp_modules_eeprom();
 

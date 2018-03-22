@@ -263,5 +263,5 @@ void fbp_system_config()
 {
     adcp_channel_config();
     bsmp_init_server();
-    ipc_init_parameters();
+    //ipc_init_parameters();
 }
