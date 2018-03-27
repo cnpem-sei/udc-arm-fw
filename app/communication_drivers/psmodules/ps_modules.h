@@ -68,7 +68,8 @@ typedef enum
 
 typedef enum
 {
-    FBP
+    FBP,
+    FBP_DCLink
 } ps_model_t;
 
 typedef struct
@@ -98,6 +99,12 @@ typedef struct
         volatile uint32_t   u32;
         volatile float      f;
     } ps_setpoint;
+
+    union {
+        volatile uint8_t    u8[4];
+        volatile uint32_t   u32;
+        volatile float      f;
+    } ps_dclink_setpoint;
 
     union {
         volatile uint32_t   u32;

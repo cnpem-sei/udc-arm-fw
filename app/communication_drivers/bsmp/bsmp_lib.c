@@ -43,6 +43,7 @@
 
 #include "bsmp/include/server.h"
 #include "bsmp_lib.h"
+#include "communication_drivers/digital_pot/digital_pot.h"
 
 #define SIZE_WFMREF_BLOCK       8192
 #define SIZE_SAMPLES_BUFFER     16384
@@ -742,6 +743,12 @@ static struct bsmp_var i_load[NUMBER_OF_BSMP_SERVERS];
 static struct bsmp_var v_load[NUMBER_OF_BSMP_SERVERS];
 static struct bsmp_var v_dclink[NUMBER_OF_BSMP_SERVERS];
 static struct bsmp_var temp_switches[NUMBER_OF_BSMP_SERVERS];
+static struct bsmp_var vSOUR01[NUMBER_OF_BSMP_SERVERS];
+static struct bsmp_var vSOUR02[NUMBER_OF_BSMP_SERVERS];
+static struct bsmp_var vSOUR03[NUMBER_OF_BSMP_SERVERS];
+static struct bsmp_var v_digital_pot[NUMBER_OF_BSMP_SERVERS];
+static struct bsmp_var digital_inputs[NUMBER_OF_BSMP_SERVERS];
+
 
 /**
  * Dummy BSMP Functions
@@ -984,6 +991,49 @@ static  struct bsmp_var wfmRef_Gain = {
         .value_ok      = NULL,
 };
 
+
+//*****************************************************************************
+//                  Write BKP I2c BSMP Function
+//*****************************************************************************
+uint8_t write_digital_pot_voltage (uint8_t *input, uint8_t *output)
+{
+
+    g_ipc_mtoc.ps_module[g_current_ps_id].ps_dclink_setpoint.u32 =
+            (input[3] << 24) | (input[2] << 16) | (input[1] << 8) | input[0];
+
+    write_voltage(g_ipc_mtoc.ps_module[g_current_ps_id].ps_dclink_setpoint.f);
+
+    *output = 0;
+    return *output;
+}
+
+static struct bsmp_func bsmp_func_digital_pot_voltage_White = {
+    .func_p           = write_digital_pot_voltage,
+    .info.input_size  = 4,       // Nothing is read from the input parameter
+    .info.output_size = 1,       // command_ack
+};
+
+
+//*****************************************************************************
+//                  Read BKP I2c BSMP Function
+//*****************************************************************************
+uint8_t read_digital_pot_voltage (uint8_t *input, uint8_t *output)
+{
+    uint8_t voltage;
+
+    read_voltage();
+
+    *output = voltage;
+    return *output;
+}
+
+static struct bsmp_func bsmp_func_digital_pot_voltage_Read = {
+    .func_p           = read_digital_pot_voltage,
+    .info.input_size  = 0,       // Nothing is read from the input parameter
+    .info.output_size = 1,       // command_ack
+};
+//
+
 static void init_bsmp_var(struct bsmp_var *p_var, uint8_t size, uint8_t *p_dummy, bool writable);
 
 /**
@@ -1030,6 +1080,8 @@ void bsmp_init(uint8_t server)
     bsmp_register_function(&bsmp[server], &bsmp_func_set_siggen);               // ID 23
     bsmp_register_function(&bsmp[server], &bsmp_func_enable_siggen);            // ID 24
     bsmp_register_function(&bsmp[server], &bsmp_func_disable_siggen);           // ID 25
+    bsmp_register_function(&bsmp[server], &bsmp_func_digital_pot_voltage_White);// ID 26
+    bsmp_register_function(&bsmp[server], &bsmp_func_digital_pot_voltage_Read); // ID 27
 
     /**
      * BSMP Variable Register
@@ -1055,6 +1107,13 @@ void bsmp_init(uint8_t server)
     init_bsmp_var(&v_load[server], 4, &dummy_u8_memory, false);
     init_bsmp_var(&v_dclink[server], 4, &dummy_u8_memory, false);
     init_bsmp_var(&temp_switches[server], 4, &dummy_u8_memory, false);
+
+    init_bsmp_var(&vSOUR01[server], 4, &dummy_u8_memory, false);
+    init_bsmp_var(&vSOUR02[server], 4, &dummy_u8_memory, false);
+    init_bsmp_var(&vSOUR03[server], 4, &dummy_u8_memory, false);
+    init_bsmp_var(&digital_inputs[server], 2, &dummy_u8_memory, false);
+    init_bsmp_var(&v_digital_pot[server], 4, &dummy_u8_memory, false);
+
 
     bsmp_register_variable(&bsmp[server], &ps_status[server]);                  // ID 0
     bsmp_register_variable(&bsmp[server], &ps_setpoint[server]);                // ID 1
@@ -1087,6 +1146,11 @@ void bsmp_init(uint8_t server)
     bsmp_register_variable(&bsmp[server], &v_load[server]);                     // ID 28
     bsmp_register_variable(&bsmp[server], &v_dclink[server]);                   // ID 29
     bsmp_register_variable(&bsmp[server], &temp_switches[server]);              // ID 30
+    bsmp_register_variable(&bsmp[server], &vSOUR01[server]);                    // ID 31
+    bsmp_register_variable(&bsmp[server], &vSOUR02[server]);                    // ID 32
+    bsmp_register_variable(&bsmp[server], &vSOUR03[server]);                    // ID 33
+    bsmp_register_variable(&bsmp[server], &digital_inputs[server]);             // ID 34
+    bsmp_register_variable(&bsmp[server], &v_digital_pot[server]);              // ID 35
 
     //*************************************************************************
     //                  BSMP Variable Pointers Initialization
@@ -1106,7 +1170,6 @@ void bsmp_init(uint8_t server)
     set_bsmp_var_pointer(12, server, g_ipc_ctom.siggen[server].offset.u8);
     set_bsmp_var_pointer(13, server, g_ipc_ctom.siggen[server].aux_param[0].u8);
 }
-
 
 /*
  * @brief Set BSMP variable pointer to specified variable

@@ -18,6 +18,7 @@
  *
  */
 
+#include <communication_drivers/psmodules/fbp_dclink/fbp_dclink_main.h>
 #include <stdint.h>
 #include <stdarg.h>
 #include <string.h>
@@ -58,7 +59,9 @@
 #include "communication_drivers/parameters/system/system.h"
 #include "communication_drivers/ipc/ipc_lib.h"
 #include "communication_drivers/bsmp/bsmp_lib.h"
+
 #include "communication_drivers/psmodules/fbp/fbp_main.h"
+#include "communication_drivers/psmodules/fbp_dclink/fbp_dclink_main.h"
 
 #include "hardware_def.h"
 
@@ -75,8 +78,6 @@ uint8_t read_rtc, read_rtc_status;
 uint8_t read_add_rs485, set_add_rs485, read_add_IP, set_add_IP, read_display_sts, set_display_sts, read_isodcdc_sts, set_isodcdc_sts, read_adcp, read_flash_sn;
 uint8_t add485, stsdisp, stsisodcdc;
 uint32_t addIP;
-
-
 
 int main(void) {
 	
@@ -127,8 +128,10 @@ int main(void) {
 	// Enable processor interrupts.
 	IntMasterEnable();
 
+	g_ipc_mtoc.ps_module[0].ps_status.bit.model = FBP_DCLink;
 	while(1)
 	{
+
 	    // TODO: Just when using IHM
 	    //g_ipc_mtoc.ps_module[0].ps_status.bit.state = loc_rem_update();
 
@@ -139,6 +142,12 @@ int main(void) {
 	            fbp_main();
 
 	        break;
+
+	        case FBP_DCLink:
+
+	            main_fbp_dclink();
+
+            break;
 
 	        //case FAP_DCDC_20kHz:
 	        //    fap_dcdc_20_khz_main();
@@ -171,7 +180,7 @@ int main(void) {
 	        //break;
 
 	        default:
-	            fbp_main();
+	        break;
 	    }
 	}
 

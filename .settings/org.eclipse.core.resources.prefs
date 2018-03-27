@@ -112,6 +112,8 @@ encoding//FLASH_UDC_V2_1/app/communication_drivers/bsmp/subdir_rules.mk=UTF-8
 encoding//FLASH_UDC_V2_1/app/communication_drivers/bsmp/subdir_vars.mk=UTF-8
 encoding//FLASH_UDC_V2_1/app/communication_drivers/control/subdir_rules.mk=UTF-8
 encoding//FLASH_UDC_V2_1/app/communication_drivers/control/subdir_vars.mk=UTF-8
+encoding//FLASH_UDC_V2_1/app/communication_drivers/digital_pot/subdir_rules.mk=UTF-8
+encoding//FLASH_UDC_V2_1/app/communication_drivers/digital_pot/subdir_vars.mk=UTF-8
 encoding//FLASH_UDC_V2_1/app/communication_drivers/epi/subdir_rules.mk=UTF-8
 encoding//FLASH_UDC_V2_1/app/communication_drivers/epi/subdir_vars.mk=UTF-8
 encoding//FLASH_UDC_V2_1/app/communication_drivers/ethernet/server_net/subdir_rules.mk=UTF-8
@@ -134,6 +136,8 @@ encoding//FLASH_UDC_V2_1/app/communication_drivers/parameters/system/subdir_rule
 encoding//FLASH_UDC_V2_1/app/communication_drivers/parameters/system/subdir_vars.mk=UTF-8
 encoding//FLASH_UDC_V2_1/app/communication_drivers/psmodules/fbp/subdir_rules.mk=UTF-8
 encoding//FLASH_UDC_V2_1/app/communication_drivers/psmodules/fbp/subdir_vars.mk=UTF-8
+encoding//FLASH_UDC_V2_1/app/communication_drivers/psmodules/fbp_dclink/subdir_rules.mk=UTF-8
+encoding//FLASH_UDC_V2_1/app/communication_drivers/psmodules/fbp_dclink/subdir_vars.mk=UTF-8
 encoding//FLASH_UDC_V2_1/app/communication_drivers/rs485/subdir_rules.mk=UTF-8
 encoding//FLASH_UDC_V2_1/app/communication_drivers/rs485/subdir_vars.mk=UTF-8
 encoding//FLASH_UDC_V2_1/app/communication_drivers/rs485_bkp/subdir_rules.mk=UTF-8
