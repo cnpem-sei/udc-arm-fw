@@ -110,6 +110,8 @@ encoding//FLASH_UDC_V2_1/app/communication_drivers/bsmp/bsmp/src/subdir_rules.mk
 encoding//FLASH_UDC_V2_1/app/communication_drivers/bsmp/bsmp/src/subdir_vars.mk=UTF-8
 encoding//FLASH_UDC_V2_1/app/communication_drivers/bsmp/subdir_rules.mk=UTF-8
 encoding//FLASH_UDC_V2_1/app/communication_drivers/bsmp/subdir_vars.mk=UTF-8
+encoding//FLASH_UDC_V2_1/app/communication_drivers/common/subdir_rules.mk=UTF-8
+encoding//FLASH_UDC_V2_1/app/communication_drivers/common/subdir_vars.mk=UTF-8
 encoding//FLASH_UDC_V2_1/app/communication_drivers/control/subdir_rules.mk=UTF-8
 encoding//FLASH_UDC_V2_1/app/communication_drivers/control/subdir_vars.mk=UTF-8
 encoding//FLASH_UDC_V2_1/app/communication_drivers/epi/subdir_rules.mk=UTF-8
