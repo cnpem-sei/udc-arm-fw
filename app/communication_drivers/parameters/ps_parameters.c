@@ -39,16 +39,16 @@
 
 static const uint16_t param_addresses[NUM_MAX_PARAMETERS] =
 {
-    [PS_Model] = 0x0020,
-    [Num_PS_Modules] = 0x0022,
+    [PS_Model] = 0x0040,
+    [Num_PS_Modules] = 0x0042,
 
-    [RS485_Baudrate] = 0x0040,
-    [RS485_Address] = 0x0044,
-    [RS485_Termination] = 0x004C,
-    [UDCNet_Address] = 0x004E,
-    [Ethernet_IP] = 0x0050,
-    [Ethernet_Subnet_Mask] = 0x0054,
-    [Command_Interface] = 0x0058,
+    [RS485_Baudrate] = 0x0044,
+    [RS485_Address] = 0x0048,
+    [RS485_Termination] = 0x0050,
+    [UDCNet_Address] = 0x0052,
+    [Ethernet_IP] = 0x0054,
+    [Ethernet_Subnet_Mask] = 0x0058,
+    [Command_Interface] = 0x005C,
 
     [Freq_ISR_Controller] = 0x0080,
     [Freq_TimeSlicer] = 0x0084,
@@ -327,10 +327,10 @@ void init_parameters_bank(void)
     init_param(UDCNet_Address, is_uint16_t, 1,
                     &g_ipc_mtoc.communication.udcnet_address.u8[0]);
 
-    init_param(Ethernet_IP, is_uint8_t, 1,
+    init_param(Ethernet_IP, is_uint8_t, 4,
                 &g_ipc_mtoc.communication.ethernet_ip[0]);
 
-    init_param(Ethernet_Subnet_Mask, is_uint8_t, 1,
+    init_param(Ethernet_Subnet_Mask, is_uint8_t, 4,
                 &g_ipc_mtoc.communication.ethernet_mask[0]);
 
     init_param(Command_Interface, is_uint16_t, 1,

@@ -69,8 +69,10 @@
 #define SERIAL_MASTER_ADDRESS   0   // Master Address
 #define SERIAL_BUF_SIZE         (SERIAL_HEADER+3+3+16834+SERIAL_CSUM)
 
-//#define HIGH_SPEED_BAUD         6000000
-//#define LOW_SPEED_BAUD          115200
+#define HIGH_SPEED_BAUD         6000000
+#define LOW_SPEED_BAUD          115200
+
+#define BAUDRATE_DEFAULT        HIGH_SPEED_BAUD
 
 static uint8_t SERIAL_CH_0_ADDRESS = 1;
 static uint8_t SERIAL_CH_1_ADDRESS = 2;
@@ -128,7 +130,7 @@ void isr_rs485(void)
 	    // GPIO1 turn on
 	    //GPIOPinWrite(GPIO_PORTP_BASE, GPIO_PIN_7, ON);
 
-        //#ifdef LOW_SPEED_BAUD
+	    // Low baud-rate
 	    if(g_ipc_mtoc.communication.rs485_baud.f < 1000000)
 	    {
             for(time_out = 0; time_out < 15; time_out++)
@@ -166,7 +168,7 @@ void isr_rs485(void)
                 MessageOverflow = 0;
             }
 	    }
-        //#elif HIGH_SPEED_BAUD
+	    // High baud-rate
 	    else
 	    {
             for(time_out = 0; time_out < 15; time_out++)
@@ -368,9 +370,10 @@ uint8_t get_rs485_ch_0_address()
 void config_rs485(uint32_t BaudRate)
 {
 	// Baudrate limit
-	if( (BaudRate > 6000000) || isinf(BaudRate) || isnan(BaudRate) )
+	if( (BaudRate > 6000000) || (BaudRate < 9600) ||
+	    isinf(BaudRate) || isnan(BaudRate) )
 	{
-	    BaudRate = 6000000;
+	    BaudRate = BAUDRATE_DEFAULT;
 	    set_param(RS485_Baudrate,0,BaudRate);
 	    save_param_eeprom(RS485_Baudrate,0);
 	}
@@ -392,12 +395,6 @@ void init_rs485(void)
 	set_rs485_ch_3_address(get_param(RS485_Address,3));
 
 	config_rs485(get_param(RS485_Baudrate,0));
-
-    /*#ifdef HIGH_SPEED_BAUD
-	    config_rs485(HIGH_SPEED_BAUD);
-    #elif LOW_SPEED_BAUD
-	    config_rs485(LOW_SPEED_BAUD);
-    #endif*/
 
 	UARTFIFOEnable(RS485_UART_BASE);
 	UARTFIFOLevelSet(RS485_UART_BASE,UART_FIFO_TX1_8,UART_FIFO_RX1_8);

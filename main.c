@@ -82,7 +82,7 @@ int main(void) {
 	volatile unsigned long ulLoop;
 
 	// Disable Protection
-	HWREG(SYSCTL_MWRALLOW) =  0xA5A5A5A5;
+    HWREG(SYSCTL_MWRALLOW) =  0xA5A5A5A5;
 
 	// Tells M3 Core the vector table is at the beginning of C0 now.
 	HWREG(NVIC_VTABLE) = 0x20005000;

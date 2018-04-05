@@ -44,6 +44,10 @@
 
 void read_i2c(uint8_t SLAVE_ADDR, uint8_t TYPE_REGISTER_ADDR, uint8_t MESSAGE_SIZE, uint8_t *data)
 {
+    if(MESSAGE_SIZE < 2)
+    {
+        MESSAGE_SIZE = 2;
+    }
 
 	I2CMasterSlaveAddrSet(I2C_ONBOARD_MASTER_BASE, SLAVE_ADDR, I2C_WRITE);
 
