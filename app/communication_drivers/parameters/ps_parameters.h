@@ -29,18 +29,21 @@
 #include "communication_drivers/common/structs.h"
 #include "communication_drivers/control/siggen/siggen.h"
 
+#define SIZE_PS_NAME            64
+
 #define NUM_MAX_TIMESLICERS     4
 
 #define NUM_MAX_ANALOG_VAR      64
 #define NUM_MAX_DIGITAL_VAR     12
 #define NUM_MAX_HRADC           4
 
-#define NUM_PARAMETERS          46
+#define NUM_PARAMETERS          47
 #define NUM_MAX_PARAMETERS      64
 #define NUM_MAX_FLOATS          200
 
 typedef enum
 {
+    PS_Name,
     PS_Model,
     Num_PS_Modules,
 

@@ -39,6 +39,7 @@
 
 static const uint16_t param_addresses[NUM_MAX_PARAMETERS] =
 {
+    [PS_Name] = 0x0000,
     [PS_Model] = 0x0040,
     [Num_PS_Modules] = 0x0042,
 
@@ -307,6 +308,8 @@ uint8_t load_param_eeprom(param_id_t id, uint16_t n)
 
 void init_parameters_bank(void)
 {
+    init_param(PS_Name, is_uint8_t, SIZE_PS_NAME, &g_ipc_mtoc.ps_name);
+
     init_param(PS_Model, is_uint16_t, 1, (uint8_t *) &g_ipc_mtoc.ps_model);
 
     init_param(Num_PS_Modules, is_uint16_t, 1,

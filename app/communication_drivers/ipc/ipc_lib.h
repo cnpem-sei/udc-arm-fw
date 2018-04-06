@@ -133,6 +133,7 @@ typedef volatile struct
     uint32_t                msg_ctom;
     uint16_t                msg_id;
     uint16_t                error_ctom;
+    uint8_t                 ps_name[SIZE_PS_NAME];
     uint16_t                ps_model;
     uint16_t                num_ps_modules;
     ps_module_t             ps_module[NUM_MAX_PS_MODULES];
