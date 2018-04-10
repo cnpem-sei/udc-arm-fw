@@ -116,6 +116,7 @@
 #define PS1_DCLINK_VOLTAGE        g_controller_mtoc.net_signals[0]   // ANI2
 #define PS1_LOAD_VOLTAGE          g_controller_mtoc.net_signals[4]   // ANI6
 #define PS1_TEMPERATURE           g_controller_mtoc.net_signals[8]  // I2C Add 0x48
+#define PS1_DUTY_CYCLE            g_controller_ctom.output_signals[0]
 
 #define PS2_ID                    0x0001
 
@@ -123,6 +124,7 @@
 #define PS2_DCLINK_VOLTAGE        g_controller_mtoc.net_signals[1]    // ANI1
 #define PS2_LOAD_VOLTAGE          g_controller_mtoc.net_signals[5]   // ANI7
 #define PS2_TEMPERATURE           g_controller_mtoc.net_signals[9]   // I2C Add 0x49
+#define PS2_DUTY_CYCLE            g_controller_ctom.output_signals[1]
 
 #define PS3_ID                    0x0002
 
@@ -130,6 +132,7 @@
 #define PS3_DCLINK_VOLTAGE        g_controller_mtoc.net_signals[2]    // ANI4
 #define PS3_LOAD_VOLTAGE          g_controller_mtoc.net_signals[6]   // ANI3
 #define PS3_TEMPERATURE           g_controller_mtoc.net_signals[10]   // I2C Add 0x4A
+#define PS3_DUTY_CYCLE            g_controller_ctom.output_signals[2]
 
 #define PS4_ID                    0x0003
 
@@ -137,6 +140,7 @@
 #define PS4_DCLINK_VOLTAGE        g_controller_mtoc.net_signals[3]    // ANI0
 #define PS4_LOAD_VOLTAGE          g_controller_mtoc.net_signals[7]   // ANI5
 #define PS4_TEMPERATURE           g_controller_mtoc.net_signals[11]   // I2C Add 0x4C
+#define PS4_DUTY_CYCLE            g_controller_ctom.output_signals[3]
 
 /**
  * Number of power supplies
@@ -224,33 +228,37 @@ static void bsmp_init_server(void)
     bsmp_init(PS3_ID);
     bsmp_init(PS4_ID);
 
-    set_bsmp_var_pointer(25, PS1_ID, g_ipc_ctom.ps_module[PS1_ID].ps_soft_interlock.u8);
-    set_bsmp_var_pointer(26, PS1_ID, g_ipc_ctom.ps_module[PS1_ID].ps_hard_interlock.u8);
-    set_bsmp_var_pointer(27, PS1_ID, PS1_LOAD_CURRENT.u8);
-    set_bsmp_var_pointer(28, PS1_ID, PS1_LOAD_VOLTAGE.u8);
-    set_bsmp_var_pointer(29, PS1_ID, PS1_DCLINK_VOLTAGE.u8);
-    set_bsmp_var_pointer(30, PS1_ID, PS1_TEMPERATURE.u8);
+    create_bsmp_var(25, PS1_ID, 4, false, g_ipc_ctom.ps_module[PS1_ID].ps_soft_interlock.u8);
+    create_bsmp_var(26, PS1_ID, 4, false, g_ipc_ctom.ps_module[PS1_ID].ps_hard_interlock.u8);
+    create_bsmp_var(27, PS1_ID, 4, false, PS1_LOAD_CURRENT.u8);
+    create_bsmp_var(28, PS1_ID, 4, false, PS1_LOAD_VOLTAGE.u8);
+    create_bsmp_var(29, PS1_ID, 4, false, PS1_DCLINK_VOLTAGE.u8);
+    create_bsmp_var(30, PS1_ID, 4, false, PS1_TEMPERATURE.u8);
+    create_bsmp_var(31, PS1_ID, 4, false, PS1_DUTY_CYCLE.u8);
 
-    set_bsmp_var_pointer(25, PS2_ID, g_ipc_ctom.ps_module[PS2_ID].ps_soft_interlock.u8);
-    set_bsmp_var_pointer(26, PS2_ID, g_ipc_ctom.ps_module[PS2_ID].ps_hard_interlock.u8);
-    set_bsmp_var_pointer(27, PS2_ID, PS2_LOAD_CURRENT.u8);
-    set_bsmp_var_pointer(28, PS2_ID, PS2_LOAD_VOLTAGE.u8);
-    set_bsmp_var_pointer(29, PS2_ID, PS2_DCLINK_VOLTAGE.u8);
-    set_bsmp_var_pointer(30, PS2_ID, PS2_TEMPERATURE.u8);
+    create_bsmp_var(25, PS2_ID, 4, false, g_ipc_ctom.ps_module[PS2_ID].ps_soft_interlock.u8);
+    create_bsmp_var(26, PS2_ID, 4, false, g_ipc_ctom.ps_module[PS2_ID].ps_hard_interlock.u8);
+    create_bsmp_var(27, PS2_ID, 4, false, PS2_LOAD_CURRENT.u8);
+    create_bsmp_var(28, PS2_ID, 4, false, PS2_LOAD_VOLTAGE.u8);
+    create_bsmp_var(29, PS2_ID, 4, false, PS2_DCLINK_VOLTAGE.u8);
+    create_bsmp_var(30, PS2_ID, 4, false, PS2_TEMPERATURE.u8);
+    create_bsmp_var(31, PS2_ID, 4, false, PS2_DUTY_CYCLE.u8);
 
-    set_bsmp_var_pointer(25, PS3_ID, g_ipc_ctom.ps_module[PS3_ID].ps_soft_interlock.u8);
-    set_bsmp_var_pointer(26, PS3_ID, g_ipc_ctom.ps_module[PS3_ID].ps_hard_interlock.u8);
-    set_bsmp_var_pointer(27, PS3_ID, PS3_LOAD_CURRENT.u8);
-    set_bsmp_var_pointer(28, PS3_ID, PS3_LOAD_VOLTAGE.u8);
-    set_bsmp_var_pointer(29, PS3_ID, PS3_DCLINK_VOLTAGE.u8);
-    set_bsmp_var_pointer(30, PS3_ID, PS3_TEMPERATURE.u8);
+    create_bsmp_var(25, PS3_ID, 4, false, g_ipc_ctom.ps_module[PS3_ID].ps_soft_interlock.u8);
+    create_bsmp_var(26, PS3_ID, 4, false, g_ipc_ctom.ps_module[PS3_ID].ps_hard_interlock.u8);
+    create_bsmp_var(27, PS3_ID, 4, false, PS3_LOAD_CURRENT.u8);
+    create_bsmp_var(28, PS3_ID, 4, false, PS3_LOAD_VOLTAGE.u8);
+    create_bsmp_var(29, PS3_ID, 4, false, PS3_DCLINK_VOLTAGE.u8);
+    create_bsmp_var(30, PS3_ID, 4, false, PS3_TEMPERATURE.u8);
+    create_bsmp_var(31, PS3_ID, 4, false, PS3_DUTY_CYCLE.u8);
 
-    set_bsmp_var_pointer(25, PS4_ID, g_ipc_ctom.ps_module[PS4_ID].ps_soft_interlock.u8);
-    set_bsmp_var_pointer(26, PS4_ID, g_ipc_ctom.ps_module[PS4_ID].ps_hard_interlock.u8);
-    set_bsmp_var_pointer(27, PS4_ID, PS4_LOAD_CURRENT.u8);
-    set_bsmp_var_pointer(28, PS4_ID, PS4_LOAD_VOLTAGE.u8);
-    set_bsmp_var_pointer(29, PS4_ID, PS4_DCLINK_VOLTAGE.u8);
-    set_bsmp_var_pointer(30, PS4_ID, PS4_TEMPERATURE.u8);
+    create_bsmp_var(25, PS4_ID, 4, false, g_ipc_ctom.ps_module[PS4_ID].ps_soft_interlock.u8);
+    create_bsmp_var(26, PS4_ID, 4, false, g_ipc_ctom.ps_module[PS4_ID].ps_hard_interlock.u8);
+    create_bsmp_var(27, PS4_ID, 4, false, PS4_LOAD_CURRENT.u8);
+    create_bsmp_var(28, PS4_ID, 4, false, PS4_LOAD_VOLTAGE.u8);
+    create_bsmp_var(29, PS4_ID, 4, false, PS4_DCLINK_VOLTAGE.u8);
+    create_bsmp_var(30, PS4_ID, 4, false, PS4_TEMPERATURE.u8);
+    create_bsmp_var(31, PS4_ID, 4, false, PS4_DUTY_CYCLE.u8);
 }
 
 /**

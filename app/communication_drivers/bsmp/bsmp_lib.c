@@ -50,6 +50,8 @@
 #include "bsmp/include/server.h"
 #include "bsmp_lib.h"
 
+#define TIMEOUT_DSP_IPC_ACK     30
+
 #define SIZE_WFMREF_BLOCK       8192
 #define SIZE_SAMPLES_BUFFER     16384
 
@@ -60,13 +62,11 @@
 
 uint8_t wfm_curve_memory[2*SIZE_WFMREF_BLOCK];
 uint8_t samples_buffer_memory[SIZE_SAMPLES_BUFFER];
+bsmp_server_t bsmp[NUMBER_OF_BSMP_SERVERS];
 
 volatile unsigned long ulTimeout;
 
-//#pragma CODE_SECTION(BSMPprocess, "ramfuncs");
-
-bsmp_server_t bsmp[NUMBER_OF_BSMP_SERVERS];
-uint16_t TIMEOUT_VALUE = 30;
+static struct bsmp_var bsmp_vars[NUMBER_OF_BSMP_SERVERS][BSMP_MAX_VARIABLES];
 
 /**
  * @brief Turn on BSMP Function
@@ -90,10 +90,10 @@ static uint8_t bsmp_turn_on(uint8_t *input, uint8_t *output)
         send_ipc_lowpriority_msg(g_current_ps_id, Turn_On);
         while ((HWREG(MTOCIPC_BASE + IPC_O_MTOCIPCFLG) &
                 low_priority_msg_to_reg(Turn_On)) &&
-                (ulTimeout<TIMEOUT_VALUE)){
+                (ulTimeout<TIMEOUT_DSP_IPC_ACK)){
             ulTimeout++;
         }
-        if(ulTimeout==TIMEOUT_VALUE){
+        if(ulTimeout==TIMEOUT_DSP_IPC_ACK){
             *output = 5;
         }
         else{
@@ -130,10 +130,10 @@ static uint8_t bsmp_turn_off(uint8_t *input, uint8_t *output)
         send_ipc_lowpriority_msg(g_current_ps_id, Turn_Off);
         while ((HWREG(MTOCIPC_BASE + IPC_O_MTOCIPCFLG) &
                 low_priority_msg_to_reg(Turn_Off)) &&
-                (ulTimeout<TIMEOUT_VALUE)){
+                (ulTimeout<TIMEOUT_DSP_IPC_ACK)){
             ulTimeout++;
         }
-        if(ulTimeout==TIMEOUT_VALUE){
+        if(ulTimeout==TIMEOUT_DSP_IPC_ACK){
             *output = 5;
         }
         else{
@@ -169,10 +169,10 @@ uint8_t bsmp_open_loop(uint8_t *input, uint8_t *output)
         send_ipc_lowpriority_msg(g_current_ps_id, Open_Loop);
         while ((HWREG(MTOCIPC_BASE + IPC_O_MTOCIPCFLG) &
                 low_priority_msg_to_reg(Open_Loop)) &&
-                (ulTimeout<TIMEOUT_VALUE)){
+                (ulTimeout<TIMEOUT_DSP_IPC_ACK)){
             ulTimeout++;
         }
-        if(ulTimeout==TIMEOUT_VALUE){
+        if(ulTimeout==TIMEOUT_DSP_IPC_ACK){
             *output = 5;
         }
         else{
@@ -209,10 +209,10 @@ uint8_t bsmp_closed_loop(uint8_t *input, uint8_t *output)
         send_ipc_lowpriority_msg(g_current_ps_id, Close_Loop);
         while ((HWREG(MTOCIPC_BASE + IPC_O_MTOCIPCFLG) &
                 low_priority_msg_to_reg(Close_Loop)) &&
-                (ulTimeout<TIMEOUT_VALUE)){
+                (ulTimeout<TIMEOUT_DSP_IPC_ACK)){
             ulTimeout++;
         }
-        if(ulTimeout==TIMEOUT_VALUE){
+        if(ulTimeout==TIMEOUT_DSP_IPC_ACK){
             *output = 5;
         }
         else{
@@ -251,10 +251,10 @@ uint8_t bsmp_select_op_mode(uint8_t *input, uint8_t *output)
         send_ipc_lowpriority_msg(g_current_ps_id, Operating_Mode);
         while ((HWREG(MTOCIPC_BASE + IPC_O_MTOCIPCFLG) &
                 low_priority_msg_to_reg(Operating_Mode)) &&
-                (ulTimeout<TIMEOUT_VALUE)){
+                (ulTimeout<TIMEOUT_DSP_IPC_ACK)){
             ulTimeout++;
         }
-        if(ulTimeout==TIMEOUT_VALUE){
+        if(ulTimeout==TIMEOUT_DSP_IPC_ACK){
             *output = 5;
         }
         else{
@@ -290,10 +290,10 @@ uint8_t bsmp_reset_interlocks(uint8_t *input, uint8_t *output)
         send_ipc_lowpriority_msg(g_current_ps_id, Reset_Interlocks);
         while ((HWREG(MTOCIPC_BASE + IPC_O_MTOCIPCFLG) &
                 low_priority_msg_to_reg(Reset_Interlocks)) &&
-                (ulTimeout<TIMEOUT_VALUE)){
+                (ulTimeout<TIMEOUT_DSP_IPC_ACK)){
             ulTimeout++;
         }
-        if(ulTimeout==TIMEOUT_VALUE){
+        if(ulTimeout==TIMEOUT_DSP_IPC_ACK){
             *output = 5;
         }
         else{
@@ -351,10 +351,10 @@ uint8_t bsmp_sync_pulse(uint8_t *input, uint8_t *output)
     {
         send_ipc_msg(g_current_ps_id, SYNC_PULSE);
         while ((HWREG(MTOCIPC_BASE + IPC_O_MTOCIPCFLG) & SYNC_PULSE) &&
-                (ulTimeout<TIMEOUT_VALUE)){
+                (ulTimeout<TIMEOUT_DSP_IPC_ACK)){
             ulTimeout++;
         }
-        if(ulTimeout==TIMEOUT_VALUE){
+        if(ulTimeout==TIMEOUT_DSP_IPC_ACK){
             *output = 5;
         }
         else{
@@ -394,11 +394,11 @@ uint8_t bsmp_set_slowref (uint8_t *input, uint8_t *output)
 
         while ((HWREG(MTOCIPC_BASE + IPC_O_MTOCIPCFLG) &
                 low_priority_msg_to_reg(Set_SlowRef)) &&
-                (ulTimeout<TIMEOUT_VALUE))
+                (ulTimeout<TIMEOUT_DSP_IPC_ACK))
         {
             ulTimeout++;
         }
-        if(ulTimeout==TIMEOUT_VALUE)
+        if(ulTimeout==TIMEOUT_DSP_IPC_ACK)
         {
             *output = 5;
         }
@@ -446,11 +446,11 @@ uint8_t bsmp_set_slowref_fbp(uint8_t *input, uint8_t *output)
 
         while ((HWREG(MTOCIPC_BASE + IPC_O_MTOCIPCFLG) &
                 low_priority_msg_to_reg(Set_SlowRef_All_PS)) &&
-                (ulTimeout<TIMEOUT_VALUE))
+                (ulTimeout<TIMEOUT_DSP_IPC_ACK))
         {
             ulTimeout++;
         }
-        if(ulTimeout==TIMEOUT_VALUE)
+        if(ulTimeout==TIMEOUT_DSP_IPC_ACK)
         {
             *output = 5;
         }
@@ -488,11 +488,11 @@ uint8_t bsmp_reset_counters(uint8_t *input, uint8_t *output)
         send_ipc_lowpriority_msg(g_current_ps_id, Reset_Counters);
         while ((HWREG(MTOCIPC_BASE + IPC_O_MTOCIPCFLG) &
                 low_priority_msg_to_reg(Reset_Counters)) &&
-                (ulTimeout<TIMEOUT_VALUE))
+                (ulTimeout<TIMEOUT_DSP_IPC_ACK))
         {
             ulTimeout++;
         }
-        if(ulTimeout==TIMEOUT_VALUE)
+        if(ulTimeout==TIMEOUT_DSP_IPC_ACK)
         {
             *output = 5;
         }
@@ -567,11 +567,11 @@ uint8_t bsmp_cfg_siggen(uint8_t *input, uint8_t *output)
             send_ipc_lowpriority_msg(0, Cfg_SigGen);
 
             while( (HWREG(MTOCIPC_BASE + IPC_O_MTOCIPCFLG) & low_priority_msg_to_reg(Cfg_SigGen) ) &&
-                   (ulTimeout<TIMEOUT_VALUE) )
+                   (ulTimeout<TIMEOUT_DSP_IPC_ACK) )
             {
                 ulTimeout++;
             }
-            if(ulTimeout==TIMEOUT_VALUE)
+            if(ulTimeout==TIMEOUT_DSP_IPC_ACK)
             {
                 *output = 5;
             }
@@ -620,11 +620,11 @@ uint8_t bsmp_set_siggen(uint8_t *input, uint8_t *output)
         send_ipc_lowpriority_msg(0, Set_SigGen);
 
         while( (HWREG(MTOCIPC_BASE + IPC_O_MTOCIPCFLG) & low_priority_msg_to_reg(Set_SigGen) ) &&
-               (ulTimeout<TIMEOUT_VALUE) )
+               (ulTimeout<TIMEOUT_DSP_IPC_ACK) )
         {
             ulTimeout++;
         }
-        if(ulTimeout==TIMEOUT_VALUE)
+        if(ulTimeout==TIMEOUT_DSP_IPC_ACK)
         {
             *output = 5;
         }
@@ -660,11 +660,11 @@ uint8_t bsmp_enable_siggen(uint8_t *input, uint8_t *output)
         send_ipc_lowpriority_msg(g_current_ps_id, Enable_SigGen);
         while ((HWREG(MTOCIPC_BASE + IPC_O_MTOCIPCFLG) &
         low_priority_msg_to_reg(Enable_SigGen)) &&
-        (ulTimeout<TIMEOUT_VALUE))
+        (ulTimeout<TIMEOUT_DSP_IPC_ACK))
         {
             ulTimeout++;
         }
-        if(ulTimeout==TIMEOUT_VALUE)
+        if(ulTimeout==TIMEOUT_DSP_IPC_ACK)
         {
             *output = 5;
         }
@@ -700,11 +700,11 @@ uint8_t bsmp_disable_siggen(uint8_t *input, uint8_t *output)
         send_ipc_lowpriority_msg(g_current_ps_id, Disable_SigGen);
         while ((HWREG(MTOCIPC_BASE + IPC_O_MTOCIPCFLG) &
         low_priority_msg_to_reg(Disable_SigGen)) &&
-        (ulTimeout<TIMEOUT_VALUE))
+        (ulTimeout<TIMEOUT_DSP_IPC_ACK))
         {
             ulTimeout++;
         }
-        if(ulTimeout==TIMEOUT_VALUE)
+        if(ulTimeout==TIMEOUT_DSP_IPC_ACK)
         {
             *output = 5;
         }
@@ -750,11 +750,11 @@ uint8_t bsmp_set_slowref_readback(uint8_t *input, uint8_t *output)
 
         while ((HWREG(MTOCIPC_BASE + IPC_O_MTOCIPCFLG) &
                 low_priority_msg_to_reg(Set_SlowRef)) &&
-                (ulTimeout<TIMEOUT_VALUE))
+                (ulTimeout<TIMEOUT_DSP_IPC_ACK))
         {
             ulTimeout++;
         }
-        if(ulTimeout==TIMEOUT_VALUE)
+        if(ulTimeout==TIMEOUT_DSP_IPC_ACK)
         {
             result = 5;
         }
@@ -810,14 +810,14 @@ uint8_t bsmp_set_slowref_fbp_readback(uint8_t *input, uint8_t *output)
 
         while ((HWREG(MTOCIPC_BASE + IPC_O_MTOCIPCFLG) &
                 low_priority_msg_to_reg(Set_SlowRef_All_PS)) &&
-                (ulTimeout<TIMEOUT_VALUE))
+                (ulTimeout<TIMEOUT_DSP_IPC_ACK))
         {
             ulTimeout++;
         }
 
         GPIOPinWrite(DEBUG_BASE, DEBUG_PIN, OFF);
 
-        if(ulTimeout==TIMEOUT_VALUE)
+        if(ulTimeout==TIMEOUT_DSP_IPC_ACK)
         {
             result = 5;
         }
@@ -1045,12 +1045,12 @@ uint8_t bsmp_set_dsp_coeffs(uint8_t *input, uint8_t *output)
             send_ipc_lowpriority_msg(0, Set_DSP_Coeffs);
             while ((HWREG(MTOCIPC_BASE + IPC_O_MTOCIPCFLG) &
             low_priority_msg_to_reg(Set_DSP_Coeffs)) &&
-            (ulTimeout<TIMEOUT_VALUE))
+            (ulTimeout<TIMEOUT_DSP_IPC_ACK))
             {
                 ulTimeout++;
             }
 
-            if(ulTimeout==TIMEOUT_VALUE)
+            if(ulTimeout==TIMEOUT_DSP_IPC_ACK)
             {
                 *output = 5;
             }
@@ -1175,12 +1175,12 @@ uint8_t bsmp_load_dsp_coeffs_eeprom(uint8_t *input, uint8_t *output)
             send_ipc_lowpriority_msg(0, Set_DSP_Coeffs);
             while ((HWREG(MTOCIPC_BASE + IPC_O_MTOCIPCFLG) &
             low_priority_msg_to_reg(Set_DSP_Coeffs)) &&
-            (ulTimeout<TIMEOUT_VALUE))
+            (ulTimeout<TIMEOUT_DSP_IPC_ACK))
             {
                 ulTimeout++;
             }
 
-            if(ulTimeout==TIMEOUT_VALUE)
+            if(ulTimeout==TIMEOUT_DSP_IPC_ACK)
             {
                 *output = 5;
             }
@@ -1278,35 +1278,6 @@ static struct bsmp_func bsmp_func_reset_udc = {
     .info.input_size  = 0,
     .info.output_size = 1,
 };
-
-
-/**
- * BSMP Variables
- */
-static struct bsmp_var ps_status[NUMBER_OF_BSMP_SERVERS];
-static struct bsmp_var ps_setpoint[NUMBER_OF_BSMP_SERVERS];
-static struct bsmp_var ps_reference[NUMBER_OF_BSMP_SERVERS];
-static struct bsmp_var bsmp_firmwares_version[NUMBER_OF_BSMP_SERVERS];
-static struct bsmp_var bsmp_counter_set_slowref[NUMBER_OF_BSMP_SERVERS];
-static struct bsmp_var bsmp_counter_sync_pulse[NUMBER_OF_BSMP_SERVERS];
-static struct bsmp_var siggen_enable[NUMBER_OF_BSMP_SERVERS];
-static struct bsmp_var siggen_type[NUMBER_OF_BSMP_SERVERS];
-static struct bsmp_var siggen_num_cycles[NUMBER_OF_BSMP_SERVERS];
-static struct bsmp_var siggen_n[NUMBER_OF_BSMP_SERVERS];
-static struct bsmp_var siggen_freq[NUMBER_OF_BSMP_SERVERS];
-static struct bsmp_var siggen_amplitude[NUMBER_OF_BSMP_SERVERS];
-static struct bsmp_var siggen_offset[NUMBER_OF_BSMP_SERVERS];
-static struct bsmp_var siggen_aux_param[NUMBER_OF_BSMP_SERVERS];
-
-/**
- * BSMP FBP Variables
- */
-static struct bsmp_var ps_soft_interlocks[NUMBER_OF_BSMP_SERVERS];
-static struct bsmp_var ps_hard_interlocks[NUMBER_OF_BSMP_SERVERS];
-static struct bsmp_var i_load[NUMBER_OF_BSMP_SERVERS];
-static struct bsmp_var v_load[NUMBER_OF_BSMP_SERVERS];
-static struct bsmp_var v_dclink[NUMBER_OF_BSMP_SERVERS];
-static struct bsmp_var temp_switches[NUMBER_OF_BSMP_SERVERS];
 
 /**
  * Dummy BSMP Functions
@@ -1456,102 +1427,6 @@ static struct bsmp_func dummy_func12 = {
 };
 
 /**
- * Dummy Variables Memory
- */
-static uint8_t dummy_float_memory[4];
-static uint8_t dummy_u32_memory[4];
-static uint8_t dummy_u16_memory[2];
-static uint8_t dummy_u8_memory;
-
-static struct bsmp_var vOutMod2 = {
-        .info.size     = sizeof(dummy_float_memory),
-        .info.writable = false,
-        .data          = dummy_float_memory,
-        .value_ok      = NULL,
-};
-static struct bsmp_var vOutMod3 = {
-        .info.size     = sizeof(dummy_float_memory),
-        .info.writable = false,
-        .data          = dummy_float_memory,
-        .value_ok      = NULL,
-};
-static struct bsmp_var vOutMod4 = {
-        .info.size     = sizeof(dummy_float_memory),
-        .info.writable = false,
-        .data          = dummy_float_memory,
-        .value_ok      = NULL,
-};
-
-static struct bsmp_var temp1 = {
-        .info.size     = sizeof(dummy_float_memory),
-        .info.writable = false,
-        .data          = dummy_float_memory,
-        .value_ok      = NULL,
-};
-static struct bsmp_var temp2 = {
-        .info.size     = sizeof(dummy_float_memory),
-        .info.writable = false,
-        .data          = dummy_float_memory,
-        .value_ok      = NULL,
-};
-static struct bsmp_var temp3 = {
-        .info.size     = sizeof(dummy_float_memory),
-        .info.writable = false,
-        .data          = dummy_float_memory,
-        .value_ok      = NULL,
-};
-static struct bsmp_var temp4 = {
-        .info.size     = sizeof(dummy_float_memory),
-        .info.writable = false,
-        .data          = dummy_float_memory,
-        .value_ok      = NULL,
-};
-
-static struct bsmp_var ps_onoff = {
-        .info.size     = sizeof(dummy_u16_memory),   // 2 bytes (uint16)
-        .info.writable = false,                      // Read only
-        .data          = dummy_u16_memory,           // Initialize Data pointer
-        .value_ok      = NULL,
-};
-
-static  struct bsmp_var ps_opmode = {
-        .info.size     = sizeof(dummy_u16_memory),
-        .info.writable = false,
-        .data          = dummy_u16_memory,
-        .value_ok      = NULL,
-};
-
-static struct bsmp_var ps_remote = {
-        .info.size     = sizeof(dummy_u16_memory),
-        .info.writable = false,
-        .data          = dummy_u16_memory,
-        .value_ok      = NULL,
-};
-
-static struct bsmp_var ps_OpenLoop = {
-        .info.size     = sizeof(dummy_u16_memory),
-        .info.writable = false,
-        .data          = dummy_u16_memory,
-        .value_ok      = NULL,
-};
-
-static  struct bsmp_var iRef = {
-        .info.size     = sizeof(dummy_float_memory),
-        .info.writable = false,
-        .data          = dummy_float_memory,
-        .value_ok      = NULL,
-};
-
-static  struct bsmp_var wfmRef_Gain = {
-        .info.size     = sizeof(dummy_float_memory),
-        .info.writable = false,
-        .data          = dummy_float_memory,
-        .value_ok      = NULL,
-};
-
-static void init_bsmp_var(struct bsmp_var *p_var, uint8_t size, uint8_t *p_dummy, bool writable);
-
-/**
  * @brief Initialize BSMP module.
  *
  * Initialize BMSP functions, variables and curves
@@ -1615,98 +1490,33 @@ void bsmp_init(uint8_t server)
     /**
      * BSMP Variable Register
      */
-    init_bsmp_var(&ps_status[server], 2, &dummy_u8_memory, false);
-    init_bsmp_var(&ps_setpoint[server], 4, &dummy_u8_memory, false);
-    init_bsmp_var(&ps_reference[server], 4, &dummy_u8_memory, false);
-    init_bsmp_var(&bsmp_firmwares_version[server], 128, &dummy_u8_memory, false);
-    init_bsmp_var(&bsmp_counter_set_slowref[server], 4, &dummy_u8_memory, false);
-    init_bsmp_var(&bsmp_counter_sync_pulse[server], 4, &dummy_u8_memory, false);
-    init_bsmp_var(&siggen_enable[server], 2, &dummy_u8_memory, false);
-    init_bsmp_var(&siggen_type[server], 2, &dummy_u8_memory, false);
-    init_bsmp_var(&siggen_num_cycles[server], 2, &dummy_u8_memory, false);
-    init_bsmp_var(&siggen_n[server], 4, &dummy_u8_memory, false);
-    init_bsmp_var(&siggen_freq[server], 4, &dummy_u8_memory, false);
-    init_bsmp_var(&siggen_amplitude[server], 4, &dummy_u8_memory, false);
-    init_bsmp_var(&siggen_offset[server], 4, &dummy_u8_memory, false);
-    init_bsmp_var(&siggen_aux_param[server], 16, &dummy_u8_memory, false);
+    create_bsmp_var(0, server, 2, false, g_ipc_ctom.ps_module[server].ps_status.u8);
+    create_bsmp_var(1, server, 4, false, g_ipc_ctom.ps_module[server].ps_setpoint.u8);
+    create_bsmp_var(2, server, 4, false, g_ipc_ctom.ps_module[server].ps_reference.u8);
+    create_bsmp_var(3, server, 128, false, firmwares_version.u8);
+    create_bsmp_var(4, server, 4, false, g_ipc_ctom.counter_set_slowref.u8);
+    create_bsmp_var(5, server, 4, false, g_ipc_ctom.counter_sync_pulse.u8);
+    create_bsmp_var(6, server, 2, false, g_ipc_ctom.siggen.enable.u8);
+    create_bsmp_var(7, server, 2, false, g_ipc_ctom.siggen.type.u8);
+    create_bsmp_var(8, server, 2, false, g_ipc_ctom.siggen.num_cycles.u8);
+    create_bsmp_var(9, server, 4, false, g_ipc_ctom.siggen.n.u8);
+    create_bsmp_var(10, server, 4, false, g_ipc_ctom.siggen.freq.u8);
+    create_bsmp_var(11, server, 4, false, g_ipc_ctom.siggen.amplitude.u8);
+    create_bsmp_var(12, server, 4, false, g_ipc_ctom.siggen.offset.u8);
+    create_bsmp_var(13, server, 16, false, g_ipc_ctom.siggen.aux_param[0].u8);
 
-    init_bsmp_var(&ps_soft_interlocks[server], 4, &dummy_u8_memory, false);
-    init_bsmp_var(&ps_hard_interlocks[server], 4, &dummy_u8_memory, false);
-    init_bsmp_var(&i_load[server], 4, &dummy_u8_memory, false);
-    init_bsmp_var(&v_load[server], 4, &dummy_u8_memory, false);
-    init_bsmp_var(&v_dclink[server], 4, &dummy_u8_memory, false);
-    init_bsmp_var(&temp_switches[server], 4, &dummy_u8_memory, false);
-
-    bsmp_register_variable(&bsmp[server], &ps_status[server]);                  // ID 0
-    bsmp_register_variable(&bsmp[server], &ps_setpoint[server]);                // ID 1
-    bsmp_register_variable(&bsmp[server], &ps_reference[server]);               // ID 2
-    bsmp_register_variable(&bsmp[server], &bsmp_firmwares_version[server]);     // ID 3
-    bsmp_register_variable(&bsmp[server], &bsmp_counter_set_slowref[server]);   // ID 4
-    bsmp_register_variable(&bsmp[server], &bsmp_counter_sync_pulse[server]);    // ID 5
-    bsmp_register_variable(&bsmp[server], &siggen_enable[server]);              // ID 6
-    bsmp_register_variable(&bsmp[server], &siggen_type[server]);                // ID 7
-    bsmp_register_variable(&bsmp[server], &siggen_num_cycles[server]);          // ID 8
-    bsmp_register_variable(&bsmp[server], &siggen_n[server]);                   // ID 9
-    bsmp_register_variable(&bsmp[server], &siggen_freq[server]);                // ID 10
-    bsmp_register_variable(&bsmp[server], &siggen_amplitude[server]);           // ID 11
-    bsmp_register_variable(&bsmp[server], &siggen_offset[server]);              // ID 12
-    bsmp_register_variable(&bsmp[server], &siggen_aux_param[server]);           // ID 13
-    bsmp_register_variable(&bsmp[server], &vOutMod2);                           // ID 14
-    bsmp_register_variable(&bsmp[server], &vOutMod3);                           // ID 15
-    bsmp_register_variable(&bsmp[server], &vOutMod4);                           // ID 16
-    bsmp_register_variable(&bsmp[server], &temp1);                              // ID 17
-    bsmp_register_variable(&bsmp[server], &temp2);                              // ID 18
-    bsmp_register_variable(&bsmp[server], &temp3);                              // ID 19
-    bsmp_register_variable(&bsmp[server], &temp4);                              // ID 20
-    bsmp_register_variable(&bsmp[server], &ps_onoff);                           // ID 21
-    bsmp_register_variable(&bsmp[server], &ps_opmode);                          // ID 22
-    bsmp_register_variable(&bsmp[server], &ps_remote);                          // ID 23
-    bsmp_register_variable(&bsmp[server], &ps_OpenLoop);                        // ID 24
-    bsmp_register_variable(&bsmp[server], &ps_soft_interlocks[server]);         // ID 25
-    bsmp_register_variable(&bsmp[server], &ps_hard_interlocks[server]);         // ID 26
-    bsmp_register_variable(&bsmp[server], &i_load[server]);                     // ID 27
-    bsmp_register_variable(&bsmp[server], &v_load[server]);                     // ID 28
-    bsmp_register_variable(&bsmp[server], &v_dclink[server]);                   // ID 29
-    bsmp_register_variable(&bsmp[server], &temp_switches[server]);              // ID 30
-
-    //*************************************************************************
-    //                  BSMP Variable Pointers Initialization
-    //*************************************************************************
-    set_bsmp_var_pointer(0, server, g_ipc_ctom.ps_module[server].ps_status.u8);
-    set_bsmp_var_pointer(1, server, g_ipc_ctom.ps_module[server].ps_setpoint.u8);
-    set_bsmp_var_pointer(2, server, g_ipc_ctom.ps_module[server].ps_reference.u8);
-    set_bsmp_var_pointer(3, server, firmwares_version.u8);
-    set_bsmp_var_pointer(4, server, g_ipc_ctom.counter_set_slowref.u8);
-    set_bsmp_var_pointer(5, server, g_ipc_ctom.counter_sync_pulse.u8);
-    set_bsmp_var_pointer(6, server, g_ipc_ctom.siggen.enable.u8);
-    set_bsmp_var_pointer(7, server, g_ipc_ctom.siggen.type.u8);
-    set_bsmp_var_pointer(8, server, g_ipc_ctom.siggen.num_cycles.u8);
-    set_bsmp_var_pointer(9, server, g_ipc_ctom.siggen.n.u8);
-    set_bsmp_var_pointer(10, server, g_ipc_ctom.siggen.freq.u8);
-    set_bsmp_var_pointer(11, server, g_ipc_ctom.siggen.amplitude.u8);
-    set_bsmp_var_pointer(12, server, g_ipc_ctom.siggen.offset.u8);
-    set_bsmp_var_pointer(13, server, g_ipc_ctom.siggen.aux_param[0].u8);
+    /**
+     * Dummy variables to fulfill common variables
+     */
+    uint8_t i;
+    for(i = 14; i < 25; i++)
+    {
+        create_bsmp_var(i, server, 1, false,
+                        &bsmp_vars[server][BSMP_MAX_VARIABLES-1]);
+    }
 }
 
-
-/*
- * @brief Set BSMP variable pointer to specified variable
- *
- * Initialize BSMP variable for the specified server and point it to the
- * data region in memory.
- *
- * @param uint8_t ID for BSMP variable
- * @param uint8_t BSMP server to initialize
- * @param uint8_t* Pointer to memory region where BSM variable is stored
- */
-
-void set_bsmp_var_pointer(uint8_t var_id, uint8_t server, volatile uint8_t *new_data)
-{
-    struct bsmp_var *var = bsmp[server].vars.list[var_id];
-    var->data = new_data;
-}
-
-/*
+/**
  * @brief BSMP process data
  *
  * Send received data to BSMP server specified and process
@@ -1722,11 +1532,31 @@ void BSMPprocess(struct bsmp_raw_packet *recv_packet,
     bsmp_process_packet(&bsmp[server], recv_packet, send_packet);
 }
 
-static void init_bsmp_var(struct bsmp_var *p_var, uint8_t size, uint8_t *p_dummy, bool writable)
+/**
+ * @brief Create new BSMP variable
+ *
+ * Create new BSMP variable. This function verifies if specified ID respects
+ * the automatic registration of variables ID performed by BSMP library,
+ * according to the sequential call of this function. In this case, variable is
+ * initialized with given properties,including the pointer to related data
+ * region in memory.
+ *
+ * @param var_id ID for BSMP variable
+ * @param server BSMP server to be initialized
+ * @param size size of variable in bytes
+ * @param writable define whether is read-only or writable
+ * @param p_var pointer to memory address of variable
+ */
+void create_bsmp_var(uint8_t var_id, uint8_t server, uint8_t size,
+                            bool writable, volatile uint8_t *p_var)
 {
-    p_var->info.size     = size;
-    p_var->info.writable = writable;
-    p_var->data          = p_dummy;
-    p_var->value_ok      = NULL;
-}
+    if( bsmp[server].vars.count == var_id)
+    {
+        bsmp_vars[server][var_id].info.size     = size;
+        bsmp_vars[server][var_id].info.writable = writable;
+        bsmp_vars[server][var_id].data          = p_var;
+        bsmp_vars[server][var_id].value_ok      = NULL;
 
+        bsmp_register_variable(&bsmp[server], &bsmp_vars[server][var_id]);
+    }
+}
