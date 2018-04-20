@@ -299,7 +299,10 @@ void rs485_process_data(void)
 	//GPIOPinWrite(DEBUG_BASE, DEBUG_PIN, OFF);
 
 	//rs485_bkp_tx_handler();
-	rs485_tx_handler();
+    if (recv_buffer.data[0] != BCAST_ADDRESS)
+    {
+        rs485_tx_handler();
+    }
 
 	exit:
 	recv_buffer.index = 0;

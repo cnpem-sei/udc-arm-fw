@@ -142,10 +142,8 @@
 #define PS4_TEMPERATURE           g_controller_mtoc.net_signals[11]   // I2C Add 0x4C
 #define PS4_DUTY_CYCLE            g_controller_ctom.output_signals[3]
 
-/**
- * Number of power supplies
- */
-//static const uint8_t fbp_qtd = 4;
+static uint8_t dummy_u8;
+
 
 /**
 * @brief Initialize IPC Parameters.
@@ -223,6 +221,8 @@ static void adcp_channel_config(void)
 */
 static void bsmp_init_server(void)
 {
+    uint8_t server;
+
     // PS1 BSMP server already initialized
     bsmp_init(PS2_ID);
     bsmp_init(PS3_ID);
@@ -259,6 +259,49 @@ static void bsmp_init_server(void)
     create_bsmp_var(29, PS4_ID, 4, false, PS4_DCLINK_VOLTAGE.u8);
     create_bsmp_var(30, PS4_ID, 4, false, PS4_TEMPERATURE.u8);
     create_bsmp_var(31, PS4_ID, 4, false, PS4_DUTY_CYCLE.u8);
+
+    for(server = 0; server < NUM_MAX_PS_MODULES; server++)
+    {
+        create_bsmp_var(32, server, 1, false, &dummy_u8);
+        create_bsmp_var(33, server, 1, false, &dummy_u8);
+        create_bsmp_var(34, server, 1, false, &dummy_u8);
+        create_bsmp_var(35, server, 1, false, &dummy_u8);
+        create_bsmp_var(36, server, 1, false, &dummy_u8);
+        create_bsmp_var(37, server, 1, false, &dummy_u8);
+        create_bsmp_var(38, server, 1, false, &dummy_u8);
+        create_bsmp_var(39, server, 1, false, &dummy_u8);
+
+        create_bsmp_var(40, server, 2, false, g_ipc_ctom.ps_module[PS1_ID].ps_status.u8);
+        create_bsmp_var(41, server, 2, false, g_ipc_ctom.ps_module[PS2_ID].ps_status.u8);
+        create_bsmp_var(42, server, 2, false, g_ipc_ctom.ps_module[PS3_ID].ps_status.u8);
+        create_bsmp_var(43, server, 2, false, g_ipc_ctom.ps_module[PS4_ID].ps_status.u8);
+
+        create_bsmp_var(44, server, 4, false, g_ipc_ctom.ps_module[PS1_ID].ps_setpoint.u8);
+        create_bsmp_var(45, server, 4, false, g_ipc_ctom.ps_module[PS2_ID].ps_setpoint.u8);
+        create_bsmp_var(46, server, 4, false, g_ipc_ctom.ps_module[PS3_ID].ps_setpoint.u8);
+        create_bsmp_var(47, server, 4, false, g_ipc_ctom.ps_module[PS4_ID].ps_setpoint.u8);
+
+        create_bsmp_var(48, server, 4, false, g_ipc_ctom.ps_module[PS1_ID].ps_reference.u8);
+        create_bsmp_var(49, server, 4, false, g_ipc_ctom.ps_module[PS2_ID].ps_reference.u8);
+        create_bsmp_var(50, server, 4, false, g_ipc_ctom.ps_module[PS3_ID].ps_reference.u8);
+        create_bsmp_var(51, server, 4, false, g_ipc_ctom.ps_module[PS4_ID].ps_reference.u8);
+
+        create_bsmp_var(52, server, 4, false, g_ipc_ctom.ps_module[PS1_ID].ps_soft_interlock.u8);
+        create_bsmp_var(53, server, 4, false, g_ipc_ctom.ps_module[PS2_ID].ps_soft_interlock.u8);
+        create_bsmp_var(54, server, 4, false, g_ipc_ctom.ps_module[PS3_ID].ps_soft_interlock.u8);
+        create_bsmp_var(55, server, 4, false, g_ipc_ctom.ps_module[PS4_ID].ps_soft_interlock.u8);
+
+        create_bsmp_var(56, server, 4, false, g_ipc_ctom.ps_module[PS1_ID].ps_hard_interlock.u8);
+        create_bsmp_var(57, server, 4, false, g_ipc_ctom.ps_module[PS2_ID].ps_hard_interlock.u8);
+        create_bsmp_var(58, server, 4, false, g_ipc_ctom.ps_module[PS3_ID].ps_hard_interlock.u8);
+        create_bsmp_var(59, server, 4, false, g_ipc_ctom.ps_module[PS4_ID].ps_hard_interlock.u8);
+
+        create_bsmp_var(60, server, 4, false, PS1_LOAD_CURRENT.u8);
+        create_bsmp_var(61, server, 4, false, PS2_LOAD_CURRENT.u8);
+        create_bsmp_var(62, server, 4, false, PS3_LOAD_CURRENT.u8);
+        create_bsmp_var(63, server, 4, false, PS4_LOAD_CURRENT.u8);
+    }
+
 }
 
 /**
