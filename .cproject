@@ -86,7 +86,7 @@
 						</toolChain>
 					</folderInfo>
 					<sourceEntries>
-						<entry excluding="app/communication_drivers/psmodules/ps_modules.c|app/communication_drivers/psmodules/fap_dcdc_20_khz|app/communication_drivers/psmodules/fap_dcdc_15_khz|app/communication_drivers/psmodules/fap_acdc|app/communication_drivers/psmodules/fap_6u_dcdc_20_khz|app/communication_drivers/psmodules/fac_full_dcdc_20_khz|app/communication_drivers/psmodules/fac_full_acdc_10_khz|app/communication_drivers/psmodules/fac_acdc_10_khz|F28M36x_generic_wshared_M3_RAM.cmd|app/board_drivers/set_pinout_ctrl_card.c|app/communication_drivers/usb_device/usb_device.c|F28M36x_generic_M3_FLASH.cmd|app/communication_drivers/can|F28M36x_generic_wshared_M3_FLASH_2.cmd|app/communication_drivers/ihm" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+						<entry excluding="app/communication_drivers/psmodules/ps_modules.c|F28M36x_generic_wshared_M3_RAM.cmd|app/board_drivers/set_pinout_ctrl_card.c|app/communication_drivers/usb_device/usb_device.c|F28M36x_generic_M3_FLASH.cmd|app/communication_drivers/can|F28M36x_generic_wshared_M3_FLASH_2.cmd|app/communication_drivers/ihm" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>

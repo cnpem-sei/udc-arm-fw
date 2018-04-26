@@ -1,5 +1,5 @@
 /******************************************************************************
- * Copyright (C) 2017 by LNLS - Brazilian Synchrotron Light Laboratory
+ * Copyright (C) 2018 by LNLS - Brazilian Synchrotron Light Laboratory
  *
  * Redistribution, modification or use of this software in source or binary
  * forms is permitted as long as the files maintain this copyright. LNLS and
@@ -9,19 +9,17 @@
  *****************************************************************************/
 
 /**
- * @file facmain.h
- * @brief FAC module
- * 
- * Main module for FAC operation.
+ * @file fac_acdc_main.h
+ * @brief System setup for operation as FAC ACDC
  *
- * @author allef.silva
- * @date 30/10/2017
+ * @author gabriel.brunheira
+ * @date 23/04/2018
  *
  */
 
-#ifndef FAC_FULL_DCDC_20_KHZ_MAIN_H_
-#define FAC_FULL_DCDC_20_KHZ_MAIN_H_
+#ifndef FAC_ACDC_MAIN_H_
+#define FAC_ACDC_MAIN_H_
 
-extern void fac_full_dcdc_20_khz_main(void);
+void fac_acdc_main(void);
 
-#endif /* FAC_FULL_DCDC_20_KHZ_MAIN_H_ */
+#endif /* FAC_ACDC_MAIN_H_ */

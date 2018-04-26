@@ -1,5 +1,5 @@
 /******************************************************************************
- * Copyright (C) 2017 by LNLS - Brazilian Synchrotron Light Laboratory
+ * Copyright (C) 2018 by LNLS - Brazilian Synchrotron Light Laboratory
  *
  * Redistribution, modification or use of this software in source or binary
  * forms is permitted as long as the files maintain this copyright. LNLS and
@@ -9,35 +9,47 @@
  *****************************************************************************/
 
 /**
- * @file facmain.c
- * @brief FAC module
- * 
- * Main module for FAC operation.
+ * @file fac_acdc_main.c
+ * @brief Main module for FAC ACDC operation
  *
- * @author allef.silva
- * @date 30/10/2017
+ * @author gabriel.brunheira
+ * @date 23/04/2018
  *
  */
 
+#include <communication_drivers/psmodules/fac_acdc/fac_acdc_main.h>
+#include <communication_drivers/psmodules/fac_acdc/fac_acdc_system.h>
 #include <stdint.h>
 #include <stdbool.h>
 
+#include "board_drivers/version.h"
 #include "communication_drivers/system_task/system_task.h"
 #include "communication_drivers/ipc/ipc_lib.h"
+#include "communication_drivers/parameters/ps_parameters.h"
 
-#include "fac_full_dcdc_20_khz_system.h"
-#include "fac_full_dcdc_20_khz_main.h"
+#include "driverlib/ipc.h"
 
 /**
-* @brief Main function for FAC.
+* @brief Main function for FBP.
 *
 * Entry point for FAC operation.
 *
 */
-void fac_full_dcdc_20_khz_main(void)
+void fac_acdc_main(void)
 {
     volatile uint32_t uiloop;
-    fac_full_dcdc_20_khz_system_config();
+    fac_acdc_system_config();
+
+    //IPCMtoCBootControlSystem(CBROM_MTOC_BOOTMODE_BOOT_FROM_FLASH);
+
+    for (uiloop = 0; uiloop < 1000; uiloop++)
+    {
+        TaskCheck();
+    }
+
+    SysCtlDelay(75000);
+
+    get_firmwares_version();
 
     for (;;)
     {

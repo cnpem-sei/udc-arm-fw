@@ -60,6 +60,8 @@ encoding//FLASH_UDC_V2_1/FLASH_UDC_V2_0/app/communication_drivers/bsmp/bsmp/src/
 encoding//FLASH_UDC_V2_1/FLASH_UDC_V2_0/app/communication_drivers/bsmp/bsmp/src/subdir_vars.mk=UTF-8
 encoding//FLASH_UDC_V2_1/FLASH_UDC_V2_0/app/communication_drivers/bsmp/subdir_rules.mk=UTF-8
 encoding//FLASH_UDC_V2_1/FLASH_UDC_V2_0/app/communication_drivers/bsmp/subdir_vars.mk=UTF-8
+encoding//FLASH_UDC_V2_1/FLASH_UDC_V2_0/app/communication_drivers/can/subdir_rules.mk=UTF-8
+encoding//FLASH_UDC_V2_1/FLASH_UDC_V2_0/app/communication_drivers/can/subdir_vars.mk=UTF-8
 encoding//FLASH_UDC_V2_1/FLASH_UDC_V2_0/app/communication_drivers/control/subdir_rules.mk=UTF-8
 encoding//FLASH_UDC_V2_1/FLASH_UDC_V2_0/app/communication_drivers/control/subdir_vars.mk=UTF-8
 encoding//FLASH_UDC_V2_1/FLASH_UDC_V2_0/app/communication_drivers/epi/subdir_rules.mk=UTF-8
@@ -78,8 +80,12 @@ encoding//FLASH_UDC_V2_1/FLASH_UDC_V2_0/app/communication_drivers/i2c_offboard_i
 encoding//FLASH_UDC_V2_1/FLASH_UDC_V2_0/app/communication_drivers/i2c_offboard_isolated/subdir_vars.mk=UTF-8
 encoding//FLASH_UDC_V2_1/FLASH_UDC_V2_0/app/communication_drivers/i2c_onboard/subdir_rules.mk=UTF-8
 encoding//FLASH_UDC_V2_1/FLASH_UDC_V2_0/app/communication_drivers/i2c_onboard/subdir_vars.mk=UTF-8
+encoding//FLASH_UDC_V2_1/FLASH_UDC_V2_0/app/communication_drivers/ihm/subdir_rules.mk=UTF-8
+encoding//FLASH_UDC_V2_1/FLASH_UDC_V2_0/app/communication_drivers/ihm/subdir_vars.mk=UTF-8
 encoding//FLASH_UDC_V2_1/FLASH_UDC_V2_0/app/communication_drivers/ipc/subdir_rules.mk=UTF-8
 encoding//FLASH_UDC_V2_1/FLASH_UDC_V2_0/app/communication_drivers/ipc/subdir_vars.mk=UTF-8
+encoding//FLASH_UDC_V2_1/FLASH_UDC_V2_0/app/communication_drivers/parameters/communication/subdir_rules.mk=UTF-8
+encoding//FLASH_UDC_V2_1/FLASH_UDC_V2_0/app/communication_drivers/parameters/communication/subdir_vars.mk=UTF-8
 encoding//FLASH_UDC_V2_1/FLASH_UDC_V2_0/app/communication_drivers/parameters/system/subdir_rules.mk=UTF-8
 encoding//FLASH_UDC_V2_1/FLASH_UDC_V2_0/app/communication_drivers/parameters/system/subdir_vars.mk=UTF-8
 encoding//FLASH_UDC_V2_1/FLASH_UDC_V2_0/app/communication_drivers/psmodules/fbp/subdir_rules.mk=UTF-8
@@ -88,6 +94,10 @@ encoding//FLASH_UDC_V2_1/FLASH_UDC_V2_0/app/communication_drivers/rs485/subdir_r
 encoding//FLASH_UDC_V2_1/FLASH_UDC_V2_0/app/communication_drivers/rs485/subdir_vars.mk=UTF-8
 encoding//FLASH_UDC_V2_1/FLASH_UDC_V2_0/app/communication_drivers/rs485_bkp/subdir_rules.mk=UTF-8
 encoding//FLASH_UDC_V2_1/FLASH_UDC_V2_0/app/communication_drivers/rs485_bkp/subdir_vars.mk=UTF-8
+encoding//FLASH_UDC_V2_1/FLASH_UDC_V2_0/app/communication_drivers/security/subdir_rules.mk=UTF-8
+encoding//FLASH_UDC_V2_1/FLASH_UDC_V2_0/app/communication_drivers/security/subdir_vars.mk=UTF-8
+encoding//FLASH_UDC_V2_1/FLASH_UDC_V2_0/app/communication_drivers/shared_memory/subdir_rules.mk=UTF-8
+encoding//FLASH_UDC_V2_1/FLASH_UDC_V2_0/app/communication_drivers/shared_memory/subdir_vars.mk=UTF-8
 encoding//FLASH_UDC_V2_1/FLASH_UDC_V2_0/app/communication_drivers/signals_onboard/subdir_rules.mk=UTF-8
 encoding//FLASH_UDC_V2_1/FLASH_UDC_V2_0/app/communication_drivers/signals_onboard/subdir_vars.mk=UTF-8
 encoding//FLASH_UDC_V2_1/FLASH_UDC_V2_0/app/communication_drivers/system_task/subdir_rules.mk=UTF-8
@@ -138,6 +148,8 @@ encoding//FLASH_UDC_V2_1/app/communication_drivers/parameters/system/subdir_rule
 encoding//FLASH_UDC_V2_1/app/communication_drivers/parameters/system/subdir_vars.mk=UTF-8
 encoding//FLASH_UDC_V2_1/app/communication_drivers/ps_modules/fbp/subdir_rules.mk=UTF-8
 encoding//FLASH_UDC_V2_1/app/communication_drivers/ps_modules/fbp/subdir_vars.mk=UTF-8
+encoding//FLASH_UDC_V2_1/app/communication_drivers/psmodules/fac_acdc/subdir_rules.mk=UTF-8
+encoding//FLASH_UDC_V2_1/app/communication_drivers/psmodules/fac_acdc/subdir_vars.mk=UTF-8
 encoding//FLASH_UDC_V2_1/app/communication_drivers/psmodules/fbp/subdir_rules.mk=UTF-8
 encoding//FLASH_UDC_V2_1/app/communication_drivers/psmodules/fbp/subdir_vars.mk=UTF-8
 encoding//FLASH_UDC_V2_1/app/communication_drivers/rs485/subdir_rules.mk=UTF-8

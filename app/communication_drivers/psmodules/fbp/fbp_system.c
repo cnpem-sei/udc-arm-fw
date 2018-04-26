@@ -144,7 +144,6 @@
 
 static uint8_t dummy_u8;
 
-
 /**
 * @brief Initialize IPC Parameters.
 *

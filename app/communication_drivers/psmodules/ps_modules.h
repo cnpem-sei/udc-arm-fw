@@ -70,6 +70,9 @@ typedef enum
 {
     Empty,
     FBP,
+    FBP_DCLink,
+    FAC_ACDC,
+    FAC_DCDC,
     Uninitialized = 0xFFFF      // Empty EEPROM
 } ps_model_t;
 

@@ -131,35 +131,11 @@ int main(void) {
 	            break;
 	        }
 
-	        //case FAP_DCDC_20kHz:
-	        //    fap_dcdc_20_khz_main();
-            //
-	        //break;
-            //
-	        //case FAC_Full_DCDC_20kHz:
-	        //    fac_full_dcdc_20_khz_main();
-            //
-	        //break;
-            //
-	        //case FAC_Full_ACDC_10kHz:
-	        //    fac_full_acdc_10_khz_main();
-            //
-	        //break;
-            //
-	        //case FAP_ACDC:
-	        //    fap_acdc_main();
-            //
-	        //break;
-            //
-	        //case FAP_DCDC_15kHz_225A:
-	        //    fap_dcdc_15_khz_main();
-            //
-	        //break;
-            //
-	        //case FAP_6U_DCDC_20kHz:
-	        //    fap_6u_dcdc_20_khz_main();
-            //
-	        //break;
+	        case FAC_ACDC:
+	        {
+	            fac_acdc_main();
+	            break;
+	        }
 
 	        default:
 	        {
