@@ -37,8 +37,6 @@
 #include "communication_drivers/rs485/rs485.h"
 #include "communication_drivers/rs485_bkp/rs485_bkp.h"
 #include "communication_drivers/can/can_bkp.h"
-#include "communication_drivers/usb_device/superv_cmd.h"
-#include "communication_drivers/ihm/ihm.h"
 #include "communication_drivers/bsmp/bsmp_lib.h"
 #include "communication_drivers/ipc/ipc_lib.h"
 #include "communication_drivers/usb_to_serial/usb_to_serial.h"
@@ -46,7 +44,6 @@
 #include "communication_drivers/control/control.h"
 #include "communication_drivers/parameters/ps_parameters.h"
 
-#include "ethernet_uip.h"
 
 #include "system.h"
 

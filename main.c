@@ -18,6 +18,10 @@
  *
  */
 
+#include <xdc/std.h>
+
+#include <xdc/runtime/System.h>
+
 #include <communication_drivers/psmodules/fbp/fbp_main.h>
 #include <stdint.h>
 #include <stdarg.h>
@@ -45,9 +49,7 @@
 #include "communication_drivers/rs485/rs485.h"
 #include "communication_drivers/rs485_bkp/rs485_bkp.h"
 #include "communication_drivers/ihm/ihm.h"
-#include "communication_drivers/ethernet/ethernet_uip.h"
 #include "communication_drivers/can/can_bkp.h"
-#include "communication_drivers/usb_device/superv_cmd.h"
 #include "communication_drivers/i2c_onboard/i2c_onboard.h"
 #include "communication_drivers/i2c_onboard/rtc.h"
 #include "communication_drivers/i2c_onboard/eeprom.h"
@@ -118,30 +120,32 @@ int main(void) {
 
 	IPCMtoCBootControlSystem(CBROM_MTOC_BOOTMODE_BOOT_FROM_FLASH);
 
-	while(1)
-	{
-	    // TODO: Just when using IHM
-	    //g_ipc_mtoc.ps_module[0].ps_status.bit.state = loc_rem_update();
 
-	    switch(g_ipc_mtoc.ps_model)
-	    {
-	        case FBP:
-	        {
-	            fbp_main();
-	            break;
-	        }
 
-	        case FAC_ACDC:
-	        {
-	            fac_acdc_main();
-	            break;
-	        }
-
-	        default:
-	        {
-	            break;
-	        }
-	    }
-	}
+	//while(1)
+	//{
+	//    // TODO: Just when using IHM
+	//    //g_ipc_mtoc.ps_module[0].ps_status.bit.state = loc_rem_update();
+    //
+	//    switch(g_ipc_mtoc.ps_model)
+	//    {
+	//        case FBP:
+	//        {
+	//            fbp_main();
+	//            break;
+	//        }
+    //
+	//        case FAC_ACDC:
+	//        {
+	//            fac_acdc_main();
+	//            break;
+	//        }
+    //
+	//        default:
+	//        {
+	//            break;
+	//        }
+	//    }
+	//}
 
 }

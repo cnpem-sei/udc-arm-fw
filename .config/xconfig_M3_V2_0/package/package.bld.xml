@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="windows-1252"?>
+<!--  This file conforms to the DTD xdc/bld/build.dtd -->
+<package name="xconfig_M3_V2_0" version="" producerId="undefined">
+    <units>
+    </units>
+    <sources>
+        <srcFile name="package/cfg/M3_V2.0_pem3.c"/>
+    </sources>
+    <configscripts>
+        <srcFile name="C:/Users/allef.silva/lnls-elp/ARM/M3_V2.0.cfg"/>
+    </configscripts>
+    <makefiles>
+        <srcFile name="package.mak" src="package.bld"/>
+        <srcFile name="package/package.xdc.dep" src="package.xdc"/>
+        <srcFile name="package/cfg/M3_V2.0_pem3.mak" src="package.bld"/>
+        <srcFile name="package/cfg/M3_V2.0_pem3.oem3.dep" src="package/cfg/M3_V2.0_pem3.c"/>
+        <srcFile name="package/cfg/M3_V2.0_pem3.dep" src="package/cfg/M3_V2.0_pem3.cfg"/>
+        <srcFile name="package/cfg/M3_V2.0.xem3.mak" src="package.bld"/>
+        <srcFile name="package/rel/xconfig_M3_V2_0.tar.dep" src="package/rel/xconfig_M3_V2_0.xdc.inc"/>
+    </makefiles>
+    <targets>
+        <target name="ti.targets.arm.elf.M3"
+            version="ti.targets.arm.elf.M3{1,0,5.2,9"
+            rawVersion="5.2.9"
+            platform="ti.platforms.simCM3"
+            isa="v7M"
+            suffix="em3"
+            rootDir="C:/ti/ccsv7/tools/compiler/ti-cgt-arm_5.2.9"
+            os="undefined"
+            rts="ti.targets.arm.rtsarm">
+            <model endian="little"
+                codeModel="thumb2"
+                dataModel="undefined"/>
+        </target>
+    </targets>
+    <libraries>
+    </libraries>
+    <configurations>
+    <configuration name="M3_V2.0"
+        pname="M3_V2.0.pem3"
+        target="ti.targets.arm.elf.M3"
+        platform="ti.platforms.concertoM3:F28M36P63C2"
+        profile="release"
+        isPartial="false"
+        xCfgScript="package/cfg/M3_V2.0_pem3.cfg"
+        xCfgPrefix="package/cfg/M3_V2.0_pem3"
+        cfgScript="C:/Users/allef.silva/lnls-elp/ARM/M3_V2.0.cfg"
+        cfgArgs="null"
+        />
+    </configurations>
+    <executables>
+    <executable name="M3_V2.0"
+        pname="M3_V2.0.xem3"
+        target="ti.targets.arm.elf.M3"
+        platform="ti.platforms.concertoM3:F28M36P63C2"
+        profile="release"
+        xCfgScript="package/cfg/M3_V2.0_pem3.cfg"
+        xCfgPrefix="package/cfg/M3_V2.0_pem3"
+        cfgScript="C:/Users/allef.silva/lnls-elp/ARM/M3_V2.0.cfg"
+        cfgArgs="null"
+        />
+    </executables>
+    <tests>
+    <test exeName="M3_V2.0.xem3"
+        args=""
+        groupName="M3_V2.0.xem3"
+        refOutput="undefined"
+        refExitCode="0"
+        execArgs=""
+        />
+    </tests>
+    <releases relDir="package/rel/">
+    <release name="xconfig_M3_V2_0"
+        pname="xconfig_M3_V2_0.tar"
+        label="default"
+    >
+        <file name="package/package.bld.xml"/>
+        <file name="package/build.cfg"/>
+        <file name="package/package.xdc.inc"/>
+    </release>
+    </releases>
+    <repositories>
+    </repositories>
+</package>
