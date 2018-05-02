@@ -19,6 +19,8 @@
  */
 
 #include <communication_drivers/psmodules/fbp/fbp_main.h>
+#include <communication_drivers/psmodules/fac_acdc/fac_acdc_main.h>
+#include <communication_drivers/psmodules/fac_dcdc/fac_dcdc.h>
 #include <stdint.h>
 #include <stdarg.h>
 #include <string.h>
@@ -137,10 +139,33 @@ int main(void) {
 	            break;
 	        }
 
+	        case FAC_DCDC:
+	        {
+	            fac_dcdc_system_config();
+	            break;
+	        }
 	        default:
 	        {
 	            break;
 	        }
+	    }
+
+	    for (ulLoop = 0; ulLoop < 1000; ulLoop++)
+	    {
+	        TaskCheck();
+	    }
+
+	    SysCtlDelay(75000);
+
+	    get_firmwares_version();
+
+	    for (;;)
+	    {
+	        for (ulLoop = 0; ulLoop < 1000; ulLoop++)
+	        {
+	            TaskCheck();
+	        }
+
 	    }
 	}
 

@@ -154,8 +154,8 @@ extern ipc_mtoc_t g_ipc_mtoc;
 extern void init_ipc(void);
 extern void send_ipc_msg(uint16_t msg_id, uint32_t flag);
 extern void send_ipc_lowpriority_msg(uint16_t msg_id,
-                                     ipc_ctom_lowpriority_msg_t msg);
-extern uint32_t low_priority_msg_to_reg(ipc_ctom_lowpriority_msg_t msg);
+                                     ipc_mtoc_lowpriority_msg_t msg);
+extern uint32_t low_priority_msg_to_reg(ipc_mtoc_lowpriority_msg_t msg);
 
 extern inline uint32_t ipc_mtoc_translate (uint32_t ulShareAddress);
 extern inline uint32_t ipc_ctom_translate (uint32_t ulShareAddress);

@@ -9,15 +9,19 @@
  *****************************************************************************/
 
 /**
- * @file fac_acdc_system.h
- * @brief System setup for operation as FAC ACDC
+ * @file fac_dcdc.c
+ * @brief FAC DC/DC Stage module
+ *
+ * Module for control of DC/DC module of FAC power supplies. It implements the
+ * controller for load current.
  *
  * @author gabriel.brunheira
- * @date 23/04/2018
+ * @date 01/05/2018
  *
  */
 
-#include <communication_drivers/psmodules/fac_acdc/fac_acdc_system.h>
+
+#include <communication_drivers/psmodules/fac_dcdc/fac_dcdc.h>
 #include <communication_drivers/psmodules/ps_modules.h>
 #include <stdint.h>
 #include <stdbool.h>
@@ -31,14 +35,18 @@
 #include "communication_drivers/bsmp/bsmp_lib.h"
 #include "communication_drivers/control/control.h"
 
-#define V_CAPBANK                       g_controller_ctom.net_signals[0]    // HRADC0
-#define IOUT_RECT                       g_controller_ctom.net_signals[1]    // HRADC1
+#define I_LOAD_1            g_controller_ctom.net_signals[0]
+#define I_LOAD_2            g_controller_ctom.net_signals[1]
+#define I_LOAD_MEAN         g_controller_ctom.net_signals[2]
+#define I_LOAD_DIFF         g_controller_ctom.net_signals[3]
+#define I_LOAD_ERROR        g_controller_ctom.net_signals[4]
 
-#define VOUT_RECT                       g_controller_mtoc.net_signals[0]
-#define TEMP_HEATSINK                   g_controller_mtoc.net_signals[1]
-#define TEMP_INDUCTORS                  g_controller_mtoc.net_signals[2]
+#define v_LOAD              g_controller_mtoc.net_signals[0]
+#define V_CAPBANK           g_controller_mtoc.net_signals[1]
+#define TEMP_INDUCTORS      g_controller_mtoc.net_signals[2]
+#define TEMP_IGBT           g_controller_mtoc.net_signals[3]
 
-#define DUTY_CYCLE                      g_controller_ctom.output_signals[0]
+#define DUTY_CYCLE          g_controller_ctom.output_signals[0]
 
 /**
 * @brief Initialize ADCP Channels.
@@ -68,12 +76,13 @@ static void bsmp_init_server(void)
 {
     create_bsmp_var(25, 0, 4, false, g_ipc_ctom.ps_module[0].ps_soft_interlock.u8);
     create_bsmp_var(26, 0, 4, false, g_ipc_ctom.ps_module[0].ps_hard_interlock.u8);
-    create_bsmp_var(27, 0, 4, false, V_CAPBANK.u8);
-    create_bsmp_var(28, 0, 4, false, VOUT_RECT.u8);
-    create_bsmp_var(29, 0, 4, false, IOUT_RECT.u8);
-    create_bsmp_var(30, 0, 4, false, TEMP_HEATSINK.u8);
+    create_bsmp_var(27, 0, 4, false, I_LOAD_1.u8);
+    create_bsmp_var(28, 0, 4, false, I_LOAD_2.u8);
+    create_bsmp_var(29, 0, 4, false, v_LOAD.u8);
+    create_bsmp_var(30, 0, 4, false, V_CAPBANK.u8);
     create_bsmp_var(31, 0, 4, false, TEMP_INDUCTORS.u8);
-    create_bsmp_var(32, 0, 4, false, DUTY_CYCLE.u8);
+    create_bsmp_var(32, 0, 4, false, TEMP_IGBT.u8);
+    create_bsmp_var(33, 0, 4, false, DUTY_CYCLE.u8);
 }
 
 /**
@@ -82,7 +91,7 @@ static void bsmp_init_server(void)
 * Initialize specific parameters e configure peripherals for FBP operation.
 *
 */
-void fac_acdc_system_config()
+void fac_dcdc_system_config()
 {
     adcp_channel_config();
     bsmp_init_server();

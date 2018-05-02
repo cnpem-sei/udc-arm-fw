@@ -28,6 +28,7 @@
 #include "inc/hw_ints.h"
 
 #include "driverlib/interrupt.h"
+#include "driverlib/ipc.h"
 
 #include "communication_drivers/i2c_onboard/eeprom.h"
 #include "communication_drivers/i2c_onboard/exio.h"
@@ -114,10 +115,9 @@ void send_ipc_msg(uint16_t msg_id, uint32_t flag)
  * ipc_mtoc_lowpriority_msg_t.
  *
  * @param uint16_t ID of message. 0 - 3
- * @param ipc_ctom_lowpriority_msg_t Message type.
+ * @param ipc_mtoc_lowpriority_msg_t Message type.
  */
-void send_ipc_lowpriority_msg(uint16_t msg_id,
-                                     ipc_ctom_lowpriority_msg_t msg)
+void send_ipc_lowpriority_msg(uint16_t msg_id, ipc_mtoc_lowpriority_msg_t msg)
 {
     g_ipc_mtoc.msg_id = msg_id;
     HWREG(MTOCIPC_BASE + IPC_O_MTOCIPCSET) |= low_priority_msg_to_reg(msg);
@@ -126,11 +126,11 @@ void send_ipc_lowpriority_msg(uint16_t msg_id,
 /**
  * @brief Convert Low Priority Message to MTOC_IPCSET register value.
  *
- * @param ipc_ctom_lowpriority_msg_t Message type.
+ * @param ipc_mtoc_lowpriority_msg_t Message type.
  *
  * @return IPC message in bit format.
  */
-uint32_t low_priority_msg_to_reg(ipc_ctom_lowpriority_msg_t msg)
+uint32_t low_priority_msg_to_reg(ipc_mtoc_lowpriority_msg_t msg)
 {
     return ((msg << 4) | IPC_MTOC_LOWPRIORITY_MSG) & 0x0000FFFF;
 }

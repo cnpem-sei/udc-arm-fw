@@ -29,7 +29,10 @@
 #include "communication_drivers/ipc/ipc_lib.h"
 #include "communication_drivers/parameters/ps_parameters.h"
 
+#include "inc/hw_types.h"
+
 #include "driverlib/ipc.h"
+#include "driverlib/sysctl.h"
 
 /**
 * @brief Main function for FBP.

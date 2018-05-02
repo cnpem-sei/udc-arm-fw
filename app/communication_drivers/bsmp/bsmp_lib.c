@@ -1020,7 +1020,6 @@ static struct bsmp_func bsmp_func_load_param_bank = {
 uint8_t bsmp_set_dsp_coeffs(uint8_t *input, uint8_t *output)
 {
     u_uint16_t dsp_class, id;
-    u_float_t u_val[NUM_MAX_COEFFS_DSP];
 
     ulTimeout = 0;
     dsp_class.u8[0] = input[0];
@@ -1511,8 +1510,7 @@ void bsmp_init(uint8_t server)
     uint8_t i;
     for(i = 14; i < 25; i++)
     {
-        create_bsmp_var(i, server, 1, false,
-                        &bsmp_vars[server][BSMP_MAX_VARIABLES-1]);
+        create_bsmp_var(i, server, 1, false, bsmp_vars[server][i].data);
     }
 }
 

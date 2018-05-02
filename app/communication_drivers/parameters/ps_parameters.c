@@ -28,6 +28,7 @@
 #include "inc/hw_gpio.h"
 
 #include "driverlib/gpio.h"
+#include "driverlib/sysctl.h"
 
 #include "hardware_def.h"
 #include "ps_parameters.h"
@@ -96,7 +97,6 @@ static const uint16_t param_addresses[NUM_MAX_PARAMETERS] =
 };
 
 static uint8_t data_eeprom[32];
-static unsigned long ulLoop;
 
 //#pragma DATA_SECTION(ps_parameters_bank,"SHARERAMS0_1");
 volatile param_t g_parameters[NUM_MAX_PARAMETERS];
