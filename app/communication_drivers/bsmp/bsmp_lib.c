@@ -65,6 +65,7 @@ uint8_t samples_buffer_memory[SIZE_SAMPLES_BUFFER];
 bsmp_server_t bsmp[NUMBER_OF_BSMP_SERVERS];
 
 volatile unsigned long ulTimeout;
+static uint8_t dummy_u8;
 
 static struct bsmp_var bsmp_vars[NUMBER_OF_BSMP_SERVERS][BSMP_MAX_VARIABLES];
 
@@ -1510,7 +1511,7 @@ void bsmp_init(uint8_t server)
     uint8_t i;
     for(i = 14; i < 25; i++)
     {
-        create_bsmp_var(i, server, 1, false, bsmp_vars[server][i].data);
+        create_bsmp_var(i, server, 1, false, &dummy_u8);
     }
 }
 
