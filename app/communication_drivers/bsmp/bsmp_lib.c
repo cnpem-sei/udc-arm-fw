@@ -56,19 +56,15 @@
 #define SIZE_SAMPLES_BUFFER     16384
 
 #define NUMBER_OF_BSMP_SERVERS  4
+#define NUMBER_OF_BSMP_CURVES   8
 
-#pragma DATA_SECTION(samples_buffer_memory, "SHARERAMS45")
-#pragma DATA_SECTION(wfm_curve_memory, "SHARERAMS67")
-
-uint8_t wfm_curve_memory[2*SIZE_WFMREF_BLOCK];
-uint8_t samples_buffer_memory[SIZE_SAMPLES_BUFFER];
 bsmp_server_t bsmp[NUMBER_OF_BSMP_SERVERS];
 
 volatile unsigned long ulTimeout;
 static uint8_t dummy_u8;
 
 static struct bsmp_var bsmp_vars[NUMBER_OF_BSMP_SERVERS][BSMP_MAX_VARIABLES];
-
+static struct bsmp_curve bsmp_curves[NUMBER_OF_BSMP_SERVERS][NUMBER_OF_BSMP_CURVES];
 /**
  * @brief Turn on BSMP Function
  *
@@ -1426,6 +1422,120 @@ static struct bsmp_func dummy_func12 = {
    .info.output_size = 1,      // command_ack
 };
 
+
+/**
+ *
+ * @param curve
+ * @param block
+ * @param data
+ * @param len
+ * @return
+ */
+static bool read_block_wfmref(struct bsmp_curve *curve, uint16_t block,
+                              uint8_t *data, uint16_t *len)
+{
+    uint8_t *block_data;
+    uint16_t block_size = curve->info.block_size;
+
+    block_data = &(g_wfmref[(block*block_size) >> 2].u8);
+
+    if(g_ipc_mtoc.wfmref.wfmref_data.status == Idle)
+    {
+        memcpy(data, block_data, block_size);
+        *len = block_size;
+        return true;
+    }
+    else
+    {
+        return false;
+    }
+}
+
+/**
+ *
+ * @param curve
+ * @param block
+ * @param data
+ * @param len
+ * @return
+ */
+static bool write_block_wfmref(struct bsmp_curve *curve, uint16_t block,
+                               uint8_t *data, uint16_t len)
+{
+    return true;
+}
+
+/**
+ *
+ * @param curve
+ * @param block
+ * @param data
+ * @param len
+ * @return
+ */
+static bool read_block_buf_samples_ctom(struct bsmp_curve *curve, uint16_t block,
+                                        uint8_t *data, uint16_t *len)
+{
+    uint8_t *block_data;
+    uint16_t block_size = curve->info.block_size;
+
+    block_data = &(g_buf_samples_ctom[(block*block_size) >> 2].u8);
+
+    if(g_ipc_ctom.buf_samples[0].status == Idle)
+    {
+        memcpy(data, block_data, block_size);
+        *len = block_size;
+        return true;
+    }
+    else
+    {
+        return false;
+    }
+}
+
+/**
+ *
+ * @param curve
+ * @param block
+ * @param data
+ * @param len
+ * @return
+ */
+static bool read_block_buf_samples_mtoc(struct bsmp_curve *curve, uint16_t block,
+                                        uint8_t *data, uint16_t *len)
+{
+    uint8_t *block_data;
+    uint16_t block_size = curve->info.block_size;
+
+    block_data = &(g_buf_samples_mtoc[(block*block_size) >> 2].u8);
+
+    if(g_ipc_mtoc.buf_samples[0].status == Idle)
+    {
+        memcpy(data, block_data, block_size);
+        *len = block_size;
+        return true;
+    }
+    else
+    {
+        return false;
+    }
+}
+
+/**
+ *
+ * @param curve
+ * @param block
+ * @param data
+ * @param len
+ * @return
+ */
+static bool write_block_dummy(struct bsmp_curve *curve, uint16_t block,
+                              uint8_t *data, uint16_t len)
+{
+    return false;
+}
+
+
 /**
  * @brief Initialize BSMP module.
  *
@@ -1513,6 +1623,16 @@ void bsmp_init(uint8_t server)
     {
         create_bsmp_var(i, server, 1, false, &dummy_u8);
     }
+
+    /**
+     * BSMP Curves Register
+     */
+    create_bsmp_curve(0, server, 16, 1024, true, read_block_wfmref,
+                      write_block_wfmref);
+    create_bsmp_curve(1, server, 16, 1024, false, read_block_buf_samples_ctom,
+                      write_block_dummy);
+    create_bsmp_curve(2, server, 16, 1024, false, read_block_buf_samples_mtoc,
+                      write_block_dummy);
 }
 
 /**
@@ -1537,7 +1657,7 @@ void BSMPprocess(struct bsmp_raw_packet *recv_packet,
  * Create new BSMP variable. This function verifies if specified ID respects
  * the automatic registration of variables ID performed by BSMP library,
  * according to the sequential call of this function. In this case, variable is
- * initialized with given properties,including the pointer to related data
+ * initialized with given properties, including the pointer to related data
  * region in memory.
  *
  * @param var_id ID for BSMP variable
@@ -1549,7 +1669,7 @@ void BSMPprocess(struct bsmp_raw_packet *recv_packet,
 void create_bsmp_var(uint8_t var_id, uint8_t server, uint8_t size,
                             bool writable, volatile uint8_t *p_var)
 {
-    if( bsmp[server].vars.count == var_id)
+    if( (bsmp[server].vars.count == var_id) && (var_id < BSMP_MAX_VARIABLES) )
     {
         bsmp_vars[server][var_id].info.size     = size;
         bsmp_vars[server][var_id].info.writable = writable;
@@ -1557,5 +1677,41 @@ void create_bsmp_var(uint8_t var_id, uint8_t server, uint8_t size,
         bsmp_vars[server][var_id].value_ok      = NULL;
 
         bsmp_register_variable(&bsmp[server], &bsmp_vars[server][var_id]);
+    }
+}
+
+/**
+ * @brief Create new BSMP curve
+ *
+ * Create new BSMP curve. This function verifies if specified ID respects
+ * the automatic registration of curves ID performed by BSMP library,
+ * according to the sequential call of this function. In this case, curve is
+ * initialized with given properties.
+ *
+ * @param curve_id ID for BSMP curve
+ * @param server BSMP server to be initialized
+ * @param nblocks number of blocks
+ * @param block_size block size in bytes
+ * @param writable define whether is read-only or writable
+ * @param p_read_block pointer to read block function for specified curve
+ * @param p_write_block pointer to write block function for specified curve
+ */
+void create_bsmp_curve(uint8_t curve_id, uint8_t server, uint32_t nblocks,
+                       uint16_t block_size, bool writable,
+                       bool (*p_read_block)(struct bsmp_curve *,uint16_t,
+                                            uint8_t *,uint16_t *),
+                       bool (*p_write_block)(struct bsmp_curve *,uint16_t,
+                                             uint8_t *, uint16_t))
+{
+    if( (bsmp[server].curves.count == curve_id) &&
+        (curve_id < NUMBER_OF_BSMP_CURVES) )
+    {
+        bsmp_curves[server][curve_id].info.nblocks    = nblocks;
+        bsmp_curves[server][curve_id].info.block_size = block_size;
+        bsmp_curves[server][curve_id].info.writable   = writable;
+        bsmp_curves[server][curve_id].read_block      = p_read_block;
+        bsmp_curves[server][curve_id].write_block     = p_write_block;
+
+        bsmp_register_curve(&bsmp[server], &bsmp_curves[server][curve_id]);
     }
 }

@@ -38,17 +38,24 @@
 #define M3_CTOMMSGRAM_START         0x2007F000
 #define C28_CTOMMSGRAM_START        0x0003F800
 
+#pragma DATA_SECTION(g_wfmref,"SHARERAMS23")
+volatile u_float_t g_wfmref[SIZE_WFMREF];
+
+#pragma DATA_SECTION(g_buf_samples_ctom,"SHARERAMS45")
+volatile u_float_t g_buf_samples_ctom[SIZE_BUF_SAMPLES_CTOM];
+
+#pragma DATA_SECTION(g_buf_samples_mtoc,"SHARERAMS67")
+volatile u_float_t g_buf_samples_mtoc[SIZE_BUF_SAMPLES_MTOC];
+
 #pragma DATA_SECTION(g_ipc_ctom, "CTOM_MSG_RAM")
 #pragma DATA_SECTION(g_ipc_mtoc, "MTOC_MSG_RAM")
-//#pragma DATA_SECTION(IPC_MtoC_Param, "MTOC_MSG_RAM")
-
-ipc_ctom_t g_ipc_ctom;
-ipc_mtoc_t g_ipc_mtoc;
+volatile ipc_ctom_t g_ipc_ctom;
+volatile ipc_mtoc_t g_ipc_mtoc;
 
 void isr_ipc_lowpriority_msg(void);
 void init_parameters(void);
 
-/*
+/**
  * @brief Initialize IPC module and interrupts
  */
 void init_ipc(void)
@@ -67,6 +74,9 @@ void init_ipc(void)
         g_ipc_mtoc.ps_module[uiloop].ps_reference.f = 0.0;
         g_ipc_mtoc.ps_module[uiloop].ps_soft_interlock.u32 = 0;
         g_ipc_mtoc.ps_module[uiloop].ps_hard_interlock.u32 = 0;
+
+        init_buffer(&g_ipc_mtoc.buf_samples[uiloop], &(g_buf_samples_mtoc[0].f),
+                    SIZE_BUF_SAMPLES_MTOC);
     }
 
     for (uiloop = 0; uiloop < (uint8_t) get_param(Num_PS_Modules,0); uiloop++)
@@ -78,6 +88,8 @@ void init_ipc(void)
 
     g_ipc_mtoc.dsp_module.dsp_class = 0;
     g_ipc_mtoc.dsp_module.id = 0;
+
+
 
     /**
      * TODO: Initialize all MtoC modules (samples buffer, wfmref, etc)

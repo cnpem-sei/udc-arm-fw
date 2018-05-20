@@ -24,7 +24,7 @@
 #include "control.h"
 
 #pragma DATA_SECTION(g_controller_mtoc,"SHARERAMS0");
-#pragma DATA_SECTION(g_controller_ctom,"SHARERAMS1");
+#pragma DATA_SECTION(g_controller_ctom,"SHARERAMS1_0");
 
 volatile control_framework_t g_controller_ctom;
 volatile control_framework_t g_controller_mtoc;

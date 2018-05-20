@@ -61,11 +61,13 @@ MEMORY
     C2 (RWX)        : origin = 0x200051B0, length = 0x0E50
     C3 (RWX)        : origin = 0x20006000, length = 0x2000
     S0 (RWX)        : origin = 0x20008000, length = 0x2000
-    S1 (RWX)        : origin = 0x2000A000, length = 0x2000
-    S2 (RWX)        : origin = 0x2000C000, length = 0x2000
-    S3 (RWX)        : origin = 0x2000E000, length = 0x2000
+    S1_0 (RWX)        : origin = 0x2000A000, length = 0x1000
+    S1_1 (RWX)        : origin = 0x2000B000, length = 0x1000
+    //S2 (RWX)        : origin = 0x2000C000, length = 0x2000
+    //S3 (RWX)        : origin = 0x2000E000, length = 0x2000
     //S4 (RWX)        : origin = 0x20010000, length = 0x2000
     //S5 (RWX)        : origin = 0x20012000, length = 0x2000
+    S23 (RWX)       : origin = 0x2000C000, length = 0x4000
     S45 (RWX)       : origin = 0x20010000, length = 0x4000
     //S6 (RWX)        : origin = 0x20014000, length = 0x2000
     //S7 (RWX)        : origin = 0x20016000, length = 0x2000
@@ -139,16 +141,19 @@ SECTIONS
                            crc_table(AppCrc, algorithm=CRC32_PRIME),
                            PAGE = 0, ALIGN(8)
  
-    SHARERAMS0  : > S0
-    SHARERAMS1  : > S1
-    SHARERAMS2  : > S2
-    SHARERAMS3  : > S3
-    SHARERAMS45  : > S45
-    //SHARERAMS4  : > S4
-    //SHARERAMS5  : > S5
-    //SHARERAMS6  : > S6
-    SHARERAMS67  : > S67
-    //SHARERAMS7  : > S7
+    SHARERAMS0		: > S0     // g_controller_mtoc
+    SHARERAMS1_0  	: > S1_0   // g_controller_ctom
+    SHARERAMS1_1  	: > S1_1   // HRADCs_Info
+    //SHARERAMS2  	: > S2
+    //SHARERAMS3  	: > S3
+    //SHARERAMS4  	: > S4
+    //SHARERAMS5  	: > S5
+    //SHARERAMS6  	: > S6
+    //SHARERAMS7  	: > S7
+    SHARERAMS23  	: > S23   // g_wfmref
+    SHARERAMS45  	: > S45   // g_buf_samples_ctom
+    SHARERAMS67  	: > S67   // g_buf_samples_mtoc
+
  
  	SERIALBUFFER : > C0913
 	ETHERNETBUFFER : > C1415

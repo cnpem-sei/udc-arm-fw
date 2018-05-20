@@ -32,11 +32,14 @@
 #include "communication_drivers/common/structs.h"
 #include "communication_drivers/parameters/ps_parameters.h"
 
+
 /**
  * Shared resources defines
  */
 
-#define SIZE_BUF_SAMPLES    4096
+#define SIZE_WFMREF             4096
+#define SIZE_BUF_SAMPLES_CTOM   4096
+#define SIZE_BUF_SAMPLES_MTOC   4096
 
 /**
  * IPC Message Defines
@@ -148,8 +151,12 @@ typedef volatile struct
     param_communication_t   communication;
 } ipc_mtoc_t;
 
-extern ipc_ctom_t g_ipc_ctom;
-extern ipc_mtoc_t g_ipc_mtoc;
+extern volatile u_float_t g_wfmref[SIZE_WFMREF];
+extern volatile u_float_t g_buf_samples_ctom[SIZE_BUF_SAMPLES_CTOM];
+extern volatile u_float_t g_buf_samples_mtoc[SIZE_BUF_SAMPLES_MTOC];
+
+extern volatile ipc_ctom_t g_ipc_ctom;
+extern volatile ipc_mtoc_t g_ipc_mtoc;
 
 extern void init_ipc(void);
 extern void send_ipc_msg(uint16_t msg_id, uint32_t flag);
