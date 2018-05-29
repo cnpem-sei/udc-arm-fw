@@ -66,6 +66,9 @@ void init_ipc(void)
     g_ipc_mtoc.msg_id = 0;
     g_ipc_mtoc.error_ctom = No_Error_CtoM;
 
+    /**
+     * Initialize PS modules
+     */
     for (uiloop = 0; uiloop < NUM_MAX_PS_MODULES; uiloop++)
     {
         g_ipc_mtoc.ps_module[uiloop].ps_status.all = 0;
@@ -84,16 +87,26 @@ void init_ipc(void)
         g_ipc_mtoc.ps_module[uiloop].ps_status.bit.active = 1;
     }
 
+    /**
+     * Initialize SigGen
+     */
     g_ipc_mtoc.siggen.enable.u16 = 0;
 
+    /**
+     * Initilize WfmRef
+     */
+    init_buffer( &(WFMREF.wfmref_data), &(g_wfmref[0].f), SIZE_WFMREF);
+    WFMREF.wfmref_data.p_buf_start = (float *) 0x00E000;    /// SHARERAMS23
+    WFMREF.wfmref_data.p_buf_end   = (float *) 0x00FFFE;
+    WFMREF.wfmref_data.p_buf_idx   = WFMREF.wfmref_data.p_buf_start;
+    WFMREF.wfmref_data.status = Idle;
+
+    /**
+     * Initilize DSP modules
+     */
     g_ipc_mtoc.dsp_module.dsp_class = 0;
     g_ipc_mtoc.dsp_module.id = 0;
 
-
-
-    /**
-     * TODO: Initialize all MtoC modules (samples buffer, wfmref, etc)
-     */
 
     /**
      * TODO: Initialize IPC Interrupts

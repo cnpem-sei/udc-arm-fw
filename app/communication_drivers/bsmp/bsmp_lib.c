@@ -287,13 +287,16 @@ uint8_t bsmp_reset_interlocks(uint8_t *input, uint8_t *output)
         send_ipc_lowpriority_msg(g_current_ps_id, Reset_Interlocks);
         while ((HWREG(MTOCIPC_BASE + IPC_O_MTOCIPCFLG) &
                 low_priority_msg_to_reg(Reset_Interlocks)) &&
-                (ulTimeout<TIMEOUT_DSP_IPC_ACK)){
+                (ulTimeout<TIMEOUT_DSP_IPC_ACK))
+        {
             ulTimeout++;
         }
-        if(ulTimeout==TIMEOUT_DSP_IPC_ACK){
+        if(ulTimeout==TIMEOUT_DSP_IPC_ACK)
+        {
             *output = 5;
         }
-        else{
+        else
+        {
             TaskSetNew(CLEAR_ITLK_ALARM);
             *output = 0;
         }
@@ -330,6 +333,101 @@ static struct bsmp_func bsmp_func_set_serial_termination = {
 };
 
 /**
+ * @brief Enable Samples Buffers
+ *
+ * Enable Samples Buffers from ARM and DSP
+ *
+ * @param uint8_t* Pointer to input packet of data
+ * @param uint8_t* Pointer to output packet of data
+ */
+uint8_t bsmp_enable_buf_samples(uint8_t *input, uint8_t *output)
+{
+    ulTimeout=0;
+
+    g_ipc_mtoc.buf_samples[0].status = Buffering;
+
+    if(ipc_mtoc_busy(low_priority_msg_to_reg(Enable_Buf_Samples)))
+    {
+        *output = 6;
+    }
+    else
+    {
+        send_ipc_lowpriority_msg(g_current_ps_id, Enable_Buf_Samples);
+        while ((HWREG(MTOCIPC_BASE + IPC_O_MTOCIPCFLG) &
+                low_priority_msg_to_reg(Enable_Buf_Samples)) &&
+                (ulTimeout<TIMEOUT_DSP_IPC_ACK))
+        {
+            ulTimeout++;
+        }
+        if(ulTimeout == TIMEOUT_DSP_IPC_ACK)
+        {
+            *output = 5;
+        }
+        else
+        {
+            *output = 0;
+        }
+    }
+    return *output;
+}
+
+static struct bsmp_func bsmp_func_enable_buf_samples = {
+    .func_p           = bsmp_enable_buf_samples,
+    .info.input_size  = 0,
+    .info.output_size = 1,
+};
+
+/**
+ * @brief Disable Samples Buffers
+ *
+ * Disable Samples Buffers from ARM and DSP
+ *
+ * @param uint8_t* Pointer to input packet of data
+ * @param uint8_t* Pointer to output packet of data
+ */
+uint8_t bsmp_disable_buf_samples(uint8_t *input, uint8_t *output)
+{
+    ulTimeout=0;
+
+    /**
+     * TODO: It sets as Postmortem to wait buffer complete. Maybe
+     * it's better to create a postmortem BSMP function
+     */
+    //g_ipc_mtoc.buf_samples[0].status = Idle;
+    g_ipc_mtoc.buf_samples[0].status = Postmortem;
+
+    if(ipc_mtoc_busy(low_priority_msg_to_reg(Disable_Buf_Samples)))
+    {
+        *output = 6;
+    }
+    else
+    {
+        send_ipc_lowpriority_msg(g_current_ps_id, Disable_Buf_Samples);
+        while ((HWREG(MTOCIPC_BASE + IPC_O_MTOCIPCFLG) &
+                low_priority_msg_to_reg(Disable_Buf_Samples)) &&
+                (ulTimeout<TIMEOUT_DSP_IPC_ACK))
+        {
+            ulTimeout++;
+        }
+        if(ulTimeout == TIMEOUT_DSP_IPC_ACK)
+        {
+            *output = 5;
+        }
+        else
+        {
+            *output = 0;
+        }
+    }
+    return *output;
+}
+
+static struct bsmp_func bsmp_func_disable_buf_samples = {
+    .func_p           = bsmp_disable_buf_samples,
+    .info.input_size  = 0,
+    .info.output_size = 1,
+};
+
+/**
  * @brief Synchronization pulse BSMP Function
  *
  * Change reference based in timing pulse.
@@ -348,13 +446,16 @@ uint8_t bsmp_sync_pulse(uint8_t *input, uint8_t *output)
     {
         send_ipc_msg(g_current_ps_id, SYNC_PULSE);
         while ((HWREG(MTOCIPC_BASE + IPC_O_MTOCIPCFLG) & SYNC_PULSE) &&
-                (ulTimeout<TIMEOUT_DSP_IPC_ACK)){
+                (ulTimeout<TIMEOUT_DSP_IPC_ACK))
+        {
             ulTimeout++;
         }
-        if(ulTimeout==TIMEOUT_DSP_IPC_ACK){
+        if(ulTimeout==TIMEOUT_DSP_IPC_ACK)
+        {
             *output = 5;
         }
-        else{
+        else
+        {
             *output = 0;
         }
     }
@@ -1439,7 +1540,7 @@ static bool read_block_wfmref(struct bsmp_curve *curve, uint16_t block,
 
     block_data = &(g_wfmref[(block*block_size) >> 2].u8);
 
-    if(g_ipc_mtoc.wfmref.wfmref_data.status == Idle)
+    if(g_ipc_ctom.wfmref.wfmref_data.status == Idle)
     {
         memcpy(data, block_data, block_size);
         *len = block_size;
@@ -1462,7 +1563,21 @@ static bool read_block_wfmref(struct bsmp_curve *curve, uint16_t block,
 static bool write_block_wfmref(struct bsmp_curve *curve, uint16_t block,
                                uint8_t *data, uint16_t len)
 {
-    return true;
+    uint8_t *block_data;
+    uint16_t block_size = curve->info.block_size;
+
+    block_data = &(g_wfmref[(block*block_size) >> 2].u8);
+
+    if(g_ipc_ctom.wfmref.wfmref_data.status == Idle)
+    {
+        memcpy(block_data, data, len);
+        return true;
+    }
+    else
+    {
+        return false;
+    }
+
 }
 
 /**
@@ -1567,8 +1682,8 @@ void bsmp_init(uint8_t server)
     bsmp_register_function(&bsmp[server], &dummy_func4);                        // ID 10
     bsmp_register_function(&bsmp[server], &dummy_func5);                        // ID 11
     bsmp_register_function(&bsmp[server], &dummy_func6);                        // ID 12
-    bsmp_register_function(&bsmp[server], &dummy_func7);                        // ID 13
-    bsmp_register_function(&bsmp[server], &dummy_func8);                        // ID 14
+    bsmp_register_function(&bsmp[server], &bsmp_func_enable_buf_samples);       // ID 13
+    bsmp_register_function(&bsmp[server], &bsmp_func_disable_buf_samples);      // ID 14
     bsmp_register_function(&bsmp[server], &bsmp_func_sync_pulse);               // ID 15
     bsmp_register_function(&bsmp[server], &bsmp_func_set_slowref);              // ID 16
     bsmp_register_function(&bsmp[server], &bsmp_func_set_slowref_fbp);          // ID 17

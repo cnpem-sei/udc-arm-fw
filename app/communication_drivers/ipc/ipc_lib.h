@@ -41,6 +41,8 @@
 #define SIZE_BUF_SAMPLES_CTOM   4096
 #define SIZE_BUF_SAMPLES_MTOC   4096
 
+#define WFMREF                  g_ipc_mtoc.wfmref
+
 /**
  * IPC Message Defines
  */

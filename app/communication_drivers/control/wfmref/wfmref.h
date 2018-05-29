@@ -27,9 +27,9 @@
 
 typedef enum
 {
-    //SampleBySample,
+    SampleBySample,
     SampleBySample_OneCycle,
-    //OneShot
+    OneShot
 } sync_mode_t;
 
 typedef volatile struct
