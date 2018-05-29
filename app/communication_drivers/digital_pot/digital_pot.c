@@ -13,12 +13,19 @@
 
 #define I2C_SLAVE_ADD   0b0101000
 
+volatile uint8_t dado_rec = 0;
+volatile uint8_t dado_env = 0;
+
 void write_voltage(float write_val)
 {
+    dado_rec = write_val;
+
     uint8_t write_data[2];
 
     write_data[0] = 0;
-    write_data[1] = (write_val*255)/6;
+    write_data[1] = (write_val*255)/100;
+
+    dado_env = write_data[1];
 
     write_i2c_offboard_isolated(I2C_SLAVE_ADD, 0x02, write_data);
 

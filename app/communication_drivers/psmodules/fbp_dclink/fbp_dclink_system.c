@@ -36,14 +36,12 @@
 #define ID  0x0000
 
 #define SOUR01_DCLINK_VOLTAGE       g_controller_mtoc.net_signals[0]    // ANI1
-#define SOUR02_DCLINK_VOLTAGE       g_controller_mtoc.net_signals[1]    // ANI2
-#define SOUR03_DCLINK_VOLTAGE       g_controller_mtoc.net_signals[2]    // ANI0
+#define SOUR02_DCLINK_VOLTAGE       g_controller_mtoc.net_signals[1]    // ANI3
+#define SOUR03_DCLINK_VOLTAGE       g_controller_mtoc.net_signals[2]    // ANI2
 #define DIGITAL_POT_VOLTAGE         g_controller_mtoc.net_signals[3]
+#define SOUROUT_DCLINK_VOLTAGE      g_controller_mtoc.net_signals[4]    // ANI0
 
 #define PIN_STATUS_FAIL_PS_ALL      g_controller_ctom.net_signals[0]
-
-
-
 
 //volatile float g_digital_pot_value = 0.0;
 
@@ -74,12 +72,12 @@ static void ipc_init_parameters(void)
 */
 static void adcp_channel_config(void)
 {
-    //PS1 VdcLink: 10V = 20V
+    //PS_OUT VdcLink: 10V = 20V
     g_analog_ch_0.Enable = 1;
     g_analog_ch_0.Gain = 20.0/2048.0;
-    g_analog_ch_0.Value = &(SOUR03_DCLINK_VOLTAGE.f);
+    g_analog_ch_0.Value = &(SOUROUT_DCLINK_VOLTAGE.f);
 
-    //PS2 VdcLink: 10V = 20V
+    //PS1 VdcLink: 10V = 20V
     g_analog_ch_1.Enable = 1;
     g_analog_ch_1.Gain = 20.0/2048.0;
     g_analog_ch_1.Value = &(SOUR01_DCLINK_VOLTAGE.f);
@@ -87,9 +85,13 @@ static void adcp_channel_config(void)
     //PS3 VdcLink: 10V = 20V
     g_analog_ch_2.Enable = 1;
     g_analog_ch_2.Gain = 20.0/2048.0;
-    g_analog_ch_2.Value = &(SOUR02_DCLINK_VOLTAGE.f);
+    g_analog_ch_2.Value = &(SOUR03_DCLINK_VOLTAGE.f);
 
-    g_analog_ch_3.Enable = 0;
+    //PS2 VdcLink: 10V = 20V
+    g_analog_ch_3.Enable = 1;
+    g_analog_ch_3.Gain = 20.0/2048.0;
+    g_analog_ch_3.Value = &(SOUR02_DCLINK_VOLTAGE.f);
+
     g_analog_ch_4.Enable = 0;
     g_analog_ch_5.Enable = 0;
     g_analog_ch_6.Enable = 0;
@@ -112,6 +114,7 @@ static void bsmp_init_server(void)
     set_bsmp_var_pointer(33, ID, SOUR03_DCLINK_VOLTAGE.u8);
     set_bsmp_var_pointer(34, ID, PIN_STATUS_FAIL_PS_ALL.u8);
     set_bsmp_var_pointer(35, ID, DIGITAL_POT_VOLTAGE.u8);
+    set_bsmp_var_pointer(36, ID, SOUROUT_DCLINK_VOLTAGE.u8);
 }
 
 /**

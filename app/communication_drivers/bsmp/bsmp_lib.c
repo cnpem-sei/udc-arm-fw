@@ -748,6 +748,7 @@ static struct bsmp_var vSOUR02[NUMBER_OF_BSMP_SERVERS];
 static struct bsmp_var vSOUR03[NUMBER_OF_BSMP_SERVERS];
 static struct bsmp_var v_digital_pot[NUMBER_OF_BSMP_SERVERS];
 static struct bsmp_var digital_inputs[NUMBER_OF_BSMP_SERVERS];
+static struct bsmp_var vSOUROUT[NUMBER_OF_BSMP_SERVERS];
 
 
 /**
@@ -1113,6 +1114,7 @@ void bsmp_init(uint8_t server)
     init_bsmp_var(&vSOUR03[server], 4, &dummy_u8_memory, false);
     init_bsmp_var(&digital_inputs[server], 2, &dummy_u8_memory, false);
     init_bsmp_var(&v_digital_pot[server], 4, &dummy_u8_memory, false);
+    init_bsmp_var(&vSOUROUT[server], 4, &dummy_u8_memory, false);
 
 
     bsmp_register_variable(&bsmp[server], &ps_status[server]);                  // ID 0
@@ -1151,6 +1153,7 @@ void bsmp_init(uint8_t server)
     bsmp_register_variable(&bsmp[server], &vSOUR03[server]);                    // ID 33
     bsmp_register_variable(&bsmp[server], &digital_inputs[server]);             // ID 34
     bsmp_register_variable(&bsmp[server], &v_digital_pot[server]);              // ID 35
+    bsmp_register_variable(&bsmp[server], &vSOUROUT[server]);                   // ID 36
 
     //*************************************************************************
     //                  BSMP Variable Pointers Initialization

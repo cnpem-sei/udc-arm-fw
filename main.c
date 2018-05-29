@@ -121,7 +121,7 @@ int main(void) {
     //IPCMtoCBootControlSystem(CBROM_MTOC_BOOTMODE_BOOT_FROM_FLASH);
 
 	// Delay
-	for (ulLoop=0;ulLoop<500000;ulLoop++){};
+	for (ulLoop=0; ulLoop<500000; ulLoop++){};
 
 	system_init();
 
