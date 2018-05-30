@@ -27,9 +27,9 @@
 
 #include "board_drivers/version.h"
 #include "board_drivers/hardware_def.h"
+#include "communication_drivers/ipc/ipc_lib.h"
 #include "communication_drivers/i2c_onboard/eeprom.h"
 #include "communication_drivers/system_task/system_task.h"
-#include "communication_drivers/ipc/ipc_lib.h"
 #include "communication_drivers/can/can_bkp.h"
 #include "communication_drivers/rs485/rs485.h"
 #include "communication_drivers/i2c_onboard/exio.h"
@@ -608,6 +608,70 @@ static struct bsmp_func bsmp_func_reset_counters = {
     .info.output_size = 1,      // command_ack
 };
 
+/**
+ * @brief Scale WfmRef
+ *
+ * Update gain and offset applied on WfmRef. New values are applied on next
+ * cycle of WfmRef.
+ *
+ * @param uint8_t* Pointer to input packet of data
+ * @param uint8_t* Pointer to output packet of data
+ */
+uint8_t bsmp_scale_wfmref(uint8_t *input, uint8_t *output)
+{
+    memcpy(WFMREF.gain.u8, &input[0], 4);
+    memcpy(WFMREF.offset.u8, &input[4], 4);
+
+    *output = 0;
+    return *output;
+}
+
+static struct bsmp_func bsmp_func_scale_wfmref = {
+    .func_p           = bsmp_scale_wfmref,
+    .info.input_size  = 8,     // gain (4) + offset (4)
+    .info.output_size = 1,      // command_ack
+};
+/**
+ * @brief Reset WfmRef
+ *
+ * Reset WfmRef index pointer to initial position.
+ *
+ * @param uint8_t* Pointer to input packet of data
+ * @param uint8_t* Pointer to output packet of data
+ */
+uint8_t bsmp_reset_wfmref(uint8_t *input, uint8_t *output)
+{
+    ulTimeout=0;
+    if(ipc_mtoc_busy(low_priority_msg_to_reg(Reset_WfmRef)))
+    {
+        *output = 6;
+    }
+    else
+    {
+        send_ipc_lowpriority_msg(g_current_ps_id, Reset_WfmRef);
+        while ((HWREG(MTOCIPC_BASE + IPC_O_MTOCIPCFLG) &
+                low_priority_msg_to_reg(Reset_WfmRef)) &&
+                (ulTimeout<TIMEOUT_DSP_IPC_ACK))
+        {
+            ulTimeout++;
+        }
+        if(ulTimeout==TIMEOUT_DSP_IPC_ACK)
+        {
+            *output = 5;
+        }
+        else
+        {
+            *output = 0;
+        }
+    }
+    return *output;
+}
+
+static struct bsmp_func bsmp_func_reset_wfmref = {
+    .func_p           = bsmp_reset_wfmref,
+    .info.input_size  = 0,      // Nothing is read from the input parameter
+    .info.output_size = 1,      // command_ack
+};
 
 /**
  * @brief Configuration of SigGen BSMP function
@@ -1571,6 +1635,10 @@ static bool write_block_wfmref(struct bsmp_curve *curve, uint16_t block,
     if(g_ipc_ctom.wfmref.wfmref_data.status == Idle)
     {
         memcpy(block_data, data, len);
+        WFMREF.wfmref_data.p_buf_end.f =
+                    (float *) (ipc_mtoc_translate((uint32_t) (block_data + len)) - 2);
+        WFMREF.wfmref_data.p_buf_idx.f =
+                    (float *) (ipc_mtoc_translate((uint32_t) (block_data + len)));
         return true;
     }
     else
@@ -1688,10 +1756,10 @@ void bsmp_init(uint8_t server)
     bsmp_register_function(&bsmp[server], &bsmp_func_set_slowref);              // ID 16
     bsmp_register_function(&bsmp[server], &bsmp_func_set_slowref_fbp);          // ID 17
     bsmp_register_function(&bsmp[server], &bsmp_func_reset_counters);           // ID 18
-    bsmp_register_function(&bsmp[server], &dummy_func9);                        // ID 19
+    bsmp_register_function(&bsmp[server], &bsmp_func_scale_wfmref);             // ID 19
     bsmp_register_function(&bsmp[server], &dummy_func10);                       // ID 20
     bsmp_register_function(&bsmp[server], &dummy_func11);                       // ID 21
-    bsmp_register_function(&bsmp[server], &dummy_func12);                       // ID 22
+    bsmp_register_function(&bsmp[server], &bsmp_func_reset_wfmref);             // ID 22
     bsmp_register_function(&bsmp[server], &bsmp_func_cfg_siggen);               // ID 23
     bsmp_register_function(&bsmp[server], &bsmp_func_set_siggen);               // ID 24
     bsmp_register_function(&bsmp[server], &bsmp_func_enable_siggen);            // ID 25
@@ -1729,12 +1797,19 @@ void bsmp_init(uint8_t server)
     create_bsmp_var(11, server, 4, false, g_ipc_ctom.siggen.amplitude.u8);
     create_bsmp_var(12, server, 4, false, g_ipc_ctom.siggen.offset.u8);
     create_bsmp_var(13, server, 16, false, g_ipc_ctom.siggen.aux_param[0].u8);
+    create_bsmp_var(14, server, 2, false, g_ipc_ctom.wfmref.wfmref_selected.u8);
+    create_bsmp_var(15, server, 2, false, g_ipc_ctom.wfmref.sync_mode.u8);
+    create_bsmp_var(16, server, 4, false, g_ipc_ctom.wfmref.gain.u8);
+    create_bsmp_var(17, server, 4, false, g_ipc_ctom.wfmref.offset.u8);
+    create_bsmp_var(18, server, 4, false, g_ipc_ctom.wfmref.wfmref_data.p_buf_start.u8);
+    create_bsmp_var(19, server, 4, false, g_ipc_ctom.wfmref.wfmref_data.p_buf_end.u8);
+    create_bsmp_var(20, server, 4, false, g_ipc_ctom.wfmref.wfmref_data.p_buf_idx.u8);
 
     /**
      * Dummy variables to fulfill common variables
      */
     uint8_t i;
-    for(i = 14; i < 25; i++)
+    for(i = 21; i < 25; i++)
     {
         create_bsmp_var(i, server, 1, false, &dummy_u8);
     }

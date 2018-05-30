@@ -37,11 +37,8 @@
  * Shared resources defines
  */
 
-#define SIZE_WFMREF             4096
 #define SIZE_BUF_SAMPLES_CTOM   4096
 #define SIZE_BUF_SAMPLES_MTOC   4096
-
-#define WFMREF                  g_ipc_mtoc.wfmref
 
 /**
  * IPC Message Defines
@@ -166,8 +163,8 @@ extern void send_ipc_lowpriority_msg(uint16_t msg_id,
                                      ipc_mtoc_lowpriority_msg_t msg);
 extern uint32_t low_priority_msg_to_reg(ipc_mtoc_lowpriority_msg_t msg);
 
-extern inline uint32_t ipc_mtoc_translate (uint32_t ulShareAddress);
-extern inline uint32_t ipc_ctom_translate (uint32_t ulShareAddress);
+extern uint32_t ipc_mtoc_translate (uint32_t ulShareAddress);
+extern uint32_t ipc_ctom_translate (uint32_t ulShareAddress);
 extern uint16_t ipc_mtoc_busy (uint32_t ulFlags);
 
 extern void get_firmwares_version(void);

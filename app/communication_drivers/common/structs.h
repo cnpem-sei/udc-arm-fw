@@ -24,21 +24,6 @@
 
 #include <stdint.h>
 
-typedef enum
-{
-    Idle,
-    Buffering,
-    Postmortem
-} buf_status_t;
-
-typedef struct
-{
-    buf_status_t    status;
-    volatile float  *p_buf_start;
-    volatile float  *p_buf_end;
-    volatile float  *p_buf_idx;
-} buf_t;
-
 typedef union
 {
     uint8_t     u8[2];
@@ -56,6 +41,27 @@ typedef union
     uint8_t     u8[4];
     float       f;
 } u_float_t;
+
+typedef union
+{
+    uint8_t     u8[4];
+    float       *f;
+} u_p_float_t;
+
+typedef enum
+{
+    Idle,
+    Buffering,
+    Postmortem
+} buf_status_t;
+
+typedef struct
+{
+    buf_status_t    status;
+    u_p_float_t     p_buf_start;
+    u_p_float_t     p_buf_end;
+    u_p_float_t     p_buf_idx;
+} buf_t;
 
 /**
  * Initialization for an instance of ```buf_t```. It requires a pre-defined

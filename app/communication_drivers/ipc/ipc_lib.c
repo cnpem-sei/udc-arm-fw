@@ -96,17 +96,22 @@ void init_ipc(void)
      * Initilize WfmRef
      */
     init_buffer( &(WFMREF.wfmref_data), &(g_wfmref[0].f), SIZE_WFMREF);
-    WFMREF.wfmref_data.p_buf_start = (float *) 0x00E000;    /// SHARERAMS23
-    WFMREF.wfmref_data.p_buf_end   = (float *) 0x00FFFE;
-    WFMREF.wfmref_data.p_buf_idx   = WFMREF.wfmref_data.p_buf_start;
-    WFMREF.wfmref_data.status = Idle;
+
+    /// Convert WfmRef pointers to DSP memory mapping
+    WFMREF.wfmref_data.p_buf_idx.f =
+            (float *) ipc_mtoc_translate((uint32_t) (WFMREF.wfmref_data.p_buf_end.f + 1));
+
+    WFMREF.wfmref_data.p_buf_start.f =
+            (float *) ipc_mtoc_translate((uint32_t) WFMREF.wfmref_data.p_buf_start.f);
+
+    WFMREF.wfmref_data.p_buf_end.f =
+            (float *) ipc_mtoc_translate((uint32_t) WFMREF.wfmref_data.p_buf_end.f);
 
     /**
      * Initilize DSP modules
      */
     g_ipc_mtoc.dsp_module.dsp_class = 0;
     g_ipc_mtoc.dsp_module.id = 0;
-
 
     /**
      * TODO: Initialize IPC Interrupts
@@ -165,7 +170,7 @@ uint32_t low_priority_msg_to_reg(ipc_mtoc_lowpriority_msg_t msg)
  *
  * @param uint32_t Shared address.
  */
-inline uint32_t ipc_mtoc_translate (uint32_t shared_add)
+uint32_t ipc_mtoc_translate (uint32_t shared_add)
 {
     uint32_t returnStatus;
 
@@ -188,7 +193,7 @@ inline uint32_t ipc_mtoc_translate (uint32_t shared_add)
  * @param uint32_t Shared address.
  */
 
-inline uint32_t ipc_ctom_translate (uint32_t shared_add)
+uint32_t ipc_ctom_translate (uint32_t shared_add)
 {
 	uint32_t returnStatus;
 
