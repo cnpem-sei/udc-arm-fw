@@ -19,6 +19,7 @@
  */
 
 #include <communication_drivers/psmodules/fbp/fbp_main.h>
+#include <communication_drivers/psmodules/fbp_dclink/fbp_dclink.h>
 #include <communication_drivers/psmodules/fac_acdc/fac_acdc_main.h>
 #include <communication_drivers/psmodules/fac_dcdc/fac_dcdc.h>
 #include <stdint.h>
@@ -129,6 +130,12 @@ int main(void) {
 	        case FBP:
 	        {
 	            fbp_main();
+	            break;
+	        }
+
+	        case FBP_DCLink:
+	        {
+	            fbp_dclink_system_config();
 	            break;
 	        }
 

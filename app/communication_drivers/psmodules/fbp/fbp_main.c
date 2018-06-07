@@ -21,8 +21,8 @@
 
 #include <communication_drivers/psmodules/fbp/fbp_main.h>
 #include <communication_drivers/psmodules/fbp/fbp_system.h>
-#include<stdint.h>
-#include<stdbool.h>
+#include <stdint.h>
+#include <stdbool.h>
 
 #include "board_drivers/version.h"
 #include "communication_drivers/system_task/system_task.h"

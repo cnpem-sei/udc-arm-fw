@@ -9,17 +9,20 @@
  *****************************************************************************/
 
 /**
- * @file version.c
- * @brief Firmware version module
- * 
- * This module contains information about current build version of UDC ARM core.
+ * @file fbp_dclink.h
+ * @brief System setup for operation as FBP DC Link
  *
  * @author gabriel.brunheira
- * @date 08/02/2018
+ * @date 06/06/2018
  *
  */
 
-#include "version.h"
+#ifndef FBP_DCLINK_H_
+#define FBP_DCLINK_H_
 
-volatile firmwares_version_t firmwares_version;
-const char * udc_arm_version = "V0.13 2018-06-07";
+void  set_digital_potentiometer(float perc);
+float get_digital_potentiometer(void);
+
+void fbp_dclink_system_config(void);
+
+#endif /* FBP_DCLINK_H_ */

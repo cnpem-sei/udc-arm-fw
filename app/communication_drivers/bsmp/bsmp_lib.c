@@ -27,15 +27,17 @@
 
 #include "board_drivers/version.h"
 #include "board_drivers/hardware_def.h"
-#include "communication_drivers/ipc/ipc_lib.h"
-#include "communication_drivers/i2c_onboard/eeprom.h"
-#include "communication_drivers/system_task/system_task.h"
+
 #include "communication_drivers/can/can_bkp.h"
-#include "communication_drivers/rs485/rs485.h"
-#include "communication_drivers/i2c_onboard/exio.h"
-#include "communication_drivers/control/control.h"
-#include "communication_drivers/parameters/ps_parameters.h"
 #include "communication_drivers/common/structs.h"
+#include "communication_drivers/control/control.h"
+#include "communication_drivers/i2c_onboard/eeprom.h"
+#include "communication_drivers/i2c_onboard/exio.h"
+#include "communication_drivers/ipc/ipc_lib.h"
+#include "communication_drivers/parameters/ps_parameters.h"
+#include "communication_drivers/psmodules/fbp_dclink/fbp_dclink.h"
+#include "communication_drivers/rs485/rs485.h"
+#include "communication_drivers/system_task/system_task.h"
 
 #include "inc/hw_memmap.h"
 #include "inc/hw_ipc.h"
@@ -85,18 +87,29 @@ static uint8_t bsmp_turn_on(uint8_t *input, uint8_t *output)
     {
         g_ipc_mtoc.ps_module[g_current_ps_id].ps_status.bit.state = SlowRef;
         send_ipc_lowpriority_msg(g_current_ps_id, Turn_On);
+
         while ((HWREG(MTOCIPC_BASE + IPC_O_MTOCIPCFLG) &
                 low_priority_msg_to_reg(Turn_On)) &&
-                (ulTimeout<TIMEOUT_DSP_IPC_ACK)){
+                (ulTimeout<TIMEOUT_DSP_IPC_ACK))
+        {
             ulTimeout++;
         }
-        if(ulTimeout==TIMEOUT_DSP_IPC_ACK){
+
+        if(ulTimeout==TIMEOUT_DSP_IPC_ACK)
+        {
             *output = 5;
         }
-        else{
+        else
+        {
+            if(g_ipc_ctom.ps_module[0].ps_status.bit.model == FBP_DCLink)
+            {
+                g_ipc_mtoc.ps_module[0].ps_setpoint.f = get_digital_potentiometer();
+            }
+
             *output = 0;
         }
     }
+
     return *output;
 }
 
@@ -490,18 +503,26 @@ uint8_t bsmp_set_slowref (uint8_t *input, uint8_t *output)
 
         send_ipc_lowpriority_msg(g_current_ps_id, Set_SlowRef);
 
-        while ((HWREG(MTOCIPC_BASE + IPC_O_MTOCIPCFLG) &
+        while( (HWREG(MTOCIPC_BASE + IPC_O_MTOCIPCFLG) &
                 low_priority_msg_to_reg(Set_SlowRef)) &&
-                (ulTimeout<TIMEOUT_DSP_IPC_ACK))
+                (ulTimeout<TIMEOUT_DSP_IPC_ACK) )
         {
             ulTimeout++;
         }
-        if(ulTimeout==TIMEOUT_DSP_IPC_ACK)
+
+        if(ulTimeout == TIMEOUT_DSP_IPC_ACK)
         {
             *output = 5;
         }
+
         else
         {
+            if(g_ipc_ctom.ps_module[0].ps_status.bit.model == FBP_DCLink)
+            {
+                SysCtlDelay(750); /// Wait 10 us for DSP update reference
+                set_digital_potentiometer(g_ipc_ctom.ps_module[0].ps_reference.f);
+            }
+
             *output = 0;
         }
     }
