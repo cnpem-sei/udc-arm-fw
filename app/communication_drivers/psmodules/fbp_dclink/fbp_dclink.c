@@ -91,7 +91,7 @@ static void bsmp_init_server(void)
     create_bsmp_var(29, 0, 4, false, V_PS1_OUTPUT.u8);
     create_bsmp_var(30, 0, 4, false, V_PS2_OUTPUT.u8);
     create_bsmp_var(31, 0, 4, false, V_PS3_OUTPUT.u8);
-    create_bsmp_var(32, 0, 4, false, DIGITAL_POT_VOLTAGE.u8);
+    create_bsmp_var(32, 0, 1, false, DIGITAL_POT_VOLTAGE.u8);
 }
 
 /**
@@ -108,7 +108,7 @@ void set_digital_potentiometer(float perc)
     write_data[0] = 0;
     write_data[1] = (uint8_t) roundf((perc*255.0)/100.0);
 
-    DIGITAL_POT_VOLTAGE.f = write_data[1];
+    DIGITAL_POT_VOLTAGE.u8[0] = write_data[1];
 
     write_i2c_offboard_isolated(I2C_SLV_ADDR_DIG_POT, 0x02, write_data);
 }
@@ -125,9 +125,9 @@ float get_digital_potentiometer(void)
     read_data[0] = 0;
     read_i2c_offboard_isolated(I2C_SLV_ADDR_DIG_POT, 0x00, 0x02, read_data);
 
-    DIGITAL_POT_VOLTAGE.f = (float) read_data[0];
+    DIGITAL_POT_VOLTAGE.u8[0] = read_data[0];
 
-    return (DIGITAL_POT_VOLTAGE.f / 255.0) * 100.0;
+    return ( ((float) DIGITAL_POT_VOLTAGE.u8[0]) / 255.0) * 100.0;
 }
 
 /**
