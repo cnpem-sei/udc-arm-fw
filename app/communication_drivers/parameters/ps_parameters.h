@@ -37,7 +37,7 @@
 #define NUM_MAX_DIGITAL_VAR     12
 #define NUM_MAX_HRADC           4
 
-#define NUM_PARAMETERS          47
+#define NUM_PARAMETERS          48
 #define NUM_MAX_PARAMETERS      64
 #define NUM_MAX_FLOATS          200
 
@@ -54,6 +54,7 @@ typedef enum
     UDCNet_Address,
     Ethernet_IP,
     Ethernet_Subnet_Mask,
+    Buzzer_Volume,
 
     Freq_ISR_Controller,
     Freq_TimeSlicer,
@@ -133,6 +134,7 @@ typedef struct
     u_uint16_t      udcnet_address;
     uint8_t         ethernet_ip[4];
     uint8_t         ethernet_mask[4];
+    u_uint16_t      buzzer_volume;
     ps_interface_t  command_interface;
 } param_communication_t;
 

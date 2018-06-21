@@ -30,12 +30,11 @@
 #include "driverlib/gpio.h"
 #include "driverlib/sysctl.h"
 
-#include "hardware_def.h"
-#include "ps_parameters.h"
-
+#include "board_drivers/hardware_def.h"
 #include "communication_drivers/ipc/ipc_lib.h"
 #include "communication_drivers/i2c_onboard/eeprom.h"
 #include "communication_drivers/i2c_onboard/i2c_onboard.h"
+#include "communication_drivers/parameters/ps_parameters.h"
 
 
 static const uint16_t param_addresses[NUM_MAX_PARAMETERS] =
@@ -51,6 +50,7 @@ static const uint16_t param_addresses[NUM_MAX_PARAMETERS] =
     [Ethernet_IP] = 0x0054,
     [Ethernet_Subnet_Mask] = 0x0058,
     [Command_Interface] = 0x005C,
+    [Buzzer_Volume] = 0x005E,
 
     [Freq_ISR_Controller] = 0x0080,
     [Freq_TimeSlicer] = 0x0084,
@@ -338,6 +338,9 @@ void init_parameters_bank(void)
 
     init_param(Command_Interface, is_uint16_t, 1,
                (uint8_t *) &g_ipc_mtoc.communication.command_interface);
+
+    init_param(Buzzer_Volume, is_uint16_t, 2,
+               &g_ipc_mtoc.communication.buzzer_volume.u8[0]);
 
     /**
      * Controller parameters
