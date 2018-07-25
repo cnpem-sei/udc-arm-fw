@@ -67,6 +67,7 @@ static uint8_t dummy_u8;
 
 static struct bsmp_var bsmp_vars[NUMBER_OF_BSMP_SERVERS][BSMP_MAX_VARIABLES];
 static struct bsmp_curve bsmp_curves[NUMBER_OF_BSMP_SERVERS][NUMBER_OF_BSMP_CURVES];
+
 /**
  * @brief Turn on BSMP Function
  *
@@ -1889,6 +1890,24 @@ void create_bsmp_var(uint8_t var_id, uint8_t server, uint8_t size,
 
         bsmp_register_variable(&bsmp[server], &bsmp_vars[server][var_id]);
     }
+}
+
+/**
+ * Modify a pre-created variable. This function must be used only under the
+ * following constraints:
+ *
+ *      1. Both new and old variables have the same size
+ *      2. Both new and old variables are either R/W or R
+ *
+ * TODO: include protection for invalid variables
+ *
+ * @param var_id ID for BSMP variable to be modified
+ * @param server BSMP server to be modified
+ * @param p_var pointer to new memory address of variable
+ */
+void modify_bsmp_var(uint8_t var_id, uint8_t server, volatile uint8_t *p_var)
+{
+    bsmp_vars[server][var_id].data = p_var;
 }
 
 /**

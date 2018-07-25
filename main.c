@@ -22,6 +22,8 @@
 #include <communication_drivers/psmodules/fbp_dclink/fbp_dclink.h>
 #include <communication_drivers/psmodules/fac_acdc/fac_acdc_main.h>
 #include <communication_drivers/psmodules/fac_dcdc/fac_dcdc.h>
+#include <communication_drivers/psmodules/fac_2p4s_acdc/fac_2p4s_acdc.h>
+#include <communication_drivers/psmodules/fac_2p4s_dcdc/fac_2p4s_dcdc.h>
 #include <stdint.h>
 #include <stdarg.h>
 #include <string.h>
@@ -150,6 +152,17 @@ int main(void) {
 	            fac_dcdc_system_config();
 	            break;
 	        }
+
+	        case FAC_2P4S_ACDC:
+	        {
+	            fac_2p4s_acdc_system_config();
+	        }
+
+	        case FAC_2P4S_DCDC:
+	        {
+	            fac_2p4s_dcdc_system_config();
+	        }
+
 	        default:
 	        {
 	            break;

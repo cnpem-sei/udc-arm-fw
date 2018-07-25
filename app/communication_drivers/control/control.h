@@ -34,7 +34,7 @@
 #define NUM_MAX_DSP_SRLIM           4
 #define NUM_MAX_DSP_LPF             4
 #define NUM_MAX_DSP_PI              6
-#define NUM_MAX_DSP_IIR_2P2Z        6
+#define NUM_MAX_DSP_IIR_2P2Z        8
 #define NUM_MAX_DSP_IIR_3P3Z        4
 #define NUM_MAX_DSP_VDCLINK_FF      2
 #define NUM_MAX_DSP_VECT_PRODUCT    2
