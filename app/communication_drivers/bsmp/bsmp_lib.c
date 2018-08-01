@@ -1739,6 +1739,7 @@ BSMPInit(void)
 			Init_BSMP_var(7,DP_Framework.NetSignals[13].u8);		// Vdclink (C28)
 			Init_BSMP_var(11,DP_Framework.DutySignals[0].u8);		// Duty Mod1
 			Init_BSMP_var(12,DP_Framework.DutySignals[1].u8);		// Duty Mod2
+			Init_BSMP_var(13,DP_Framework.NetSignals[15].u8);       // Duty Diff
 			break;
 
         case FBP_FAC_UFJF:
