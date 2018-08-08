@@ -118,7 +118,7 @@ int main(void) {
 	init_system();
 
 	// Enable processor interrupts.
-	IntMasterEnable();
+	//IntMasterEnable();
 
 	IPCMtoCBootControlSystem(CBROM_MTOC_BOOTMODE_BOOT_FROM_FLASH);
 
@@ -169,14 +169,11 @@ int main(void) {
 	        }
 	    }
 
-	    for (ulLoop = 0; ulLoop < 1000; ulLoop++)
-	    {
-	        TaskCheck();
-	    }
-
 	    SysCtlDelay(75000);
 
 	    get_firmwares_version();
+
+	    IntMasterEnable();
 
 	    for (;;)
 	    {

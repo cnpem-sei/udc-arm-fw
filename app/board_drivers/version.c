@@ -22,4 +22,4 @@
 #include "version.h"
 
 volatile firmwares_version_t firmwares_version;
-const char * udc_arm_version = "V0.15 2018-07-25";
+const char * udc_arm_version = "V0.15 2018-08-07";

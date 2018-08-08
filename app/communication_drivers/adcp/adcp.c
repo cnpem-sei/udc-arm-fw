@@ -133,16 +133,18 @@ void adcp_get_samples(void)
     uint8_t count = 0;
 
     // GPIO1 turn on
-    GPIOPinWrite(GPIO_PORTP_BASE, GPIO_PIN_7, ON);
+    //GPIOPinWrite(GPIO_PORTP_BASE, GPIO_PIN_7, ON);
 
     while(count < counter_sampl)
     {
+        //GPIOPinWrite(GPIO_PORTP_BASE, GPIO_PIN_7, ON);
         adc_channel(ADCP_RxTable[count]);
         count++;
+        //GPIOPinWrite(GPIO_PORTP_BASE, GPIO_PIN_7, OFF);
     }
 
     // GPIO1 turn on
-    GPIOPinWrite(GPIO_PORTP_BASE, GPIO_PIN_7, OFF);
+    //GPIOPinWrite(GPIO_PORTP_BASE, GPIO_PIN_7, OFF);
 }
 
 //*****************************************************************************
@@ -151,38 +153,44 @@ void adcp_get_samples(void)
 void isr_adcp(void)
 {
     unsigned long ulStatus;
-	//uint16_t readVal;
 	uint8_t count = 0;
-	//int WordIndex;
+
+	//GPIOPinWrite(DEBUG_BASE, DEBUG_PIN, ON);
 
 	// Read the interrupt status of the SSI0
     ulStatus = SSIIntStatus(ADCP_SPI_BASE, true);
 
-    // Clear any pending status
-    //SSIIntClear(ADCP_SPI_BASE, ulStatus);
+    // Wait until SSI0 is done transferring all the data in the transmit FIFO.
+    while(SSIBusy(ADCP_SPI_BASE)){}
 
-	// ******** We received a "FIFO RX SSI0 half full" interrupt *********
+	// We received a "FIFO RX SSI0 half full" interrupt
 	if (ulStatus & SSI_RXFF)
 	{
-
-        while(SSIDataGetNonBlocking(ADCP_SPI_BASE, &ADCP_RxTable[count]) && count < 9)
+	    //GPIOPinWrite(GPIO_PORTP_BASE, GPIO_PIN_7, ON);
+	    //GPIOPinWrite(DEBUG_BASE, DEBUG_PIN, OFF);
+        while(SSIDataGetNonBlocking(ADCP_SPI_BASE, &ADCP_RxTable[count]) &&
+              count++ < 9)
         {
-             count++;
+            //count++;
         }
 
         counter_sampl = count;
 
 	    // Set task data available
 	    TaskSetNew(ADCP_SAMPLE_AVAILABLE);
-
+	    //GPIOPinWrite(DEBUG_BASE, DEBUG_PIN, ON);
+	    //GPIOPinWrite(GPIO_PORTP_BASE, GPIO_PIN_7, OFF);
+	}
+	else
+	{
+	    GPIOPinWrite(GPIO_PORTP_BASE, GPIO_PIN_7, ON);
+	    GPIOPinWrite(GPIO_PORTP_BASE, GPIO_PIN_7, OFF);
 	}
 
 	// Clear any pending status
 	SSIIntClear(ADCP_SPI_BASE, ulStatus);
 
 	//GPIOPinWrite(DEBUG_BASE, DEBUG_PIN, OFF);
-
-
 }
 
 void adcp_clean_rx_buffer(void)

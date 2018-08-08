@@ -765,7 +765,7 @@ void ethernet_init(void)
     EthernetIntEnable(ETH_BASE, ETH_INT_RX);
 
     // Enable all processor interrupts.
-    IntMasterEnable();
+    //IntMasterEnable();
 
     // Initialize the uIP TCP/IP stack.
     uip_init();
