@@ -156,6 +156,8 @@ encoding//FLASH_UDC_V2_1/app/communication_drivers/psmodules/fac_acdc/subdir_rul
 encoding//FLASH_UDC_V2_1/app/communication_drivers/psmodules/fac_acdc/subdir_vars.mk=UTF-8
 encoding//FLASH_UDC_V2_1/app/communication_drivers/psmodules/fac_dcdc/subdir_rules.mk=UTF-8
 encoding//FLASH_UDC_V2_1/app/communication_drivers/psmodules/fac_dcdc/subdir_vars.mk=UTF-8
+encoding//FLASH_UDC_V2_1/app/communication_drivers/psmodules/fap/subdir_rules.mk=UTF-8
+encoding//FLASH_UDC_V2_1/app/communication_drivers/psmodules/fap/subdir_vars.mk=UTF-8
 encoding//FLASH_UDC_V2_1/app/communication_drivers/psmodules/fbp/subdir_rules.mk=UTF-8
 encoding//FLASH_UDC_V2_1/app/communication_drivers/psmodules/fbp/subdir_vars.mk=UTF-8
 encoding//FLASH_UDC_V2_1/app/communication_drivers/psmodules/fbp_dclink/subdir_rules.mk=UTF-8
