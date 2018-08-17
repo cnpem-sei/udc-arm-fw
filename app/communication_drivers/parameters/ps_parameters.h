@@ -25,7 +25,7 @@
 
 #include <stdint.h>
 #include <math.h>
-#include "../psmodules/ps_modules.h"
+#include "communication_drivers/psmodules/ps_modules.h"
 #include "communication_drivers/common/structs.h"
 #include "communication_drivers/control/siggen/siggen.h"
 
@@ -37,7 +37,10 @@
 #define NUM_MAX_DIGITAL_VAR     12
 #define NUM_MAX_HRADC           4
 
-#define NUM_PARAMETERS          48
+#define NUM_MAX_HARD_INTERLOCKS     32
+#define NUM_MAX_SOFT_INTERLOCKS     32
+
+#define NUM_PARAMETERS          52
 #define NUM_MAX_PARAMETERS      64
 #define NUM_MAX_FLOATS          200
 
@@ -98,6 +101,11 @@ typedef enum
 
     Analog_Var_Max,
     Analog_Var_Min,
+
+    Hard_Interlocks_Debounce_Time,
+    Hard_Interlocks_Reset_Time,
+    Soft_Interlocks_Debounce_Time,
+    Soft_Interlocks_Reset_Time,
 } param_id_t;
 
 typedef enum
@@ -180,6 +188,14 @@ typedef struct
     u_float_t   max[NUM_MAX_ANALOG_VAR];
     u_float_t   min[NUM_MAX_ANALOG_VAR];
 } param_analog_vars_t;
+
+typedef struct
+{
+    u_uint32_t  hard_itlks_debounce_time[NUM_MAX_HARD_INTERLOCKS];
+    u_uint32_t  hard_itlks_reset_time[NUM_MAX_HARD_INTERLOCKS];
+    u_uint32_t  soft_itlks_debounce_time[NUM_MAX_SOFT_INTERLOCKS];
+    u_uint32_t  soft_itlks_reset_time[NUM_MAX_SOFT_INTERLOCKS];
+} param_interlocks_t;
 
 extern volatile param_t g_parameters[NUM_MAX_PARAMETERS];
 
