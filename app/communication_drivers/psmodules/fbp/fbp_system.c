@@ -31,12 +31,13 @@
 #include "communication_drivers/bsmp/bsmp_lib.h"
 #include "communication_drivers/control/control.h"
 
-#define APPLICATION         UVX_LINAC_RACK1
+#define APPLICATION         UVX_LINAC_RACK3
 
 #define UVX_LINAC_RACK1     0
 #define UVX_LINAC_RACK2     1
-#define WEG_PILOT_BATCH_CHARACTERIZATION    2
-#define ELP_FAC_CON_TESTS   3
+#define UVX_LINAC_RACK3     2
+#define WEG_PILOT_BATCH_CHARACTERIZATION    3
+#define ELP_FAC_CON_TESTS   4
 
 /**
  * UVX Linac FBP Rack 1:
@@ -54,6 +55,8 @@
     #define SIGGEN_AUX_PARAM_2  0.0
     #define SIGGEN_AUX_PARAM_3  0.0
 
+    #define NUM_PS_MODULES      4
+
 /**
  * UVX Linac FBP Rack 2:
  *      LCH03 / LCV03 / LCH04 / LCV04
@@ -69,6 +72,26 @@
     #define SIGGEN_AUX_PARAM_1  0.0
     #define SIGGEN_AUX_PARAM_2  10.0
     #define SIGGEN_AUX_PARAM_3  0.0
+
+    #define NUM_PS_MODULES      4
+
+/**
+ * UVX Linac FBP Rack 3:
+ *      LCH02 / LCV02
+ */
+#elif APPLICATION == UVX_LINAC_RACK3
+
+    #define SIGGEN_TYPE         DampedSine
+    #define SIGGEN_NUM_CYCLES   15
+    #define SIGGEN_FREQ         0.25
+    #define SIGGEN_AMP          10.0
+    #define SIGGEN_OFFSET       0.0
+    #define SIGGEN_AUX_PARAM_0  0.0
+    #define SIGGEN_AUX_PARAM_1  0.0
+    #define SIGGEN_AUX_PARAM_2  10.0
+    #define SIGGEN_AUX_PARAM_3  0.0
+
+    #define NUM_PS_MODULES      2
 
 /**
  *  WEG pilot batch characterization
@@ -90,6 +113,8 @@
     #define SIGGEN_AUX_PARAM_2  10.0
     #define SIGGEN_AUX_PARAM_3  0.0
 
+    #define NUM_PS_MODULES      4
+
 /**
  *  Synchronization tests with ELP, CON and FAC groups
  *
@@ -106,6 +131,8 @@
     #define SIGGEN_AUX_PARAM_1  0.02
     #define SIGGEN_AUX_PARAM_2  0.2
     #define SIGGEN_AUX_PARAM_3  0.0
+
+    #define NUM_PS_MODULES      4
 
 #endif
 
@@ -141,7 +168,7 @@
 /**
  * Number of power supplies
  */
-static const uint8_t fbp_qtd = 4;
+static const uint8_t fbp_qtd = NUM_PS_MODULES;
 
 /**
 * @brief Initialize IPC Parameters.
