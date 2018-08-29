@@ -191,6 +191,7 @@ void isr_rs485(void)
             if(recv_buffer.index > sCarga +4)
             {
                 //TaskSetNew(PROCESS_RS485_MESSAGE);
+                GPIOPinWrite(DEBUG_BASE, DEBUG_PIN, ON);
                 rs485_process_data();
                 MessageOverflow = 0;
             }
@@ -296,19 +297,17 @@ void rs485_process_data(void)
         BSMPprocess(&recv_packet, &send_packet, 3);
     }
 
-	//GPIOPinWrite(DEBUG_BASE, DEBUG_PIN, OFF);
-
 	//rs485_bkp_tx_handler();
     if (recv_buffer.data[0] != BCAST_ADDRESS)
     {
         rs485_tx_handler();
     }
-
 	exit:
 	recv_buffer.index = 0;
 	recv_buffer.csum  = 0;
 	send_buffer.index = 0;
 	send_buffer.csum  = 0;
+	GPIOPinWrite(DEBUG_BASE, DEBUG_PIN, OFF);
 
 }
 

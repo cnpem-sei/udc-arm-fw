@@ -52,7 +52,7 @@
 #include "bsmp/include/server.h"
 #include "bsmp_lib.h"
 
-#define TIMEOUT_DSP_IPC_ACK     30
+#define TIMEOUT_DSP_IPC_ACK     40
 
 #define SIZE_WFMREF_BLOCK       8192
 #define SIZE_SAMPLES_BUFFER     16384
@@ -470,9 +470,11 @@ uint8_t bsmp_sync_pulse(uint8_t *input, uint8_t *output)
         }
         else
         {
+            //GPIOPinWrite(DEBUG_BASE, DEBUG_PIN, OFF);
             *output = 0;
         }
     }
+    //GPIOPinWrite(DEBUG_BASE, DEBUG_PIN, OFF);
     return *output;
 }
 
@@ -524,6 +526,7 @@ uint8_t bsmp_set_slowref (uint8_t *input, uint8_t *output)
                 set_digital_potentiometer(g_ipc_ctom.ps_module[0].ps_reference.f);
             }
 
+            //GPIOPinWrite(DEBUG_BASE, DEBUG_PIN, OFF);
             *output = 0;
         }
     }
@@ -576,6 +579,7 @@ uint8_t bsmp_set_slowref_fbp(uint8_t *input, uint8_t *output)
         }
         else
         {
+            //GPIOPinWrite(DEBUG_BASE, DEBUG_PIN, OFF);
             *output = 0;
         }
     }
@@ -945,6 +949,7 @@ uint8_t bsmp_set_slowref_readback(uint8_t *input, uint8_t *output)
         else
         {
             memcpy(output,g_controller_ctom.net_signals[g_current_ps_id].u8,4);
+            //GPIOPinWrite(DEBUG_BASE, DEBUG_PIN, OFF);
             result = 0;
         }
     }
@@ -988,8 +993,6 @@ uint8_t bsmp_set_slowref_fbp_readback(uint8_t *input, uint8_t *output)
         g_ipc_mtoc.ps_module[3].ps_setpoint.u32 = (input[15]<< 24) |
                 (input[14] << 16) | (input[13] << 8) | input[12];
 
-        GPIOPinWrite(DEBUG_BASE, DEBUG_PIN, ON);
-
         send_ipc_lowpriority_msg(0, Set_SlowRef_All_PS);
 
         while ((HWREG(MTOCIPC_BASE + IPC_O_MTOCIPCFLG) &
@@ -999,8 +1002,6 @@ uint8_t bsmp_set_slowref_fbp_readback(uint8_t *input, uint8_t *output)
             ulTimeout++;
         }
 
-        GPIOPinWrite(DEBUG_BASE, DEBUG_PIN, OFF);
-
         if(ulTimeout==TIMEOUT_DSP_IPC_ACK)
         {
             result = 5;
@@ -1008,6 +1009,7 @@ uint8_t bsmp_set_slowref_fbp_readback(uint8_t *input, uint8_t *output)
         else
         {
             memcpy(output,g_controller_ctom.net_signals[0].u8,16);
+            //GPIOPinWrite(DEBUG_BASE, DEBUG_PIN, OFF);
             result = 0;
         }
     }

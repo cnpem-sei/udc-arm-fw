@@ -602,7 +602,8 @@ static void pin_core_setup(void)
                                                                                    //GPIO38 - PF6 é utilizado para o EPWMSYNCI (C28)
                                                                                    //GPIO39 - PF7 é utilizado para o HRADC_INT_STS (C28)
 
-        GPIOPinConfigureCoreSelect(GPIO_PORTG_BASE, 0x64, GPIO_PIN_C_CORE_SELECT); //GPIO42 e 45 são utilizados pelo C28 (C28)
+        // GPIO0 for ARM
+        GPIOPinConfigureCoreSelect(GPIO_PORTG_BASE, 0x24, GPIO_PIN_C_CORE_SELECT); //GPIO42 e 45 são utilizados pelo C28 (C28)
                                                                                    //GPIO40 - PG0 é utilizado para o SDRAM_BA0D13 (ARM)
                                                                                    //GPIO41 - PG1 é utilizado para o SDRAM_BA1D14 (ARM)
                                                                                    //GPIO42 - PG2 é utilizado para o STATUS_ADC0 (C28)
@@ -610,6 +611,17 @@ static void pin_core_setup(void)
                                                                                    //GPIO44 - PG4 é utilizado para o ADC_AD_I (ARM)
                                                                                    //GPIO45 - PG5 é utilizado para o STATUS_ADC2 (C28)
                                                                                    //GPIO46 - PG6 é utilizado para o GPIO0 (ARM)
+                                                                                   //GPIO47 - PG7 é utilizado para o SDRAM_CLK (ARM)
+
+        // GPIO0 for C28
+        //GPIOPinConfigureCoreSelect(GPIO_PORTG_BASE, 0x64, GPIO_PIN_C_CORE_SELECT); //GPIO42 e 45 são utilizados pelo C28 (C28)
+                                                                                   //GPIO40 - PG0 é utilizado para o SDRAM_BA0D13 (ARM)
+                                                                                   //GPIO41 - PG1 é utilizado para o SDRAM_BA1D14 (ARM)
+                                                                                   //GPIO42 - PG2 é utilizado para o STATUS_ADC0 (C28)
+                                                                                   //GPIO43 - PG3 é utilizado para o RTC-TIMER (ARM)
+                                                                                   //GPIO44 - PG4 é utilizado para o ADC_AD_I (ARM)
+                                                                                   //GPIO45 - PG5 é utilizado para o STATUS_ADC2 (C28)
+                                                                                   //GPIO46 - PG6 é utilizado para o GPIO0 (C28)
                                                                                    //GPIO47 - PG7 é utilizado para o SDRAM_CLK (ARM)
 
         GPIOPinConfigureCoreSelect(GPIO_PORTH_BASE, 0x80, GPIO_PIN_C_CORE_SELECT); //GPIO55 é utilizado pelo C28 (C28)
