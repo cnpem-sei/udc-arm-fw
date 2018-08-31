@@ -143,7 +143,7 @@ SystemInit(void)
 	DcdcPwrCtrl(true);
 
 	// Não necessita da configuração da malha de controle, o dsp ja possui os dados
-	//CtrllawInit();
+	CtrllawInit();
 
 	InitDisplay();
 
