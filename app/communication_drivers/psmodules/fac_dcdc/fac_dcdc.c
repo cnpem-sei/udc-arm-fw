@@ -37,14 +37,15 @@
 
 #define I_LOAD_1            g_controller_ctom.net_signals[0]
 #define I_LOAD_2            g_controller_ctom.net_signals[1]
-#define I_LOAD_MEAN         g_controller_ctom.net_signals[2]
-#define I_LOAD_DIFF         g_controller_ctom.net_signals[3]
-#define I_LOAD_ERROR        g_controller_ctom.net_signals[4]
+#define V_CAPBANK           g_controller_ctom.net_signals[2]
+
+#define I_LOAD_MEAN         g_controller_ctom.net_signals[4]
+#define I_LOAD_ERROR        g_controller_ctom.net_signals[5]
+#define I_LOAD_DIFF         g_controller_ctom.net_signals[10]
 
 #define v_LOAD              g_controller_mtoc.net_signals[0]
-#define V_CAPBANK           g_controller_mtoc.net_signals[1]
-#define TEMP_INDUCTORS      g_controller_mtoc.net_signals[2]
-#define TEMP_IGBT           g_controller_mtoc.net_signals[3]
+#define TEMP_INDUCTORS      g_controller_mtoc.net_signals[1]
+#define TEMP_IGBT           g_controller_mtoc.net_signals[2]
 
 #define DUTY_CYCLE          g_controller_ctom.output_signals[0]
 
