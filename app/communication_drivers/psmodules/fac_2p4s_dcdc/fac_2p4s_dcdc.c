@@ -37,6 +37,20 @@
 
 #define I_LOAD_1            g_controller_ctom.net_signals[0]
 #define I_LOAD_2            g_controller_ctom.net_signals[1]
+#define I_ARM_1             g_controller_ctom.net_signals[2]
+#define I_ARM_2             g_controller_ctom.net_signals[3]
+
+#define I_LOAD_MEAN         g_controller_ctom.net_signals[5]
+#define I_LOAD_ERROR        g_controller_ctom.net_signals[6]
+#define DUTY_MEAN           g_controller_ctom.net_signals[7]
+
+#define I_ARMS_DIFF         g_controller_ctom.net_signals[8]
+#define DUTY_DIFF           g_controller_ctom.net_signals[9]
+
+#define I_LOAD_DIFF         g_controller_ctom.net_signals[10]
+
+#define I_LOAD_1            g_controller_ctom.net_signals[0]
+#define I_LOAD_2            g_controller_ctom.net_signals[1]
 #define I_LOAD_MEAN         g_controller_ctom.net_signals[2]
 #define I_LOAD_DIFF         g_controller_ctom.net_signals[3]
 #define I_LOAD_ERROR        g_controller_ctom.net_signals[4]
@@ -76,50 +90,51 @@
 /**
 * @brief Initialize ADCP Channels.
 *
-* Setup ADCP specific parameters for FAC ACDC operation.
-*
+* Setup ADCP specific parameters for FAC-2P4S DCDC operation. Note that module 3
+* and module 4 don't follow the sequence of ADCP channels, in order to keep
+* cables installation on EXB more intuitive.
 */
 static void adcp_channel_config(void)
 {
     // Module 1 DCLink Voltage: 10 V = 300 V
     g_analog_ch_0.Enable = 1;
     g_analog_ch_0.Gain = 300.0/2048.0;
-    g_analog_ch_0.Value = &(V_OUT_MOD_1.f);
+    g_analog_ch_0.Value = &(V_CAPBANK_MOD_1.f);
 
     // Module 2 DCLink Voltage: 10 V = 300 V
     g_analog_ch_1.Enable = 1;
     g_analog_ch_1.Gain = 300.0/2048.0;
-    g_analog_ch_1.Value = &(V_OUT_MOD_2.f);
+    g_analog_ch_1.Value = &(V_CAPBANK_MOD_2.f);
 
     // Module 3 DCLink Voltage: 10 V = 300 V
-    g_analog_ch_2.Enable = 1;
-    g_analog_ch_2.Gain = 300.0/2048.0;
-    g_analog_ch_2.Value = &(V_OUT_MOD_3.f);
-
-    // Module 4 DCLink Voltage: 10 V = 300 V
     g_analog_ch_3.Enable = 1;
     g_analog_ch_3.Gain = 300.0/2048.0;
-    g_analog_ch_3.Value = &(V_OUT_MOD_4.f);
+    g_analog_ch_3.Value = &(V_CAPBANK_MOD_3.f);
+
+    // Module 4 DCLink Voltage: 10 V = 300 V
+    g_analog_ch_2.Enable = 1;
+    g_analog_ch_2.Gain = 300.0/2048.0;
+    g_analog_ch_2.Value = &(V_CAPBANK_MOD_4.f);
 
     // Module 5 DCLink Voltage: 10 V = 300 V
     g_analog_ch_4.Enable = 1;
     g_analog_ch_4.Gain = 300.0/2048.0;
-    g_analog_ch_4.Value = &(V_OUT_MOD_5.f);
+    g_analog_ch_4.Value = &(V_CAPBANK_MOD_5.f);
 
     // Module 6 DCLink Voltage: 10 V = 300 V
     g_analog_ch_5.Enable = 1;
     g_analog_ch_5.Gain = 300.0/2048.0;
-    g_analog_ch_5.Value = &(V_OUT_MOD_6.f);
+    g_analog_ch_5.Value = &(V_CAPBANK_MOD_6.f);
 
     // Module 7 DCLink Voltage: 10 V = 300 V
     g_analog_ch_6.Enable = 1;
     g_analog_ch_6.Gain = 300.0/2048.0;
-    g_analog_ch_6.Value = &(V_OUT_MOD_7.f);
+    g_analog_ch_6.Value = &(V_CAPBANK_MOD_7.f);
 
     // Module 8 DCLink Voltage: 10 V = 300 V
     g_analog_ch_7.Enable = 1;
     g_analog_ch_7.Gain = 300.0/2048.0;
-    g_analog_ch_7.Value = &(V_OUT_MOD_8.f);
+    g_analog_ch_7.Value = &(V_CAPBANK_MOD_8.f);
 }
 
 /**
@@ -167,6 +182,9 @@ static void bsmp_init_server(void)
     create_bsmp_var(51, 0, 4, false, DUTY_CYCLE_MOD_6.u8);
     create_bsmp_var(52, 0, 4, false, DUTY_CYCLE_MOD_7.u8);
     create_bsmp_var(53, 0, 4, false, DUTY_CYCLE_MOD_8.u8);
+
+    create_bsmp_var(54, 0, 4, false, I_ARM_1.u8);
+    create_bsmp_var(55, 0, 4, false, I_ARM_2.u8);
 }
 
 /**
