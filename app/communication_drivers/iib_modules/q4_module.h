@@ -9,22 +9,31 @@
  *****************************************************************************/
 
 /**
- * @file fac_dcdc.c
- * @brief FAC DC/DC Stage module
+ * @file q4_module.h
+ * @brief Brief description of module
+ * 
+ * Detailed description
  *
- * Module for control of DC/DC module of FAC power supplies. It implements the
- * controller for load current.
- *
- * @author gabriel.brunheira
- * @date 01/05/2018
+ * @author allef.silva
+ * @date 30 de ago de 2018
  *
  */
 
-#ifndef FAC_DCDC_H_
-#define FAC_DCDC_H_
+#ifndef Q4_MODULE_H_
+#define Q4_MODULE_H_
 
-#define NUMBER_OF_IIB_MODULES   2
 
-void fac_dcdc_system_config(void);
+/**
+ * TODO: Put here your defines. Just what need 
+ * to be accessed by other modules.
+ */
 
-#endif /* FAC_DCDC_H_ */
+
+/**
+ * TODO: Put here your functions prototypes. Just what need 
+ * to be accessed by other modules.
+ */
+
+
+
+#endif /* Q4_MODULE_H_ */

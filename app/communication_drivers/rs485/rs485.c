@@ -127,7 +127,7 @@ void isr_rs485(void)
 	if(UART_INT_RX == ulStatus || UART_INT_RT == ulStatus)
 	{
 
-	    // GPIO1 turn on
+	    //GPIO1 turn on
 	    //GPIOPinWrite(GPIO_PORTP_BASE, GPIO_PIN_7, ON);
 
 	    // Low baud-rate
@@ -377,8 +377,8 @@ void config_rs485(uint32_t BaudRate)
 	    isinf(BaudRate) || isnan(BaudRate) )
 	{
 	    BaudRate = BAUDRATE_DEFAULT;
-	    set_param(RS485_Baudrate,0,BaudRate);
-	    save_param_eeprom(RS485_Baudrate,0);
+	    set_param(RS485_Baudrate, 0, BaudRate);
+	    save_param_eeprom(RS485_Baudrate, 0);
 	}
 
 	// RS485 serial configuration, operation mode 8-N-1
@@ -400,7 +400,7 @@ void init_rs485(void)
 	config_rs485(get_param(RS485_Baudrate,0));
 
 	UARTFIFOEnable(RS485_UART_BASE);
-	UARTFIFOLevelSet(RS485_UART_BASE,UART_FIFO_TX1_8,UART_FIFO_RX1_8);
+	UARTFIFOLevelSet(RS485_UART_BASE, UART_FIFO_TX1_8, UART_FIFO_RX1_8);
 
 	//Habilita interrupção pela UART1 (RS-485)
 	IntRegister(RS485_INT, isr_rs485);

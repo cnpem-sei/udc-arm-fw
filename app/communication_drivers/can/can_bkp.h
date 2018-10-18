@@ -23,6 +23,24 @@
 #ifndef CAN_BKP_H_
 #define CAN_BKP_H_
 
+#define INTERLOCK_MESSAGE_LEN           4
+#define INTERLOCK_MESSAGE_OBJ_ID        1
+
+#define DATA_REQUEST_MESSAGE_TX_LEN     4
+#define DATA_REQUEST_MESSAGE_TX_OBJ_ID  2
+
+#define DATA_REQUEST_MESSAGE_RX_LEN     8
+#define DATA_REQUEST_MESSAGE_RX_OBJ_ID  3
+
+#define SEND_PARAM_MESSAGE_LEN          8
+#define SEND_PARAM_MESSAGE_OBJ_ID       4
+
+#define RESET_ITLK_MESSAGE_LEN          1
+#define RESET_ITLK_MESSAGE_OBJ_ID       5
+
+#define DATA_SEND_MESSAGE_LEN           8
+#define DATA_SEND_OBJ_ID                6
+
 typedef struct
 {
 	union
@@ -312,6 +330,16 @@ typedef struct
 
 } RectModule_t;
 
+typedef enum {
+    ItlkMsgId = 1,
+    AlmMsgId,
+    ResetMsgId,
+    DataRequestMsgId,
+    DataSendMsgId,
+    ParamsSetMsgId,
+    HeartBeatMsgId
+}can_message_id_t;
+
 extern Q1Module_t Mod1Q1;
 extern Q1Module_t Mod2Q1;
 extern Q4Module_t Mod1Q4;
@@ -328,5 +356,7 @@ extern uint32_t alarm_status_read(void);
 extern void alarm_status_clear(void);
 
 extern void interlock_status_clear(void);
+
+void send_reset_iib_message(uint8_t iib_address);
 
 #endif /* APP_COMMUNICATION_DRIVERS_CAN_CAN_BKP_H_ */

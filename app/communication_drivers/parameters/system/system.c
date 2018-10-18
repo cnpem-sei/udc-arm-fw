@@ -104,7 +104,7 @@ void init_system(void)
 	/**
 	 * TODO: Initialization of IHM, CAN, USB and SDRAM
 	 */
-	//init_can_bkp();
+	init_can_bkp();
 	//InitUSBSerialDevice();
     //SdramInit();
 

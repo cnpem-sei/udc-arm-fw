@@ -32,6 +32,7 @@
 #include "communication_drivers/i2c_onboard/eeprom.h"
 #include "communication_drivers/adcp/adcp.h"
 #include "communication_drivers/i2c_onboard/exio.h"
+
 #include "system_task.h"
 
 volatile uint8_t LedCtrl = 0;
@@ -98,14 +99,12 @@ TaskSetNew(uint8_t TaskNum)
 	    break;
 
 	default:
-
 		break;
 
 	}
 }
 
-void
-TaskCheck(void)
+void TaskCheck(void)
 {
 
 	if(ADCP_SAMPLE_AVAILABLE_REQUEST)
@@ -117,11 +116,11 @@ TaskCheck(void)
     /**********************************************
      * TODO: Process CAN message
      * *******************************************/
-    //else if(PROCESS_CAN_MESS)
-    //{
-    //  PROCESS_CAN_MESS = 0;
-    //  can_check();
-    //}
+    else if(PROCESS_CAN_MESS)
+    {
+      PROCESS_CAN_MESS = 0;
+      //can_check();
+    }
 
 	else if(SAMPLE_ADCP_REQUEST)
 	{
@@ -186,6 +185,7 @@ TaskCheck(void)
                 power_supply_2_temp_read();
                 power_supply_3_temp_read();
                 power_supply_4_temp_read();
+
                 break;
 		}
 	}
@@ -212,6 +212,7 @@ TaskCheck(void)
                 led_itlk_ctrl(1);
                 sound_sel_ctrl(1);
             }
+
             LedCtrl = 1;
         }
 	}

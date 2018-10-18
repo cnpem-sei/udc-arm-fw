@@ -79,7 +79,6 @@ void read_i2c(uint8_t SLAVE_ADDR, uint8_t TYPE_REGISTER_ADDR, uint8_t MESSAGE_SI
 		I2CWhileMasterBusy
 		*data = I2CMasterDataGet(I2C_ONBOARD_MASTER_BASE);
 		data++;
-
 	}
 
 }

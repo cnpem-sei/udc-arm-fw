@@ -74,8 +74,8 @@ uint8_t set_dsp_coeffs(volatile control_framework_t *p_controller,
                        *(p_coeffs+1), *(p_coeffs+2), *(p_coeffs+3));
             return 1;
        }
-        case DSP_IIR_2P2Z:
-        {
+       case DSP_IIR_2P2Z:
+       {
             //memcpy(&p_controller->dsp_modules.dsp_iir_2p2z[id].coeffs.f,
             //       p_coeffs, 4*NUM_COEFFS_DSP_IIR_2P2Z);
             cfg_dsp_iir_2p2z(&p_controller->dsp_modules.dsp_iir_2p2z[id],
@@ -109,6 +109,7 @@ uint8_t set_dsp_coeffs(volatile control_framework_t *p_controller,
             return 0;
     }
 }
+
 float get_dsp_coeff(volatile control_framework_t *p_controller,
                     dsp_class_t dsp_class, uint16_t id, uint16_t coeff)
 {
@@ -127,7 +128,7 @@ float get_dsp_coeff(volatile control_framework_t *p_controller,
         case DSP_PI:
         {
             return p_controller->dsp_modules.dsp_pi[id].coeffs.f[coeff];
-       }
+        }
         case DSP_IIR_2P2Z:
         {
             return p_controller->dsp_modules.dsp_iir_2p2z[id].coeffs.f[coeff];
