@@ -24,6 +24,8 @@
 #include <communication_drivers/psmodules/fac_dcdc/fac_dcdc.h>
 #include <communication_drivers/psmodules/fac_2p4s_acdc/fac_2p4s_acdc.h>
 #include <communication_drivers/psmodules/fac_2p4s_dcdc/fac_2p4s_dcdc.h>
+#include <communication_drivers/psmodules/fap/fap.h>
+
 #include <stdint.h>
 #include <stdarg.h>
 #include <string.h>

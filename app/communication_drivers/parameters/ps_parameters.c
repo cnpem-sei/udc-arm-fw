@@ -94,6 +94,11 @@ static const uint16_t param_addresses[NUM_MAX_PARAMETERS] =
 
     [Analog_Var_Max] = 0x160,
     [Analog_Var_Min] = 0x260,
+
+    [Hard_Interlocks_Debounce_Time] = 0x400,
+    [Hard_Interlocks_Reset_Time] = 0x480,
+    [Soft_Interlocks_Debounce_Time] = 0x500,
+    [Soft_Interlocks_Reset_Time] = 0x580,
 };
 
 static uint8_t data_eeprom[32];
@@ -462,6 +467,23 @@ void init_parameters_bank(void)
 
     init_param(Analog_Var_Min, is_float, NUM_MAX_ANALOG_VAR,
                 &g_ipc_mtoc.analog_vars.min[0].u8[0]);
+
+    /**
+     * Interlocks parameters
+     */
+    init_param(Hard_Interlocks_Debounce_Time, is_uint32_t,
+               NUM_MAX_HARD_INTERLOCKS,
+               &g_ipc_mtoc.interlocks.hard_itlks_debounce_time[0].u8[0]);
+
+    init_param(Hard_Interlocks_Reset_Time, is_uint32_t, NUM_MAX_HARD_INTERLOCKS,
+               &g_ipc_mtoc.interlocks.hard_itlks_reset_time[0].u8[0]);
+
+    init_param(Soft_Interlocks_Debounce_Time, is_uint32_t,
+               NUM_MAX_SOFT_INTERLOCKS,
+               &g_ipc_mtoc.interlocks.soft_itlks_debounce_time[0].u8[0]);
+
+    init_param(Soft_Interlocks_Reset_Time, is_uint32_t, NUM_MAX_SOFT_INTERLOCKS,
+               &g_ipc_mtoc.interlocks.soft_itlks_reset_time[0].u8[0]);
 }
 
 void save_param_bank(void)
