@@ -312,6 +312,7 @@ uint8_t bsmp_reset_interlocks(uint8_t *input, uint8_t *output)
         else
         {
             TaskSetNew(CLEAR_ITLK_ALARM);
+            send_reset_iib_message(1);
             *output = 0;
         }
     }
