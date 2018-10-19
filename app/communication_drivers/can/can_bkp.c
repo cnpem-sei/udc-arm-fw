@@ -350,7 +350,6 @@ void init_can_bkp(void)
     receive_message.ulMsgLen        = 1;
 
     CANMessageSet(CAN0_BASE, 3, &receive_message, MSG_OBJ_TYPE_RX);
-
 }
 
 
