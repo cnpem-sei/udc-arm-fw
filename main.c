@@ -25,6 +25,7 @@
 #include <communication_drivers/psmodules/fac_2p4s_acdc/fac_2p4s_acdc.h>
 #include <communication_drivers/psmodules/fac_2p4s_dcdc/fac_2p4s_dcdc.h>
 #include <communication_drivers/psmodules/fap/fap.h>
+#include <communication_drivers/psmodules/fap_225A/fap_225A.h>
 
 #include <stdint.h>
 #include <stdarg.h>
@@ -165,6 +166,12 @@ int main(void) {
             case FAP:
             {
                 fap_system_config();
+                break;
+            }
+
+            case FAP_225A:
+            {
+                fap_225A_system_config();
                 break;
             }
 

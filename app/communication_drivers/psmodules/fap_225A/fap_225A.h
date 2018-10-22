@@ -9,17 +9,20 @@
  *****************************************************************************/
 
 /**
- * @file version.c
- * @brief Firmware version module
- * 
- * This module contains information about current build version of UDC ARM core.
+ * @file fap_225A.h
+ * @brief FAP 225 A module
+ *
+ * Module for control of FAP power supply used by Magnets Group for magnets
+ * characterization. It implements the controller for load current.
  *
  * @author gabriel.brunheira
- * @date 08/02/2018
+ * @date 22/10/2018
  *
  */
 
-#include "version.h"
+#ifndef FAP_225A_H_
+#define FAP_225A_H_
 
-volatile firmwares_version_t firmwares_version;
-const char * udc_arm_version = "V0.18f2018-10-22";
+void fap_225A_system_config(void);
+
+#endif /* FAP_225A_H_ */
