@@ -26,20 +26,24 @@
 #define INTERLOCK_MESSAGE_LEN           4
 #define INTERLOCK_MESSAGE_OBJ_ID        1
 
-#define DATA_REQUEST_MESSAGE_TX_LEN     4
-#define DATA_REQUEST_MESSAGE_TX_OBJ_ID  2
-
-#define DATA_REQUEST_MESSAGE_RX_LEN     8
-#define DATA_REQUEST_MESSAGE_RX_OBJ_ID  3
-
-#define SEND_PARAM_MESSAGE_LEN          8
-#define SEND_PARAM_MESSAGE_OBJ_ID       4
+#define ALARM_MESSAGE_LEN               4
+#define ALARM_MESSAGE_OBJ_ID            2
 
 #define RESET_ITLK_MESSAGE_LEN          1
-#define RESET_ITLK_MESSAGE_OBJ_ID       5
+#define RESET_ITLK_MESSAGE_OBJ_ID       3
 
-#define DATA_SEND_MESSAGE_LEN           8
-#define DATA_SEND_OBJ_ID                6
+#define DATA_REQUEST_MESSAGE_LEN        4
+#define DATA_REQUEST_MESSAGE_OBJ_ID     4
+
+#define DATA_GET_MESSAGE_LEN            8
+#define DATA_GET_OBJ_ID                 5
+
+#define SEND_PARAM_MESSAGE_LEN          8
+#define SEND_PARAM_MESSAGE_OBJ_ID       6
+
+#define HEART_BEAT_MESSAGE_LEN          1
+#define HEART_BEAT_MESSAGE_OB_ID        7
+
 
 typedef struct
 {
@@ -335,7 +339,7 @@ typedef enum {
     AlmMsgId,
     ResetMsgId,
     DataRequestMsgId,
-    DataSendMsgId,
+    DataGetMsgId,
     ParamsSetMsgId,
     HeartBeatMsgId
 }can_message_id_t;

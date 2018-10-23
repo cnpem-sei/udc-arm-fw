@@ -14,9 +14,9 @@
  *
  * Module to process data in CAN BUS for backplane.
  *
- * @author joao.rosa
+ * @author allef.silva
  *
- * @date 21/01/2016
+ * @date 23/10/2018
  *
  */
 
@@ -87,8 +87,8 @@ volatile bool g_bErrFlag = 0;
 tCANMsgObject transmit_message;
 tCANMsgObject receive_message;
 
-uint8_t request_data_tx[DATA_REQUEST_MESSAGE_TX_LEN];
-uint8_t request_data_rx[DATA_REQUEST_MESSAGE_RX_LEN];
+uint8_t request_data_tx[DATA_REQUEST_MESSAGE_LEN];
+uint8_t request_data_rx[DATA_GET_MESSAGE_LEN];
 uint8_t set_param_data[SEND_PARAM_MESSAGE_LEN];
 uint8_t interlock_data[INTERLOCK_MESSAGE_LEN];
 uint8_t reset_message_data[RESET_ITLK_MESSAGE_LEN];
@@ -140,14 +140,7 @@ void can_int_handler(void)
         //
         CANIntClear(CAN0_BASE, INTERLOCK_MESSAGE_OBJ_ID);
 
-        //
-        // Set flag to indicate received message is pending for this message
-        // object.
-        //
-        g_bRXFlag1 = 1;
-
-        // Indicate new message that needs to be processed
-        TaskSetNew(PROCESS_CAN_MESSAGE);
+        get_interlock_message();
 
         //
         // Since a message was received, clear any error flags.
@@ -155,79 +148,57 @@ void can_int_handler(void)
         g_bErrFlag = 0;
     }
 
-    //
-    // Check if the cause is message object 2.
-    //
-    else if(ui32Status == DATA_REQUEST_MESSAGE_TX_OBJ_ID)
+    else if(ui32Status == ALARM_MESSAGE_OBJ_ID)
     {
-        CANIntClear(CAN0_BASE, DATA_REQUEST_MESSAGE_TX_OBJ_ID);
+        CANIntClear(CAN0_BASE, ALARM_MESSAGE_OBJ_ID);
 
-        g_bRXFlag2 = 1;
-
-        // Indicate new message that needs to be processed
-        TaskSetNew(PROCESS_CAN_MESSAGE);
+        get_alarm_message();
 
         g_bErrFlag = 0;
     }
 
-    //
-    // Check if the cause is message object 3.
-    //
-    else if(ui32Status == DATA_REQUEST_MESSAGE_RX_OBJ_ID)
-    {
-        CANIntClear(CAN0_BASE, DATA_REQUEST_MESSAGE_RX_OBJ_ID);
-
-        g_bRXFlag3 = 1;
-
-        get_data_from_iib();
-
-        TaskSetNew(PROCESS_CAN_MESSAGE);
-
-        g_bErrFlag = 0;
-    }
-
-    //
-    // Check if the cause is message object 4.
-    //
-    else if(ui32Status == SEND_PARAM_MESSAGE_OBJ_ID)
-    {
-
-        CANIntClear(CAN0_BASE, SEND_PARAM_MESSAGE_OBJ_ID);
-
-        g_bRXFlag4 = 1;
-
-        // Indicate new message that needs to be processed
-        TaskSetNew(PROCESS_CAN_MESSAGE);
-
-        g_bErrFlag = 0;
-    }
-
-    //
-    // Check if the cause is message object 5.
-    //
     else if(ui32Status == RESET_ITLK_MESSAGE_OBJ_ID)
     {
         CANIntClear(CAN0_BASE, RESET_ITLK_MESSAGE_OBJ_ID);
 
-        g_bRXFlag5 = 1;
-
-        // Indicate new message that needs to be processed
-        TaskSetNew(PROCESS_CAN_MESSAGE);
+        /* Tx object. Nothing to do for now. */
 
         g_bErrFlag = 0;
     }
 
-    //
-    // Check if the cause is message object 5.
-    //
-    else if(ui32Status == DATA_SEND_OBJ_ID)
+    else if(ui32Status == DATA_REQUEST_MESSAGE_OBJ_ID)
     {
-        CANIntClear(CAN0_BASE, DATA_SEND_OBJ_ID);
+        CANIntClear(CAN0_BASE, DATA_REQUEST_MESSAGE_OBJ_ID);
 
-        g_bRXFlag5 = 1;
+        /* Tx object. Nothing to do for now. */
 
-        // Indicate new message that needs to be processed
-        TaskSetNew(PROCESS_CAN_MESSAGE);
+        g_bErrFlag = 0;
+    }
+
+    else if (ui32Status == DATA_GET_OBJ_ID)
+    {
+        CANIntClear(CAN0_BASE, DATA_GET_OBJ_ID);
+
+        /* TODO: Handle received data*/
+        get_data_from_iib();
+
+        g_bErrFlag = 0;
+    }
+
+    else if (ui32Status == SEND_PARAM_MESSAGE_OBJ_ID)
+    {
+        CANIntClear(CAN0_BASE, SEND_PARAM_MESSAGE_OBJ_ID);
+
+        /* Tx object. Nothing to do for now*/
+
+        g_bErrFlag = 0;
+    }
+
+    else if(ui32Status == HEART_BEAT_MESSAGE_OB_ID)
+    {
+        CANIntClear(CAN0_BASE, HEART_BEAT_MESSAGE_OB_ID);
+
+        /* TODO: Handle received data*/
 
         g_bErrFlag = 0;
     }
@@ -242,68 +213,6 @@ void can_int_handler(void)
         // Spurious interrupt handling can go here.
         //
     }
-}
-
-void can_check(void)
-{
-
-    uint8_t iib_address;
-    //
-    // If the flag for message object 1 is set, that means that the RX
-    // interrupt occurred and there is a message ready to be read from
-    // this CAN message object.
-    //
-    if(g_bRXFlag1)
-    {
-
-        g_bRXFlag1 = 0;
-
-    }
-
-    //
-    // Check for message received on message object 2.  If so then
-    // read message and print information.
-    //
-    if(g_bRXFlag2)
-    {
-
-        g_bRXFlag2 = 0;
-
-    }
-
-    //
-    // Check for message received on message object 2.  If so then
-    // read message and print information.
-    //
-    if(g_bRXFlag3)
-    {
-
-        g_bRXFlag3 = 0;
-
-    }
-
-    //
-    // Check for message received on message object 3.  If so then
-    // read message and print information.
-    //
-    if(g_bRXFlag4)
-    {
-
-        g_bRXFlag4 = 0;
-
-    }
-
-    //
-    // Check for message received on message object 2.  If so then
-    // read message and print information.
-    //
-    if(g_bRXFlag5)
-    {
-
-        g_bRXFlag5 = 0;
-
-    }
-
 }
 
 void init_can_bkp(void)
@@ -343,13 +252,32 @@ void init_can_bkp(void)
     transmit_message.ulMsgIDMask = 0;
     transmit_message.ulFlags = MSG_OBJ_TX_INT_ENABLE;
 
-    /* Teste recepção heartbeat */
-    receive_message.ulMsgID         = HeartBeatMsgId;
+
+    receive_message.ulMsgID         = ItlkMsgId;
     receive_message.ulMsgIDMask     = 0xfffff;
     receive_message.ulFlags         = MSG_OBJ_RX_INT_ENABLE | MSG_OBJ_USE_ID_FILTER;
-    receive_message.ulMsgLen        = 1;
+    receive_message.ulMsgLen        = INTERLOCK_MESSAGE_LEN;
 
-    CANMessageSet(CAN0_BASE, 3, &receive_message, MSG_OBJ_TYPE_RX);
+    CANMessageSet(CAN0_BASE, INTERLOCK_MESSAGE_OBJ_ID, &receive_message,
+                                                              MSG_OBJ_TYPE_RX);
+
+    receive_message.ulMsgID         = AlmMsgId;
+    receive_message.ulMsgLen        = ALARM_MESSAGE_LEN;
+
+    CANMessageSet(CAN0_BASE, ALARM_MESSAGE_OBJ_ID, &receive_message,
+                                                              MSG_OBJ_TYPE_RX);
+
+    receive_message.ulMsgID         = DataGetMsgId;
+    receive_message.ulMsgLen        = DATA_GET_MESSAGE_LEN;
+
+    CANMessageSet(CAN0_BASE, DATA_GET_OBJ_ID, &receive_message,
+                                                              MSG_OBJ_TYPE_RX);
+
+    receive_message.ulMsgID         = HeartBeatMsgId;
+    receive_message.ulMsgLen        = HEART_BEAT_MESSAGE_LEN;
+
+    CANMessageSet(CAN0_BASE, HEART_BEAT_MESSAGE_OB_ID, &receive_message,
+                                                              MSG_OBJ_TYPE_RX);
 }
 
 
@@ -374,19 +302,18 @@ void send_data_request_message(uint8_t iib_address, uint8_t param_id)
     request_data_tx[3] = 0;
 
     transmit_message.ulMsgID = DataRequestMsgId;
-    transmit_message.ulMsgLen = DATA_REQUEST_MESSAGE_TX_LEN;
+    transmit_message.ulMsgLen = DATA_REQUEST_MESSAGE_LEN;
     transmit_message.pucMsgData = request_data_tx;
 
-    CANMessageSet(CAN0_BASE, DATA_REQUEST_MESSAGE_TX_OBJ_ID, &transmit_message,
+    CANMessageSet(CAN0_BASE, DATA_REQUEST_MESSAGE_OBJ_ID, &transmit_message,
                                                               MSG_OBJ_TYPE_TX);
 }
 
 void get_data_from_iib()
 {
-    receive_message.ulMsgLen = DATA_REQUEST_MESSAGE_RX_LEN;
+    receive_message.ulMsgLen = DATA_GET_MESSAGE_LEN;
     receive_message.pucMsgData = request_data_rx;
-    CANMessageGet(CAN0_BASE, DATA_REQUEST_MESSAGE_RX_OBJ_ID,
-                                                          &receive_message, 0);
+    CANMessageGet(CAN0_BASE, DATA_GET_OBJ_ID, &receive_message, 0);
 }
 
 void get_interlock_message()
@@ -399,10 +326,7 @@ void get_interlock_message()
 void send_param_message(uint8_t iib_address, uint8_t param_id,
                                                             uint32_t param_val)
 {
-    //set_param_data[0] = iib_address;
-    //set_param_data[1] = param_id;
-    //set_param_data[2] = 0;
-    //set_param_data[3] = 0;
+    /* TODO: Handle it. */
 }
 
 void update_iib_readings(uint8_t iib_address)
@@ -412,6 +336,16 @@ void update_iib_readings(uint8_t iib_address)
     for (i = 0; i < NUM_MAX_IIB_SIGNALS; i++) {
         send_data_request_message(iib_address, i);
     }
+}
+
+void get_alarm_message()
+{
+    /* TODO: Handle it. */
+}
+
+void get_data()
+{
+    g_bRXFlag5 = 1;
 }
 
 
