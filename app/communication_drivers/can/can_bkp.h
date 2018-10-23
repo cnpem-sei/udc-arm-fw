@@ -23,10 +23,10 @@
 #ifndef CAN_BKP_H_
 #define CAN_BKP_H_
 
-#define INTERLOCK_MESSAGE_LEN           4
+#define INTERLOCK_MESSAGE_LEN           8
 #define INTERLOCK_MESSAGE_OBJ_ID        1
 
-#define ALARM_MESSAGE_LEN               4
+#define ALARM_MESSAGE_LEN               8
 #define ALARM_MESSAGE_OBJ_ID            2
 
 #define RESET_ITLK_MESSAGE_LEN          1

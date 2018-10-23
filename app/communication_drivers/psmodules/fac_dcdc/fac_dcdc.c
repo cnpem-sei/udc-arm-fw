@@ -52,7 +52,12 @@
 
 #define DUTY_CYCLE          g_controller_ctom.output_signals[0]
 
-volatile iib_output_stage_t iib_output_stage[NUMBER_OF_IIB_MODULES];
+volatile iib_output_stage_t iib_output_stage[2];
+
+static void init_iib_modules();
+static void handle_can_message(uint8_t *data);
+static void update_iib_structure(iib_output_stage_t *module, uint8_t data_id,
+                                                               float data_val);
 
 /**
 * @brief Initialize ADCP Channels.
@@ -91,98 +96,27 @@ static void bsmp_init_server(void)
     create_bsmp_var(33, 0, 4, false, DUTY_CYCLE.u8);
 
     // Output Module 1
-    create_bsmp_var(34, 0, 4, false, g_iib_output_module.iib_signals[0].u8);
-    create_bsmp_var(35, 0, 4, false, g_iib_output_module.iib_signals[1].u8);
-    create_bsmp_var(36, 0, 4, false, g_iib_output_module.iib_signals[2].u8);
-    create_bsmp_var(37, 0, 4, false, g_iib_output_module.iib_signals[3].u8);
-    create_bsmp_var(38, 0, 4, false, g_iib_output_module.iib_signals[4].u8);
-    create_bsmp_var(39, 0, 4, false, g_iib_output_module.iib_signals[5].u8);
-    create_bsmp_var(40, 0, 4, false, g_iib_output_module.iib_signals[6].u8);
-    create_bsmp_var(41, 0, 4, false, g_iib_output_module.iib_signals[7].u8);
-    create_bsmp_var(42, 0, 4, false, g_iib_output_module.iib_signals[8].u8);
-    create_bsmp_var(43, 0, 4, false, g_iib_output_module.iib_signals[9].u8);
+    create_bsmp_var(34, 0, 4, false, iib_output_stage[0].Iin.u8);
+    create_bsmp_var(35, 0, 4, false, iib_output_stage[0].Iout.u8);
+    create_bsmp_var(36, 0, 4, false, iib_output_stage[0].VdcLink.u8);
+    create_bsmp_var(37, 0, 4, false, iib_output_stage[0].TempIGBT1.u8);
+    create_bsmp_var(38, 0, 4, false, iib_output_stage[0].TempIGBT2.u8);
+    create_bsmp_var(39, 0, 4, false, iib_output_stage[0].TempL.u8);
+    create_bsmp_var(40, 0, 4, false, iib_output_stage[0].TempHeatSink.u8);
+    create_bsmp_var(41, 0, 4, false, iib_output_stage[0].Driver1Error.u8);
+    create_bsmp_var(42, 0, 4, false, iib_output_stage[0].Driver2Error.u8);
 
     // Output Module 2
-    create_bsmp_var(44, 0, 4, false, g_iib_output_module.iib_signals[10].u8);
-    create_bsmp_var(45, 0, 4, false, g_iib_output_module.iib_signals[11].u8);
-    create_bsmp_var(46, 0, 4, false, g_iib_output_module.iib_signals[12].u8);
-    create_bsmp_var(47, 0, 4, false, g_iib_output_module.iib_signals[13].u8);
-    create_bsmp_var(48, 0, 4, false, g_iib_output_module.iib_signals[14].u8);
-    create_bsmp_var(49, 0, 4, false, g_iib_output_module.iib_signals[15].u8);
-    create_bsmp_var(50, 0, 4, false, g_iib_output_module.iib_signals[16].u8);
-    create_bsmp_var(51, 0, 4, false, g_iib_output_module.iib_signals[17].u8);
-    create_bsmp_var(52, 0, 4, false, g_iib_output_module.iib_signals[18].u8);
-    create_bsmp_var(53, 0, 4, false, g_iib_output_module.iib_signals[19].u8);
+    create_bsmp_var(43, 0, 4, false, iib_output_stage[1].Iin.u8);
+    create_bsmp_var(44, 0, 4, false, iib_output_stage[1].Iout.u8);
+    create_bsmp_var(45, 0, 4, false, iib_output_stage[1].VdcLink.u8);
+    create_bsmp_var(46, 0, 4, false, iib_output_stage[1].TempIGBT1.u8);
+    create_bsmp_var(47, 0, 4, false, iib_output_stage[1].TempIGBT2.u8);
+    create_bsmp_var(48, 0, 4, false, iib_output_stage[1].TempL.u8);
+    create_bsmp_var(49, 0, 4, false, iib_output_stage[1].TempHeatSink.u8);
+    create_bsmp_var(50, 0, 4, false, iib_output_stage[1].Driver1Error.u8);
+    create_bsmp_var(51, 0, 4, false, iib_output_stage[1].Driver2Error.u8);
 
-}
-
-static void check_can_message(uint8_t message[], uint8_t size)
-{
-    uint8_t iib_address = 0;
-
-    iib_address = message[0];
-
-    if (iib_address == iib_output_stage[0].CanAddress) {
-
-        update_output_stage_data(&iib_output_stage[0], message, size);
-
-    } else if (iib_address == iib_output_stage[1].CanAddress) {
-        update_output_stage_data(&iib_output_stage[0], message, size);
-    }
-}
-
-static void update_output_stage_data(iib_output_stage_t *stage,
-                                               uint8_t message[], uint8_t size)
-{
-    float_to_bytes_t converter;
-    uint8_t data_id;
-    data_id = message[1];
-
-    converter.u8[0] = message[4];
-    converter.u8[1] = message[5];
-    converter.u8[2] = message[6];
-    converter.u8[3] = message[7];
-
-    switch (data_id) {
-        case 0:
-            stage->Iin = converter.f;
-            break;
-
-        case 1:
-            stage->Iout = converter.f;
-            break;
-
-        case 2:
-            stage->VdcLink = converter.f;
-            break;
-
-        case 3:
-            stage->TempIGBT1 = converter.u8[0];
-            break;
-
-        case 5:
-            stage->TempIGBT2 = converter.u8[0];
-            break;
-
-        case 6:
-            stage->TempL = converter.u8[0];
-            break;
-
-        case 7:
-            stage->TempHeatSink = converter.u8[0];
-            break;
-
-        case 8:
-            stage->Driver1Error = converter.u8[0];
-            break;
-
-        case 9:
-            stage->Driver2Error = converter.u8[0];
-            break;
-
-        default:
-            break;
-    }
 }
 
 /**
@@ -194,7 +128,77 @@ static void update_output_stage_data(iib_output_stage_t *stage,
 void fac_dcdc_system_config()
 {
     adcp_channel_config();
-    init_iib_framwork(&g_iib_input_module);
-    init_iib_framwork(&g_iib_output_module);
     bsmp_init_server();
+    init_iib_modules();
+}
+
+static void init_iib_modules()
+{
+    iib_output_stage[0].CanAddress = 1;
+    iib_output_stage[1].CanAddress = 2;
+}
+static void handle_can_message(uint8_t *data)
+{
+    uint8_t iib_address;
+    uint8_t data_id;
+
+    float_to_bytes_t converter;
+
+    iib_address     = data[0];
+    data_id         = data[1];
+
+    converter.u8[0] = data[4];
+    converter.u8[1] = data[5];
+    converter.u8[2] = data[6];
+    converter.u8[3] = data[7];
+
+    update_iib_structure(&iib_output_stage[iib_address - 1], data_id,
+                                                                 converter.f);
+}
+static void update_iib_structure(iib_output_stage_t *module, uint8_t data_id,
+                                                               float data_val)
+{
+    uint8_t id;
+    id = data_id;
+
+    switch (id) {
+        case 0:
+            module->Iin.f = data_val;
+            break;
+
+        case 1:
+            module->Iout.f = data_val;
+            break;
+
+        case 2:
+            module->VdcLink.f = data_val;
+            break;
+
+        case 3:
+            module->TempIGBT1.f = data_val;
+            break;
+
+        case 5:
+            module->TempIGBT2.f = data_val;
+            break;
+
+        case 6:
+            module->TempL.f = data_val;
+            break;
+
+        case 7:
+            module->TempHeatSink.f = data_val;
+            break;
+
+        case 8:
+            module->Driver1Error.f = data_val;
+            break;
+
+        case 9:
+            module->Driver2Error.f = data_val;
+            break;
+
+        default:
+            break;
+    }
 }
