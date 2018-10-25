@@ -1471,7 +1471,7 @@ static struct bsmp_func bsmp_func_reset_udc = {
  */
 uint8_t bsmp_iib_data_request(uint8_t *input, uint8_t *output)
 {
-    send_data_request_message(1, 2);
+    send_data_request_message(1, 11);
 
     *output = 0;
     return *output;

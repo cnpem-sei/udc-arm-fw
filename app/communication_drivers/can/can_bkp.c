@@ -42,39 +42,9 @@
 #include "communication_drivers/ipc/ipc_lib.h"
 #include "communication_drivers/system_task/system_task.h"
 #include "communication_drivers/iib/iib_data.h"
+#include "communication_drivers/iib/iib_module.h"
 #include "board_drivers/hardware_def.h"
 #include "can_bkp.h"
-
-
-#define INPUT_MODULE_ADDRESS    1
-#define OUTPUT_MODULE_ADDRESS   2
-#define COMMAND_MODULE_ADDRESS  3
-
-volatile uint32_t PSModuleAlarms = 0;
-
-//*****************************************************************************
-//
-// A counter that keeps track of the number of times the RX interrupt has
-// occurred, which should match the number of messages that were received.
-//
-//*****************************************************************************
-volatile uint32_t g_ui32MsgCount = 0;
-
-//*****************************************************************************
-//
-// A flag for the interrupt handler to indicate that a message was received.
-//
-//*****************************************************************************
-volatile bool g_bRXFlag1 = 0;
-volatile bool g_bRXFlag2 = 0;
-volatile bool g_bRXFlag3 = 0;
-volatile bool g_bRXFlag4 = 0;
-volatile bool g_bRXFlag5 = 0;
-volatile bool g_bRXFlag6 = 0;
-volatile bool g_bRXFlag7 = 0;
-volatile bool g_bRXFlag8 = 0;
-volatile bool g_bRXFlag9 = 0;
-
 
 //*****************************************************************************
 //
@@ -91,7 +61,9 @@ uint8_t request_data_tx[DATA_REQUEST_MESSAGE_LEN];
 uint8_t request_data_rx[DATA_GET_MESSAGE_LEN];
 uint8_t set_param_data[SEND_PARAM_MESSAGE_LEN];
 uint8_t interlock_data[INTERLOCK_MESSAGE_LEN];
+uint8_t alarm_data[ALARM_MESSAGE_LEN];
 uint8_t reset_message_data[RESET_ITLK_MESSAGE_LEN];
+uint8_t heart_beat_data[HEART_BEAT_MESSAGE_LEN];
 
 
 //*****************************************************************************
@@ -198,7 +170,7 @@ void can_int_handler(void)
     {
         CANIntClear(CAN0_BASE, HEART_BEAT_MESSAGE_OB_ID);
 
-        /* TODO: Handle received data*/
+        handle_heart_beat_message();
 
         g_bErrFlag = 0;
     }
@@ -311,16 +283,22 @@ void send_data_request_message(uint8_t iib_address, uint8_t param_id)
 
 void get_data_from_iib()
 {
-    receive_message.ulMsgLen = DATA_GET_MESSAGE_LEN;
     receive_message.pucMsgData = request_data_rx;
     CANMessageGet(CAN0_BASE, DATA_GET_OBJ_ID, &receive_message, 0);
+
+    g_iib_module.handle_can_data(request_data_rx);
 }
 
 void get_interlock_message()
 {
-    receive_message.ulMsgLen = INTERLOCK_MESSAGE_LEN;
     receive_message.pucMsgData = interlock_data;
     CANMessageGet(CAN0_BASE, INTERLOCK_MESSAGE_OBJ_ID, &receive_message, 0);
+}
+
+void get_alarm_message()
+{
+    receive_message.pucMsgData = alarm_data;
+    CANMessageGet(CAN0_BASE, ALARM_MESSAGE_OBJ_ID, &receive_message, 0);
 }
 
 void send_param_message(uint8_t iib_address, uint8_t param_id,
@@ -338,14 +316,12 @@ void update_iib_readings(uint8_t iib_address)
     }
 }
 
-void get_alarm_message()
+void handle_heart_beat_message()
 {
-    /* TODO: Handle it. */
+    receive_message.pucMsgData = heart_beat_data;
+    CANMessageGet(CAN0_BASE, HEART_BEAT_MESSAGE_OB_ID, &receive_message, 0);
 }
 
-void get_data()
-{
-    g_bRXFlag5 = 1;
-}
+
 
 

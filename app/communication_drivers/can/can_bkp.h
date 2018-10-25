@@ -352,15 +352,15 @@ extern BuckMudule_t Buck;
 extern RectModule_t Rectifier;
 
 extern void init_can_bkp(void);
-extern void can_check(void);
-
-extern void send_can_message(unsigned char CanMess);
-
-extern uint32_t alarm_status_read(void);
-extern void alarm_status_clear(void);
-
-extern void interlock_status_clear(void);
-
-void send_reset_iib_message(uint8_t iib_address);
+extern void send_reset_iib_message(uint8_t iib_address);
+extern void send_reset_iib_message(uint8_t iib_address);
+extern void send_data_request_message(uint8_t iib_address, uint8_t param_id);
+extern void get_data_from_iib();
+extern void get_interlock_message();
+extern void get_alarm_message();
+extern void send_param_message(uint8_t iib_address, uint8_t param_id,
+                                                            uint32_t param_val);
+extern void update_iib_readings(uint8_t iib_address);
+extern void handle_heart_beat_message();
 
 #endif /* APP_COMMUNICATION_DRIVERS_CAN_CAN_BKP_H_ */

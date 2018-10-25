@@ -34,6 +34,7 @@
 #include "communication_drivers/bsmp/bsmp_lib.h"
 #include "communication_drivers/control/control.h"
 #include "communication_drivers/iib/iib_data.h"
+#include "communication_drivers/iib/iib_module.h"
 
 /**
  * Controller defines
@@ -58,8 +59,8 @@
 
 static volatile iib_fap_module_t iib_fap[4];
 
-static void init_iib_modules();
-static void handle_can_message(uint8_t *data);
+static void init_iib();
+static void handle_can_data(uint8_t *data);
 static void update_iib_structure(iib_fap_module_t *module, uint8_t data_id,
                                                                float data_val);
 
@@ -179,15 +180,17 @@ void fap_system_config()
 {
     adcp_channel_config();
     bsmp_init_server();
-    init_iib_modules();
+    init_iib();
 }
 
-static void init_iib_modules()
+static void init_iib()
 {
     iib_fap[0].CanAddress = 1;
     iib_fap[1].CanAddress = 2;
     iib_fap[2].CanAddress = 3;
     iib_fap[3].CanAddress = 4;
+
+    init_iib_module(&g_iib_module, &handle_can_data);
 }
 
 static void handle_can_data(uint8_t *data)
