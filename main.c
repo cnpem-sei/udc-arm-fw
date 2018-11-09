@@ -98,7 +98,7 @@ int main(void) {
 // This includes the following functions:  InitFlash();
 // The  RamfuncsLoadStart, RamfuncsLoadSize, and RamfuncsRunStart
 // symbols are created by the linker. Refer to the device .cmd file.
-    memcpy(&RamfuncsRunStart, &RamfuncsLoadStart, (size_t)&RamfuncsLoadSize);
+    memcpy(&RamfuncsRunStart, &RamfuncsLoadStart, (size_t) &RamfuncsLoadSize);
 
 // Call Flash Initialization to setup flash waitstates
 // This function must reside in RAM

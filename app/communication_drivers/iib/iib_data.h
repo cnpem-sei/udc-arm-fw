@@ -28,6 +28,7 @@
 
 typedef volatile struct
 {
+
     union
     {
         volatile uint32_t   u32;
@@ -165,6 +166,7 @@ typedef volatile struct {
 } iib_command_drawer_t;
 
 typedef volatile struct {
+
     union {
         float       f;
         uint8_t     u8[4];
@@ -245,6 +247,7 @@ typedef volatile struct {
 } iib_rectifier_module_t;
 
 typedef volatile struct {
+
     union {
         float       f;
         uint8_t     u8[4];

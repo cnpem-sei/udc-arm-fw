@@ -63,6 +63,8 @@ static void init_iib();
 static void handle_can_data(uint8_t *data);
 static void update_iib_structure(iib_fap_module_t *module, uint8_t data_id,
                                                                float data_val);
+static void handle_interlock_message(uint8_t *data);
+static void handle_alarm_message(uint8_t *data);
 
 /**
 * @brief Initialize ADCP Channels.
@@ -120,54 +122,43 @@ static void bsmp_init_server(void)
     create_bsmp_var(43, 0, 4, false, iib_fap[0].Drive2Current.u8);
     create_bsmp_var(44, 0, 4, false, iib_fap[0].TempL.u8);
     create_bsmp_var(45, 0, 4, false, iib_fap[0].TempHeatSink.u8);
-    create_bsmp_var(46, 0, 4, false, iib_fap[0].ExternalItlk.u8);
-    create_bsmp_var(47, 0, 4, false, iib_fap[0].LeakageCurrent.u8);
-    create_bsmp_var(48, 0, 4, false, iib_fap[0].Rack.u8);
 
-    create_bsmp_var(49, 0, 4, false, iib_fap[1].Vin.u8);
-    create_bsmp_var(50, 0, 4, false, iib_fap[1].Vout.u8);
-    create_bsmp_var(51, 0, 4, false, iib_fap[1].IoutA1.u8);
-    create_bsmp_var(52, 0, 4, false, iib_fap[1].IoutA2.u8);
-    create_bsmp_var(53, 0, 4, false, iib_fap[1].TempIGBT1.u8);
-    create_bsmp_var(54, 0, 4, false, iib_fap[1].TempIGBT2.u8);
-    create_bsmp_var(55, 0, 4, false, iib_fap[1].DriveVoltage.u8);
-    create_bsmp_var(56, 0, 4, false, iib_fap[1].Drive1Current.u8);
-    create_bsmp_var(57, 0, 4, false, iib_fap[1].Drive2Current.u8);
-    create_bsmp_var(58, 0, 4, false, iib_fap[1].TempL.u8);
-    create_bsmp_var(59, 0, 4, false, iib_fap[1].TempHeatSink.u8);
-    create_bsmp_var(60, 0, 4, false, iib_fap[1].ExternalItlk.u8);
-    create_bsmp_var(61, 0, 4, false, iib_fap[1].LeakageCurrent.u8);
-    create_bsmp_var(62, 0, 4, false, iib_fap[1].Rack.u8);
+    create_bsmp_var(46, 0, 4, false, iib_fap[1].Vin.u8);
+    create_bsmp_var(47, 0, 4, false, iib_fap[1].Vout.u8);
+    create_bsmp_var(48, 0, 4, false, iib_fap[1].IoutA1.u8);
+    create_bsmp_var(49, 0, 4, false, iib_fap[1].IoutA2.u8);
+    create_bsmp_var(50, 0, 4, false, iib_fap[1].TempIGBT1.u8);
+    create_bsmp_var(51, 0, 4, false, iib_fap[1].TempIGBT2.u8);
+    create_bsmp_var(52, 0, 4, false, iib_fap[1].DriveVoltage.u8);
+    create_bsmp_var(53, 0, 4, false, iib_fap[1].Drive1Current.u8);
+    create_bsmp_var(54, 0, 4, false, iib_fap[1].Drive2Current.u8);
+    create_bsmp_var(55, 0, 4, false, iib_fap[1].TempL.u8);
+    create_bsmp_var(56, 0, 4, false, iib_fap[1].TempHeatSink.u8);
 
-    create_bsmp_var(63, 0, 4, false, iib_fap[2].Vin.u8);
-    create_bsmp_var(64, 0, 4, false, iib_fap[2].Vout.u8);
-    create_bsmp_var(65, 0, 4, false, iib_fap[2].IoutA1.u8);
-    create_bsmp_var(66, 0, 4, false, iib_fap[2].IoutA2.u8);
-    create_bsmp_var(67, 0, 4, false, iib_fap[2].TempIGBT1.u8);
-    create_bsmp_var(68, 0, 4, false, iib_fap[2].TempIGBT2.u8);
-    create_bsmp_var(69, 0, 4, false, iib_fap[2].DriveVoltage.u8);
-    create_bsmp_var(70, 0, 4, false, iib_fap[2].Drive1Current.u8);
-    create_bsmp_var(71, 0, 4, false, iib_fap[2].Drive2Current.u8);
-    create_bsmp_var(72, 0, 4, false, iib_fap[2].TempL.u8);
-    create_bsmp_var(73, 0, 4, false, iib_fap[2].TempHeatSink.u8);
-    create_bsmp_var(74, 0, 4, false, iib_fap[2].ExternalItlk.u8);
-    create_bsmp_var(75, 0, 4, false, iib_fap[2].LeakageCurrent.u8);
-    create_bsmp_var(76, 0, 4, false, iib_fap[2].Rack.u8);
+    create_bsmp_var(57, 0, 4, false, iib_fap[2].Vin.u8);
+    create_bsmp_var(58, 0, 4, false, iib_fap[2].Vout.u8);
+    create_bsmp_var(59, 0, 4, false, iib_fap[2].IoutA1.u8);
+    create_bsmp_var(60, 0, 4, false, iib_fap[2].IoutA2.u8);
+    create_bsmp_var(61, 0, 4, false, iib_fap[2].TempIGBT1.u8);
+    create_bsmp_var(62, 0, 4, false, iib_fap[2].TempIGBT2.u8);
+    create_bsmp_var(63, 0, 4, false, iib_fap[2].DriveVoltage.u8);
+    create_bsmp_var(64, 0, 4, false, iib_fap[2].Drive1Current.u8);
+    create_bsmp_var(65, 0, 4, false, iib_fap[2].Drive2Current.u8);
+    create_bsmp_var(66, 0, 4, false, iib_fap[2].TempL.u8);
+    create_bsmp_var(67, 0, 4, false, iib_fap[2].TempHeatSink.u8);
 
-    create_bsmp_var(77, 0, 4, false, iib_fap[3].Vin.u8);
-    create_bsmp_var(78, 0, 4, false, iib_fap[3].Vout.u8);
-    create_bsmp_var(79, 0, 4, false, iib_fap[3].IoutA1.u8);
-    create_bsmp_var(80, 0, 4, false, iib_fap[3].IoutA2.u8);
-    create_bsmp_var(81, 0, 4, false, iib_fap[3].TempIGBT1.u8);
-    create_bsmp_var(82, 0, 4, false, iib_fap[3].TempIGBT2.u8);
-    create_bsmp_var(83, 0, 4, false, iib_fap[3].DriveVoltage.u8);
-    create_bsmp_var(84, 0, 4, false, iib_fap[3].Drive1Current.u8);
-    create_bsmp_var(85, 0, 4, false, iib_fap[3].Drive2Current.u8);
-    create_bsmp_var(86, 0, 4, false, iib_fap[3].TempL.u8);
-    create_bsmp_var(87, 0, 4, false, iib_fap[3].TempHeatSink.u8);
-    create_bsmp_var(88, 0, 4, false, iib_fap[3].ExternalItlk.u8);
-    create_bsmp_var(89, 0, 4, false, iib_fap[3].LeakageCurrent.u8);
-    create_bsmp_var(90, 0, 4, false, iib_fap[3].Rack.u8);
+    create_bsmp_var(68, 0, 4, false, iib_fap[3].Vin.u8);
+    create_bsmp_var(69, 0, 4, false, iib_fap[3].Vout.u8);
+    create_bsmp_var(70, 0, 4, false, iib_fap[3].IoutA1.u8);
+    create_bsmp_var(71, 0, 4, false, iib_fap[3].IoutA2.u8);
+    create_bsmp_var(72, 0, 4, false, iib_fap[3].TempIGBT1.u8);
+    create_bsmp_var(73, 0, 4, false, iib_fap[3].TempIGBT2.u8);
+    create_bsmp_var(74, 0, 4, false, iib_fap[3].DriveVoltage.u8);
+    create_bsmp_var(75, 0, 4, false, iib_fap[3].Drive1Current.u8);
+    create_bsmp_var(76, 0, 4, false, iib_fap[3].Drive2Current.u8);
+    create_bsmp_var(77, 0, 4, false, iib_fap[3].TempL.u8);
+    create_bsmp_var(78, 0, 4, false, iib_fap[3].TempHeatSink.u8);
+
 }
 
 /**
@@ -190,7 +181,8 @@ static void init_iib()
     iib_fap[2].CanAddress = 3;
     iib_fap[3].CanAddress = 4;
 
-    init_iib_module(&g_iib_module, &handle_can_data);
+    init_iib_module(&g_iib_module, &handle_can_data,
+                             &handle_interlock_message, &handle_alarm_message);
 }
 
 static void handle_can_data(uint8_t *data)
@@ -219,55 +211,57 @@ static void update_iib_structure(iib_fap_module_t *module, uint8_t data_id,
 
     switch (id)
     {
-        case 1:
+        case 2:
             module->Vin.f = data_val;
             break;
-        case 2:
+
+        case 3:
             module->Vout.f = data_val;
             break;
-        case 3:
+
+        case 4:
             module->IoutA1.f = data_val;
             break;
-        case 4:
+
+        case 5:
             module->IoutA2.f = data_val;
             break;
-        case 5:
-            module->DriveVoltage.f = data_val;
-            break;
+
         case 6:
-            module->Drive1Current.f = data_val;
-            break;
-        case 7:
-            module->Drive2Current.f = data_val;
-            break;
-        case 8:
             module->TempIGBT1.f = data_val;
             break;
-        case 9:
+
+        case 7:
             module->TempIGBT2.f = data_val;
             break;
+
+        case 8:
+            module->DriveVoltage.f = data_val;
+            break;
+
+        case 9:
+            module->Drive1Current.f = data_val;
+            break;
+
         case 10:
-            module->Driver1Error.f = data_val;
+            module->Drive2Current.f = data_val;
             break;
+
         case 11:
-            module->Driver2Error.f = data_val;
-            break;
-        case 12:
             module->TempL.f = data_val;
             break;
-        case 13:
+
+        case 12:
             module->TempHeatSink.f = data_val;
             break;
-        case 14:
-            module->Relay.f = data_val;
-            break;
-        case 15:
-            module->LeakageCurrent.f = data_val;
-            break;
-        case 16:
-            module->Rack.f = data_val;
-            break;
+
         default:
             break;
     }
 }
+
+static void handle_interlock_message(uint8_t *data)
+{}
+
+static void handle_alarm_message(uint8_t *data)
+{}

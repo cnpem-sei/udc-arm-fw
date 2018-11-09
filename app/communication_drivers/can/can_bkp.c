@@ -293,12 +293,16 @@ void get_interlock_message()
 {
     receive_message.pucMsgData = interlock_data;
     CANMessageGet(CAN0_BASE, INTERLOCK_MESSAGE_OBJ_ID, &receive_message, 0);
+
+    g_iib_module.handle_interlock_message(interlock_data);
 }
 
 void get_alarm_message()
 {
     receive_message.pucMsgData = alarm_data;
     CANMessageGet(CAN0_BASE, ALARM_MESSAGE_OBJ_ID, &receive_message, 0);
+
+    g_iib_module.handle_alarm_message(alarm_data);
 }
 
 void send_param_message(uint8_t iib_address, uint8_t param_id,

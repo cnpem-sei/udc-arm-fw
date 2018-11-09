@@ -29,19 +29,16 @@
  * to be accessed by other modules.
  */
 typedef struct {
-    void (*handle_can_data)(uint8_t*);
+    void (*handle_can_data) (uint8_t*);
+    void (*handle_interlock_message) (uint8_t*);
+    void (*handle_alarm_message) (uint8_t);
 } iib_module_t;
 
 extern iib_module_t g_iib_module;
 
 extern void init_iib_module(iib_module_t *iib_module,
-                                           void (*handle_can_data) (uint8_t*));
+                                           void (*handle_can_data) (uint8_t*),
+                                  void (*handle_interlock_message) (uint8_t*),
+                                      void (*handle_alarm_message) (uint8_t*));
 
-/**
- * TODO: Put here your functions prototypes. Just what need 
- * to be accessed by other modules.
- */
-
-
-
-#endif /* IIB_MODULES_IIB_MODULE_H_ */
+#endif /* IIB_MODULE_H_ */

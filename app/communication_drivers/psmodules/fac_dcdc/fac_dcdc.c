@@ -19,12 +19,10 @@
  * @date 01/05/2018
  *
  */
-
-
-#include <communication_drivers/psmodules/fac_dcdc/fac_dcdc.h>
-#include <communication_drivers/psmodules/ps_modules.h>
 #include <stdint.h>
 #include <stdbool.h>
+#include <communication_drivers/psmodules/fac_dcdc/fac_dcdc.h>
+#include <communication_drivers/psmodules/ps_modules.h>
 
 #include "inc/hw_memmap.h"
 #include "inc/hw_ipc.h"
@@ -58,6 +56,9 @@ static void init_iib_modules();
 static void handle_can_message(uint8_t *data);
 static void update_iib_structure(iib_output_stage_t *module, uint8_t data_id,
                                                                float data_val);
+
+static void handle_interlock_message(uint8_t *data);
+static void handle_alarm_message(uint8_t *data);
 
 /**
 * @brief Initialize ADCP Channels.
@@ -202,3 +203,10 @@ static void update_iib_structure(iib_output_stage_t *module, uint8_t data_id,
             break;
     }
 }
+
+static void handle_interlock_message(uint8_t *data)
+{}
+
+static void handle_alarm_message(uint8_t *data)
+{}
+
