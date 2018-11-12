@@ -33,6 +33,7 @@
 #include "communication_drivers/bsmp/bsmp_lib.h"
 #include "communication_drivers/control/control.h"
 #include "communication_drivers/iib/iib_data.h"
+#include "communication_drivers/iib/iib_module.h"
 
 #include "fac_dcdc.h"
 
@@ -53,7 +54,7 @@
 volatile iib_output_stage_t iib_output_stage[2];
 
 static void init_iib_modules();
-static void handle_can_message(uint8_t *data);
+static void handle_can_data(uint8_t *data);
 static void update_iib_structure(iib_output_stage_t *module, uint8_t data_id,
                                                                float data_val);
 
@@ -137,8 +138,11 @@ static void init_iib_modules()
 {
     iib_output_stage[0].CanAddress = 1;
     iib_output_stage[1].CanAddress = 2;
+
+    init_iib_module(&g_iib_module, &handle_can_data,
+                             &handle_interlock_message, &handle_alarm_message);
 }
-static void handle_can_message(uint8_t *data)
+static void handle_can_data(uint8_t *data)
 {
     uint8_t iib_address;
     uint8_t data_id;
@@ -163,39 +167,39 @@ static void update_iib_structure(iib_output_stage_t *module, uint8_t data_id,
     id = data_id;
 
     switch (id) {
-        case 0:
+        case 2:
             module->Iin.f = data_val;
             break;
 
-        case 1:
+        case 3:
             module->Iout.f = data_val;
             break;
 
-        case 2:
+        case 4:
             module->VdcLink.f = data_val;
             break;
 
-        case 3:
+        case 5:
             module->TempIGBT1.f = data_val;
             break;
 
-        case 5:
+        case 6:
             module->TempIGBT2.f = data_val;
             break;
 
-        case 6:
+        case 7:
             module->TempL.f = data_val;
             break;
 
-        case 7:
+        case 8:
             module->TempHeatSink.f = data_val;
             break;
 
-        case 8:
+        case 9:
             module->Driver1Error.f = data_val;
             break;
 
-        case 9:
+        case 10:
             module->Driver2Error.f = data_val;
             break;
 
