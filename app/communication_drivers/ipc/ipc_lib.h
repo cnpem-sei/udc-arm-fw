@@ -85,7 +85,13 @@ typedef enum
     MtoC_Message_Error
 } ipc_ctom_lowpriority_msg_t;
 
-#define GET_IPC_CTOM_LOWPRIORITY_MSG  (ipc_ctom_lowpriority_msg_t) (g_ipc_mtoc.msg_ctom >> 4 ) & 0x0000FFFF
+#define GET_IPC_CTOM_LOWPRIORITY_MSG            (ipc_ctom_lowpriority_msg_t) (g_ipc_mtoc.msg_ctom >> 4 ) & 0x0000FFFF
+
+#define SET_HARD_INTERLOCK(id, hard_interlock)  g_ipc_mtoc.ps_module[id].ps_hard_interlock.u32 |= hard_interlock; \
+                                                send_ipc_msg(id, HARD_INTERLOCK);
+
+#define SET_SOFT_INTERLOCK(id, soft_interlock)  g_ipc_mtoc.ps_module[id].ps_soft_interlock.u32 |= soft_interlock; \
+                                                send_ipc_msg(id, SOFT_INTERLOCK);
 
 typedef enum
 {
