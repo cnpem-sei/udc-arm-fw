@@ -136,6 +136,8 @@ encoding//FLASH_UDC_V2_1/app/communication_drivers/ethernet/server_net/uip-1.0/u
 encoding//FLASH_UDC_V2_1/app/communication_drivers/ethernet/server_net/uip-1.0/uip/subdir_vars.mk=UTF-8
 encoding//FLASH_UDC_V2_1/app/communication_drivers/ethernet/subdir_rules.mk=UTF-8
 encoding//FLASH_UDC_V2_1/app/communication_drivers/ethernet/subdir_vars.mk=UTF-8
+encoding//FLASH_UDC_V2_1/app/communication_drivers/event_manager/subdir_rules.mk=UTF-8
+encoding//FLASH_UDC_V2_1/app/communication_drivers/event_manager/subdir_vars.mk=UTF-8
 encoding//FLASH_UDC_V2_1/app/communication_drivers/flash/subdir_rules.mk=UTF-8
 encoding//FLASH_UDC_V2_1/app/communication_drivers/flash/subdir_vars.mk=UTF-8
 encoding//FLASH_UDC_V2_1/app/communication_drivers/i2c_offboard_isolated/subdir_rules.mk=UTF-8
