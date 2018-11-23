@@ -10,11 +10,12 @@
 
 /**
  * @file ipc_lib.c
- * @brief IPC module.
+ * @brief Interprocessor Communication module
  *
- * Source code for interprocessor communications (IPC)
+ * This module is responsible for definition of interprocessor communication
+ * functionalities, between ARM and C28 cores.
  *
- * @author Ricieri
+ * @author allef.silva
  *
  * @date 05/11/2015
  *
@@ -125,17 +126,20 @@ void init_ipc(void)
 }
 
 /**
- * @brief Send IPC generic message
+ * Send IPC MtoC message. This function must be used with care, because it
+ * directly sets MTOCIPC register bits according to the argument 'msg' when
+ * there's no pending messages.
  *
- * This function sets MTOC_IPCSET register directly.
- *
- * @param uint16_t ID of message. 0 - 3
- * @param uint32_t Flag to be set.
+ * @param msg_id specified IPC module
+ * @param msg specified message
  */
-void send_ipc_msg(uint16_t msg_id, uint32_t flag)
+void send_ipc_msg(uint16_t msg_id, uint32_t msg)
 {
-    g_ipc_mtoc.msg_id = msg_id;
-    HWREG(MTOCIPC_BASE + IPC_O_MTOCIPCSET) |= flag;
+    if(HWREG(MTOCIPC_BASE + IPC_O_MTOCIPCFLG) == 0x00000000)
+    {
+        g_ipc_mtoc.msg_id = msg_id;
+        HWREG(MTOCIPC_BASE + IPC_O_MTOCIPCSET) = msg;
+    }
 }
 
 /**
