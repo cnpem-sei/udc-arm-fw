@@ -63,7 +63,7 @@ const static uint32_t lut_bit_position[32] =
  * interlock has already been set. If not, inform C28 which module and interlock
  * and send interrupt request.
  *
- * @param id id of event manager specific of a power supply/module
+ * @param id of event manager specific of a power supply/module
  * @param itlk specified hard interlock
  */
 void set_hard_interlock(uint16_t id, uint32_t itlk)

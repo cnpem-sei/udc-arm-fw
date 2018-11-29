@@ -48,10 +48,26 @@
 #define v_LOAD              g_controller_mtoc.net_signals[0]
 #define TEMP_INDUCTORS      g_controller_mtoc.net_signals[1]
 #define TEMP_IGBT           g_controller_mtoc.net_signals[2]
+#define IIB_ITLK_REG_1      g_controller_mtoc.net_signals[4]
+#define IIB_ITLK_REG_2      g_controller_mtoc.net_signals[5]
 
 #define DUTY_CYCLE          g_controller_ctom.output_signals[0]
 
+/**
+ * Interlocks defines
+ */
+typedef enum
+{
+    Load_Overcurrent,
+    Load_Overvoltage,
+    CapBank_Overvoltage,
+    CapBank_Undervoltage,
+    IGBT_Driver_Fault,
+    IIB_Itlk
+} hard_interlocks_t;
+
 volatile iib_output_stage_t iib_output_stage[2];
+volatile hard_interlocks_t hard_interlocks;
 
 static void init_iib_modules();
 static void handle_can_data(uint8_t *data);
@@ -119,6 +135,8 @@ static void bsmp_init_server(void)
     create_bsmp_var(50, 0, 4, false, iib_output_stage[1].Driver1Error.u8);
     create_bsmp_var(51, 0, 4, false, iib_output_stage[1].Driver2Error.u8);
 
+    create_bsmp_var(52, 0, 4, false, IIB_ITLK_REG_1.u8);
+    create_bsmp_var(53, 0, 4, false, IIB_ITLK_REG_2.u8);
 }
 
 /**
@@ -209,7 +227,28 @@ static void update_iib_structure(iib_output_stage_t *module, uint8_t data_id,
 }
 
 static void handle_interlock_message(uint8_t *data)
-{}
+{
+    uint8_t iib_address;
+
+    float_to_bytes_t converter;
+
+    iib_address = data[0];
+
+    converter.u8[0] = data[4];
+    converter.u8[1] = data[5];
+    converter.u8[2] = data[6];
+    converter.u8[3] = data[7];
+
+    if (iib_address == 1) {
+        IIB_ITLK_REG_1.u32 = converter.u32;
+    }
+
+    if (iib_address == 2) {
+        IIB_ITLK_REG_2.u32 = converter.u32;
+    }
+
+    set_hard_interlock(iib_address - 1, IIB_Itlk);
+}
 
 static void handle_alarm_message(uint8_t *data)
 {}

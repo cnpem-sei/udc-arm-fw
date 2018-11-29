@@ -340,6 +340,7 @@ typedef volatile struct {
 typedef union {
     float       f;
     uint8_t     u8[4];
+    uint32_t    u32;
 } float_to_bytes_t;
 
 #endif /* IIB_DATA_H_ */

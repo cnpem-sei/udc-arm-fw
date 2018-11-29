@@ -68,12 +68,14 @@ typedef volatile struct
     union
     {
         volatile uint8_t    u8[4];
+        volatile uint32_t   u32;
         volatile float      f;
     } net_signals[NUM_MAX_NET_SIGNALS];
 
     union
     {
         volatile uint8_t    u8[4];
+        volatile uint32_t   u32;
         volatile float      f;
     } output_signals[NUM_MAX_OUTPUT_SIGNALS];
 
