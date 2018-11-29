@@ -78,7 +78,8 @@ typedef enum
     FAC_2P4S_ACDC,
     FAC_2P4S_DCDC,
     FAP,
-    Uninitialized = 0xFFFF      // Empty EEPROM
+    FAP_4P,
+    Uninitialized = 0x1F      // Empty EEPROM
 } ps_model_t;
 
 typedef struct

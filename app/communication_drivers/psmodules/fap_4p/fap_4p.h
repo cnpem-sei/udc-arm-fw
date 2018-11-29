@@ -9,17 +9,20 @@
  *****************************************************************************/
 
 /**
- * @file version.c
- * @brief Firmware version module
- * 
- * This module contains information about current build version of UDC ARM core.
+ * @file fap_4p.h
+ * @brief FAP-4P module
+ *
+ * Module for control of FAP-4P power supplies. It implements the controller for
+ * load current and current share between 8 IGBT's
  *
  * @author gabriel.brunheira
- * @date 08/02/2018
+ * @date 29/11/2018
  *
  */
 
-#include "version.h"
+#ifndef FAP_4P_H_
+#define FAP_4P_H_
 
-volatile firmwares_version_t firmwares_version;
-const char * udc_arm_version = "V0.21 2018-11-29";
+void fap_4p_system_config(void);
+
+#endif /* FAP_4P_H_ */
