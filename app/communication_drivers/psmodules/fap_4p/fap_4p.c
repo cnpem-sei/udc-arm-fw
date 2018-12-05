@@ -49,6 +49,33 @@
 
 #define I_LOAD_DIFF             g_controller_ctom.net_signals[6]
 
+#define I_MOD_1                 g_controller_ctom.net_signals[7]
+#define I_MOD_2                 g_controller_ctom.net_signals[8]
+#define I_MOD_3                 g_controller_ctom.net_signals[9]
+#define I_MOD_4                 g_controller_ctom.net_signals[10]
+
+#define I_MOD_MEAN              g_controller_ctom.net_signals[11]
+
+#define I_MOD_1_DIFF            g_controller_ctom.net_signals[12]
+#define I_MOD_2_DIFF            g_controller_ctom.net_signals[13]
+#define I_MOD_3_DIFF            g_controller_ctom.net_signals[14]
+#define I_MOD_4_DIFF            g_controller_ctom.net_signals[15]
+
+#define I_IGBTS_DIFF_MOD_1      g_controller_ctom.net_signals[16]
+#define I_IGBTS_DIFF_MOD_2      g_controller_ctom.net_signals[17]
+#define I_IGBTS_DIFF_MOD_3      g_controller_ctom.net_signals[18]
+#define I_IGBTS_DIFF_MOD_4      g_controller_ctom.net_signals[19]
+
+#define DUTY_SHARE_MODULES_1    g_controller_ctom.net_signals[20]
+#define DUTY_SHARE_MODULES_2    g_controller_ctom.net_signals[21]
+#define DUTY_SHARE_MODULES_3    g_controller_ctom.net_signals[22]
+#define DUTY_SHARE_MODULES_4    g_controller_ctom.net_signals[23]
+
+#define DUTY_DIFF_MOD_1         g_controller_ctom.net_signals[24]
+#define DUTY_DIFF_MOD_2         g_controller_ctom.net_signals[25]
+#define DUTY_DIFF_MOD_3         g_controller_ctom.net_signals[26]
+#define DUTY_DIFF_MOD_4         g_controller_ctom.net_signals[27]
+
 #define I_IGBT_1_MOD_1          g_controller_mtoc.net_signals[0]    // ANI0
 #define I_IGBT_2_MOD_1          g_controller_mtoc.net_signals[1]    // ANI1
 #define I_IGBT_1_MOD_2          g_controller_mtoc.net_signals[2]    // ANI2
@@ -260,6 +287,10 @@ static void bsmp_init_server(void)
     create_bsmp_var(98, 0, 4, false, IIB_ITLK_REG_MOD_3.u8);
     create_bsmp_var(99, 0, 4, false, IIB_ITLK_REG_MOD_4.u8);
 
+    create_bsmp_var(100, 0, 4, false, I_MOD_1.u8);
+    create_bsmp_var(101, 0, 4, false, I_MOD_2.u8);
+    create_bsmp_var(102, 0, 4, false, I_MOD_3.u8);
+    create_bsmp_var(103, 0, 4, false, I_MOD_4.u8);
 }
 
 /**
