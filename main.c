@@ -26,6 +26,7 @@
 #include <communication_drivers/psmodules/fac_2p4s_dcdc/fac_2p4s_dcdc.h>
 #include <communication_drivers/psmodules/fap/fap.h>
 #include <communication_drivers/psmodules/fap_4p/fap_4p.h>
+#include <communication_drivers/psmodules/fbp_ufjf/fbp_ufjf.h>
 
 #include <stdint.h>
 #include <stdarg.h>
@@ -172,6 +173,12 @@ int main(void) {
             case FAP_4P:
             {
                 fap_4p_system_config();
+                break;
+            }
+
+            case FBP_UFJF:
+            {
+                fbp_ufjf_system_config();
                 break;
             }
 

@@ -1,5 +1,5 @@
 /******************************************************************************
- * Copyright (C) 2018 by LNLS - Brazilian Synchrotron Light Laboratory
+ * Copyright (C) 2017 by LNLS - Brazilian Synchrotron Light Laboratory
  *
  * Redistribution, modification or use of this software in source or binary
  * forms is permitted as long as the files maintain this copyright. LNLS and
@@ -9,18 +9,20 @@
  *****************************************************************************/
 
 /**
- * @file version.c
- * @brief Firmware version module
- * 
- * This module contains information about current build version of UDC ARM core.
+ * @file fbp_ufjf.h
+ * @brief FBP power supply for UFJF
+ *
+ * Module for control of FBP modules operating in various configurations, used
+ * by partners from UFJF to study new control strategies for Sirius.
  *
  * @author gabriel.brunheira
- * @date 08/02/2018
+ * @date 29/01/2019
  *
  */
 
-#include "version.h"
+#ifndef FBP_UFJF_H_
+#define FBP_UFJF_H_
 
-volatile firmwares_version_t firmwares_version;
+void fbp_ufjf_system_config(void);
 
-const char * udc_arm_version = "V0.22m2019-01-29";
+#endif /* FAP_H_ */
