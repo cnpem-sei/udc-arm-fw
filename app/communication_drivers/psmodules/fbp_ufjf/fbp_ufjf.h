@@ -25,4 +25,4 @@
 
 void fbp_ufjf_system_config(void);
 
-#endif /* FAP_H_ */
+#endif /* FBP_UFJF_H_ */

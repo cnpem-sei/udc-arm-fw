@@ -27,6 +27,7 @@
 #include <communication_drivers/psmodules/fap/fap.h>
 #include <communication_drivers/psmodules/fap_4p/fap_4p.h>
 #include <communication_drivers/psmodules/fbp_ufjf/fbp_ufjf.h>
+#include <communication_drivers/psmodules/fbp_2s_ufjf/fbp_2s_ufjf.h>
 
 #include <stdint.h>
 #include <stdarg.h>
@@ -128,41 +129,42 @@ int main(void) {
 
 	    switch(g_ipc_mtoc.ps_model)
 	    {
+            #ifdef FULL_FIRMWARE
 	        case FBP:
-	        {
-	            fbp_main();
-	            break;
-	        }
+            {
+                fbp_main();
+                break;
+            }
 
-	        case FBP_DCLink:
-	        {
-	            fbp_dclink_system_config();
-	            break;
-	        }
+            case FBP_DCLink:
+            {
+                fbp_dclink_system_config();
+                break;
+            }
 
-	        case FAC_ACDC:
-	        {
-	            fac_acdc_main();
-	            break;
-	        }
+            case FAC_ACDC:
+            {
+                fac_acdc_main();
+                break;
+            }
 
-	        case FAC_DCDC:
-	        {
-	            fac_dcdc_system_config();
-	            break;
-	        }
+            case FAC_DCDC:
+            {
+                fac_dcdc_system_config();
+                break;
+            }
 
-	        case FAC_2P4S_ACDC:
-	        {
-	            fac_2p4s_acdc_system_config();
-	            break;
-	        }
+            case FAC_2P4S_ACDC:
+            {
+                fac_2p4s_acdc_system_config();
+                break;
+            }
 
-	        case FAC_2P4S_DCDC:
-	        {
-	            fac_2p4s_dcdc_system_config();
-	            break;
-	        }
+            case FAC_2P4S_DCDC:
+            {
+                fac_2p4s_dcdc_system_config();
+                break;
+            }
 
             case FAP:
             {
@@ -175,10 +177,17 @@ int main(void) {
                 fap_4p_system_config();
                 break;
             }
+            #endif
 
             case FBP_UFJF:
             {
                 fbp_ufjf_system_config();
+                break;
+            }
+
+            case FBP_2S_UFJF:
+            {
+                fbp_2s_ufjf_system_config();
                 break;
             }
 

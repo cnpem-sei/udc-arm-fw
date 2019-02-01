@@ -80,6 +80,7 @@ typedef enum
     FAP,
     FAP_4P,
     FBP_UFJF,
+    FBP_2S_UFJF,
     Uninitialized = 0x1F      // Empty EEPROM
 } ps_model_t;
 
