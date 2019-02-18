@@ -24,13 +24,9 @@
 iib_module_t g_iib_module;
 
 void init_iib_module(iib_module_t *iib_module,
-                                           void (*handle_can_data) (uint8_t*),
-                                  void (*handle_interlock_message) (uint8_t*),
-                                      void (*handle_alarm_message) (uint8_t*))
+                                           void (*handle_can_data) (uint8_t*))
 {
     iib_module->handle_can_data             = handle_can_data;
-    iib_module->handle_interlock_message    = handle_interlock_message;
-    iib_module->handle_alarm_message        = handle_alarm_message;
 }
 
 /**

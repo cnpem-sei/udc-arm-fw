@@ -100,35 +100,6 @@ void can_int_handler(void)
         g_bErrFlag = 1;
     }
 
-    //
-    // Check if the cause is message object 1.
-    //
-    else if(ui32Status == INTERLOCK_MESSAGE_OBJ_ID)
-    {
-        //
-        // Getting to this point means that the RX interrupt occurred on
-        // message object 1, and the message reception is complete.  Clear the
-        // message object interrupt.
-        //
-        CANIntClear(CAN0_BASE, INTERLOCK_MESSAGE_OBJ_ID);
-
-        get_interlock_message();
-
-        //
-        // Since a message was received, clear any error flags.
-        //
-        g_bErrFlag = 0;
-    }
-
-    else if(ui32Status == ALARM_MESSAGE_OBJ_ID)
-    {
-        CANIntClear(CAN0_BASE, ALARM_MESSAGE_OBJ_ID);
-
-        get_alarm_message();
-
-        g_bErrFlag = 0;
-    }
-
     else if(ui32Status == RESET_ITLK_MESSAGE_OBJ_ID)
     {
         CANIntClear(CAN0_BASE, RESET_ITLK_MESSAGE_OBJ_ID);
@@ -162,15 +133,6 @@ void can_int_handler(void)
         CANIntClear(CAN0_BASE, SEND_PARAM_MESSAGE_OBJ_ID);
 
         /* Tx object. Nothing to do for now*/
-
-        g_bErrFlag = 0;
-    }
-
-    else if(ui32Status == HEART_BEAT_MESSAGE_OB_ID)
-    {
-        CANIntClear(CAN0_BASE, HEART_BEAT_MESSAGE_OB_ID);
-
-        handle_heart_beat_message();
 
         g_bErrFlag = 0;
     }
@@ -226,8 +188,10 @@ void init_can_bkp(void)
 
 
     receive_message.ulMsgID         = ItlkMsgId;
-    receive_message.ulMsgIDMask     = 0xfffff;
-    receive_message.ulFlags         = MSG_OBJ_RX_INT_ENABLE | MSG_OBJ_USE_ID_FILTER;
+    //receive_message.ulMsgIDMask     = 0xfffff;
+    receive_message.ulMsgIDMask     = 0;
+    //receive_message.ulFlags         = MSG_OBJ_RX_INT_ENABLE | MSG_OBJ_USE_ID_FILTER;
+    receive_message.ulFlags         = MSG_OBJ_RX_INT_ENABLE;
     receive_message.ulMsgLen        = INTERLOCK_MESSAGE_LEN;
 
     CANMessageSet(CAN0_BASE, INTERLOCK_MESSAGE_OBJ_ID, &receive_message,
@@ -258,26 +222,11 @@ void send_reset_iib_message(uint8_t iib_address)
 {
     reset_message_data[0] = iib_address;
 
-    transmit_message.ulMsgID = ResetMsgId;
+    transmit_message.ulMsgID = 0;
     transmit_message.ulMsgLen = RESET_ITLK_MESSAGE_LEN;
     transmit_message.pucMsgData = reset_message_data;
 
     CANMessageSet(CAN0_BASE, RESET_ITLK_MESSAGE_OBJ_ID, &transmit_message,
-                                                              MSG_OBJ_TYPE_TX);
-}
-
-void send_data_request_message(uint8_t iib_address, uint8_t param_id)
-{
-    request_data_tx[0] = iib_address;
-    request_data_tx[1] = param_id;
-    request_data_tx[2] = 0;
-    request_data_tx[3] = 0;
-
-    transmit_message.ulMsgID = DataRequestMsgId;
-    transmit_message.ulMsgLen = DATA_REQUEST_MESSAGE_LEN;
-    transmit_message.pucMsgData = request_data_tx;
-
-    CANMessageSet(CAN0_BASE, DATA_REQUEST_MESSAGE_OBJ_ID, &transmit_message,
                                                               MSG_OBJ_TYPE_TX);
 }
 
@@ -287,43 +236,6 @@ void get_data_from_iib()
     CANMessageGet(CAN0_BASE, DATA_GET_OBJ_ID, &receive_message, 0);
 
     g_iib_module.handle_can_data(request_data_rx);
-}
-
-void get_interlock_message()
-{
-    receive_message.pucMsgData = interlock_data;
-    CANMessageGet(CAN0_BASE, INTERLOCK_MESSAGE_OBJ_ID, &receive_message, 0);
-
-    g_iib_module.handle_interlock_message(interlock_data);
-}
-
-void get_alarm_message()
-{
-    receive_message.pucMsgData = alarm_data;
-    CANMessageGet(CAN0_BASE, ALARM_MESSAGE_OBJ_ID, &receive_message, 0);
-
-    g_iib_module.handle_alarm_message(alarm_data);
-}
-
-void send_param_message(uint8_t iib_address, uint8_t param_id,
-                                                            uint32_t param_val)
-{
-    /* TODO: Handle it. */
-}
-
-void update_iib_readings(uint8_t iib_address)
-{
-    uint8_t i;
-
-    for (i = 0; i < NUM_MAX_IIB_SIGNALS; i++) {
-        send_data_request_message(iib_address, i);
-    }
-}
-
-void handle_heart_beat_message()
-{
-    receive_message.pucMsgData = heart_beat_data;
-    CANMessageGet(CAN0_BASE, HEART_BEAT_MESSAGE_OB_ID, &receive_message, 0);
 }
 
 

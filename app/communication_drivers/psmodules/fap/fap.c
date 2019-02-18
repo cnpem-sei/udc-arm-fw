@@ -162,8 +162,7 @@ static void init_iib()
 {
     iib_fap.CanAddress = 1;
 
-    init_iib_module(&g_iib_module, &handle_can_data,
-                             &handle_interlock_message, &handle_alarm_message);
+    init_iib_module(&g_iib_module, &handle_can_data);
 }
 
 static void handle_can_data(uint8_t *data)

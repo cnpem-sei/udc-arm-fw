@@ -1463,25 +1463,6 @@ static struct bsmp_func bsmp_func_reset_udc = {
     .info.output_size = 1,
 };
 
-/**
- * @brief
- *
- * @param uint8_t* Pointer to input packet of data
- * @param uint8_t* Pointer to output packet of data
- */
-uint8_t bsmp_iib_data_request(uint8_t *input, uint8_t *output)
-{
-    send_data_request_message(1, 11);
-
-    *output = 0;
-    return *output;
-}
-
-static struct bsmp_func bsmp_func_iib_data_request = {
-    .func_p           = bsmp_iib_data_request,
-    .info.input_size  = 0,
-    .info.output_size = 1,
-};
 
 /**
  * Dummy BSMP Functions
@@ -1822,7 +1803,6 @@ void bsmp_init(uint8_t server)
     bsmp_register_function(&bsmp[server], &bsmp_func_save_dsp_modules_eeprom);  // ID 39
     bsmp_register_function(&bsmp[server], &bsmp_func_load_dsp_modules_eeprom);  // ID 40
     bsmp_register_function(&bsmp[server], &bsmp_func_reset_udc);                // ID 41
-    bsmp_register_function(&bsmp[server], &bsmp_func_iib_data_request);         // ID 42
 
     /**
      * BSMP Variable Register

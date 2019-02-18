@@ -42,6 +42,23 @@
 
 #define DUTY_CYCLE                      g_controller_ctom.output_signals[0]
 
+#define IIB_ITLK_REG_IS                 g_controller_mtoc.net_signals[3]
+#define IIB_ITLK_REG_CD                 g_controller_mtoc.net_signals[4]
+
+/**
+ * Interlocks defines
+ */
+typedef enum
+{
+    CapBank_Overvoltage,
+    Rectifier_Overvoltage,
+    Rectifier_Undervoltage,
+    Rectifier_Overcurrent,
+    AC_Mains_Contactor_Fault,
+    IGBT_Driver_Fault,
+    IIB_Itlk
+} hard_interlocks_t;
+
 volatile iib_input_stage_t iib_input_stage;
 volatile iib_command_drawer_t iib_command_drawer;
 
@@ -49,8 +66,6 @@ static void init_iib_modules();
 static void handle_can_data(uint8_t *data);
 static void update_iib_structure_is(uint8_t data_id, float data_val);
 static void update_iib_structure_cd(uint8_t data_id, float data_val);
-static void handle_interlock_message(uint8_t *data);
-static void handle_alarm_message(uint8_t *data);
 
 /**
 * @brief Initialize ADCP Channels.
@@ -96,6 +111,9 @@ static void bsmp_init_server(void)
     create_bsmp_var(38, 0, 4, false, iib_command_drawer.VcapBank.u8);
     create_bsmp_var(39, 0, 4, false, iib_command_drawer.TempL.u8);
     create_bsmp_var(40, 0, 4, false, iib_command_drawer.TempHeatSink.u8);
+
+    create_bsmp_var(41, 0, 4, false, IIB_ITLK_REG_IS.u8);
+    create_bsmp_var(42, 0, 4, false, IIB_ITLK_REG_CD.u8);
 }
 
 /**
@@ -116,8 +134,7 @@ static void init_iib_modules()
     iib_input_stage.CanAddress = 1;
     iib_command_drawer.CanAddress = 2;
 
-    init_iib_module(&g_iib_module, &handle_can_data,
-                             &handle_interlock_message, &handle_alarm_message);
+    init_iib_module(&g_iib_module, &handle_can_data);
 }
 
 static void handle_can_data(uint8_t *data)
@@ -144,7 +161,17 @@ static void update_iib_structure_is(uint8_t data_id, float data_val)
     uint8_t id;
     id = data_id;
 
+    float_to_bytes_t converter;
+
     switch(id) {
+        case 0:
+            converter.f = data_val;
+            IIB_ITLK_REG_IS.u32 = converter.u32;
+            set_hard_interlock(0, IIB_Itlk);
+            break;
+        case 1:
+            // TODO: Handle alarm message
+            break;
         case 2:
             iib_input_stage.Iin.f = data_val;
             break;
@@ -171,7 +198,17 @@ static void update_iib_structure_cd(uint8_t data_id, float data_val)
     uint8_t id;
     id = data_id;
 
+    float_to_bytes_t converter;
+
     switch(id) {
+        case 0:
+            converter.f = data_val;
+            IIB_ITLK_REG_CD.u32 = converter.u32;
+            set_hard_interlock(1, IIB_Itlk);
+            break;
+        case 1:
+            // TODO: Handle alarm data
+            break;
         case 2:
             iib_command_drawer.Vout.f = data_val;
             break;
@@ -192,9 +229,3 @@ static void update_iib_structure_cd(uint8_t data_id, float data_val)
             break;
     }
 }
-
-static void handle_interlock_message(uint8_t *data)
-{}
-
-static void handle_alarm_message(uint8_t *data)
-{}

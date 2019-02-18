@@ -66,7 +66,7 @@ typedef enum
     IIB_Itlk
 } hard_interlocks_t;
 
-volatile iib_output_stage_t iib_output_stage[2];
+volatile iib_output_stage_t iib_output_stage;
 volatile hard_interlocks_t hard_interlocks;
 
 static void init_iib_modules();
@@ -114,29 +114,17 @@ static void bsmp_init_server(void)
     create_bsmp_var(33, 0, 4, false, DUTY_CYCLE.u8);
 
     // Output Module 1
-    create_bsmp_var(34, 0, 4, false, iib_output_stage[0].Iin.u8);
-    create_bsmp_var(35, 0, 4, false, iib_output_stage[0].Iout.u8);
-    create_bsmp_var(36, 0, 4, false, iib_output_stage[0].VdcLink.u8);
-    create_bsmp_var(37, 0, 4, false, iib_output_stage[0].TempIGBT1.u8);
-    create_bsmp_var(38, 0, 4, false, iib_output_stage[0].TempIGBT2.u8);
-    create_bsmp_var(39, 0, 4, false, iib_output_stage[0].TempL.u8);
-    create_bsmp_var(40, 0, 4, false, iib_output_stage[0].TempHeatSink.u8);
-    create_bsmp_var(41, 0, 4, false, iib_output_stage[0].Driver1Error.u8);
-    create_bsmp_var(42, 0, 4, false, iib_output_stage[0].Driver2Error.u8);
+    create_bsmp_var(34, 0, 4, false, iib_output_stage.Iin.u8);
+    create_bsmp_var(35, 0, 4, false, iib_output_stage.Iout.u8);
+    create_bsmp_var(36, 0, 4, false, iib_output_stage.VdcLink.u8);
+    create_bsmp_var(37, 0, 4, false, iib_output_stage.TempIGBT1.u8);
+    create_bsmp_var(38, 0, 4, false, iib_output_stage.TempIGBT2.u8);
+    create_bsmp_var(39, 0, 4, false, iib_output_stage.TempL.u8);
+    create_bsmp_var(40, 0, 4, false, iib_output_stage.TempHeatSink.u8);
+    create_bsmp_var(41, 0, 4, false, iib_output_stage.Driver1Error.u8);
+    create_bsmp_var(42, 0, 4, false, iib_output_stage.Driver2Error.u8);
 
-    // Output Module 2
-    create_bsmp_var(43, 0, 4, false, iib_output_stage[1].Iin.u8);
-    create_bsmp_var(44, 0, 4, false, iib_output_stage[1].Iout.u8);
-    create_bsmp_var(45, 0, 4, false, iib_output_stage[1].VdcLink.u8);
-    create_bsmp_var(46, 0, 4, false, iib_output_stage[1].TempIGBT1.u8);
-    create_bsmp_var(47, 0, 4, false, iib_output_stage[1].TempIGBT2.u8);
-    create_bsmp_var(48, 0, 4, false, iib_output_stage[1].TempL.u8);
-    create_bsmp_var(49, 0, 4, false, iib_output_stage[1].TempHeatSink.u8);
-    create_bsmp_var(50, 0, 4, false, iib_output_stage[1].Driver1Error.u8);
-    create_bsmp_var(51, 0, 4, false, iib_output_stage[1].Driver2Error.u8);
-
-    create_bsmp_var(52, 0, 4, false, IIB_ITLK_REG_1.u8);
-    create_bsmp_var(53, 0, 4, false, IIB_ITLK_REG_2.u8);
+    create_bsmp_var(43, 0, 4, false, IIB_ITLK_REG_1.u8);
 }
 
 /**
@@ -154,11 +142,9 @@ void fac_dcdc_system_config()
 
 static void init_iib_modules()
 {
-    iib_output_stage[0].CanAddress = 1;
-    iib_output_stage[1].CanAddress = 2;
+    iib_output_stage.CanAddress = 1;
 
-    init_iib_module(&g_iib_module, &handle_can_data,
-                             &handle_interlock_message, &handle_alarm_message);
+    init_iib_module(&g_iib_module, &handle_can_data);
 }
 static void handle_can_data(uint8_t *data)
 {
@@ -175,16 +161,26 @@ static void handle_can_data(uint8_t *data)
     converter.u8[2] = data[6];
     converter.u8[3] = data[7];
 
-    update_iib_structure(&iib_output_stage[iib_address - 1], data_id,
-                                                                 converter.f);
+    update_iib_structure(&iib_output_stage, data_id, converter.f);
 }
+
 static void update_iib_structure(iib_output_stage_t *module, uint8_t data_id,
                                                                float data_val)
 {
     uint8_t id;
     id = data_id;
 
+    float_to_bytes_t converter;
+
     switch (id) {
+        case 0:
+            converter.f = data_val;
+            IIB_ITLK_REG_1.u32 = converter.u32;
+            set_hard_interlock(0, IIB_Itlk);
+            break;
+        case 1:
+            //TODO: Handle alarm message
+            break;
         case 2:
             module->Iin.f = data_val;
             break;
@@ -225,31 +221,4 @@ static void update_iib_structure(iib_output_stage_t *module, uint8_t data_id,
             break;
     }
 }
-
-static void handle_interlock_message(uint8_t *data)
-{
-    uint8_t iib_address;
-
-    float_to_bytes_t converter;
-
-    iib_address = data[0];
-
-    converter.u8[0] = data[4];
-    converter.u8[1] = data[5];
-    converter.u8[2] = data[6];
-    converter.u8[3] = data[7];
-
-    if (iib_address == 1) {
-        IIB_ITLK_REG_1.u32 = converter.u32;
-    }
-
-    if (iib_address == 2) {
-        IIB_ITLK_REG_2.u32 = converter.u32;
-    }
-
-    set_hard_interlock(iib_address - 1, IIB_Itlk);
-}
-
-static void handle_alarm_message(uint8_t *data)
-{}
 

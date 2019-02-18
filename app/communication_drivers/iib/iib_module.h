@@ -37,8 +37,6 @@ typedef struct {
 extern iib_module_t g_iib_module;
 
 extern void init_iib_module(iib_module_t *iib_module,
-                                           void (*handle_can_data) (uint8_t*),
-                                  void (*handle_interlock_message) (uint8_t*),
-                                      void (*handle_alarm_message) (uint8_t*));
+                                           void (*handle_can_data) (uint8_t*));
 
 #endif /* IIB_MODULE_H_ */
