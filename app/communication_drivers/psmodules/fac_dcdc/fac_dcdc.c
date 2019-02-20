@@ -49,7 +49,6 @@
 #define TEMP_INDUCTORS      g_controller_mtoc.net_signals[1]
 #define TEMP_IGBT           g_controller_mtoc.net_signals[2]
 #define IIB_ITLK_REG_1      g_controller_mtoc.net_signals[4]
-#define IIB_ITLK_REG_2      g_controller_mtoc.net_signals[5]
 
 #define DUTY_CYCLE          g_controller_ctom.output_signals[0]
 
