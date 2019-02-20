@@ -104,26 +104,29 @@ static void bsmp_init_server(void)
 {
     create_bsmp_var(25, 0, 4, false, g_ipc_ctom.ps_module[0].ps_soft_interlock.u8);
     create_bsmp_var(26, 0, 4, false, g_ipc_ctom.ps_module[0].ps_hard_interlock.u8);
-    create_bsmp_var(27, 0, 4, false, I_LOAD_1.u8);
-    create_bsmp_var(28, 0, 4, false, I_LOAD_2.u8);
-    create_bsmp_var(29, 0, 4, false, v_LOAD.u8);
-    create_bsmp_var(30, 0, 4, false, V_CAPBANK.u8);
-    create_bsmp_var(31, 0, 4, false, TEMP_INDUCTORS.u8);
-    create_bsmp_var(32, 0, 4, false, TEMP_IGBT.u8);
-    create_bsmp_var(33, 0, 4, false, DUTY_CYCLE.u8);
+
+    create_bsmp_var(27, 0, 4, false, I_LOAD_MEAN.u8);
+    create_bsmp_var(28, 0, 4, false, I_LOAD_1.u8);
+    create_bsmp_var(29, 0, 4, false, I_LOAD_2.u8);
+
+    create_bsmp_var(30, 0, 4, false, v_LOAD.u8);
+    create_bsmp_var(31, 0, 4, false, V_CAPBANK.u8);
+
+    create_bsmp_var(32, 0, 4, false, TEMP_INDUCTORS.u8);
+    create_bsmp_var(33, 0, 4, false, TEMP_IGBT.u8);
+    create_bsmp_var(34, 0, 4, false, DUTY_CYCLE.u8);
 
     // Output Module 1
-    create_bsmp_var(34, 0, 4, false, iib_output_stage.Iin.u8);
-    create_bsmp_var(35, 0, 4, false, iib_output_stage.Iout.u8);
-    create_bsmp_var(36, 0, 4, false, iib_output_stage.VdcLink.u8);
-    create_bsmp_var(37, 0, 4, false, iib_output_stage.TempIGBT1.u8);
-    create_bsmp_var(38, 0, 4, false, iib_output_stage.TempIGBT2.u8);
-    create_bsmp_var(39, 0, 4, false, iib_output_stage.TempL.u8);
-    create_bsmp_var(40, 0, 4, false, iib_output_stage.TempHeatSink.u8);
-    create_bsmp_var(41, 0, 4, false, iib_output_stage.Driver1Error.u8);
-    create_bsmp_var(42, 0, 4, false, iib_output_stage.Driver2Error.u8);
-
-    create_bsmp_var(43, 0, 4, false, IIB_ITLK_REG_1.u8);
+    create_bsmp_var(35, 0, 4, false, iib_output_stage.Iin.u8);
+    create_bsmp_var(36, 0, 4, false, iib_output_stage.Iout.u8);
+    create_bsmp_var(37, 0, 4, false, iib_output_stage.VdcLink.u8);
+    create_bsmp_var(38, 0, 4, false, iib_output_stage.TempIGBT1.u8);
+    create_bsmp_var(39, 0, 4, false, iib_output_stage.TempIGBT2.u8);
+    create_bsmp_var(40, 0, 4, false, iib_output_stage.TempL.u8);
+    create_bsmp_var(41, 0, 4, false, iib_output_stage.TempHeatSink.u8);
+    create_bsmp_var(42, 0, 4, false, iib_output_stage.Driver1Error.u8);
+    create_bsmp_var(43, 0, 4, false, iib_output_stage.Driver2Error.u8);
+    create_bsmp_var(44, 0, 4, false, IIB_ITLK_REG_1.u8);
 }
 
 /**

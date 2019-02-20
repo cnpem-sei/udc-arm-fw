@@ -148,43 +148,41 @@ static void bsmp_init_server(void)
     create_bsmp_var(25, 0, 4, false, g_ipc_ctom.ps_module[0].ps_soft_interlock.u8);
     create_bsmp_var(26, 0, 4, false, g_ipc_ctom.ps_module[0].ps_hard_interlock.u8);
 
-    create_bsmp_var(27, 0, 4, false, I_LOAD_1.u8);
-    create_bsmp_var(28, 0, 4, false, I_LOAD_2.u8);
+    create_bsmp_var(27, 0, 4, false, I_LOAD_MEAN.u8);
+    create_bsmp_var(28, 0, 4, false, I_LOAD_1.u8);
+    create_bsmp_var(29, 0, 4, false, I_LOAD_2.u8);
 
-    create_bsmp_var(29, 0, 4, false, V_LOAD.u8);
+    create_bsmp_var(30, 0, 4, false, I_ARM_1.u8);
+    create_bsmp_var(31, 0, 4, false, I_ARM_2.u8);
 
-    create_bsmp_var(30, 0, 4, false, V_CAPBANK_MOD_1.u8);
-    create_bsmp_var(31, 0, 4, false, V_CAPBANK_MOD_2.u8);
-    create_bsmp_var(32, 0, 4, false, V_CAPBANK_MOD_3.u8);
-    create_bsmp_var(33, 0, 4, false, V_CAPBANK_MOD_4.u8);
-    create_bsmp_var(34, 0, 4, false, V_CAPBANK_MOD_5.u8);
-    create_bsmp_var(35, 0, 4, false, V_CAPBANK_MOD_6.u8);
-    create_bsmp_var(36, 0, 4, false, V_CAPBANK_MOD_7.u8);
-    create_bsmp_var(37, 0, 4, false, V_CAPBANK_MOD_8.u8);
+    create_bsmp_var(32, 0, 4, false, V_LOAD.u8);
 
-    create_bsmp_var(38, 0, 4, false, V_OUT_MOD_1.u8);
-    create_bsmp_var(39, 0, 4, false, V_OUT_MOD_2.u8);
-    create_bsmp_var(40, 0, 4, false, V_OUT_MOD_3.u8);
-    create_bsmp_var(41, 0, 4, false, V_OUT_MOD_4.u8);
-    create_bsmp_var(42, 0, 4, false, V_OUT_MOD_5.u8);
-    create_bsmp_var(43, 0, 4, false, V_OUT_MOD_6.u8);
-    create_bsmp_var(44, 0, 4, false, V_OUT_MOD_7.u8);
-    create_bsmp_var(45, 0, 4, false, V_OUT_MOD_8.u8);
+    create_bsmp_var(33, 0, 4, false, V_CAPBANK_MOD_1.u8);
+    create_bsmp_var(34, 0, 4, false, V_CAPBANK_MOD_2.u8);
+    create_bsmp_var(35, 0, 4, false, V_CAPBANK_MOD_3.u8);
+    create_bsmp_var(36, 0, 4, false, V_CAPBANK_MOD_4.u8);
+    create_bsmp_var(37, 0, 4, false, V_CAPBANK_MOD_5.u8);
+    create_bsmp_var(38, 0, 4, false, V_CAPBANK_MOD_6.u8);
+    create_bsmp_var(39, 0, 4, false, V_CAPBANK_MOD_7.u8);
+    create_bsmp_var(40, 0, 4, false, V_CAPBANK_MOD_8.u8);
 
-    //create_bsmp_var(31, 0, 4, false, TEMP_INDUCTORS.u8);
-    //create_bsmp_var(32, 0, 4, false, TEMP_IGBT.u8);
+    create_bsmp_var(41, 0, 4, false, V_OUT_MOD_1.u8);
+    create_bsmp_var(42, 0, 4, false, V_OUT_MOD_2.u8);
+    create_bsmp_var(43, 0, 4, false, V_OUT_MOD_3.u8);
+    create_bsmp_var(44, 0, 4, false, V_OUT_MOD_4.u8);
+    create_bsmp_var(45, 0, 4, false, V_OUT_MOD_5.u8);
+    create_bsmp_var(46, 0, 4, false, V_OUT_MOD_6.u8);
+    create_bsmp_var(47, 0, 4, false, V_OUT_MOD_7.u8);
+    create_bsmp_var(48, 0, 4, false, V_OUT_MOD_8.u8);
 
-    create_bsmp_var(46, 0, 4, false, DUTY_CYCLE_MOD_1.u8);
-    create_bsmp_var(47, 0, 4, false, DUTY_CYCLE_MOD_2.u8);
-    create_bsmp_var(48, 0, 4, false, DUTY_CYCLE_MOD_3.u8);
-    create_bsmp_var(49, 0, 4, false, DUTY_CYCLE_MOD_4.u8);
-    create_bsmp_var(50, 0, 4, false, DUTY_CYCLE_MOD_5.u8);
-    create_bsmp_var(51, 0, 4, false, DUTY_CYCLE_MOD_6.u8);
-    create_bsmp_var(52, 0, 4, false, DUTY_CYCLE_MOD_7.u8);
-    create_bsmp_var(53, 0, 4, false, DUTY_CYCLE_MOD_8.u8);
-
-    create_bsmp_var(54, 0, 4, false, I_ARM_1.u8);
-    create_bsmp_var(55, 0, 4, false, I_ARM_2.u8);
+    create_bsmp_var(49, 0, 4, false, DUTY_CYCLE_MOD_1.u8);
+    create_bsmp_var(50, 0, 4, false, DUTY_CYCLE_MOD_2.u8);
+    create_bsmp_var(51, 0, 4, false, DUTY_CYCLE_MOD_3.u8);
+    create_bsmp_var(52, 0, 4, false, DUTY_CYCLE_MOD_4.u8);
+    create_bsmp_var(53, 0, 4, false, DUTY_CYCLE_MOD_5.u8);
+    create_bsmp_var(54, 0, 4, false, DUTY_CYCLE_MOD_6.u8);
+    create_bsmp_var(55, 0, 4, false, DUTY_CYCLE_MOD_7.u8);
+    create_bsmp_var(56, 0, 4, false, DUTY_CYCLE_MOD_8.u8);
 }
 
 /**
