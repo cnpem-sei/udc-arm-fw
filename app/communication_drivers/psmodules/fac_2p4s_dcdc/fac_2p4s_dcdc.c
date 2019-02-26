@@ -49,12 +49,6 @@
 
 #define I_LOAD_DIFF         g_controller_ctom.net_signals[10]
 
-#define I_LOAD_1            g_controller_ctom.net_signals[0]
-#define I_LOAD_2            g_controller_ctom.net_signals[1]
-#define I_LOAD_MEAN         g_controller_ctom.net_signals[2]
-#define I_LOAD_DIFF         g_controller_ctom.net_signals[3]
-#define I_LOAD_ERROR        g_controller_ctom.net_signals[4]
-
 #define V_LOAD              g_controller_mtoc.net_signals[0]
 
 #define V_CAPBANK_MOD_1     g_controller_mtoc.net_signals[1]
