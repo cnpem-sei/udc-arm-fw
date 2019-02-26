@@ -191,9 +191,19 @@ static void update_iib_structure(iib_fap_module_t *module, uint8_t data_id,
                                                                float data_val)
 {
     uint8_t id = data_id;
+    float_to_bytes_t converter;
 
     switch (id)
     {
+        case 0:
+            converter.f = data_val;
+            IIB_ITLK_REG.u32 = converter.u32;
+            set_hard_interlock(0, IIB_Itlk);
+            break;
+
+        case 1:
+            // TODO: Handle alarm message
+            break;
         case 2:
             module->Vin.f = data_val;
             break;
@@ -242,26 +252,3 @@ static void update_iib_structure(iib_fap_module_t *module, uint8_t data_id,
             break;
     }
 }
-
-static void handle_interlock_message(uint8_t *data)
-{
-    uint8_t iib_address;
-
-    float_to_bytes_t converter;
-
-    iib_address = data[0];
-
-    converter.u8[0] = data[4];
-    converter.u8[1] = data[5];
-    converter.u8[2] = data[6];
-    converter.u8[3] = data[7];
-
-    if (iib_address == 1) {
-        IIB_ITLK_REG.u32 = converter.u32;
-    }
-
-    set_hard_interlock(iib_address - 1, IIB_Itlk);
-}
-
-static void handle_alarm_message(uint8_t *data)
-{}
