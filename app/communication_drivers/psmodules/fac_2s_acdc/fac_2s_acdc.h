@@ -9,18 +9,21 @@
  *****************************************************************************/
 
 /**
- * @file version.c
- * @brief Firmware version module
- * 
- * This module contains information about current build version of UDC ARM core.
+ * @file fac_2s_acdc.h
+ * @brief FAC-2S AC/DC Stage module
+ *
+ * Module for control of two AC/DC modules of FAC power supplies for focusing
+ * quadrupoles from booster. It implements the individual controllers for input
+ * current and capacitor bank voltage of each AC/DC module.
  *
  * @author gabriel.brunheira
- * @date 08/02/2018
+ * @date 27/02/2019
  *
  */
 
-#include "version.h"
+#ifndef FAC_2S_ACDC_H_
+#define FAC_2S_ACDC_H_
 
-volatile firmwares_version_t firmwares_version;
+void fac_2s_acdc_system_config(void);
 
-const char * udc_arm_version = "V0.23 2019-02-27";
+#endif /* FAC_2S_ACDC_H_ */
