@@ -126,6 +126,7 @@ static void bsmp_init_server(void)
     create_bsmp_var(41, 0, 4, false, iib_output_stage.TempHeatSink.u8);
     create_bsmp_var(42, 0, 4, false, iib_output_stage.Driver1Error.u8);
     create_bsmp_var(43, 0, 4, false, iib_output_stage.Driver2Error.u8);
+
     create_bsmp_var(44, 0, 4, false, IIB_ITLK_REG_1.u8);
 }
 
@@ -148,6 +149,7 @@ static void init_iib_modules()
 
     init_iib_module(&g_iib_module, &handle_can_data);
 }
+
 static void handle_can_data(uint8_t *data)
 {
     uint8_t iib_address;
