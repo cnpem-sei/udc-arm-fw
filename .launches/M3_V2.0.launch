@@ -19,6 +19,7 @@
 <stringAttribute key="com.ti.ccstudio.debug.debugModel.MRU_PROGRAM.Texas Instruments XDS100v2 USB Debug Probe/C28xx_0" value="C:/Users\allef.silva\lnls-elp\C28\FLASH_UDC_V2_1\C28_V2.1.out"/>
 <stringAttribute key="com.ti.ccstudio.debug.debugModel.MRU_PROGRAM.Texas Instruments XDS100v2 USB Debug Probe/Cortex_M3_0" value="C:/Users\allef.silva\lnls-elp\ARM\FLASH_UDC_V2_1\M3_V2.0.out"/>
 <stringAttribute key="com.ti.ccstudio.debug.debugModel.MRU_PROGRAM.Texas Instruments XDS100v2 USB Debug Probe_0/C28xx_0" value="C:/Users\gabriel.brunheira\lnls-elp\C28\FLASH_UDC_V2_1\C28_V2.1.out"/>
+<stringAttribute key="com.ti.ccstudio.debug.debugModel.MRU_PROGRAM.Texas Instruments XDS100v2 USB Debug Probe_0/Cortex_M3_0" value="C:/Users\gabriel.brunheira\lnls-elp\ARM\FLASH_UDC_V2_1\M3_V2.0.out"/>
 <stringAttribute key="com.ti.ccstudio.debug.debugModel.MRU_PROGRAM.Texas Instruments XDS110 USB Debug Probe/C28xx_0" value="C:/Users\allef.silva\lnls-elp\C28\FLASH_UDC_V2_1\C28_V2.1.out"/>
 <stringAttribute key="com.ti.ccstudio.debug.debugModel.MRU_PROGRAM.Texas Instruments XDS110 USB Debug Probe/Cortex_M3_0" value="C:/Users\allef.silva\lnls-elp\ARM\FLASH_UDC_V2_1\M3_V2.0.out"/>
 <mapAttribute key="com.ti.ccstudio.debug.ui.displayFormats">

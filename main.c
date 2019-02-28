@@ -165,6 +165,18 @@ int main(void) {
                 break;
             }
 
+            case FAC_2P4S_ACDC:
+            {
+                fac_2p4s_acdc_system_config();
+                break;
+            }
+
+            case FAC_2P4S_DCDC:
+            {
+                fac_2p4s_dcdc_system_config();
+                break;
+            }
+
             case FAP:
             {
                 fap_system_config();
