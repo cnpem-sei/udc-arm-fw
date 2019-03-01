@@ -34,27 +34,39 @@
 #include "communication_drivers/bsmp/bsmp_lib.h"
 #include "communication_drivers/control/control.h"
 
-#define I_LOAD_1                        g_controller_ctom.net_signals[0]  // HRADC0
-#define I_LOAD_2                        g_controller_ctom.net_signals[1]  // HRADC1
-#define V_CAPBANK_MOD_1                 g_controller_ctom.net_signals[2]  // HRADC2
-#define V_CAPBANK_MOD_2                 g_controller_ctom.net_signals[3]  // HRADC3
+/// DSP Net Signals
+#define I_LOAD_1                        g_controller_ctom.net_signals[0]    // HRADC0
+#define I_LOAD_2                        g_controller_ctom.net_signals[1]    // HRADC1
+#define V_CAPBANK_MOD_1                 g_controller_ctom.net_signals[2]    // HRADC2
+#define V_CAPBANK_MOD_2                 g_controller_ctom.net_signals[3]    // HRADC3
 
-#define I_LOAD_SETPOINT_FILTERED        g_controller_ctom.net_signals[4]
+#define I_LOAD_REFERENCE_WFMREF         g_controller_ctom.net_signals[4]
 
 #define I_LOAD_MEAN                     g_controller_ctom.net_signals[5]
 #define I_LOAD_ERROR                    g_controller_ctom.net_signals[6]
-#define I_LOAD_DIFF                     g_controller_ctom.net_signals[7]
-#define DUTY_MEAN                       g_controller_ctom.net_signals[8]
 
-#define V_OUT_DIFF                      g_controller_ctom.net_signals[9]
-#define DUTY_DIFF                       g_controller_ctom.net_signals[10]
+#define DUTY_I_LOAD_PI                  g_controller_ctom.net_signals[7]
+#define DUTY_REFERENCE_FF               g_controller_ctom.net_signals[8]
+#define DUTY_MEAN                       g_controller_ctom.net_signals[9]
 
-#define V_LOAD                          g_controller_mtoc.net_signals[0]
-#define V_OUT_MOD_1                     g_controller_mtoc.net_signals[1]
-#define V_OUT_MOD_2                     g_controller_mtoc.net_signals[2]
+#define V_OUT_DIFF                      g_controller_ctom.net_signals[10]
+#define DUTY_DIFF                       g_controller_ctom.net_signals[11]
+
+#define V_CAPBANK_MOD_1_FILTERED        g_controller_ctom.net_signals[12]
+#define V_CAPBANK_MOD_2_FILTERED        g_controller_ctom.net_signals[13]
+
+#define IN_FF_V_CAPBANK_MOD_1           g_controller_ctom.net_signals[14]
+#define IN_FF_V_CAPBANK_MOD_2           g_controller_ctom.net_signals[15]
+
+#define I_LOAD_DIFF                     g_controller_ctom.net_signals[16]
+#define V_LOAD                          g_controller_ctom.net_signals[17]
 
 #define DUTY_CYCLE_MOD_1                g_controller_ctom.output_signals[0]
 #define DUTY_CYCLE_MOD_2                g_controller_ctom.output_signals[1]
+
+/// ARM Net Signals
+#define V_OUT_MOD_1                     g_controller_mtoc.net_signals[0]
+#define V_OUT_MOD_2                     g_controller_mtoc.net_signals[1]
 
 /**
 * @brief Initialize ADCP Channels.
