@@ -38,7 +38,8 @@ typedef enum
     Sine,
     DampedSine,
     Trapezoidal,
-    DampedSquaredSine
+    DampedSquaredSine,
+    Square
 } siggen_type_t;
 
 typedef volatile struct siggen_t siggen_t;
