@@ -9,18 +9,20 @@
  *****************************************************************************/
 
 /**
- * @file version.c
- * @brief Firmware version module
- * 
- * This module contains information about current build version of UDC ARM core.
+ * @file fac_dcdc_ema.h
+ * @brief FAC DC/DC Stage module for dipole magnet from EMA beamline.
+ *
+ * Module for control of DC/DC module of FAC power supply for dipole magnet used
+ * at EMA beamline from Sirius. It implements the controller for load current.
  *
  * @author gabriel.brunheira
- * @date 08/02/2018
+ * @date 08/03/2019
  *
  */
 
-#include "version.h"
+#ifndef FAC_DCDC_EMA_H_
+#define FAC_DCDC_EMA_H_
 
-volatile firmwares_version_t firmwares_version;
+void fac_dcdc_ema_system_config(void);
 
-const char * udc_arm_version = "V0.25 2019-03-11";
+#endif /* FAC_DCDC_EMA_H_ */

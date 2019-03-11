@@ -28,6 +28,7 @@
 #include <communication_drivers/psmodules/fac_2p4s_dcdc/fac_2p4s_dcdc.h>
 #include <communication_drivers/psmodules/fap/fap.h>
 #include <communication_drivers/psmodules/fap_4p/fap_4p.h>
+#include <communication_drivers/psmodules/fac_dcdc_ema/fac_dcdc_ema.h>
 
 #include <stdint.h>
 #include <stdarg.h>
@@ -188,6 +189,13 @@ int main(void) {
                 fap_4p_system_config();
                 break;
             }
+
+            case FAC_DCDC_EMA:
+            {
+                fac_dcdc_ema_system_config();
+                break;
+            }
+
 
 	        default:
 	        {

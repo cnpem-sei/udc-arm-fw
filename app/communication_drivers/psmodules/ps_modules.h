@@ -79,6 +79,7 @@ typedef enum
     FAC_2P4S_DCDC,
     FAP,
     FAP_4P,
+    FAC_DCDC_EMA,
     Uninitialized = 0x1F      // Empty EEPROM
 } ps_model_t;
 
