@@ -103,6 +103,7 @@ static struct bsmp_raw_packet send_packet =
 //*****************************************************************************
 
 static uint8_t MessageOverflow = 0;
+static uint32_t baudrate = 0;
 
 //*****************************************************************************
 
@@ -131,7 +132,7 @@ void isr_rs485(void)
 	    //GPIOPinWrite(GPIO_PORTP_BASE, GPIO_PIN_7, ON);
 
 	    // Low baud-rate
-	    if(g_ipc_mtoc.communication.rs485_baud.f < 1000000)
+	    if(baudrate < 1000000)
 	    {
             for(time_out = 0; time_out < 15; time_out++)
             {
@@ -380,6 +381,9 @@ void config_rs485(uint32_t BaudRate)
 	    set_param(RS485_Baudrate, 0, BaudRate);
 	    save_param_eeprom(RS485_Baudrate, 0);
 	}
+
+	// Save current configuration of baudrate
+	baudrate = BaudRate;
 
 	// RS485 serial configuration, operation mode 8-N-1
 	UARTConfigSetExpClk(RS485_UART_BASE, SysCtlClockGet(SYSTEM_CLOCK_SPEED), BaudRate,
