@@ -196,8 +196,8 @@ static void init_iib()
 {
     fac_is[0].CanAddress = 1;
     fac_is[1].CanAddress = 2;
-    fac_is[0].CanAddress = 3;
-    fac_is[1].CanAddress = 4;
+    fac_cmd[0].CanAddress = 3;
+    fac_cmd[1].CanAddress = 4;
 
     init_iib_module(&g_iib_module, &handle_can_data);
 }
