@@ -161,8 +161,8 @@ static void bsmp_init_server(void)
     create_bsmp_var(50, 0, 4, false, fac_2s_dcdc_os[1].Driver1Error.u8);
     create_bsmp_var(51, 0, 4, false, fac_2s_dcdc_os[1].Driver2Error.u8);
 
-    create_bsmp_var(112, 0, 4, false, IIB_ITLK_REG_1.u8);
-    create_bsmp_var(113, 0, 4, false, IIB_ITLK_REG_2.u8);
+    create_bsmp_var(52, 0, 4, false, IIB_ITLK_REG_1.u8);
+    create_bsmp_var(53, 0, 4, false, IIB_ITLK_REG_2.u8);
 }
 
 /**

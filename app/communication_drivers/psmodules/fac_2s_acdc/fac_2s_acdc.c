@@ -63,10 +63,10 @@
 #define TEMP_HEATSINK_MOD_B         g_controller_mtoc.net_signals[4]
 #define TEMP_INDUCTORS_MOD_B        g_controller_mtoc.net_signals[5]
 
-#define IIB_ITLK_REG_FAC_IS_1       g_controller_mtoc.net_signals[6]
-#define IIB_ITLK_REG_FAC_IS_2       g_controller_mtoc.net_signals[7]
-#define IIB_ITLK_REG_FAC_CMD_1      g_controller_mtoc.net_signals[8]
-#define IIB_ITLK_REG_FAC_CMD_2      g_controller_mtoc.net_signals[9]
+#define IIB_ITLK_REG_FAC_IS_A       g_controller_mtoc.net_signals[6]
+#define IIB_ITLK_REG_FAC_IS_B       g_controller_mtoc.net_signals[7]
+#define IIB_ITLK_REG_FAC_CMD_A      g_controller_mtoc.net_signals[8]
+#define IIB_ITLK_REG_FAC_CMD_B      g_controller_mtoc.net_signals[9]
 
 #define DUTY_CYCLE_MOD_B            g_controller_ctom.output_signals[1]
 
@@ -127,6 +127,19 @@ static void bsmp_init_server(void)
     create_bsmp_var(31, MOD_A_ID, 4, false, TEMP_INDUCTORS_MOD_A.u8);
     create_bsmp_var(32, MOD_A_ID, 4, false, DUTY_CYCLE_MOD_A.u8);
 
+    create_bsmp_var(33, MOD_A_ID, 4, false, fac_2s_acdc_is[MOD_A_ID].Iin.u8);
+    create_bsmp_var(34, MOD_A_ID, 4, false, fac_2s_acdc_is[MOD_A_ID].VdcLink.u8);
+    create_bsmp_var(35, MOD_A_ID, 4, false, fac_2s_acdc_is[MOD_A_ID].TempL.u8);
+    create_bsmp_var(36, MOD_A_ID, 4, false, fac_2s_acdc_is[MOD_A_ID].TempHeatsink.u8);
+
+    create_bsmp_var(37, MOD_A_ID, 4, false, fac_2s_acdc_cmd[MOD_A_ID].Vout.u8);
+    create_bsmp_var(38, MOD_A_ID, 4, false, fac_2s_acdc_cmd[MOD_A_ID].VcapBank.u8);
+    create_bsmp_var(39, MOD_A_ID, 4, false, fac_2s_acdc_cmd[MOD_A_ID].TempL.u8);
+    create_bsmp_var(40, MOD_A_ID, 4, false, fac_2s_acdc_cmd[MOD_A_ID].TempHeatSink.u8);
+
+    create_bsmp_var(41, MOD_A_ID, 4, false, IIB_ITLK_REG_FAC_IS_A.u8);
+    create_bsmp_var(42, MOD_A_ID, 4, false, IIB_ITLK_REG_FAC_CMD_A.u8);
+
     /**
      * Create module B specific variables
      */
@@ -148,31 +161,18 @@ static void bsmp_init_server(void)
     create_bsmp_var(31, MOD_B_ID, 4, false, TEMP_INDUCTORS_MOD_B.u8);
     create_bsmp_var(32, MOD_B_ID, 4, false, DUTY_CYCLE_MOD_B.u8);
 
-    create_bsmp_var(33, 0, 4, false, fac_2s_acdc_is[0].Iin.u8);
-    create_bsmp_var(34, 0, 4, false, fac_2s_acdc_is[0].VdcLink.u8);
-    create_bsmp_var(35, 0, 4, false, fac_2s_acdc_is[0].TempL.u8);
-    create_bsmp_var(36, 0, 4, false, fac_2s_acdc_is[0].TempHeatsink.u8);
+    create_bsmp_var(33, MOD_B_ID, 4, false, fac_2s_acdc_is[MOD_B_ID].Iin.u8);
+    create_bsmp_var(34, MOD_B_ID, 4, false, fac_2s_acdc_is[MOD_B_ID].VdcLink.u8);
+    create_bsmp_var(35, MOD_B_ID, 4, false, fac_2s_acdc_is[MOD_B_ID].TempL.u8);
+    create_bsmp_var(36, MOD_B_ID, 4, false, fac_2s_acdc_is[MOD_B_ID].TempHeatsink.u8);
 
-    create_bsmp_var(37, 0, 4, false, fac_2s_acdc_is[1].Iin.u8);
-    create_bsmp_var(38, 0, 4, false, fac_2s_acdc_is[1].VdcLink.u8);
-    create_bsmp_var(39, 0, 4, false, fac_2s_acdc_is[1].TempL.u8);
-    create_bsmp_var(40, 0, 4, false, fac_2s_acdc_is[1].TempHeatsink.u8);
+    create_bsmp_var(37, MOD_B_ID, 4, false, fac_2s_acdc_cmd[MOD_B_ID].Vout.u8);
+    create_bsmp_var(38, MOD_B_ID, 4, false, fac_2s_acdc_cmd[MOD_B_ID].VcapBank.u8);
+    create_bsmp_var(39, MOD_B_ID, 4, false, fac_2s_acdc_cmd[MOD_B_ID].TempL.u8);
+    create_bsmp_var(40, MOD_B_ID, 4, false, fac_2s_acdc_cmd[MOD_B_ID].TempHeatSink.u8);
 
-    create_bsmp_var(41, 0, 4, false, fac_2s_acdc_cmd[0].Vout.u8);
-    create_bsmp_var(42, 0, 4, false, fac_2s_acdc_cmd[0].VcapBank.u8);
-    create_bsmp_var(43, 0, 4, false, fac_2s_acdc_cmd[0].TempL.u8);
-    create_bsmp_var(44, 0, 4, false, fac_2s_acdc_cmd[0].TempHeatSink.u8);
-
-    create_bsmp_var(45, 0, 4, false, fac_2s_acdc_cmd[1].Vout.u8);
-    create_bsmp_var(46, 0, 4, false, fac_2s_acdc_cmd[1].VcapBank.u8);
-    create_bsmp_var(47, 0, 4, false, fac_2s_acdc_cmd[1].TempL.u8);
-    create_bsmp_var(48, 0, 4, false, fac_2s_acdc_cmd[1].TempHeatSink.u8);
-
-
-    create_bsmp_var(49, 0, 4, false, IIB_ITLK_REG_FAC_IS_1.u8);
-    create_bsmp_var(50, 0, 4, false, IIB_ITLK_REG_FAC_IS_2.u8);
-    create_bsmp_var(51, 0, 4, false, IIB_ITLK_REG_FAC_CMD_1.u8);
-    create_bsmp_var(52, 0, 4, false, IIB_ITLK_REG_FAC_CMD_2.u8);
+    create_bsmp_var(41, MOD_B_ID, 4, false, IIB_ITLK_REG_FAC_IS_B.u8);
+    create_bsmp_var(42, MOD_B_ID, 4, false, IIB_ITLK_REG_FAC_CMD_B.u8);
 }
 
 /**
@@ -233,8 +233,8 @@ static void update_iib_structure_fac_is(uint8_t iib_id, uint8_t data_id, float d
     switch(cmd_id) {
         case 0:
             converter.f = data_val;
-            if (iib_id == 0) IIB_ITLK_REG_FAC_IS_1.u32 = converter.u32;
-            if (iib_id == 1) IIB_ITLK_REG_FAC_IS_2.u32 = converter.u32;
+            if (iib_id == 0) IIB_ITLK_REG_FAC_IS_A.u32 = converter.u32;
+            if (iib_id == 1) IIB_ITLK_REG_FAC_IS_B.u32 = converter.u32;
             set_hard_interlock(iib_id, IIB_Itlk);
             break;
         case 1:
@@ -275,8 +275,8 @@ static void update_iib_structure_fac_cmd(uint8_t iib_id, uint8_t data_id, float 
     switch(cmd_id) {
         case 0:
             converter.f = data_val;
-            if (iib_id == 2) IIB_ITLK_REG_FAC_CMD_1.u32 = converter.u32;
-            if (iib_id == 3) IIB_ITLK_REG_FAC_CMD_2.u32 = converter.u32;
+            if (iib_id == 2) IIB_ITLK_REG_FAC_CMD_A.u32 = converter.u32;
+            if (iib_id == 3) IIB_ITLK_REG_FAC_CMD_B.u32 = converter.u32;
             set_hard_interlock(iib_id, IIB_Itlk);
             break;
         case 1:
