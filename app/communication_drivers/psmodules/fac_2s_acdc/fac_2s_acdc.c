@@ -34,6 +34,8 @@
 #include "communication_drivers/adcp/adcp.h"
 #include "communication_drivers/bsmp/bsmp_lib.h"
 #include "communication_drivers/control/control.h"
+#include "communication_drivers/iib/iib_data.h"
+#include "communication_drivers/iib/iib_module.h"
 
 /**
  * Defines for module A variables
@@ -61,7 +63,31 @@
 #define TEMP_HEATSINK_MOD_B         g_controller_mtoc.net_signals[4]
 #define TEMP_INDUCTORS_MOD_B        g_controller_mtoc.net_signals[5]
 
+#define IIB_ITLK_REG_FAC_IS_1       g_controller_mtoc.net_signals[6]
+#define IIB_ITLK_REG_FAC_IS_2       g_controller_mtoc.net_signals[7]
+#define IIB_ITLK_REG_FAC_CMD_1      g_controller_mtoc.net_signals[8]
+#define IIB_ITLK_REG_FAC_CMD_2      g_controller_mtoc.net_signals[9]
+
 #define DUTY_CYCLE_MOD_B            g_controller_ctom.output_signals[1]
+
+/**
+ * Interlocks defines
+ */
+typedef enum
+{
+    CapBank_Overvoltage,
+    Rectifier_Overcurrent,
+    AC_Mains_Contactor_Fault,
+    IIB_Itlk
+} hard_interlocks_t;
+
+volatile iib_input_stage_t fac_2s_acdc_is[2];
+volatile iib_command_drawer_t fac_2s_acdc_cmd[2];
+
+static void init_iib_modules();
+static void handle_can_data(uint8_t *data);
+static void update_iib_structure_fac_is(uint8_t iib_id, uint8_t data_id, float data_val);
+static void update_iib_structure_fac_cmd(uint8_t iib_id, uint8_t data_id, float data_val);
 
 /**
 * @brief Initialize ADCP Channels.
@@ -121,6 +147,32 @@ static void bsmp_init_server(void)
     create_bsmp_var(30, MOD_B_ID, 4, false, TEMP_HEATSINK_MOD_B.u8);
     create_bsmp_var(31, MOD_B_ID, 4, false, TEMP_INDUCTORS_MOD_B.u8);
     create_bsmp_var(32, MOD_B_ID, 4, false, DUTY_CYCLE_MOD_B.u8);
+
+    create_bsmp_var(33, 0, 4, false, fac_2s_acdc_is[0].Iin.u8);
+    create_bsmp_var(34, 0, 4, false, fac_2s_acdc_is[0].VdcLink.u8);
+    create_bsmp_var(35, 0, 4, false, fac_2s_acdc_is[0].TempL.u8);
+    create_bsmp_var(36, 0, 4, false, fac_2s_acdc_is[0].TempHeatsink.u8);
+
+    create_bsmp_var(37, 0, 4, false, fac_2s_acdc_is[1].Iin.u8);
+    create_bsmp_var(38, 0, 4, false, fac_2s_acdc_is[1].VdcLink.u8);
+    create_bsmp_var(39, 0, 4, false, fac_2s_acdc_is[1].TempL.u8);
+    create_bsmp_var(40, 0, 4, false, fac_2s_acdc_is[1].TempHeatsink.u8);
+
+    create_bsmp_var(41, 0, 4, false, fac_2s_acdc_cmd[0].Vout.u8);
+    create_bsmp_var(42, 0, 4, false, fac_2s_acdc_cmd[0].VcapBank.u8);
+    create_bsmp_var(43, 0, 4, false, fac_2s_acdc_cmd[0].TempL.u8);
+    create_bsmp_var(44, 0, 4, false, fac_2s_acdc_cmd[0].TempHeatSink.u8);
+
+    create_bsmp_var(45, 0, 4, false, fac_2s_acdc_cmd[1].Vout.u8);
+    create_bsmp_var(46, 0, 4, false, fac_2s_acdc_cmd[1].VcapBank.u8);
+    create_bsmp_var(47, 0, 4, false, fac_2s_acdc_cmd[1].TempL.u8);
+    create_bsmp_var(48, 0, 4, false, fac_2s_acdc_cmd[1].TempHeatSink.u8);
+
+
+    create_bsmp_var(49, 0, 4, false, IIB_ITLK_REG_FAC_IS_1.u8);
+    create_bsmp_var(50, 0, 4, false, IIB_ITLK_REG_FAC_IS_2.u8);
+    create_bsmp_var(51, 0, 4, false, IIB_ITLK_REG_FAC_CMD_1.u8);
+    create_bsmp_var(52, 0, 4, false, IIB_ITLK_REG_FAC_CMD_2.u8);
 }
 
 /**
@@ -134,4 +186,120 @@ void fac_2s_acdc_system_config()
 {
     adcp_channel_config();
     bsmp_init_server();
+    init_iib_modules();
 }
+
+static void init_iib_modules()
+{
+    fac_2s_acdc_is[0].CanAddress = 1;
+    fac_2s_acdc_is[1].CanAddress = 2;
+    fac_2s_acdc_cmd[0].CanAddress = 3;
+    fac_2s_acdc_cmd[0].CanAddress = 4;
+
+    init_iib_module(&g_iib_module, &handle_can_data);
+}
+
+static void handle_can_data(uint8_t *data)
+{
+    uint8_t iib_address;
+    uint8_t data_id;
+
+    float_to_bytes_t converter;
+
+    iib_address     = data[0];
+    data_id         = data[1];
+
+    converter.u8[0] = data[4];
+    converter.u8[1] = data[5];
+    converter.u8[2] = data[6];
+    converter.u8[3] = data[7];
+
+    if ((iib_address == 1) || (iib_address == 2)) {
+        update_iib_structure_fac_is(iib_address - 1, data_id, converter.f);
+    }
+
+    if ((iib_address == 3) || (iib_address == 4)) {
+        update_iib_structure_fac_cmd(iib_address - 1, data_id, converter.f);
+    }
+}
+
+static void update_iib_structure_fac_is(uint8_t iib_id, uint8_t data_id, float data_val)
+{
+    uint8_t cmd_id;
+    cmd_id = data_id;
+
+    float_to_bytes_t converter;
+
+    switch(cmd_id) {
+        case 0:
+            converter.f = data_val;
+            if (iib_id == 0) IIB_ITLK_REG_FAC_IS_1.u32 = converter.u32;
+            if (iib_id == 1) IIB_ITLK_REG_FAC_IS_2.u32 = converter.u32;
+            set_hard_interlock(iib_id, IIB_Itlk);
+            break;
+        case 1:
+            // TODO: Handle alarm message
+            break;
+        case 2:
+            fac_2s_acdc_is[iib_id].Iin.f = data_val;
+            break;
+
+        case 3:
+            fac_2s_acdc_is[iib_id].VdcLink.f = data_val;
+            break;
+
+        case 4:
+            fac_2s_acdc_is[iib_id].TempL.f = data_val;
+            break;
+
+        case 5:
+            fac_2s_acdc_is[iib_id].TempHeatsink.f = data_val;
+            break;
+
+        default:
+            break;
+    }
+}
+
+static void update_iib_structure_fac_cmd(uint8_t iib_id, uint8_t data_id, float data_val)
+{
+    uint8_t cmd_id;
+    uint8_t mod_idx;
+    cmd_id = data_id;
+
+    float_to_bytes_t converter;
+
+    if (iib_id == 2) mod_idx = 0;
+    if (iib_id == 3) mod_idx = 1;
+
+    switch(cmd_id) {
+        case 0:
+            converter.f = data_val;
+            if (iib_id == 2) IIB_ITLK_REG_FAC_CMD_1.u32 = converter.u32;
+            if (iib_id == 3) IIB_ITLK_REG_FAC_CMD_2.u32 = converter.u32;
+            set_hard_interlock(iib_id, IIB_Itlk);
+            break;
+        case 1:
+            // TODO: Handle alarm data
+            break;
+        case 2:
+            fac_2s_acdc_cmd[mod_idx].Vout.f = data_val;
+            break;
+
+        case 3:
+            fac_2s_acdc_cmd[mod_idx].VcapBank.f = data_val;
+            break;
+
+        case 4:
+            fac_2s_acdc_cmd[mod_idx].TempL.f = data_val;
+            break;
+
+        case 5:
+            fac_2s_acdc_cmd[mod_idx].TempHeatSink.f = data_val;
+            break;
+
+        default:
+            break;
+    }
+}
+
