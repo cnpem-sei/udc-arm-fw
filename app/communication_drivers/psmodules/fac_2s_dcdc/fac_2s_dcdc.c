@@ -33,6 +33,8 @@
 #include "communication_drivers/adcp/adcp.h"
 #include "communication_drivers/bsmp/bsmp_lib.h"
 #include "communication_drivers/control/control.h"
+#include "communication_drivers/iib/iib_data.h"
+#include "communication_drivers/iib/iib_module.h"
 
 /// DSP Net Signals
 #define I_LOAD_1                        g_controller_ctom.net_signals[0]    // HRADC0
@@ -67,6 +69,35 @@
 /// ARM Net Signals
 #define V_OUT_MOD_1                     g_controller_mtoc.net_signals[0]
 #define V_OUT_MOD_2                     g_controller_mtoc.net_signals[1]
+
+#define IIB_ITLK_REG_1                  g_controller_mtoc.net_signals[2]
+#define IIB_ITLK_REG_2                  g_controller_mtoc.net_signals[3]
+
+/**
+ * Interlocks defines
+ */
+typedef enum
+{
+    Load_Overcurrent,
+    Load_Overvoltage,
+    Module_1_CapBank_Overvoltage,
+    Module_2_CapBank_Overvoltage,
+    Module_1_CapBank_Undervoltage,
+    Module_2_CapBank_Undervoltage,
+    Module_1_Output_Overvoltage,
+    Module_2_Output_Overvoltage,
+    IIB_1_Itlk,
+    IIB_2_Itlk,
+    External_Interlock,
+    Rack_Interlock
+} hard_interlocks_t;
+
+volatile iib_output_stage_t fac_2s_dcdc_os[2];
+
+static void init_iib();
+static void handle_can_data(uint8_t *data);
+static void update_iib_structure(iib_output_stage_t *module, uint8_t data_id,
+                                                               float data_val);
 
 /**
 * @brief Initialize ADCP Channels.
@@ -113,6 +144,25 @@ static void bsmp_init_server(void)
     create_bsmp_var(35, 0, 4, false, DUTY_CYCLE_MOD_1.u8);
     create_bsmp_var(36, 0, 4, false, DUTY_CYCLE_MOD_2.u8);
     create_bsmp_var(37, 0, 4, false, DUTY_DIFF.u8);
+
+    create_bsmp_var(38, 0, 4, false, fac_2s_dcdc_os[0].Iin.u8);
+    create_bsmp_var(39, 0, 4, false, fac_2s_dcdc_os[0].Iout.u8);
+    create_bsmp_var(40, 0, 4, false, fac_2s_dcdc_os[0].VdcLink.u8);
+    create_bsmp_var(41, 0, 4, false, fac_2s_dcdc_os[0].TempL.u8);
+    create_bsmp_var(42, 0, 4, false, fac_2s_dcdc_os[0].TempHeatSink.u8);
+    create_bsmp_var(43, 0, 4, false, fac_2s_dcdc_os[0].Driver1Error.u8);
+    create_bsmp_var(44, 0, 4, false, fac_2s_dcdc_os[0].Driver2Error.u8);
+
+    create_bsmp_var(45, 0, 4, false, fac_2s_dcdc_os[1].Iin.u8);
+    create_bsmp_var(46, 0, 4, false, fac_2s_dcdc_os[1].Iout.u8);
+    create_bsmp_var(47, 0, 4, false, fac_2s_dcdc_os[1].VdcLink.u8);
+    create_bsmp_var(48, 0, 4, false, fac_2s_dcdc_os[1].TempL.u8);
+    create_bsmp_var(49, 0, 4, false, fac_2s_dcdc_os[1].TempHeatSink.u8);
+    create_bsmp_var(50, 0, 4, false, fac_2s_dcdc_os[1].Driver1Error.u8);
+    create_bsmp_var(51, 0, 4, false, fac_2s_dcdc_os[1].Driver2Error.u8);
+
+    create_bsmp_var(112, 0, 4, false, IIB_ITLK_REG_1.u8);
+    create_bsmp_var(113, 0, 4, false, IIB_ITLK_REG_2.u8);
 }
 
 /**
@@ -125,4 +175,97 @@ void fac_2s_dcdc_system_config()
 {
     adcp_channel_config();
     bsmp_init_server();
+    init_iib();
 }
+
+static void init_iib()
+{
+    fac_2s_dcdc_os[0].CanAddress = 1;
+    fac_2s_dcdc_os[1].CanAddress = 2;
+
+    init_iib_module(&g_iib_module, &handle_can_data);
+}
+
+static void handle_can_data(uint8_t *data)
+{
+    uint8_t iib_address;
+    uint8_t data_id;
+
+    float_to_bytes_t converter;
+
+    iib_address     = data[0];
+    data_id         = data[1];
+
+    converter.u8[0] = data[4];
+    converter.u8[1] = data[5];
+    converter.u8[2] = data[6];
+    converter.u8[3] = data[7];
+
+    update_iib_structure(&fac_2s_dcdc_os[iib_address-1], data_id, converter.f);
+}
+
+static void update_iib_structure(iib_output_stage_t *module, uint8_t data_id,
+                                                               float data_val)
+{
+    uint8_t id;
+    id = data_id;
+
+    float_to_bytes_t converter;
+
+    switch (id) {
+        case 0:
+            converter.f = data_val;
+            if (module->CanAddress == 1) {
+                IIB_ITLK_REG_1.u32 = converter.u32;
+                set_hard_interlock(module->CanAddress - 1, IIB_1_Itlk);
+            }
+            if (module->CanAddress == 2) {
+                IIB_ITLK_REG_2.u32 = converter.u32;
+                set_hard_interlock(module->CanAddress - 1, IIB_2_Itlk);
+            }
+            break;
+        case 1:
+            //TODO: Handle alarm message
+            break;
+        case 2:
+            module->Iin.f = data_val;
+            break;
+
+        case 3:
+            module->Iout.f = data_val;
+            break;
+
+        case 4:
+            module->VdcLink.f = data_val;
+            break;
+
+        case 5:
+            //module->TempIGBT1.f = data_val;
+            break;
+
+        case 6:
+            //module->TempIGBT2.f = data_val;
+            break;
+
+        case 7:
+            module->TempL.f = data_val;
+            break;
+
+        case 8:
+            module->TempHeatSink.f = data_val;
+            break;
+
+        case 9:
+            module->Driver1Error.f = data_val;
+            break;
+
+        case 10:
+            module->Driver2Error.f = data_val;
+            break;
+
+        default:
+            break;
+    }
+}
+
+
