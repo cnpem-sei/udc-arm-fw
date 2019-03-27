@@ -191,10 +191,10 @@ void fac_2s_acdc_system_config()
 
 static void init_iib_modules()
 {
-    fac_2s_acdc_is[0].CanAddress = 1;
-    fac_2s_acdc_is[1].CanAddress = 2;
-    fac_2s_acdc_cmd[0].CanAddress = 3;
-    fac_2s_acdc_cmd[0].CanAddress = 4;
+    fac_2s_acdc_is[MOD_A_ID].CanAddress = 1;
+    fac_2s_acdc_is[MOD_B_ID].CanAddress = 2;
+    fac_2s_acdc_cmd[MOD_A_ID].CanAddress = 3;
+    fac_2s_acdc_cmd[MOD_B_ID].CanAddress = 4;
 
     init_iib_module(&g_iib_module, &handle_can_data);
 }
