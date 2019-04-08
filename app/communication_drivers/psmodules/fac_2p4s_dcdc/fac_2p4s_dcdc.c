@@ -124,7 +124,14 @@ typedef enum
     Module_6_Output_Overvoltage,
     Module_7_Output_Overvoltage,
     Module_8_Output_Overvoltage,
-    IIB_Itlk
+    IIB_1_Itlk,
+    IIB_2_Itlk,
+    IIB_3_Itlk,
+    IIB_4_Itlk,
+    IIB_5_Itlk,
+    IIB_6_Itlk,
+    IIB_7_Itlk,
+    IIB_8_Itlk
 } hard_interlocks_t;
 
 volatile iib_output_stage_t fac_os[8];
@@ -361,16 +368,39 @@ static void update_iib_structure(iib_output_stage_t *module, uint8_t data_id,
     switch (id) {
         case 0:
             converter.f = data_val;
-            if (module->CanAddress == 1) IIB_ITLK_REG_1.u32 = converter.u32;
-            if (module->CanAddress == 2) IIB_ITLK_REG_2.u32 = converter.u32;
-            if (module->CanAddress == 3) IIB_ITLK_REG_3.u32 = converter.u32;
-            if (module->CanAddress == 4) IIB_ITLK_REG_4.u32 = converter.u32;
-            if (module->CanAddress == 5) IIB_ITLK_REG_5.u32 = converter.u32;
-            if (module->CanAddress == 6) IIB_ITLK_REG_6.u32 = converter.u32;
-            if (module->CanAddress == 7) IIB_ITLK_REG_7.u32 = converter.u32;
-            if (module->CanAddress == 8) IIB_ITLK_REG_8.u32 = converter.u32;
+            if (module->CanAddress == 1) {
+                IIB_ITLK_REG_1.u32 = converter.u32;
+                set_hard_interlock(0, IIB_1_Itlk);
+            }
+            if (module->CanAddress == 2) {
+                IIB_ITLK_REG_2.u32 = converter.u32;
+                set_hard_interlock(0, IIB_2_Itlk);
+            }
+            if (module->CanAddress == 3) {
+                IIB_ITLK_REG_3.u32 = converter.u32;
+                set_hard_interlock(0, IIB_3_Itlk);
+            }
+            if (module->CanAddress == 4) {
+                IIB_ITLK_REG_4.u32 = converter.u32;
+                set_hard_interlock(0, IIB_4_Itlk);
+            }
+            if (module->CanAddress == 5) {
+                IIB_ITLK_REG_5.u32 = converter.u32;
+                set_hard_interlock(0, IIB_5_Itlk);
+            }
+            if (module->CanAddress == 6) {
+                IIB_ITLK_REG_6.u32 = converter.u32;
+                set_hard_interlock(0, IIB_6_Itlk);
+            }
+            if (module->CanAddress == 7) {
+                IIB_ITLK_REG_7.u32 = converter.u32;
+                set_hard_interlock(0, IIB_7_Itlk);
+            }
+            if (module->CanAddress == 8) {
+                IIB_ITLK_REG_8.u32 = converter.u32;
+                set_hard_interlock(0, IIB_8_Itlk);
+            }
 
-            set_hard_interlock(module->CanAddress - 1, IIB_Itlk);
             break;
         case 1:
             //TODO: Handle alarm message

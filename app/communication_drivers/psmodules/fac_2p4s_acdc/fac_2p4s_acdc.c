@@ -81,7 +81,10 @@ typedef enum
     Rectifier_Overcurrent,
     AC_Mains_Contactor_Fault,
     IGBT_Driver_Fault,
-    IIB_Itlk
+    IIB_1_Itlk,
+    IIB_2_Itlk,
+    IIB_3_Itlk,
+    IIB_4_Itlk
 } hard_interlocks_t;
 
 static volatile iib_input_stage_t fac_is[2];
@@ -236,9 +239,15 @@ static void update_iib_structure_fac_is(uint8_t iib_id, uint8_t data_id, float d
     switch(cmd_id) {
         case 0:
             converter.f = data_val;
-            if (iib_id == 0) IIB_ITLK_REG_FAC_IS_1.u32 = converter.u32;
-            if (iib_id == 1) IIB_ITLK_REG_FAC_IS_2.u32 = converter.u32;
-            set_hard_interlock(iib_id, IIB_Itlk);
+            if (iib_id == 0) {
+                IIB_ITLK_REG_FAC_IS_1.u32 = converter.u32;
+                set_hard_interlock(0, IIB_1_Itlk);
+            }
+            if (iib_id == 1) {
+                IIB_ITLK_REG_FAC_IS_2.u32 = converter.u32;
+                set_hard_interlock(1, IIB_2_Itlk);
+            }
+
             break;
         case 1:
             // TODO: Handle alarm message
@@ -278,9 +287,15 @@ static void update_iib_structure_fac_cmd(uint8_t iib_id, uint8_t data_id, float 
     switch(cmd_id) {
         case 0:
             converter.f = data_val;
-            if (iib_id == 2) IIB_ITLK_REG_FAC_CMD_1.u32 = converter.u32;
-            if (iib_id == 3) IIB_ITLK_REG_FAC_CMD_2.u32 = converter.u32;
-            set_hard_interlock(iib_id, IIB_Itlk);
+            if (iib_id == 2) {
+                IIB_ITLK_REG_FAC_CMD_1.u32 = converter.u32;
+                set_hard_interlock(0, IIB_3_Itlk);
+            }
+            if (iib_id == 3) {
+                IIB_ITLK_REG_FAC_CMD_2.u32 = converter.u32;
+                set_hard_interlock(1, IIB_4_Itlk);
+            }
+
             break;
         case 1:
             // TODO: Handle alarm data

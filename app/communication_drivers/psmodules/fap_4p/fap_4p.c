@@ -360,7 +360,7 @@ static void update_iib_structure(iib_fap_module_t *module, uint8_t data_id,
                 IIB_ITLK_REG_MOD_1.u32 = converter.u32;
             }
 
-            set_hard_interlock(module->CanAddress - 1, IIB_Itlk);
+            set_hard_interlock(0, IIB_Itlk);
 
             break;
 
