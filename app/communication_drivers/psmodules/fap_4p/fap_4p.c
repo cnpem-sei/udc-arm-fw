@@ -33,6 +33,7 @@
 #include "communication_drivers/adcp/adcp.h"
 #include "communication_drivers/bsmp/bsmp_lib.h"
 #include "communication_drivers/control/control.h"
+#include "communication_drivers/event_manager/event_manager.h"
 #include "communication_drivers/iib/iib_data.h"
 #include "communication_drivers/iib/iib_module.h"
 #include "communication_drivers/psmodules/fap/fap.h"
@@ -349,15 +350,15 @@ static void update_iib_structure(iib_fap_module_t *module, uint8_t data_id,
             }
 
             if (module->CanAddress == 2) {
-                IIB_ITLK_REG_MOD_1.u32 = converter.u32;
+                IIB_ITLK_REG_MOD_2.u32 = converter.u32;
             }
 
             if (module->CanAddress == 3) {
-                IIB_ITLK_REG_MOD_1.u32 = converter.u32;
+                IIB_ITLK_REG_MOD_3.u32 = converter.u32;
             }
 
             if (module->CanAddress == 4) {
-                IIB_ITLK_REG_MOD_1.u32 = converter.u32;
+                IIB_ITLK_REG_MOD_4.u32 = converter.u32;
             }
 
             set_hard_interlock(0, IIB_Itlk);

@@ -1,5 +1,5 @@
 /******************************************************************************
- * Copyright (C) 2018 by LNLS - Brazilian Synchrotron Light Laboratory
+ * Copyright (C) 2019 by LNLS - Brazilian Synchrotron Light Laboratory
  *
  * Redistribution, modification or use of this software in source or binary
  * forms is permitted as long as the files maintain this copyright. LNLS and
@@ -9,18 +9,21 @@
  *****************************************************************************/
 
 /**
- * @file version.c
- * @brief Firmware version module
- * 
- * This module contains information about current build version of UDC ARM core.
+ * @file fap_2p2s.h
+ * @brief FAP-2P2S module
+ *
+ * Module for control of FAP-2P2S power supplies. It implements the controller
+ * for load current, current share between both parallel arms and current share
+ * between 8 IGBT's.
  *
  * @author gabriel.brunheira
- * @date 08/02/2018
+ * @date 17/04/2019
  *
  */
 
-#include "version.h"
+#ifndef FAP_2P2S_H_
+#define FAP_2P2S_H_
 
-volatile firmwares_version_t firmwares_version;
+void fap_2p2s_system_config(void);
 
-const char * udc_arm_version = "V0.33 2019-04-17";
+#endif /* FAP_2P2S_H_ */
