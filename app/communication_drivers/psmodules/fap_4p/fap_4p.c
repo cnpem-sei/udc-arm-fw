@@ -243,52 +243,56 @@ static void bsmp_init_server(void)
     create_bsmp_var(60, 0, 4, false, iib_fap_4p[0].Drive2Current.u8);
     create_bsmp_var(61, 0, 4, false, iib_fap_4p[0].TempL.u8);
     create_bsmp_var(62, 0, 4, false, iib_fap_4p[0].TempHeatSink.u8);
+    create_bsmp_var(63, 0, 4, false, iib_fap_4p[0].GroundLeakage.u8);
 
-    create_bsmp_var(63, 0, 4, false, iib_fap_4p[1].Vin.u8);
-    create_bsmp_var(64, 0, 4, false, iib_fap_4p[1].Vout.u8);
-    create_bsmp_var(65, 0, 4, false, iib_fap_4p[1].IoutA1.u8);
-    create_bsmp_var(66, 0, 4, false, iib_fap_4p[1].IoutA2.u8);
-    create_bsmp_var(67, 0, 4, false, iib_fap_4p[1].TempIGBT1.u8);
-    create_bsmp_var(68, 0, 4, false, iib_fap_4p[1].TempIGBT2.u8);
-    create_bsmp_var(69, 0, 4, false, iib_fap_4p[1].DriveVoltage.u8);
-    create_bsmp_var(70, 0, 4, false, iib_fap_4p[1].Drive1Current.u8);
-    create_bsmp_var(71, 0, 4, false, iib_fap_4p[1].Drive2Current.u8);
-    create_bsmp_var(72, 0, 4, false, iib_fap_4p[1].TempL.u8);
-    create_bsmp_var(73, 0, 4, false, iib_fap_4p[1].TempHeatSink.u8);
+    create_bsmp_var(64, 0, 4, false, iib_fap_4p[1].Vin.u8);
+    create_bsmp_var(65, 0, 4, false, iib_fap_4p[1].Vout.u8);
+    create_bsmp_var(66, 0, 4, false, iib_fap_4p[1].IoutA1.u8);
+    create_bsmp_var(67, 0, 4, false, iib_fap_4p[1].IoutA2.u8);
+    create_bsmp_var(68, 0, 4, false, iib_fap_4p[1].TempIGBT1.u8);
+    create_bsmp_var(69, 0, 4, false, iib_fap_4p[1].TempIGBT2.u8);
+    create_bsmp_var(70, 0, 4, false, iib_fap_4p[1].DriveVoltage.u8);
+    create_bsmp_var(71, 0, 4, false, iib_fap_4p[1].Drive1Current.u8);
+    create_bsmp_var(72, 0, 4, false, iib_fap_4p[1].Drive2Current.u8);
+    create_bsmp_var(73, 0, 4, false, iib_fap_4p[1].TempL.u8);
+    create_bsmp_var(74, 0, 4, false, iib_fap_4p[1].TempHeatSink.u8);
+    create_bsmp_var(75, 0, 4, false, iib_fap_4p[1].GroundLeakage.u8);
 
-    create_bsmp_var(74, 0, 4, false, iib_fap_4p[2].Vin.u8);
-    create_bsmp_var(75, 0, 4, false, iib_fap_4p[2].Vout.u8);
-    create_bsmp_var(76, 0, 4, false, iib_fap_4p[2].IoutA1.u8);
-    create_bsmp_var(77, 0, 4, false, iib_fap_4p[2].IoutA2.u8);
-    create_bsmp_var(78, 0, 4, false, iib_fap_4p[2].TempIGBT1.u8);
-    create_bsmp_var(79, 0, 4, false, iib_fap_4p[2].TempIGBT2.u8);
-    create_bsmp_var(80, 0, 4, false, iib_fap_4p[2].DriveVoltage.u8);
-    create_bsmp_var(81, 0, 4, false, iib_fap_4p[2].Drive1Current.u8);
-    create_bsmp_var(82, 0, 4, false, iib_fap_4p[2].Drive2Current.u8);
-    create_bsmp_var(83, 0, 4, false, iib_fap_4p[2].TempL.u8);
-    create_bsmp_var(84, 0, 4, false, iib_fap_4p[2].TempHeatSink.u8);
+    create_bsmp_var(76, 0, 4, false, iib_fap_4p[2].Vin.u8);
+    create_bsmp_var(77, 0, 4, false, iib_fap_4p[2].Vout.u8);
+    create_bsmp_var(78, 0, 4, false, iib_fap_4p[2].IoutA1.u8);
+    create_bsmp_var(79, 0, 4, false, iib_fap_4p[2].IoutA2.u8);
+    create_bsmp_var(80, 0, 4, false, iib_fap_4p[2].TempIGBT1.u8);
+    create_bsmp_var(81, 0, 4, false, iib_fap_4p[2].TempIGBT2.u8);
+    create_bsmp_var(82, 0, 4, false, iib_fap_4p[2].DriveVoltage.u8);
+    create_bsmp_var(83, 0, 4, false, iib_fap_4p[2].Drive1Current.u8);
+    create_bsmp_var(84, 0, 4, false, iib_fap_4p[2].Drive2Current.u8);
+    create_bsmp_var(85, 0, 4, false, iib_fap_4p[2].TempL.u8);
+    create_bsmp_var(86, 0, 4, false, iib_fap_4p[2].TempHeatSink.u8);
+    create_bsmp_var(87, 0, 4, false, iib_fap_4p[2].GroundLeakage.u8);
 
-    create_bsmp_var(85, 0, 4, false, iib_fap_4p[3].Vin.u8);
-    create_bsmp_var(86, 0, 4, false, iib_fap_4p[3].Vout.u8);
-    create_bsmp_var(87, 0, 4, false, iib_fap_4p[3].IoutA1.u8);
-    create_bsmp_var(88, 0, 4, false, iib_fap_4p[3].IoutA2.u8);
-    create_bsmp_var(89, 0, 4, false, iib_fap_4p[3].TempIGBT1.u8);
-    create_bsmp_var(90, 0, 4, false, iib_fap_4p[3].TempIGBT2.u8);
-    create_bsmp_var(91, 0, 4, false, iib_fap_4p[3].DriveVoltage.u8);
-    create_bsmp_var(92, 0, 4, false, iib_fap_4p[3].Drive1Current.u8);
-    create_bsmp_var(93, 0, 4, false, iib_fap_4p[3].Drive2Current.u8);
-    create_bsmp_var(94, 0, 4, false, iib_fap_4p[3].TempL.u8);
-    create_bsmp_var(95, 0, 4, false, iib_fap_4p[3].TempHeatSink.u8);
+    create_bsmp_var(88, 0, 4, false, iib_fap_4p[3].Vin.u8);
+    create_bsmp_var(89, 0, 4, false, iib_fap_4p[3].Vout.u8);
+    create_bsmp_var(90, 0, 4, false, iib_fap_4p[3].IoutA1.u8);
+    create_bsmp_var(91, 0, 4, false, iib_fap_4p[3].IoutA2.u8);
+    create_bsmp_var(92, 0, 4, false, iib_fap_4p[3].TempIGBT1.u8);
+    create_bsmp_var(93, 0, 4, false, iib_fap_4p[3].TempIGBT2.u8);
+    create_bsmp_var(94, 0, 4, false, iib_fap_4p[3].DriveVoltage.u8);
+    create_bsmp_var(95, 0, 4, false, iib_fap_4p[3].Drive1Current.u8);
+    create_bsmp_var(96, 0, 4, false, iib_fap_4p[3].Drive2Current.u8);
+    create_bsmp_var(97, 0, 4, false, iib_fap_4p[3].TempL.u8);
+    create_bsmp_var(98, 0, 4, false, iib_fap_4p[3].TempHeatSink.u8);
+    create_bsmp_var(99, 0, 4, false, iib_fap_4p[3].GroundLeakage.u8);
 
-    create_bsmp_var(96, 0, 4, false, IIB_ITLK_REG_MOD_1.u8);
-    create_bsmp_var(97, 0, 4, false, IIB_ITLK_REG_MOD_2.u8);
-    create_bsmp_var(98, 0, 4, false, IIB_ITLK_REG_MOD_3.u8);
-    create_bsmp_var(99, 0, 4, false, IIB_ITLK_REG_MOD_4.u8);
+    create_bsmp_var(100, 0, 4, false, IIB_ITLK_REG_MOD_1.u8);
+    create_bsmp_var(101, 0, 4, false, IIB_ITLK_REG_MOD_2.u8);
+    create_bsmp_var(102, 0, 4, false, IIB_ITLK_REG_MOD_3.u8);
+    create_bsmp_var(103, 0, 4, false, IIB_ITLK_REG_MOD_4.u8);
 
-    create_bsmp_var(100, 0, 4, false, I_MOD_1.u8);
-    create_bsmp_var(101, 0, 4, false, I_MOD_2.u8);
-    create_bsmp_var(102, 0, 4, false, I_MOD_3.u8);
-    create_bsmp_var(103, 0, 4, false, I_MOD_4.u8);
+    create_bsmp_var(104, 0, 4, false, I_MOD_1.u8);
+    create_bsmp_var(105, 0, 4, false, I_MOD_2.u8);
+    create_bsmp_var(106, 0, 4, false, I_MOD_3.u8);
+    create_bsmp_var(107, 0, 4, false, I_MOD_4.u8);
 }
 
 /**
@@ -409,6 +413,10 @@ static void update_iib_structure(iib_fap_module_t *module, uint8_t data_id,
 
         case 12:
             module->TempHeatSink.f = data_val;
+            break;
+
+        case 13:
+            module->GroundLeakage.f = data_val;
             break;
 
         default:

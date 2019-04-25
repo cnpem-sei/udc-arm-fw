@@ -143,8 +143,9 @@ static void bsmp_init_server(void)
     create_bsmp_var(44, 0, 4, false, iib_fap.Drive2Current.u8);
     create_bsmp_var(45, 0, 4, false, iib_fap.TempL.u8);
     create_bsmp_var(46, 0, 4, false, iib_fap.TempHeatSink.u8);
+    create_bsmp_var(47, 0, 4, false, iib_fap.GroundLeakage.u8);
 
-    create_bsmp_var(47, 0, 4, false, IIB_ITLK_REG.u8);
+    create_bsmp_var(48, 0, 4, false, IIB_ITLK_REG.u8);
 
 }
 
@@ -246,6 +247,10 @@ static void update_iib_structure(iib_fap_module_t *module, uint8_t data_id,
 
         case 12:
             module->TempHeatSink.f = data_val;
+            break;
+
+        case 13:
+            module->GroundLeakage.f = data_val;
             break;
 
         default:

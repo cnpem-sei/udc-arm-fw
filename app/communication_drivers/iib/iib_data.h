@@ -161,6 +161,11 @@ typedef volatile struct {
         uint8_t     u8[4];
     } Vout;
 
+    union {
+        float       f;
+        uint8_t     u8[4];
+    } GroundLeakage;
+
     uint8_t CanAddress;
 
 } iib_command_drawer_t;
@@ -332,6 +337,11 @@ typedef volatile struct {
         float       f;
         uint8_t     u8[4];
     } ExternalItlk;
+
+    union {
+        float       f;
+        uint8_t     u8[4];
+    } GroundLeakage;
 
     uint8_t CanAddress;
 

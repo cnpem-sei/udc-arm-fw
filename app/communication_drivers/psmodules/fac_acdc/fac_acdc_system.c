@@ -111,9 +111,10 @@ static void bsmp_init_server(void)
     create_bsmp_var(38, 0, 4, false, iib_command_drawer.VcapBank.u8);
     create_bsmp_var(39, 0, 4, false, iib_command_drawer.TempL.u8);
     create_bsmp_var(40, 0, 4, false, iib_command_drawer.TempHeatSink.u8);
+    create_bsmp_var(41, 0, 4, false, iib_command_drawer.GroundLeakage.u8);
 
-    create_bsmp_var(41, 0, 4, false, IIB_ITLK_REG_IS.u8);
-    create_bsmp_var(42, 0, 4, false, IIB_ITLK_REG_CD.u8);
+    create_bsmp_var(42, 0, 4, false, IIB_ITLK_REG_IS.u8);
+    create_bsmp_var(43, 0, 4, false, IIB_ITLK_REG_CD.u8);
 }
 
 /**
@@ -223,6 +224,10 @@ static void update_iib_structure_cd(uint8_t data_id, float data_val)
 
         case 5:
             iib_command_drawer.TempHeatSink.f = data_val;
+            break;
+
+        case 6:
+            iib_command_drawer.GroundLeakage.f = data_val;
             break;
 
         default:

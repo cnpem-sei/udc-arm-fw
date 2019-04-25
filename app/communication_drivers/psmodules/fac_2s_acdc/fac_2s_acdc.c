@@ -139,9 +139,10 @@ static void bsmp_init_server(void)
     create_bsmp_var(38, MOD_A_ID, 4, false, fac_2s_acdc_cmd[MOD_A_ID].VcapBank.u8);
     create_bsmp_var(39, MOD_A_ID, 4, false, fac_2s_acdc_cmd[MOD_A_ID].TempL.u8);
     create_bsmp_var(40, MOD_A_ID, 4, false, fac_2s_acdc_cmd[MOD_A_ID].TempHeatSink.u8);
+    create_bsmp_var(41, MOD_A_ID, 4, false, fac_2s_acdc_cmd[MOD_A_ID].GroundLeakage.u8);
 
-    create_bsmp_var(41, MOD_A_ID, 4, false, IIB_ITLK_REG_FAC_IS_A.u8);
-    create_bsmp_var(42, MOD_A_ID, 4, false, IIB_ITLK_REG_FAC_CMD_A.u8);
+    create_bsmp_var(42, MOD_A_ID, 4, false, IIB_ITLK_REG_FAC_IS_A.u8);
+    create_bsmp_var(43, MOD_A_ID, 4, false, IIB_ITLK_REG_FAC_CMD_A.u8);
 
     /**
      * Create module B specific variables
@@ -173,9 +174,10 @@ static void bsmp_init_server(void)
     create_bsmp_var(38, MOD_B_ID, 4, false, fac_2s_acdc_cmd[MOD_B_ID].VcapBank.u8);
     create_bsmp_var(39, MOD_B_ID, 4, false, fac_2s_acdc_cmd[MOD_B_ID].TempL.u8);
     create_bsmp_var(40, MOD_B_ID, 4, false, fac_2s_acdc_cmd[MOD_B_ID].TempHeatSink.u8);
+    create_bsmp_var(41, MOD_B_ID, 4, false, fac_2s_acdc_cmd[MOD_B_ID].GroundLeakage.u8);
 
-    create_bsmp_var(41, MOD_B_ID, 4, false, IIB_ITLK_REG_FAC_IS_B.u8);
-    create_bsmp_var(42, MOD_B_ID, 4, false, IIB_ITLK_REG_FAC_CMD_B.u8);
+    create_bsmp_var(42, MOD_B_ID, 4, false, IIB_ITLK_REG_FAC_IS_B.u8);
+    create_bsmp_var(43, MOD_B_ID, 4, false, IIB_ITLK_REG_FAC_CMD_B.u8);
 }
 
 /**
@@ -311,6 +313,10 @@ static void update_iib_structure_fac_cmd(uint8_t iib_id, uint8_t data_id, float 
 
         case 5:
             fac_2s_acdc_cmd[mod_idx].TempHeatSink.f = data_val;
+            break;
+
+        case 6:
+            fac_2s_acdc_cmd[mod_idx].GroundLeakage.f = data_val;
             break;
 
         default:
