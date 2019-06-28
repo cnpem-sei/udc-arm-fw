@@ -1843,10 +1843,10 @@ void bsmp_init(uint8_t server)
      */
     create_bsmp_curve(0, server, 16, 1024, true, read_block_wfmref,
                       write_block_wfmref);
-    create_bsmp_curve(1, server, 16, 1024, false, read_block_buf_samples_ctom,
+    create_bsmp_curve(1, server, 32, 1024, false, read_block_buf_samples_ctom,
                       write_block_dummy);
-    create_bsmp_curve(2, server, 16, 1024, false, read_block_buf_samples_mtoc,
-                      write_block_dummy);
+    //create_bsmp_curve(2, server, 16, 1024, false, read_block_buf_samples_mtoc,
+    //                  write_block_dummy);
 }
 
 /**

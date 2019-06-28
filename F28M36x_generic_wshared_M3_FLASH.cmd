@@ -68,10 +68,11 @@ MEMORY
     //S4 (RWX)        : origin = 0x20010000, length = 0x2000
     //S5 (RWX)        : origin = 0x20012000, length = 0x2000
     S23 (RWX)       : origin = 0x2000C000, length = 0x4000
-    S45 (RWX)       : origin = 0x20010000, length = 0x4000
+    //S45 (RWX)       : origin = 0x20010000, length = 0x4000
     //S6 (RWX)        : origin = 0x20014000, length = 0x2000
     //S7 (RWX)        : origin = 0x20016000, length = 0x2000
-    S67 (RWX)       : origin = 0x20014000, length = 0x4000
+    //S67 (RWX)       : origin = 0x20014000, length = 0x4000
+    S4567 (RWX)       : origin = 0x20010000, length = 0x8000
     C0408  (RWX)        : origin = 0x20018000, length = 0xA000
     //C4  (RWX)        : origin = 0x20018000, length = 0x2000
     //C5  (RWX)        : origin = 0x2001A000, length = 0x2000
@@ -151,8 +152,9 @@ SECTIONS
     //SHARERAMS6  	: > S6
     //SHARERAMS7  	: > S7
     SHARERAMS23  	: > S23   // g_wfmref
-    SHARERAMS45  	: > S45   // g_buf_samples_ctom
-    SHARERAMS67  	: > S67   // g_buf_samples_mtoc
+    //SHARERAMS45  	: > S45   // g_buf_samples_ctom
+    //SHARERAMS67  	: > S67   // g_buf_samples_mtoc
+    SHARERAMS4567   : > S4567   // g_buf_samples_ctom
 
  
  	SERIALBUFFER : > C0913

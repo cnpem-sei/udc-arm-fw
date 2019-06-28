@@ -42,10 +42,10 @@
 #pragma DATA_SECTION(g_wfmref,"SHARERAMS23")
 volatile u_float_t g_wfmref[SIZE_WFMREF];
 
-#pragma DATA_SECTION(g_buf_samples_ctom,"SHARERAMS45")
+#pragma DATA_SECTION(g_buf_samples_ctom,"SHARERAMS4567")
 volatile u_float_t g_buf_samples_ctom[SIZE_BUF_SAMPLES_CTOM];
 
-#pragma DATA_SECTION(g_buf_samples_mtoc,"SHARERAMS67")
+//#pragma DATA_SECTION(g_buf_samples_mtoc,"SHARERAMS67")
 volatile u_float_t g_buf_samples_mtoc[SIZE_BUF_SAMPLES_MTOC];
 
 #pragma DATA_SECTION(g_ipc_ctom, "CTOM_MSG_RAM")

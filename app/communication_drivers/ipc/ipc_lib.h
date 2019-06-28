@@ -37,8 +37,8 @@
  * Shared resources defines
  */
 
-#define SIZE_BUF_SAMPLES_CTOM   4096
-#define SIZE_BUF_SAMPLES_MTOC   4096
+#define SIZE_BUF_SAMPLES_CTOM   8192
+#define SIZE_BUF_SAMPLES_MTOC   64
 
 /**
  * IPC Message Defines
