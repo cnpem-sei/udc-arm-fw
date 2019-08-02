@@ -209,7 +209,7 @@ int main(void) {
 	        }
 	    }
 
-	    SysCtlDelay(75000);
+	    SysCtlDelay(100000);
 
 	    get_firmwares_version();
 
