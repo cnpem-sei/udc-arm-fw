@@ -115,7 +115,7 @@ int main(void) {
     // assign S0 and S1 of the shared ram for use by the c28
 	// Details of how c28 uses these memory sections is defined
 	// in the c28 linker file.
-	RAMMReqSharedMemAccess((S1_ACCESS | S4_ACCESS | S5_ACCESS), C28_MASTER);
+	RAMMReqSharedMemAccess((S1_ACCESS | S6_ACCESS | S7_ACCESS), C28_MASTER);
 
 	init_system();
 

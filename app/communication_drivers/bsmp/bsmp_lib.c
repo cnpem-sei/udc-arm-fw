@@ -57,8 +57,9 @@
 #define SIZE_WFMREF_BLOCK       8192
 #define SIZE_SAMPLES_BUFFER     16384
 
-#define NUMBER_OF_BSMP_SERVERS  4
-#define NUMBER_OF_BSMP_CURVES   8
+#define NUMBER_OF_BSMP_SERVERS      4
+#define NUMBER_OF_BSMP_CURVES       8
+#define NUMBER_OF_BSMP_FUNCTIONS    50
 
 bsmp_server_t bsmp[NUMBER_OF_BSMP_SERVERS];
 
@@ -67,6 +68,7 @@ static uint8_t dummy_u8;
 
 static struct bsmp_var bsmp_vars[NUMBER_OF_BSMP_SERVERS][BSMP_MAX_VARIABLES];
 static struct bsmp_curve bsmp_curves[NUMBER_OF_BSMP_SERVERS][NUMBER_OF_BSMP_CURVES];
+static struct bsmp_func bsmp_funcs[NUMBER_OF_BSMP_SERVERS][NUMBER_OF_BSMP_FUNCTIONS];
 
 /**
  * @brief Turn on BSMP Function
@@ -642,8 +644,8 @@ static struct bsmp_func bsmp_func_reset_counters = {
  */
 uint8_t bsmp_scale_wfmref(uint8_t *input, uint8_t *output)
 {
-    memcpy(WFMREF.gain.u8, &input[0], 4);
-    memcpy(WFMREF.offset.u8, &input[4], 4);
+    memcpy(WFMREF[g_current_ps_id].gain.u8, &input[0], 4);
+    memcpy(WFMREF[g_current_ps_id].offset.u8, &input[4], 4);
 
     *output = 0;
     return *output;
@@ -654,6 +656,27 @@ static struct bsmp_func bsmp_func_scale_wfmref = {
     .info.input_size  = 8,     // gain (4) + offset (4)
     .info.output_size = 1,      // command_ack
 };
+
+/**
+ * @brief Select active WfmRef
+ *
+ * @param uint8_t* Pointer to input packet of data
+ * @param uint8_t* Pointer to output packet of data
+ */
+uint8_t bsmp_select_wfmref(uint8_t *input, uint8_t *output)
+{
+    WFMREF[g_current_ps_id].wfmref_selected.u16= input[0];
+
+    *output = 0;
+    return *output;
+}
+
+static struct bsmp_func bsmp_func_select_wfmref = {
+    .func_p           = bsmp_select_wfmref,
+    .info.input_size  = 2,     // idx (2)
+    .info.output_size = 1,     // command_ack
+};
+
 /**
  * @brief Reset WfmRef
  *
@@ -1625,19 +1648,18 @@ static bool read_block_wfmref(struct bsmp_curve *curve, uint16_t block,
 {
     uint8_t *block_data;
     uint16_t block_size = curve->info.block_size;
+    wfmref_t *p_wfmref = (wfmref_t *) curve->user;
 
-    block_data = &(g_wfmref[(block*block_size) >> 2].u8);
+    //block_data = &(g_wfmref[(block*block_size) >> 2].u8);
+    //block_data = ((uint8_t *) *((float **) curve->user)) + block * block_size;
+    block_data = ( (uint8_t *) ipc_ctom_translate(
+                   (uint32_t) p_wfmref->wfmref_data[curve->info.id].p_buf_start.f ) ) +
+                 block * block_size;
+    //block_data = WFMREF[g_current_ps_id].wfmref_data[curve->info.id].p_buf_start.f
 
-    if(g_ipc_ctom.wfmref.wfmref_data.status == Idle)
-    {
-        memcpy(data, block_data, block_size);
-        *len = block_size;
-        return true;
-    }
-    else
-    {
-        return false;
-    }
+    memcpy(data, block_data, block_size);
+    *len = block_size;
+    return true;
 }
 
 /**
@@ -1653,23 +1675,31 @@ static bool write_block_wfmref(struct bsmp_curve *curve, uint16_t block,
 {
     uint8_t *block_data;
     uint16_t block_size = curve->info.block_size;
+    wfmref_t *p_wfmref = (wfmref_t *) curve->user;
 
-    block_data = &(g_wfmref[(block*block_size) >> 2].u8);
+    //block_data = &(g_wfmref[(block*block_size) >> 2].u8);
+    //block_data = ((uint8_t *) *((float **) curve->user)) + block * block_size;
+    block_data = ( (uint8_t *) ipc_ctom_translate(
+                   (uint32_t) p_wfmref->wfmref_data[curve->info.id].p_buf_start.f ) ) +
+                 block * block_size;
 
-    if(g_ipc_ctom.wfmref.wfmref_data.status == Idle)
-    {
-        memcpy(block_data, data, len);
-        WFMREF.wfmref_data.p_buf_end.f =
-                    (float *) (ipc_mtoc_translate((uint32_t) (block_data + len)) - 2);
-        WFMREF.wfmref_data.p_buf_idx.f =
-                    (float *) (ipc_mtoc_translate((uint32_t) (block_data + len)));
-        return true;
-    }
-    else
+
+    //if(curve->info.id == WFMREF[g_current_ps_id].wfmref_selected.u16)
+    if(curve->info.id == p_wfmref->wfmref_selected.u16)
     {
         return false;
     }
-
+    else
+    {
+        memcpy(block_data, data, len);
+        p_wfmref->wfmref_data[curve->info.id].p_buf_end.f =
+        //WFMREF[g_current_ps_id].wfmref_data[curve->info.id].p_buf_end.f =
+                    (float *) (ipc_mtoc_translate((uint32_t) (block_data + len)) - 2);
+        p_wfmref->wfmref_data[curve->info.id].p_buf_idx.f =
+        //WFMREF[g_current_ps_id].wfmref_data[curve->info.id].p_buf_idx.f =
+                    (float *) (ipc_mtoc_translate((uint32_t) (block_data + len)));
+        return true;
+    }
 }
 
 /**
@@ -1689,34 +1719,6 @@ static bool read_block_buf_samples_ctom(struct bsmp_curve *curve, uint16_t block
     block_data = &(g_buf_samples_ctom[(block*block_size) >> 2].u8);
 
     if(g_ipc_ctom.buf_samples[0].status == Idle)
-    {
-        memcpy(data, block_data, block_size);
-        *len = block_size;
-        return true;
-    }
-    else
-    {
-        return false;
-    }
-}
-
-/**
- *
- * @param curve
- * @param block
- * @param data
- * @param len
- * @return
- */
-static bool read_block_buf_samples_mtoc(struct bsmp_curve *curve, uint16_t block,
-                                        uint8_t *data, uint16_t *len)
-{
-    uint8_t *block_data;
-    uint16_t block_size = curve->info.block_size;
-
-    block_data = &(g_buf_samples_mtoc[(block*block_size) >> 2].u8);
-
-    if(g_ipc_mtoc.buf_samples[0].status == Idle)
     {
         memcpy(data, block_data, block_size);
         *len = block_size;
@@ -1781,6 +1783,8 @@ void bsmp_init(uint8_t server)
     bsmp_register_function(&bsmp[server], &bsmp_func_set_slowref_fbp);          // ID 17
     bsmp_register_function(&bsmp[server], &bsmp_func_reset_counters);           // ID 18
     bsmp_register_function(&bsmp[server], &bsmp_func_scale_wfmref);             // ID 19
+    //create_bsmp_function(20, server, &bsmp_select_wfmref, 2, 1);                // ID 20
+    bsmp_register_function(&bsmp[server], &bsmp_func_select_wfmref);             // ID 20
     bsmp_register_function(&bsmp[server], &dummy_func10);                       // ID 20
     bsmp_register_function(&bsmp[server], &dummy_func11);                       // ID 21
     bsmp_register_function(&bsmp[server], &bsmp_func_reset_wfmref);             // ID 22
@@ -1821,13 +1825,16 @@ void bsmp_init(uint8_t server)
     create_bsmp_var(11, server, 4, false, g_ipc_ctom.siggen.amplitude.u8);
     create_bsmp_var(12, server, 4, false, g_ipc_ctom.siggen.offset.u8);
     create_bsmp_var(13, server, 16, false, g_ipc_ctom.siggen.aux_param[0].u8);
-    create_bsmp_var(14, server, 2, false, g_ipc_ctom.wfmref.wfmref_selected.u8);
-    create_bsmp_var(15, server, 2, false, g_ipc_ctom.wfmref.sync_mode.u8);
-    create_bsmp_var(16, server, 4, false, g_ipc_ctom.wfmref.gain.u8);
-    create_bsmp_var(17, server, 4, false, g_ipc_ctom.wfmref.offset.u8);
-    create_bsmp_var(18, server, 4, false, g_ipc_ctom.wfmref.wfmref_data.p_buf_start.u8);
-    create_bsmp_var(19, server, 4, false, g_ipc_ctom.wfmref.wfmref_data.p_buf_end.u8);
-    create_bsmp_var(20, server, 4, false, g_ipc_ctom.wfmref.wfmref_data.p_buf_idx.u8);
+    create_bsmp_var(14, server, 2, false, g_ipc_ctom.wfmref[server].wfmref_selected.u8);
+    create_bsmp_var(15, server, 2, false, g_ipc_ctom.wfmref[server].sync_mode.u8);
+    create_bsmp_var(16, server, 4, false, g_ipc_ctom.wfmref[server].gain.u8);
+    create_bsmp_var(17, server, 4, false, g_ipc_ctom.wfmref[server].offset.u8);
+    create_bsmp_var(18, server, 4, false, g_ipc_mtoc.wfmref[server].wfmref_data[0].p_buf_start.u8);
+    create_bsmp_var(19, server, 4, false, g_ipc_mtoc.wfmref[server].wfmref_data[0].p_buf_end.u8);
+    create_bsmp_var(20, server, 4, false, g_ipc_ctom.wfmref[server].wfmref_data[0].p_buf_idx.u8);
+    create_bsmp_var(21, server, 4, false, g_ipc_mtoc.wfmref[server].wfmref_data[1].p_buf_start.u8);
+    create_bsmp_var(22, server, 4, false, g_ipc_mtoc.wfmref[server].wfmref_data[1].p_buf_end.u8);
+    create_bsmp_var(23, server, 4, false, g_ipc_ctom.wfmref[server].wfmref_data[1].p_buf_idx.u8);
 
     /**
      * Dummy variables to fulfill common variables
@@ -1841,12 +1848,19 @@ void bsmp_init(uint8_t server)
     /**
      * BSMP Curves Register
      */
-    create_bsmp_curve(0, server, 16, 1024, true, read_block_wfmref,
-                      write_block_wfmref);
-    create_bsmp_curve(1, server, 16, 1024, false, read_block_buf_samples_ctom,
-                      write_block_dummy);
-    create_bsmp_curve(2, server, 16, 1024, false, read_block_buf_samples_mtoc,
-                      write_block_dummy);
+    create_bsmp_curve(0, server, 16, 1024, true,
+                      &WFMREF[server],
+                      //&WFMREF[server].wfmref_data[0].p_buf_start.f,
+                      read_block_wfmref, write_block_wfmref);
+
+    create_bsmp_curve(1, server, 16, 1024, true,
+                      &WFMREF[server],
+                      //&WFMREF[server].wfmref_data[1].p_buf_start.f,
+                      read_block_wfmref, write_block_wfmref);
+
+    create_bsmp_curve(2, server, 16, 1024, false,
+                      (void *) &g_buf_samples_ctom[0].u8,
+                      read_block_buf_samples_ctom, write_block_dummy);
 }
 
 /**
@@ -1925,11 +1939,12 @@ void modify_bsmp_var(uint8_t var_id, uint8_t server, volatile uint8_t *p_var)
  * @param nblocks number of blocks
  * @param block_size block size in bytes
  * @param writable define whether is read-only or writable
+ * @param user user defined variable. For WfmRefs curves, is used as a pointer to WfmRef structs.
  * @param p_read_block pointer to read block function for specified curve
  * @param p_write_block pointer to write block function for specified curve
  */
 void create_bsmp_curve(uint8_t curve_id, uint8_t server, uint32_t nblocks,
-                       uint16_t block_size, bool writable,
+                       uint16_t block_size, bool writable, void *user,
                        bool (*p_read_block)(struct bsmp_curve *,uint16_t,
                                             uint8_t *,uint16_t *),
                        bool (*p_write_block)(struct bsmp_curve *,uint16_t,
@@ -1943,7 +1958,32 @@ void create_bsmp_curve(uint8_t curve_id, uint8_t server, uint32_t nblocks,
         bsmp_curves[server][curve_id].info.writable   = writable;
         bsmp_curves[server][curve_id].read_block      = p_read_block;
         bsmp_curves[server][curve_id].write_block     = p_write_block;
+        bsmp_curves[server][curve_id].user            = user;
 
         bsmp_register_curve(&bsmp[server], &bsmp_curves[server][curve_id]);
     }
+}
+
+/**
+ *
+ * @param func_id
+ * @param server
+ * @param func_p
+ * @param input_size
+ * @param output_size
+ */
+void create_bsmp_function(uint8_t func_id, uint8_t server, bsmp_func_t func_p,
+                          uint8_t input_size, uint8_t output_size)
+{
+    if( (bsmp[server].funcs.count == func_id) &&
+        (func_id < BSMP_MAX_FUNCTIONS) )
+    {
+        bsmp_funcs[server][func_id].func_p = func_p;
+        bsmp_funcs[server][func_id].info.input_size = input_size;
+        bsmp_funcs[server][func_id].info.output_size = output_size;
+
+        bsmp_register_function(&bsmp[server], &bsmp_funcs[server][func_id]);
+    }
+
+
 }
