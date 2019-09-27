@@ -59,6 +59,9 @@ static uint8_t BCAST_ADDRESS  = 255; // Broadcast Adress
 
 #define SERIAL_BUF_SIZE         (SERIAL_HEADER+3+3+16834+SERIAL_CSUM)
 
+//#define HIGH_SPEED_BAUD         6000000
+#define LOW_SPEED_BAUD          115200
+
 
 //*****************************************************************************
 struct serial_buffer
@@ -79,6 +82,8 @@ static struct bsmp_raw_packet send_packet =
 //*****************************************************************************
 
 static uint8_t MessageOverflow = 0;
+
+uint8_t MessageError = 0;
 
 //*****************************************************************************
 
@@ -103,74 +108,74 @@ RS485IntHandler(void)
 	// Receive Interrupt Mask
 	if(UART_INT_RX == ulStatus || UART_INT_RT == ulStatus)
 	{
+        #ifdef LOW_SPEED_BAUD
+           for(time_out = 0; time_out < 15; time_out++)
+           {
+               // Loop while there are characters in the receive FIFO.
+               while(UARTCharsAvail(RS485_UART_BASE) &&
+                     recv_buffer.index < SERIAL_BUF_SIZE)
+               {
 
-	    // GPIO1 turn on
-	    //GPIOPinWrite(GPIO_PORTP_BASE, GPIO_PIN_7, ON);
+                   recv_buffer.data[recv_buffer.index] =
+                           (uint8_t)UARTCharGet(RS485_UART_BASE);;
+                   recv_buffer.csum += recv_buffer.data[recv_buffer.index++];
 
-	    for(time_out = 0; time_out < 15; time_out++)  	//comentar para uso em 6Mbps
-		{ 												//comentar para uso em 6Mbps
-		    // Loop while there are characters in the receive FIFO.
-            while(UARTCharsAvail(RS485_UART_BASE) && recv_buffer.index < SERIAL_BUF_SIZE)
-            {
+                   time_out = 0;
 
-                recv_buffer.data[recv_buffer.index] = (uint8_t)UARTCharGet(RS485_UART_BASE);;
-                recv_buffer.csum += recv_buffer.data[recv_buffer.index++];
+               }
+           }
 
-                /*
-            	lChar = UARTCharGet(RS485_UART_BASE);
-            	if(!(lChar & ~0xFF))
-                {
-                    ucChar = (unsigned char)(lChar & 0xFF);
-                    recv_buffer.data[recv_buffer.index] = ucChar;
-                    recv_buffer.csum += recv_buffer.data[recv_buffer.index++];
-                    //NewData = 1;
-                }
-            	*/
+           sCarga = (recv_buffer.data[2]<<8) | recv_buffer.data[3];
 
+           if(recv_buffer.index > sCarga +4)
+           {
+               //TaskSetNew(PROCESS_RS485_MESSAGE);
+               RS485ProcessData();
+               MessageOverflow = 0;
+           }
 
-                time_out = 0;
+           if(sCarga > SERIAL_BUF_SIZE)
+           {
+               recv_buffer.index = 0;
+               recv_buffer.csum  = 0;
+               send_buffer.index = 0;
+               send_buffer.csum  = 0;
 
-            }
-		}												//comentar para uso em 6Mbps
+               MessageOverflow = 0;
+           }
 
+       #elif HIGH_SPEED_BAUD
+           for(time_out = 0; time_out < 15; time_out++)
+           {
+               // Loop while there are characters in the receive FIFO.
+               while(UARTCharsAvail(RS485_UART_BASE) &&
+                       recv_buffer.index < SERIAL_BUF_SIZE)
+               {
 
-		sCarga = (recv_buffer.data[2]<<8) | recv_buffer.data[3];
-		if(recv_buffer.index > sCarga +4)
-		{
-			//TaskSetNew(PROCESS_RS485_MESSAGE);
-		    RS485ProcessData();
-		    MessageOverflow = 0;
-		}
+                   recv_buffer.data[recv_buffer.index] =
+                           (uint8_t)UARTCharGet(RS485_UART_BASE);
+                   recv_buffer.csum += recv_buffer.data[recv_buffer.index++];
+                   time_out = 0;
 
-		// Only 6Mbps
-		//comentar todo o else para para uso em 115.2kbps
+               }
+           }
 
-		//if(sCarga > SERIAL_BUF_SIZE)
-		else
-		{
-			recv_buffer.index = 0;
-			recv_buffer.csum  = 0;
-			send_buffer.index = 0;
-			send_buffer.csum  = 0;
-		}
+           sCarga = (recv_buffer.data[2]<<8) | recv_buffer.data[3];
 
-
-
-		// Low Speed (115200)
-		//comentar todo o if para uso em 6Mbps
-        /*if(sCarga > SERIAL_BUF_SIZE)
-        {
-            recv_buffer.index = 0;
-            recv_buffer.csum  = 0;
-            send_buffer.index = 0;
-            send_buffer.csum  = 0;
-
-            MessageOverflow = 0;
-        }*/
-
-		// GPIO1 turn off
-		//GPIOPinWrite(GPIO_PORTP_BASE, GPIO_PIN_7, OFF);
-
+           if(recv_buffer.index > sCarga +4)
+           {
+               //TaskSetNew(PROCESS_RS485_MESSAGE);
+               RS485ProcessData();
+               MessageOverflow = 0;
+           }
+           else
+           {
+               recv_buffer.index = 0;
+               recv_buffer.csum  = 0;
+               send_buffer.index = 0;
+               send_buffer.csum  = 0;
+           }
+       #endif
 	}
 
     // Transmit Interrupt Mask
@@ -225,15 +230,21 @@ RS485ProcessData(void)
 
 	// Received less than HEADER + CSUM bytes
 	if(recv_buffer.index < (SERIAL_HEADER + SERIAL_CSUM))
+	{
+	    MessageError++;
 		goto exit;
-
+	}
 	// Checksum is not zero
 	if(recv_buffer.csum)
+	{
+	    MessageError++;
 		goto exit;
-
+	}
 	// Packet is not for me
 	if(recv_buffer.data[0] != SERIAL_ADDRESS && recv_buffer.data[0] != BCAST_ADDRESS)
-		goto exit;
+	{
+	    goto exit;
+	}
 
 	//GPIOPinWrite(EEPROM_WP_BASE, EEPROM_WP_PIN, ON);
 
@@ -247,7 +258,9 @@ RS485ProcessData(void)
 	//GPIOPinWrite(DEBUG_BASE, DEBUG_PIN, OFF);
 
 	if(recv_buffer.data[0]==SERIAL_ADDRESS)
-		RS485TxHandler();
+	{
+	    RS485TxHandler();
+	}
 
 	exit:
 	recv_buffer.index = 0;
@@ -300,10 +313,12 @@ InitRS485(void)
 	// Load RS485 address from EEPROM and config it
 	SetRS485Address(EepromReadRs485Add());
 
-	// Load Baud Rate configuration from EEPROM and gonfig it
-	//ConfigRS485(EepromReadRs485BaudRate());
-	ConfigRS485(6000000);
-	//ConfigRS485(115200);
+	// Load Baud Rate configuration from EEPROM and config it
+    #ifdef HIGH_SPEED_BAUD
+	    ConfigRS485(HIGH_SPEED_BAUD);
+    #elif LOW_SPEED_BAUD
+	    ConfigRS485(LOW_SPEED_BAUD);
+    #endif
 
 	UARTFIFOEnable(RS485_UART_BASE);
 	UARTFIFOLevelSet(RS485_UART_BASE,UART_FIFO_TX1_8,UART_FIFO_RX1_8);
@@ -324,5 +339,3 @@ InitRS485(void)
 
 	IntEnable(RS485_INT);
 }
-
-
