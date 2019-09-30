@@ -66,7 +66,7 @@ typedef enum
     Set_SlowRef,
     Set_SlowRef_All_PS,
     Cfg_WfmRef,
-    Select_WfmRef,
+    Update_WfmRef,
     Reset_WfmRef,
     Cfg_SigGen,
     Set_SigGen,

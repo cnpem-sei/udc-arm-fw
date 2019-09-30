@@ -94,7 +94,7 @@ typedef volatile struct
 extern volatile u_wfmref_data_t g_wfmref_data;
 
 extern void init_wfmref(wfmref_t *p_wfmref, uint16_t wfmref_selected,
-                        sync_mode_t sync_mode, float freq_base, float freq_lerp,
+                        sync_mode_t sync_mode, float freq_lerp, float freq_wfmref,
                         float gain, float offset, float *p_start, uint16_t size,
                         float *p_out);
 #endif /* WFMREF_H_ */

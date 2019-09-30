@@ -27,7 +27,7 @@
 volatile u_wfmref_data_t g_wfmref_data;
 
 void init_wfmref(wfmref_t *p_wfmref, uint16_t wfmref_selected,
-                 sync_mode_t sync_mode, float freq_base, float freq_lerp,
+                 sync_mode_t sync_mode, float freq_lerp, float freq_wfmref,
                  float gain, float offset, float *p_start, uint16_t size,
                  float *p_out)
 {
@@ -55,7 +55,7 @@ void init_wfmref(wfmref_t *p_wfmref, uint16_t wfmref_selected,
     }
 
     p_wfmref->lerp.counter = 0;
-    p_wfmref->lerp.max_count = (uint16_t) roundf(freq_lerp / freq_base);
-    p_wfmref->lerp.inv_decimation = freq_base / freq_lerp;
+    p_wfmref->lerp.max_count = (uint16_t) roundf(freq_lerp / freq_wfmref);
+    p_wfmref->lerp.inv_decimation = freq_wfmref / freq_lerp;
     p_wfmref->lerp.out = 0.0;
 }

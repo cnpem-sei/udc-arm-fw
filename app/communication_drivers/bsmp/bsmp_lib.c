@@ -252,6 +252,11 @@ static struct bsmp_func bsmp_func_closed_loop = {
 uint8_t bsmp_select_op_mode(uint8_t *input, uint8_t *output)
 {
 
+    /// TODO: fix this temporary solution
+    WFMREF[1].sync_mode.enu = WFMREF[0].sync_mode.enu;
+    WFMREF[2].sync_mode.enu = WFMREF[0].sync_mode.enu;
+    WFMREF[3].sync_mode.enu = WFMREF[0].sync_mode.enu;
+
     ulTimeout=0;
     if(ipc_mtoc_busy(low_priority_msg_to_reg(Operating_Mode)))
     {
@@ -647,7 +652,42 @@ uint8_t bsmp_scale_wfmref(uint8_t *input, uint8_t *output)
     memcpy(WFMREF[g_current_ps_id].gain.u8, &input[0], 4);
     memcpy(WFMREF[g_current_ps_id].offset.u8, &input[4], 4);
 
-    *output = 0;
+    /// TODO: fix this temporary solution
+    WFMREF[1].sync_mode.enu = WFMREF[0].sync_mode.enu;
+    WFMREF[2].sync_mode.enu = WFMREF[0].sync_mode.enu;
+    WFMREF[3].sync_mode.enu = WFMREF[0].sync_mode.enu;
+
+    if(ipc_mtoc_busy(low_priority_msg_to_reg(Update_WfmRef)))
+    {
+        *output = 6;
+    }
+    else
+    {
+        if( (g_ipc_ctom.ps_module[g_current_ps_id].ps_status.bit.state != RmpWfm) &&
+            (g_ipc_ctom.ps_module[g_current_ps_id].ps_status.bit.state != MigWfm) )
+        {
+            send_ipc_lowpriority_msg(g_current_ps_id, Update_WfmRef);
+            while ((HWREG(MTOCIPC_BASE + IPC_O_MTOCIPCFLG) &
+                    low_priority_msg_to_reg(Update_WfmRef)) &&
+                    (ulTimeout<TIMEOUT_DSP_IPC_ACK))
+            {
+                ulTimeout++;
+            }
+            if(ulTimeout==TIMEOUT_DSP_IPC_ACK)
+            {
+                *output = 5;
+            }
+            else
+            {
+                *output = 0;
+            }
+        }
+        else
+        {
+            *output = 7;
+        }
+    }
+
     return *output;
 }
 
@@ -667,7 +707,42 @@ uint8_t bsmp_select_wfmref(uint8_t *input, uint8_t *output)
 {
     WFMREF[g_current_ps_id].wfmref_selected.u16= input[0];
 
-    *output = 0;
+    /// TODO: fix this temporary solution
+    WFMREF[1].sync_mode.enu = WFMREF[0].sync_mode.enu;
+    WFMREF[2].sync_mode.enu = WFMREF[0].sync_mode.enu;
+    WFMREF[3].sync_mode.enu = WFMREF[0].sync_mode.enu;
+
+    if(ipc_mtoc_busy(low_priority_msg_to_reg(Update_WfmRef)))
+    {
+        *output = 6;
+    }
+    else
+    {
+        if( (g_ipc_ctom.ps_module[g_current_ps_id].ps_status.bit.state != RmpWfm) &&
+            (g_ipc_ctom.ps_module[g_current_ps_id].ps_status.bit.state != MigWfm) )
+        {
+            send_ipc_lowpriority_msg(g_current_ps_id, Update_WfmRef);
+            while ((HWREG(MTOCIPC_BASE + IPC_O_MTOCIPCFLG) &
+                    low_priority_msg_to_reg(Update_WfmRef)) &&
+                    (ulTimeout<TIMEOUT_DSP_IPC_ACK))
+            {
+                ulTimeout++;
+            }
+            if(ulTimeout==TIMEOUT_DSP_IPC_ACK)
+            {
+                *output = 5;
+            }
+            else
+            {
+                *output = 0;
+            }
+        }
+        else
+        {
+            *output = 7;
+        }
+    }
+
     return *output;
 }
 
@@ -1685,7 +1760,10 @@ static bool write_block_wfmref(struct bsmp_curve *curve, uint16_t block,
 
 
     //if(curve->info.id == WFMREF[g_current_ps_id].wfmref_selected.u16)
-    if(curve->info.id == p_wfmref->wfmref_selected.u16)
+    //if(curve->info.id == p_wfmref->wfmref_selected.u16)
+    if( (curve->info.id == p_wfmref->wfmref_selected.u16) &&
+        ( (g_ipc_ctom.ps_module[g_current_ps_id].ps_status.bit.state == RmpWfm) ||
+          (g_ipc_ctom.ps_module[g_current_ps_id].ps_status.bit.state == MigWfm) ) )
     {
         return false;
     }
@@ -1785,7 +1863,6 @@ void bsmp_init(uint8_t server)
     bsmp_register_function(&bsmp[server], &bsmp_func_scale_wfmref);             // ID 19
     //create_bsmp_function(20, server, &bsmp_select_wfmref, 2, 1);                // ID 20
     bsmp_register_function(&bsmp[server], &bsmp_func_select_wfmref);             // ID 20
-    bsmp_register_function(&bsmp[server], &dummy_func10);                       // ID 20
     bsmp_register_function(&bsmp[server], &dummy_func11);                       // ID 21
     bsmp_register_function(&bsmp[server], &bsmp_func_reset_wfmref);             // ID 22
     bsmp_register_function(&bsmp[server], &bsmp_func_cfg_siggen);               // ID 23
