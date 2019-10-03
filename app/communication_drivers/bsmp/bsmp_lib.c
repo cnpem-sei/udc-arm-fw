@@ -1793,10 +1793,12 @@ static bool read_block_buf_samples_ctom(struct bsmp_curve *curve, uint16_t block
 {
     uint8_t *block_data;
     uint16_t block_size = curve->info.block_size;
+    buf_t *p_buf = (buf_t *) curve->user;
 
-    block_data = &(g_buf_samples_ctom[(block*block_size) >> 2].u8);
+    //block_data = &(g_buf_samples_ctom[(block*block_size) >> 2].u8);
+    block_data = ( (uint8_t *) p_buf->p_buf_start.f) + block * block_size;
 
-    if(g_ipc_ctom.buf_samples[0].status == Idle)
+    if(g_ipc_ctom.buf_samples[g_current_ps_id].status == Disabled)
     {
         memcpy(data, block_data, block_size);
         *len = block_size;
@@ -1936,7 +1938,7 @@ void bsmp_init(uint8_t server)
                       read_block_wfmref, write_block_wfmref);
 
     create_bsmp_curve(2, server, 16, 1024, false,
-                      (void *) &g_buf_samples_ctom[0].u8,
+                      &g_ipc_mtoc.buf_samples[server],
                       read_block_buf_samples_ctom, write_block_dummy);
 }
 

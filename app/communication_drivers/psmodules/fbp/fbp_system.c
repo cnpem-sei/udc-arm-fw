@@ -324,5 +324,7 @@ void fbp_system_config()
                     g_ipc_mtoc.control.freq_timeslicer[TIMESLICER_WFMREF].f,
                     WFMREF[0].gain.f, WFMREF[0].offset.f, &g_wfmref_data.data_fbp[i][0][0].f,
                     SIZE_WFMREF_FBP, &g_ipc_ctom.ps_module[i].ps_reference.f);
+
+        init_buffer(&g_ipc_mtoc.buf_samples[i], &(g_buf_samples_ctom[i*1024].f), SIZE_BUF_SAMPLES_CTOM/4);
     }
 }
