@@ -148,6 +148,7 @@ void fac_dcdc_system_config()
                 g_ipc_mtoc.control.freq_timeslicer[TIMESLICER_WFMREF].f,
                 WFMREF[0].gain.f, WFMREF[0].offset.f, &g_wfmref_data.data[0][0].f,
                 SIZE_WFMREF, &g_ipc_ctom.ps_module[0].ps_reference.f);
+    init_buffer(&g_ipc_mtoc.buf_samples[0], &(g_buf_samples_ctom[0].f), SIZE_BUF_SAMPLES_CTOM);
 }
 
 static void init_iib_modules()

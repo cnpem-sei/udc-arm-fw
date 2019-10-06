@@ -193,6 +193,8 @@ void fac_2s_acdc_system_config()
     adcp_channel_config();
     bsmp_init_server();
     init_iib_modules();
+    init_buffer(&g_ipc_mtoc.buf_samples[0], &(g_buf_samples_ctom[0].f), SIZE_BUF_SAMPLES_CTOM/2);
+    init_buffer(&g_ipc_mtoc.buf_samples[1], &(g_buf_samples_ctom[2048].f), SIZE_BUF_SAMPLES_CTOM/2);
 }
 
 static void init_iib_modules()
