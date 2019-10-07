@@ -663,8 +663,10 @@ uint8_t bsmp_scale_wfmref(uint8_t *input, uint8_t *output)
     }
     else
     {
-        if( (g_ipc_ctom.ps_module[g_current_ps_id].ps_status.bit.state != RmpWfm) &&
-            (g_ipc_ctom.ps_module[g_current_ps_id].ps_status.bit.state != MigWfm) )
+        if( ( (g_ipc_ctom.ps_module[g_current_ps_id].ps_status.bit.state != RmpWfm) &&
+              (g_ipc_ctom.ps_module[g_current_ps_id].ps_status.bit.state != MigWfm) ) ||
+            ( g_ipc_ctom.wfmref[g_current_ps_id].wfmref_data[g_ipc_ctom.wfmref[g_current_ps_id].wfmref_selected.u16].p_buf_idx.f >=
+              g_ipc_ctom.wfmref[g_current_ps_id].wfmref_data[g_ipc_ctom.wfmref[g_current_ps_id].wfmref_selected.u16].p_buf_end.f ) )
         {
             send_ipc_lowpriority_msg(g_current_ps_id, Update_WfmRef);
             while ((HWREG(MTOCIPC_BASE + IPC_O_MTOCIPCFLG) &
@@ -718,8 +720,10 @@ uint8_t bsmp_select_wfmref(uint8_t *input, uint8_t *output)
     }
     else
     {
-        if( (g_ipc_ctom.ps_module[g_current_ps_id].ps_status.bit.state != RmpWfm) &&
-            (g_ipc_ctom.ps_module[g_current_ps_id].ps_status.bit.state != MigWfm) )
+        if( ( (g_ipc_ctom.ps_module[g_current_ps_id].ps_status.bit.state != RmpWfm) &&
+              (g_ipc_ctom.ps_module[g_current_ps_id].ps_status.bit.state != MigWfm) ) ||
+            ( g_ipc_ctom.wfmref[g_current_ps_id].wfmref_data[g_ipc_ctom.wfmref[g_current_ps_id].wfmref_selected.u16].p_buf_idx.f >=
+              g_ipc_ctom.wfmref[g_current_ps_id].wfmref_data[g_ipc_ctom.wfmref[g_current_ps_id].wfmref_selected.u16].p_buf_end.f ) )
         {
             send_ipc_lowpriority_msg(g_current_ps_id, Update_WfmRef);
             while ((HWREG(MTOCIPC_BASE + IPC_O_MTOCIPCFLG) &
