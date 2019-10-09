@@ -30,6 +30,7 @@
 #include "communication_drivers/adcp/adcp.h"
 #include "communication_drivers/bsmp/bsmp_lib.h"
 #include "communication_drivers/control/control.h"
+#include "communication_drivers/control/wfmref/wfmref.h"
 
 #define APPLICATION         UVX_LINAC_RACK1
 
@@ -311,7 +312,19 @@ static void bsmp_init_server(void)
 */
 void fbp_system_config()
 {
+    uint8_t i;
+
     adcp_channel_config();
     bsmp_init_server();
-    //ipc_init_parameters();
+
+    for(i = 0; i < NUM_MAX_PS_MODULES; i++)
+    {
+        init_wfmref(&WFMREF[i], WFMREF[0].wfmref_selected.u16,
+                    WFMREF[0].sync_mode.enu,g_ipc_mtoc.control.freq_isr_control.f,
+                    g_ipc_mtoc.control.freq_timeslicer[TIMESLICER_WFMREF].f,
+                    WFMREF[0].gain.f, WFMREF[0].offset.f, &g_wfmref_data.data_fbp[i][0][0].f,
+                    SIZE_WFMREF_FBP, &g_ipc_ctom.ps_module[i].ps_reference.f);
+
+        init_buffer(&g_ipc_mtoc.buf_samples[i], &(g_buf_samples_ctom[i*1024].f), SIZE_BUF_SAMPLES_CTOM/4);
+    }
 }

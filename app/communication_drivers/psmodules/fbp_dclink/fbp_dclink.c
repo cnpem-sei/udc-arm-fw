@@ -141,4 +141,5 @@ void fbp_dclink_system_config(void)
     adcp_channel_config();
     bsmp_init_server();
     g_ipc_mtoc.ps_module[0].ps_setpoint.f = get_digital_potentiometer();
+    init_buffer(&g_ipc_mtoc.buf_samples[0], &(g_buf_samples_ctom[0].f), SIZE_BUF_SAMPLES_CTOM);
 }

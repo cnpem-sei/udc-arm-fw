@@ -18,11 +18,10 @@ extern void create_bsmp_var(uint8_t var_id, uint8_t server, uint8_t size,
 extern void modify_bsmp_var(uint8_t var_id, uint8_t server,
                             volatile uint8_t *p_var);
 extern void create_bsmp_curve(uint8_t curve_id, uint8_t server, uint32_t nblocks,
-                              uint16_t block_size, bool writable,
+                              uint16_t block_size, bool writable, void *user,
                               bool (*p_read_block)(struct bsmp_curve *,uint16_t,
                                                    uint8_t *,uint16_t *),
                               bool (*p_write_block)(struct bsmp_curve *,uint16_t,
                                                     uint8_t *, uint16_t));
-
 
 #endif /* BSMP_LIB_H_ */

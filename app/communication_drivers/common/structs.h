@@ -50,6 +50,7 @@ typedef union
 
 typedef enum
 {
+    Disabled,
     Idle,
     Buffering,
     Postmortem

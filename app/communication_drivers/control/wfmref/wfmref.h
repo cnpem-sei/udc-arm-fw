@@ -25,8 +25,13 @@
 #include <stdint.h>
 #include "communication_drivers/common/structs.h"
 
-#define SIZE_WFMREF     4096
-#define WFMREF          g_ipc_mtoc.wfmref
+#define SIZE_WFMREF             4096
+#define SIZE_WFMREF_FBP         SIZE_WFMREF/4
+#define NUM_WFMREF_CURVES       2
+
+#define WFMREF                  g_ipc_mtoc.wfmref
+
+#define TIMESLICER_WFMREF       0
 
 typedef enum
 {
@@ -35,9 +40,39 @@ typedef enum
     OneShot
 } sync_mode_t;
 
+typedef union
+{
+    u_float_t data[NUM_WFMREF_CURVES][SIZE_WFMREF];
+    u_float_t data_fbp[4][NUM_WFMREF_CURVES][SIZE_WFMREF_FBP];
+} u_wfmref_data_t;
+
 typedef volatile struct
 {
-    buf_t           wfmref_data;
+    uint16_t        counter;
+    uint16_t        max_count;
+    float           inv_decimation;
+    float           fraction;
+    float           out;
+} wfmref_lerp_t;
+
+typedef volatile struct
+{
+    buf_t           wfmref_data[NUM_WFMREF_CURVES];
+
+    union
+    {
+        uint8_t     u8[2];
+        uint16_t    u16;
+    } wfmref_selected;
+
+    union
+    {
+        uint8_t     u8[2];
+        uint16_t    u16;
+        sync_mode_t enu;
+    } sync_mode;
+
+    wfmref_lerp_t   lerp;
 
     union
     {
@@ -53,19 +88,13 @@ typedef volatile struct
         float       f;
     } offset;
 
-    union
-    {
-        uint8_t     u8[2];
-        uint16_t    u16;
-    } wfmref_selected;
-
-    union
-    {
-        uint8_t     u8[2];
-        uint16_t    u16;
-        sync_mode_t enu;
-    } sync_mode;
+    float *p_out;
 } wfmref_t;
 
+extern volatile u_wfmref_data_t g_wfmref_data;
 
+extern void init_wfmref(wfmref_t *p_wfmref, uint16_t wfmref_selected,
+                        sync_mode_t sync_mode, float freq_lerp, float freq_wfmref,
+                        float gain, float offset, float *p_start, uint16_t size,
+                        float *p_out);
 #endif /* WFMREF_H_ */
