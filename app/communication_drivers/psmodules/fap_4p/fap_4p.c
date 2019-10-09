@@ -133,7 +133,10 @@ typedef enum
     DCLink_Mod_2_Undervoltage,
     DCLink_Mod_3_Undervoltage,
     DCLink_Mod_4_Undervoltage,
-    IIB_Itlk
+    IIB_Mod_1_Itlk,
+    IIB_Mod_2_Itlk,
+    IIB_Mod_3_Itlk,
+    IIB_Mod_4_Itlk
 } hard_interlocks_t;
 
 static volatile iib_fap_module_t iib_fap_4p[4];
@@ -351,21 +354,23 @@ static void update_iib_structure(iib_fap_module_t *module, uint8_t data_id,
 
             if (module->CanAddress == 1) {
                 IIB_ITLK_REG_MOD_1.u32 = converter.u32;
+                set_hard_interlock(0, IIB_Mod_1_Itlk);
             }
 
             if (module->CanAddress == 2) {
                 IIB_ITLK_REG_MOD_2.u32 = converter.u32;
+                set_hard_interlock(0, IIB_Mod_2_Itlk);
             }
 
             if (module->CanAddress == 3) {
                 IIB_ITLK_REG_MOD_3.u32 = converter.u32;
+                set_hard_interlock(0, IIB_Mod_3_Itlk);
             }
 
             if (module->CanAddress == 4) {
                 IIB_ITLK_REG_MOD_4.u32 = converter.u32;
+                set_hard_interlock(0, IIB_Mod_4_Itlk);
             }
-
-            set_hard_interlock(0, IIB_Itlk);
 
             break;
 
@@ -374,6 +379,9 @@ static void update_iib_structure(iib_fap_module_t *module, uint8_t data_id,
             break;
         case 2:
             module->Vin.f = data_val;
+
+            /// Copy to shared memory for C28 access
+            *(&V_DCLINK_MOD_1.f + module->CanAddress - 1) = data_val;
             break;
 
         case 3:

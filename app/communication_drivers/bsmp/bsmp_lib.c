@@ -291,6 +291,9 @@ static struct bsmp_func bsmp_func_select_op_mode = {
  */
 uint8_t bsmp_reset_interlocks(uint8_t *input, uint8_t *output)
 {
+    g_ipc_mtoc.ps_module[g_current_ps_id].ps_hard_interlock.u32 = 0;
+    g_ipc_mtoc.ps_module[g_current_ps_id].ps_soft_interlock.u32 = 0;
+
     ulTimeout=0;
     if(ipc_mtoc_busy(low_priority_msg_to_reg(Reset_Interlocks)))
     {
@@ -312,7 +315,49 @@ uint8_t bsmp_reset_interlocks(uint8_t *input, uint8_t *output)
         else
         {
             TaskSetNew(CLEAR_ITLK_ALARM);
-            send_reset_iib_message(1);
+            switch(g_ipc_ctom.ps_module[0].ps_status.bit.model)
+            {
+                case FAC_ACDC:
+                case FAC_DCDC:
+                case FAC_DCDC_EMA:
+                case FAP:
+                {
+                    send_reset_iib_message(1);
+                    break;
+                }
+
+                case FAC_2S_DCDC:
+                {
+                    send_reset_iib_message(1);
+                    send_reset_iib_message(2);
+                    break;
+                }
+
+                case FAC_2S_ACDC:
+                case FAC_2P4S_ACDC:
+                case FAP_4P:
+                case FAP_2P2S:
+                {
+                    send_reset_iib_message(1);
+                    send_reset_iib_message(2);
+                    send_reset_iib_message(3);
+                    send_reset_iib_message(4);
+                    break;
+                }
+
+                case FAC_2P4S_DCDC:
+                {
+                    send_reset_iib_message(1);
+                    send_reset_iib_message(2);
+                    send_reset_iib_message(3);
+                    send_reset_iib_message(4);
+                    send_reset_iib_message(5);
+                    send_reset_iib_message(6);
+                    send_reset_iib_message(7);
+                    send_reset_iib_message(8);
+                    break;
+                }
+            }
             *output = 0;
         }
     }
