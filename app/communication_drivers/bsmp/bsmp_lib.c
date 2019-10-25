@@ -1940,7 +1940,7 @@ void bsmp_init(uint8_t server)
      * BSMP Variable Register
      */
     create_bsmp_var(0, server, 2, false, g_ipc_ctom.ps_module[server].ps_status.u8);
-    create_bsmp_var(1, server, 4, false, g_ipc_ctom.ps_module[server].ps_setpoint.u8);
+    create_bsmp_var(1, server, 4, false, g_ipc_mtoc.ps_module[server].ps_setpoint.u8);
     create_bsmp_var(2, server, 4, false, g_ipc_ctom.ps_module[server].ps_reference.u8);
     create_bsmp_var(3, server, 128, false, firmwares_version.u8);
     create_bsmp_var(4, server, 4, false, g_ipc_ctom.counter_set_slowref.u8);
@@ -1963,27 +1963,17 @@ void bsmp_init(uint8_t server)
     create_bsmp_var(21, server, 4, false, g_ipc_mtoc.wfmref[server].wfmref_data[1].p_buf_start.u8);
     create_bsmp_var(22, server, 4, false, g_ipc_mtoc.wfmref[server].wfmref_data[1].p_buf_end.u8);
     create_bsmp_var(23, server, 4, false, g_ipc_ctom.wfmref[server].wfmref_data[1].p_buf_idx.u8);
-
-    /**
-     * Dummy variables to fulfill common variables
-     */
-    uint8_t i;
-    for(i = 21; i < 25; i++)
-    {
-        create_bsmp_var(i, server, 1, false, &dummy_u8);
-    }
+    create_bsmp_var(24, server, 4, false, g_ipc_ctom.ps_module[server].ps_setpoint.u8);
 
     /**
      * BSMP Curves Register
      */
     create_bsmp_curve(0, server, 16, 1024, true,
                       &WFMREF[server],
-                      //&WFMREF[server].wfmref_data[0].p_buf_start.f,
                       read_block_wfmref, write_block_wfmref);
 
     create_bsmp_curve(1, server, 16, 1024, true,
                       &WFMREF[server],
-                      //&WFMREF[server].wfmref_data[1].p_buf_start.f,
                       read_block_wfmref, write_block_wfmref);
 
     create_bsmp_curve(2, server, 16, 1024, false,
