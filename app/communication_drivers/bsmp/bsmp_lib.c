@@ -1963,7 +1963,7 @@ void bsmp_init(uint8_t server)
     create_bsmp_var(21, server, 4, false, g_ipc_mtoc.wfmref[server].wfmref_data[1].p_buf_start.u8);
     create_bsmp_var(22, server, 4, false, g_ipc_mtoc.wfmref[server].wfmref_data[1].p_buf_end.u8);
     create_bsmp_var(23, server, 4, false, g_ipc_ctom.wfmref[server].wfmref_data[1].p_buf_idx.u8);
-    create_bsmp_var(24, server, 4, false, g_ipc_ctom.ps_module[server].ps_setpoint.u8);
+    create_bsmp_var(24, server, 1, false, &dummy_u8);   // Reserved common variable
 
     /**
      * BSMP Curves Register
