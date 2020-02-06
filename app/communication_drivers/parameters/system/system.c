@@ -101,8 +101,10 @@ void init_system(void)
 
 	init_i2c_offboard_external_devices();
 
+	ihm_init();
+
 	/**
-	 * TODO: Initialization of IHM, CAN, USB and SDRAM
+	 * TODO: Initialization of CAN, USB and SDRAM
 	 */
 	init_can_bkp();
 	//InitUSBSerialDevice();

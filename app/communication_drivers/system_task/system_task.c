@@ -40,7 +40,7 @@ volatile uint8_t LedCtrl = 0;
 volatile bool READ_RTC = 0;
 volatile bool READ_IIB = 0;
 volatile bool ITLK_ALARM_RESET = 0;
-volatile bool PROCESS_DISP_MESS = 0;
+volatile bool PROCESS_IHM_MESS = 0;
 volatile bool PROCESS_ETH_MESS = 0;
 volatile bool PROCESS_CAN_MESS = 0;
 volatile bool PROCESS_RS485_MESS = 0;
@@ -66,8 +66,8 @@ TaskSetNew(uint8_t TaskNum)
 		ITLK_ALARM_RESET = 1;
 		break;
 
-	case PROCESS_DISPLAY_MESSAGE:
-		PROCESS_DISP_MESS = 1;
+	case PROCESS_IHM_MESSAGE:
+		PROCESS_IHM_MESS = 1;
 		break;
 
 	case PROCESS_ETHERNET_MESSAGE:
@@ -143,11 +143,11 @@ void TaskCheck(void)
     /**********************************************
      * TODO: Display process data
      * *******************************************/
-	//else if(PROCESS_DISP_MESS)
-	//{
-	//	PROCESS_DISP_MESS = 0;
-	//	display_process_data();
-	//}
+	else if(PROCESS_IHM_MESS)
+	{
+		PROCESS_IHM_MESS = 0;
+		ihm_process_data();
+	}
 
 	else if(READ_RTC)
 	{
