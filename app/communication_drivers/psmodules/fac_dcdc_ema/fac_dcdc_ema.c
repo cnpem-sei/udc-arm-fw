@@ -33,6 +33,7 @@
 #include "communication_drivers/adcp/adcp.h"
 #include "communication_drivers/bsmp/bsmp_lib.h"
 #include "communication_drivers/control/control.h"
+#include "communication_drivers/control/wfmref/wfmref.h"
 #include "communication_drivers/event_manager/event_manager.h"
 #include "communication_drivers/iib/iib_data.h"
 #include "communication_drivers/iib/iib_module.h"
@@ -144,6 +145,12 @@ void fac_dcdc_ema_system_config()
     adcp_channel_config();
     bsmp_init_server();
     init_iib_modules();
+    init_wfmref(&WFMREF[0], WFMREF[0].wfmref_selected.u16, WFMREF[0].sync_mode.enu,
+                g_ipc_mtoc.control.freq_isr_control.f,
+                g_ipc_mtoc.control.freq_timeslicer[TIMESLICER_WFMREF].f,
+                WFMREF[0].gain.f, WFMREF[0].offset.f, &g_wfmref_data.data[0][0].f,
+                SIZE_WFMREF, &g_ipc_ctom.ps_module[0].ps_reference.f);
+    init_buffer(&g_ipc_mtoc.buf_samples[0], &(g_buf_samples_ctom[0].f), SIZE_BUF_SAMPLES_CTOM);
 }
 
 static void init_iib_modules()

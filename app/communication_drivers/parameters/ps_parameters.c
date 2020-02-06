@@ -449,14 +449,14 @@ void init_parameters_bank(void)
      * WfmRef parameters
      */
     init_param(WfmRef_ID_WfmRef, is_uint16_t, 1,
-                &g_ipc_mtoc.wfmref.wfmref_selected.u8[0]);
+                &WFMREF[0].wfmref_selected.u8[0]);
 
     init_param(WfmRef_SyncMode, is_uint16_t, 1,
-                &g_ipc_mtoc.wfmref.sync_mode.u8[0]);
+                &WFMREF[0].sync_mode.u8[0]);
 
-    init_param(WfmRef_Gain, is_float, 1, &g_ipc_mtoc.wfmref.gain.u8[0]);
+    init_param(WfmRef_Gain, is_float, 1, &WFMREF[0].gain.u8[0]);
 
-    init_param(WfmRef_Offset, is_float, 1, &g_ipc_mtoc.wfmref.offset.u8[0]);
+    init_param(WfmRef_Offset, is_float, 1, &WFMREF[0].offset.u8[0]);
 
 
     /**

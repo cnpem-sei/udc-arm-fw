@@ -353,7 +353,6 @@ extern RectModule_t Rectifier;
 
 extern void init_can_bkp(void);
 extern void send_reset_iib_message(uint8_t iib_address);
-extern void send_reset_iib_message(uint8_t iib_address);
 extern void send_data_request_message(uint8_t iib_address, uint8_t param_id);
 extern void get_data_from_iib();
 extern void get_interlock_message();

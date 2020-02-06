@@ -66,7 +66,7 @@ typedef enum
     Set_SlowRef,
     Set_SlowRef_All_PS,
     Cfg_WfmRef,
-    Select_WfmRef,
+    Update_WfmRef,
     Reset_WfmRef,
     Cfg_SigGen,
     Set_SigGen,
@@ -126,7 +126,7 @@ typedef volatile struct
     } counter_sync_pulse;
     ps_module_t     ps_module[NUM_MAX_PS_MODULES];
     siggen_t        siggen;
-    wfmref_t        wfmref;
+    wfmref_t        wfmref[NUM_MAX_PS_MODULES];
     buf_t           buf_samples[NUM_MAX_PS_MODULES];
 } ipc_ctom_t;
 
@@ -140,7 +140,7 @@ typedef volatile struct
     uint16_t                num_ps_modules;
     ps_module_t             ps_module[NUM_MAX_PS_MODULES];
     siggen_t                siggen;
-    wfmref_t                wfmref;
+    wfmref_t                wfmref[NUM_MAX_PS_MODULES];
     buf_t                   buf_samples[NUM_MAX_PS_MODULES];
     dsp_module_t            dsp_module;
     param_control_t         control;
@@ -151,9 +151,9 @@ typedef volatile struct
     param_interlocks_t      interlocks;
 } ipc_mtoc_t;
 
-extern volatile u_float_t g_wfmref[SIZE_WFMREF];
+//extern volatile u_float_t g_wfmref[SIZE_WFMREF];
 extern volatile u_float_t g_buf_samples_ctom[SIZE_BUF_SAMPLES_CTOM];
-extern volatile u_float_t g_buf_samples_mtoc[SIZE_BUF_SAMPLES_MTOC];
+//extern volatile u_float_t g_buf_samples_mtoc[SIZE_BUF_SAMPLES_MTOC];
 
 extern volatile ipc_ctom_t g_ipc_ctom;
 extern volatile ipc_mtoc_t g_ipc_mtoc;
