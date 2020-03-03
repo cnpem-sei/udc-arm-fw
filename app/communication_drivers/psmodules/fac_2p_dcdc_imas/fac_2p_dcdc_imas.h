@@ -1,5 +1,5 @@
 /******************************************************************************
- * Copyright (C) 2018 by LNLS - Brazilian Synchrotron Light Laboratory
+ * Copyright (C) 2020 by LNLS - Brazilian Synchrotron Light Laboratory
  *
  * Redistribution, modification or use of this software in source or binary
  * forms is permitted as long as the files maintain this copyright. LNLS and
@@ -9,18 +9,21 @@
  *****************************************************************************/
 
 /**
- * @file version.c
- * @brief Firmware version module
- * 
- * This module contains information about current build version of UDC ARM core.
+ * @file fac_2p_dcdc_imas.h
+ * @brief FAC-2P DC/DC Stage module for IMAS
+ *
+ * Module for control of two DC/DC modules of FAC power supplies used by IMAS
+ * group on magnets characterization tests. It implements the controller for
+ * load current.
  *
  * @author gabriel.brunheira
- * @date 08/02/2018
+ * @date 21/02/2020
  *
  */
 
-#include "version.h"
+#ifndef FAC_2P_DCDC_IMAS_H_
+#define FAC_2P_DCDC_IMAS_H_
 
-volatile firmwares_version_t firmwares_version;
+void fac_2p_dcdc_imas_system_config(void);
 
-const char * udc_arm_version = "V0.38i2020-03-03";
+#endif /* FAC_2P_DCDC_IMAS_H_ */
