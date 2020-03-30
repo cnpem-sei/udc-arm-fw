@@ -18,18 +18,20 @@
  *
  */
 
-#include <communication_drivers/psmodules/fbp/fbp_main.h>
-#include <communication_drivers/psmodules/fbp_dclink/fbp_dclink.h>
-#include <communication_drivers/psmodules/fac_acdc/fac_acdc_main.h>
-#include <communication_drivers/psmodules/fac_dcdc/fac_dcdc.h>
-#include <communication_drivers/psmodules/fac_2s_acdc/fac_2s_acdc.h>
-#include <communication_drivers/psmodules/fac_2s_dcdc/fac_2s_dcdc.h>
+#include <communication_drivers/psmodules/fac_2p_acdc_imas/fac_2p_acdc_imas.h>
+#include <communication_drivers/psmodules/fac_2p_dcdc_imas/fac_2p_dcdc_imas.h>
 #include <communication_drivers/psmodules/fac_2p4s_acdc/fac_2p4s_acdc.h>
 #include <communication_drivers/psmodules/fac_2p4s_dcdc/fac_2p4s_dcdc.h>
-#include <communication_drivers/psmodules/fap/fap.h>
-#include <communication_drivers/psmodules/fap_4p/fap_4p.h>
+#include <communication_drivers/psmodules/fac_2s_acdc/fac_2s_acdc.h>
+#include <communication_drivers/psmodules/fac_2s_dcdc/fac_2s_dcdc.h>
+#include <communication_drivers/psmodules/fac_acdc/fac_acdc.h>
+#include <communication_drivers/psmodules/fac_dcdc/fac_dcdc.h>
 #include <communication_drivers/psmodules/fac_dcdc_ema/fac_dcdc_ema.h>
 #include <communication_drivers/psmodules/fap_2p2s/fap_2p2s.h>
+#include <communication_drivers/psmodules/fap_4p/fap_4p.h>
+#include <communication_drivers/psmodules/fap/fap.h>
+#include <communication_drivers/psmodules/fbp/fbp.h>
+#include <communication_drivers/psmodules/fbp_dclink/fbp_dclink.h>
 
 #include <stdint.h>
 #include <stdarg.h>
@@ -124,115 +126,115 @@ int main(void) {
 
 	IPCMtoCBootControlSystem(CBROM_MTOC_BOOTMODE_BOOT_FROM_FLASH);
 
-	while(1)
-	{
-	    // TODO: Just when using IHM
-	    //g_ipc_mtoc.ps_module[0].ps_status.bit.state = loc_rem_update();
+    switch(g_ipc_mtoc.ps_model)
+    {
+        case FBP:
+        {
+            fbp_system_config();
+            break;
+        }
 
-	    switch(g_ipc_mtoc.ps_model)
-	    {
-	        case FBP:
-	        {
-	            fbp_main();
-	            break;
-	        }
+        case FBP_DCLink:
+        {
+            fbp_dclink_system_config();
+            break;
+        }
 
-	        case FBP_DCLink:
-	        {
-	            fbp_dclink_system_config();
-	            break;
-	        }
+        case FAC_ACDC:
+        {
+            fac_acdc_system_config();
+            break;
+        }
 
-	        case FAC_ACDC:
-	        {
-	            fac_acdc_main();
-	            break;
-	        }
+        case FAC_DCDC:
+        {
+            fac_dcdc_system_config();
+            break;
+        }
 
-	        case FAC_DCDC:
-	        {
-	            fac_dcdc_system_config();
-	            break;
-	        }
+        case FAC_2S_ACDC:
+        {
+            fac_2s_acdc_system_config();
+            break;
+        }
 
-            case FAC_2S_ACDC:
-            {
-                fac_2s_acdc_system_config();
-                break;
-            }
+        case FAC_2S_DCDC:
+        {
+            fac_2s_dcdc_system_config();
+            break;
+        }
 
-            case FAC_2S_DCDC:
-            {
-                fac_2s_dcdc_system_config();
-                break;
-            }
+        case FAC_2P4S_ACDC:
+        {
+            fac_2p4s_acdc_system_config();
+            break;
+        }
 
-            case FAC_2P4S_ACDC:
-            {
-                fac_2p4s_acdc_system_config();
-                break;
-            }
+        case FAC_2P4S_DCDC:
+        {
+            fac_2p4s_dcdc_system_config();
+            break;
+        }
 
-            case FAC_2P4S_DCDC:
-            {
-                fac_2p4s_dcdc_system_config();
-                break;
-            }
+        case FAP:
+        {
+            fap_system_config();
+            break;
+        }
 
-            case FAP:
-            {
-                fap_system_config();
-                break;
-            }
+        case FAP_4P:
+        {
+            fap_4p_system_config();
+            break;
+        }
 
-            case FAP_4P:
-            {
-                fap_4p_system_config();
-                break;
-            }
+        case FAC_DCDC_EMA:
+        {
+            fac_dcdc_ema_system_config();
+            break;
+        }
 
-            case FAC_DCDC_EMA:
-            {
-                fac_dcdc_ema_system_config();
-                break;
-            }
+        case FAP_2P2S:
+        {
+            fap_2p2s_system_config();
+            break;
+        }
 
-            case FAP_2P2S:
-            {
-                fap_2p2s_system_config();
-                break;
-            }
+        case FAP_IMAS:
+        {
+            //fap_imas_system_config();
+            break;
+        }
 
-            case FAC_2P_ACDC_IMAS:
-            {
-                fac_2p_acdc_imas_system_config();
-                break;
-            }
+        case FAC_2P_ACDC_IMAS:
+        {
+            fac_2p_acdc_imas_system_config();
+            break;
+        }
 
-            case FAC_2P_DCDC_IMAS:
-            {
-                fac_2p_dcdc_imas_system_config();
-                break;
-            }
+        case FAC_2P_DCDC_IMAS:
+        {
+            fac_2p_dcdc_imas_system_config();
+            break;
+        }
 
-	        default:
-	        {
-	            break;
-	        }
-	    }
+        default:
+        {
+            break;
+        }
+    }
 
-	    SysCtlDelay(100000);
+    /// Delay to wait C28 initialization of firmware version
+    SysCtlDelay(150000);
+    GPIOPinWrite(DEBUG_BASE, DEBUG_PIN, ON);
+    get_firmwares_version();
+    IntMasterEnable();
 
-	    get_firmwares_version();
-
-	    IntMasterEnable();
-
-	    for (;;)
-	    {
-	        for (ulLoop = 0; ulLoop < 1000; ulLoop++)
-	        {
-	            TaskCheck();
-	        }
-	    }
-	}
+    for (;;)
+    {
+        for (ulLoop = 0; ulLoop < 1000; ulLoop++)
+        {
+            TaskCheck();
+        }
+    }
 }

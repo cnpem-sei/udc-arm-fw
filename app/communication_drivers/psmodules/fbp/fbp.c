@@ -17,7 +17,7 @@
  *
  */
 
-#include <communication_drivers/psmodules/fbp/fbp_system.h>
+#include <communication_drivers/psmodules/fbp/fbp.h>
 #include <communication_drivers/psmodules/ps_modules.h>
 #include<stdint.h>
 #include<stdbool.h>

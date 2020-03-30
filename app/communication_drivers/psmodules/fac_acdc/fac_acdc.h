@@ -9,17 +9,20 @@
  *****************************************************************************/
 
 /**
- * @file fac_acdc_system.h
- * @brief System setup for operation as FAC ACDC
+ * @file fac_acdc.h
+ * @brief FAC AC/DC Stage module
+ *
+ * Module for control of a AC/DC module of FAC power supplies It implements the
+ * controllers for input current and capacitor bank voltage of a AC/DC module.
  *
  * @author gabriel.brunheira
  * @date 23/04/2018
  *
  */
 
-#ifndef FAC_ACDC_SYSTEM_H_
-#define FAC_ACDC_SYSTEM_H_
+#ifndef FAC_ACDC_H_
+#define FAC_ACDC_H_
 
 void fac_acdc_system_config(void);
 
-#endif /* FAC_ACDC_SYSTEM_H_ */
+#endif /* FAC_ACDC_H_ */

@@ -1,5 +1,5 @@
 /******************************************************************************
- * Copyright (C) 2018 by LNLS - Brazilian Synchrotron Light Laboratory
+ * Copyright (C) 2017 by LNLS - Brazilian Synchrotron Light Laboratory
  *
  * Redistribution, modification or use of this software in source or binary
  * forms is permitted as long as the files maintain this copyright. LNLS and
@@ -9,17 +9,17 @@
  *****************************************************************************/
 
 /**
- * @file fac_acdc_main.h
- * @brief System setup for operation as FAC ACDC
+ * @file fbpsystem.h
+ * @brief System setup for operation as FBP
  *
- * @author gabriel.brunheira
- * @date 23/04/2018
+ * @author allef.silva
+ * @date 18/10/2017
  *
  */
 
-#ifndef FAC_ACDC_MAIN_H_
-#define FAC_ACDC_MAIN_H_
+#ifndef FBP_H_
+#define FBP_H_
 
-void fac_acdc_main(void);
+void fbp_system_config(void);
 
-#endif /* FAC_ACDC_MAIN_H_ */
+#endif /* FBP_H_ */

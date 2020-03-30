@@ -1,5 +1,6 @@
 /******************************************************************************
- * Copyright (C) 2017 by LNLS - Brazilian Synchrotron Light Laboratory
+/******************************************************************************
+ * Copyright (C) 2018 by LNLS - Brazilian Synchrotron Light Laboratory
  *
  * Redistribution, modification or use of this software in source or binary
  * forms is permitted as long as the files maintain this copyright. LNLS and
@@ -9,17 +10,21 @@
  *****************************************************************************/
 
 /**
- * @file fac_acdc_system.h
- * @brief System setup for operation as FAC ACDC
+ * @file fac_acdc.c
+ * @brief FAC AC/DC Stage module
+ *
+ * Module for control of a AC/DC module of FAC power supplies It implements the
+ * controllers for input current and capacitor bank voltage of a AC/DC module.
  *
  * @author gabriel.brunheira
  * @date 23/04/2018
  *
  */
+
+#include <communication_drivers/psmodules/fac_acdc/fac_acdc.h>
 #include <stdint.h>
 #include <stdbool.h>
 
-#include <communication_drivers/psmodules/fac_acdc/fac_acdc_system.h>
 #include <communication_drivers/psmodules/ps_modules.h>
 
 #include "inc/hw_memmap.h"
