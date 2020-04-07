@@ -39,12 +39,14 @@ typedef union
 typedef union
 {
     uint8_t     u8[4];
+    uint32_t    u32;
     float       f;
 } u_float_t;
 
 typedef union
 {
     uint8_t     u8[4];
+    uint32_t    u32;
     float       *f;
 } u_p_float_t;
 

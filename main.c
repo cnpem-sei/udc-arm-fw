@@ -130,43 +130,43 @@ int main(void) {
     {
         case FBP:
         {
-            fbp_system_config();
+            //fbp_system_config();
             break;
         }
 
         case FBP_DCLink:
         {
-            fbp_dclink_system_config();
+            //fbp_dclink_system_config();
             break;
         }
 
         case FAC_ACDC:
         {
-            fac_acdc_system_config();
+            //fac_acdc_system_config();
             break;
         }
 
         case FAC_DCDC:
         {
-            fac_dcdc_system_config();
+            //fac_dcdc_system_config();
             break;
         }
 
         case FAC_2S_ACDC:
         {
-            fac_2s_acdc_system_config();
+            //fac_2s_acdc_system_config();
             break;
         }
 
         case FAC_2S_DCDC:
         {
-            fac_2s_dcdc_system_config();
+            //fac_2s_dcdc_system_config();
             break;
         }
 
         case FAC_2P4S_ACDC:
         {
-            fac_2p4s_acdc_system_config();
+            //fac_2p4s_acdc_system_config();
             break;
         }
 
@@ -178,25 +178,25 @@ int main(void) {
 
         case FAP:
         {
-            fap_system_config();
+            //fap_system_config();
             break;
         }
 
         case FAP_4P:
         {
-            fap_4p_system_config();
+            //fap_4p_system_config();
             break;
         }
 
         case FAC_DCDC_EMA:
         {
-            fac_dcdc_ema_system_config();
+            //fac_dcdc_ema_system_config();
             break;
         }
 
         case FAP_2P2S:
         {
-            fap_2p2s_system_config();
+            //fap_2p2s_system_config();
             break;
         }
 
@@ -208,13 +208,13 @@ int main(void) {
 
         case FAC_2P_ACDC_IMAS:
         {
-            fac_2p_acdc_imas_system_config();
+            //fac_2p_acdc_imas_system_config();
             break;
         }
 
         case FAC_2P_DCDC_IMAS:
         {
-            fac_2p_dcdc_imas_system_config();
+            //fac_2p_dcdc_imas_system_config();
             break;
         }
 

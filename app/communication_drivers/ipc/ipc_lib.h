@@ -30,7 +30,9 @@
 #include "communication_drivers/control/siggen/siggen.h"
 #include "communication_drivers/control/wfmref/wfmref.h"
 #include "communication_drivers/common/structs.h"
+#include "communication_drivers/common/timeslicer.h"
 #include "communication_drivers/parameters/ps_parameters.h"
+#include "communication_drivers/scope/scope.h"
 
 
 /**
@@ -60,9 +62,12 @@ typedef enum
     Reset_Interlocks,
     Unlock_UDC,
     Lock_UDC,
-    Cfg_Buf_Samples,
-    Enable_Buf_Samples,
-    Disable_Buf_Samples,
+    Cfg_Source_Scope,
+    Cfg_Freq_Scope,
+    Cfg_Duration_Scope,
+    Enable_Scope,
+    Disable_Scope,
+    Reset_Scope,
     Set_SlowRef,
     Set_SlowRef_All_PS,
     Cfg_WfmRef,
@@ -75,6 +80,7 @@ typedef enum
     Reset_Counters,
     Set_Param,
     Set_DSP_Coeffs,
+    Cfg_TimeSlicer,
     CtoM_Message_Error
 } ipc_mtoc_lowpriority_msg_t;
 
@@ -127,7 +133,8 @@ typedef volatile struct
     ps_module_t     ps_module[NUM_MAX_PS_MODULES];
     siggen_t        siggen;
     wfmref_t        wfmref[NUM_MAX_PS_MODULES];
-    buf_t           buf_samples[NUM_MAX_PS_MODULES];
+    timeslicer_t    timeslicer[NUM_MAX_TIMESLICERS];
+    scope_t         scope[NUM_MAX_SCOPES];
 } ipc_ctom_t;
 
 typedef volatile struct
@@ -141,7 +148,9 @@ typedef volatile struct
     ps_module_t             ps_module[NUM_MAX_PS_MODULES];
     siggen_t                siggen;
     wfmref_t                wfmref[NUM_MAX_PS_MODULES];
-    buf_t                   buf_samples[NUM_MAX_PS_MODULES];
+    //buf_t                   buf_samples[NUM_MAX_PS_MODULES];
+    timeslicer_t            timeslicer[NUM_MAX_TIMESLICERS];
+    scope_t                 scope[NUM_MAX_SCOPES];
     dsp_module_t            dsp_module;
     param_control_t         control;
     param_pwm_t             pwm;

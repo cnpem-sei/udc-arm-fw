@@ -37,6 +37,7 @@
 #include "communication_drivers/parameters/ps_parameters.h"
 #include "communication_drivers/psmodules/fbp_dclink/fbp_dclink.h"
 #include "communication_drivers/rs485/rs485.h"
+#include "communication_drivers/scope/scope.h"
 #include "communication_drivers/system_task/system_task.h"
 
 #include "inc/hw_memmap.h"
@@ -407,21 +408,162 @@ static struct bsmp_func bsmp_func_set_serial_termination = {
  * @param uint8_t* Pointer to input packet of data
  * @param uint8_t* Pointer to output packet of data
  */
-uint8_t bsmp_enable_buf_samples(uint8_t *input, uint8_t *output)
+uint8_t bsmp_cfg_source_scope(uint8_t *input, uint8_t *output)
 {
     ulTimeout=0;
 
-    g_ipc_mtoc.buf_samples[0].status = Buffering;
-
-    if(ipc_mtoc_busy(low_priority_msg_to_reg(Enable_Buf_Samples)))
+    if(ipc_mtoc_busy(low_priority_msg_to_reg(Cfg_Source_Scope)))
     {
         *output = 6;
     }
     else
     {
-        send_ipc_lowpriority_msg(g_current_ps_id, Enable_Buf_Samples);
+        g_ipc_mtoc.scope[g_current_ps_id].p_source.u32 = (input[3]<< 24) |
+                        (input[2] << 16)|(input[1] << 8) | input[0];
+
+        send_ipc_lowpriority_msg(g_current_ps_id, Cfg_Source_Scope);
+
         while ((HWREG(MTOCIPC_BASE + IPC_O_MTOCIPCFLG) &
-                low_priority_msg_to_reg(Enable_Buf_Samples)) &&
+                low_priority_msg_to_reg(Cfg_Source_Scope)) &&
+                (ulTimeout<TIMEOUT_DSP_IPC_ACK))
+        {
+            ulTimeout++;
+        }
+        if(ulTimeout == TIMEOUT_DSP_IPC_ACK)
+        {
+            *output = 5;
+        }
+        else
+        {
+            *output = 0;
+        }
+    }
+    return *output;
+}
+
+static struct bsmp_func bsmp_func_cfg_source_scope = {
+    .func_p           = bsmp_cfg_source_scope,
+    .info.input_size  = 4,
+    .info.output_size = 1,
+};
+
+/**
+ * @brief Enable Samples Buffers
+ *
+ * Enable Samples Buffers from ARM and DSP
+ *
+ * @param uint8_t* Pointer to input packet of data
+ * @param uint8_t* Pointer to output packet of data
+ */
+uint8_t bsmp_cfg_freq_scope(uint8_t *input, uint8_t *output)
+{
+    ulTimeout=0;
+
+    if(ipc_mtoc_busy(low_priority_msg_to_reg(Cfg_Freq_Scope)))
+    {
+        *output = 6;
+    }
+    else
+    {
+        g_ipc_mtoc.scope[g_current_ps_id].timeslicer.freq_sampling.u32 = (input[3]<< 24) |
+                        (input[2] << 16)|(input[1] << 8) | input[0];
+
+        send_ipc_lowpriority_msg(g_current_ps_id, Cfg_Freq_Scope);
+
+        while ((HWREG(MTOCIPC_BASE + IPC_O_MTOCIPCFLG) &
+                low_priority_msg_to_reg(Cfg_Freq_Scope)) &&
+                (ulTimeout<TIMEOUT_DSP_IPC_ACK))
+        {
+            ulTimeout++;
+        }
+        if(ulTimeout == TIMEOUT_DSP_IPC_ACK)
+        {
+            *output = 5;
+        }
+        else
+        {
+            *output = 0;
+        }
+    }
+    return *output;
+}
+
+static struct bsmp_func bsmp_func_cfg_freq_scope = {
+    .func_p           = bsmp_cfg_freq_scope,
+    .info.input_size  = 4,
+    .info.output_size = 1,
+};
+
+/**
+ * @brief Enable Samples Buffers
+ *
+ * Enable Samples Buffers from ARM and DSP
+ *
+ * @param uint8_t* Pointer to input packet of data
+ * @param uint8_t* Pointer to output packet of data
+ */
+uint8_t bsmp_cfg_duration_scope(uint8_t *input, uint8_t *output)
+{
+    ulTimeout=0;
+
+    if(ipc_mtoc_busy(low_priority_msg_to_reg(Cfg_Duration_Scope)))
+    {
+        *output = 6;
+    }
+    else
+    {
+        g_ipc_mtoc.scope[g_current_ps_id].duration.u32 = (input[3]<< 24) |
+                        (input[2] << 16)|(input[1] << 8) | input[0];
+
+        send_ipc_lowpriority_msg(g_current_ps_id, Cfg_Duration_Scope);
+
+        while ((HWREG(MTOCIPC_BASE + IPC_O_MTOCIPCFLG) &
+                low_priority_msg_to_reg(Cfg_Duration_Scope)) &&
+                (ulTimeout<TIMEOUT_DSP_IPC_ACK))
+        {
+            ulTimeout++;
+        }
+        if(ulTimeout == TIMEOUT_DSP_IPC_ACK)
+        {
+            *output = 5;
+        }
+        else
+        {
+            *output = 0;
+        }
+    }
+    return *output;
+}
+
+static struct bsmp_func bsmp_func_cfg_duration_scope = {
+    .func_p           = bsmp_cfg_duration_scope,
+    .info.input_size  = 4,
+    .info.output_size = 1,
+};
+
+/**
+ * @brief Enable Samples Buffers
+ *
+ * Enable Samples Buffers from ARM and DSP
+ *
+ * @param uint8_t* Pointer to input packet of data
+ * @param uint8_t* Pointer to output packet of data
+ */
+uint8_t bsmp_enable_buf_samples(uint8_t *input, uint8_t *output)
+{
+    ulTimeout=0;
+
+    g_ipc_mtoc.scope[0].buffer.status = Buffering;
+
+    if(ipc_mtoc_busy(low_priority_msg_to_reg(Enable_Scope)))
+    {
+        *output = 6;
+    }
+    else
+    {
+        send_ipc_lowpriority_msg(g_current_ps_id, Enable_Scope);
+        while ((HWREG(MTOCIPC_BASE + IPC_O_MTOCIPCFLG) &
+                low_priority_msg_to_reg(Enable_Scope)) &&
                 (ulTimeout<TIMEOUT_DSP_IPC_ACK))
         {
             ulTimeout++;
@@ -461,17 +603,17 @@ uint8_t bsmp_disable_buf_samples(uint8_t *input, uint8_t *output)
      * it's better to create a postmortem BSMP function
      */
     //g_ipc_mtoc.buf_samples[0].status = Idle;
-    g_ipc_mtoc.buf_samples[0].status = Postmortem;
+    g_ipc_mtoc.scope[0].buffer.status = Postmortem;
 
-    if(ipc_mtoc_busy(low_priority_msg_to_reg(Disable_Buf_Samples)))
+    if(ipc_mtoc_busy(low_priority_msg_to_reg(Disable_Scope)))
     {
         *output = 6;
     }
     else
     {
-        send_ipc_lowpriority_msg(g_current_ps_id, Disable_Buf_Samples);
+        send_ipc_lowpriority_msg(g_current_ps_id, Disable_Scope);
         while ((HWREG(MTOCIPC_BASE + IPC_O_MTOCIPCFLG) &
-                low_priority_msg_to_reg(Disable_Buf_Samples)) &&
+                low_priority_msg_to_reg(Disable_Scope)) &&
                 (ulTimeout<TIMEOUT_DSP_IPC_ACK))
         {
             ulTimeout++;
@@ -1847,7 +1989,7 @@ static bool read_block_buf_samples_ctom(struct bsmp_curve *curve, uint16_t block
     //block_data = &(g_buf_samples_ctom[(block*block_size) >> 2].u8);
     block_data = ( (uint8_t *) p_buf->p_buf_start.f) + block * block_size;
 
-    if(g_ipc_ctom.buf_samples[g_current_ps_id].status == Disabled)
+    if(g_ipc_ctom.scope[g_current_ps_id].buffer.status == Disabled)
     {
         memcpy(data, block_data, block_size);
         *len = block_size;
@@ -1902,9 +2044,9 @@ void bsmp_init(uint8_t server)
     bsmp_register_function(&bsmp[server], &dummy_func2);                        // ID 7
     bsmp_register_function(&bsmp[server], &dummy_func3);                        // ID 8
     bsmp_register_function(&bsmp[server], &bsmp_func_set_serial_termination);   // ID 9
-    bsmp_register_function(&bsmp[server], &dummy_func4);                        // ID 10
-    bsmp_register_function(&bsmp[server], &dummy_func5);                        // ID 11
-    bsmp_register_function(&bsmp[server], &dummy_func6);                        // ID 12
+    bsmp_register_function(&bsmp[server], &bsmp_func_cfg_source_scope);         // ID 10
+    bsmp_register_function(&bsmp[server], &bsmp_func_cfg_freq_scope);           // ID 11
+    bsmp_register_function(&bsmp[server], &bsmp_func_cfg_duration_scope);       // ID 12
     bsmp_register_function(&bsmp[server], &bsmp_func_enable_buf_samples);       // ID 13
     bsmp_register_function(&bsmp[server], &bsmp_func_disable_buf_samples);      // ID 14
     bsmp_register_function(&bsmp[server], &bsmp_func_sync_pulse);               // ID 15
@@ -1913,7 +2055,7 @@ void bsmp_init(uint8_t server)
     bsmp_register_function(&bsmp[server], &bsmp_func_reset_counters);           // ID 18
     bsmp_register_function(&bsmp[server], &bsmp_func_scale_wfmref);             // ID 19
     //create_bsmp_function(20, server, &bsmp_select_wfmref, 2, 1);                // ID 20
-    bsmp_register_function(&bsmp[server], &bsmp_func_select_wfmref);             // ID 20
+    bsmp_register_function(&bsmp[server], &bsmp_func_select_wfmref);            // ID 20
     bsmp_register_function(&bsmp[server], &dummy_func11);                       // ID 21
     bsmp_register_function(&bsmp[server], &bsmp_func_reset_wfmref);             // ID 22
     bsmp_register_function(&bsmp[server], &bsmp_func_cfg_siggen);               // ID 23
@@ -1977,7 +2119,7 @@ void bsmp_init(uint8_t server)
                       read_block_wfmref, write_block_wfmref);
 
     create_bsmp_curve(2, server, 16, 1024, false,
-                      &g_ipc_mtoc.buf_samples[server],
+                      &g_ipc_mtoc.scope[server].buffer,
                       read_block_buf_samples_ctom, write_block_dummy);
 }
 

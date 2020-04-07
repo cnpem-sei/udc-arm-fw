@@ -602,7 +602,7 @@ static void pin_core_setup(void)
                                                                                    //GPIO38 - PF6 � utilizado para o EPWMSYNCI (C28)
                                                                                    //GPIO39 - PF7 � utilizado para o HRADC_INT_STS (C28)
 
-        GPIOPinConfigureCoreSelect(GPIO_PORTG_BASE, 0x24, GPIO_PIN_C_CORE_SELECT); //GPIO42 e 45 s�o utilizados pelo C28 (C28)
+        GPIOPinConfigureCoreSelect(GPIO_PORTG_BASE, 0x64, GPIO_PIN_C_CORE_SELECT); //GPIO42 e 45 s�o utilizados pelo C28 (C28)
                                                                                    //GPIO40 - PG0 � utilizado para o SDRAM_BA0D13 (ARM)
                                                                                    //GPIO41 - PG1 � utilizado para o SDRAM_BA1D14 (ARM)
                                                                                    //GPIO42 - PG2 � utilizado para o STATUS_ADC0 (C28)
