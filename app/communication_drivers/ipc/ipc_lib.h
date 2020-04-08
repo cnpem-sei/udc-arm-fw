@@ -24,7 +24,6 @@
 #define IPC_LIB_H_
 
 #include <stdint.h>
-#include "../psmodules/ps_modules.h"
 #include "board_drivers/version.h"
 #include "communication_drivers/control/dsp.h"
 #include "communication_drivers/control/siggen/siggen.h"
@@ -32,6 +31,7 @@
 #include "communication_drivers/common/structs.h"
 #include "communication_drivers/common/timeslicer.h"
 #include "communication_drivers/parameters/ps_parameters.h"
+#include "communication_drivers/ps_modules/ps_modules.h"
 #include "communication_drivers/scope/scope.h"
 
 
@@ -148,7 +148,6 @@ typedef volatile struct
     ps_module_t             ps_module[NUM_MAX_PS_MODULES];
     siggen_t                siggen;
     wfmref_t                wfmref[NUM_MAX_PS_MODULES];
-    //buf_t                   buf_samples[NUM_MAX_PS_MODULES];
     timeslicer_t            timeslicer[NUM_MAX_TIMESLICERS];
     scope_t                 scope[NUM_MAX_SCOPES];
     dsp_module_t            dsp_module;
@@ -160,7 +159,6 @@ typedef volatile struct
     param_interlocks_t      interlocks;
 } ipc_mtoc_t;
 
-//extern volatile u_float_t g_wfmref[SIZE_WFMREF];
 extern volatile u_float_t g_buf_samples_ctom[SIZE_BUF_SAMPLES_CTOM];
 //extern volatile u_float_t g_buf_samples_mtoc[SIZE_BUF_SAMPLES_MTOC];
 

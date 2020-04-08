@@ -17,7 +17,6 @@
  *
  */
 
-#include <communication_drivers/psmodules/fbp_dclink/fbp_dclink.h>
 #include <stdint.h>
 #include <stdbool.h>
 
@@ -30,7 +29,8 @@
 #include "communication_drivers/control/control.h"
 #include "communication_drivers/i2c_offboard_isolated/i2c_offboard_isolated.h"
 #include "communication_drivers/ipc/ipc_lib.h"
-#include "communication_drivers/psmodules/ps_modules.h"
+#include "communication_drivers/ps_modules/fbp_dclink/fbp_dclink.h"
+#include "communication_drivers/ps_modules/ps_modules.h"
 
 #define V_DCLINK_OUTPUT         g_controller_mtoc.net_signals[0]    // ANI0
 #define V_PS1_OUTPUT            g_controller_mtoc.net_signals[1]    // ANI1

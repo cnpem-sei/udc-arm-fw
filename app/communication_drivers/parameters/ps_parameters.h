@@ -25,9 +25,9 @@
 
 #include <stdint.h>
 #include <math.h>
-#include "communication_drivers/psmodules/ps_modules.h"
 #include "communication_drivers/common/structs.h"
 #include "communication_drivers/control/siggen/siggen.h"
+#include "communication_drivers/ps_modules/ps_modules.h"
 
 #define SIZE_PS_NAME            64
 

@@ -17,8 +17,6 @@
  *
  */
 
-#include <communication_drivers/psmodules/fbp/fbp.h>
-#include <communication_drivers/psmodules/ps_modules.h>
 #include<stdint.h>
 #include<stdbool.h>
 
@@ -31,85 +29,8 @@
 #include "communication_drivers/bsmp/bsmp_lib.h"
 #include "communication_drivers/control/control.h"
 #include "communication_drivers/control/wfmref/wfmref.h"
-
-#define APPLICATION         UVX_LINAC_RACK1
-
-#define UVX_LINAC_RACK1     0
-#define UVX_LINAC_RACK2     1
-#define WEG_PILOT_BATCH_CHARACTERIZATION    2
-#define ELP_FAC_CON_TESTS   3
-
-/**
- * UVX Linac FBP Rack 1:
- *      LCH01A / LCV01A / LCH01B / LCV01B
- */
-#if APPLICATION == UVX_LINAC_RACK1
-
-    #define SIGGEN_TYPE         Sine
-    #define SIGGEN_NUM_CYCLES   1
-    #define SIGGEN_FREQ         1.0
-    #define SIGGEN_AMP          0.0
-    #define SIGGEN_OFFSET       0.0
-    #define SIGGEN_AUX_PARAM_0  0.0
-    #define SIGGEN_AUX_PARAM_1  0.0
-    #define SIGGEN_AUX_PARAM_2  0.0
-    #define SIGGEN_AUX_PARAM_3  0.0
-
-/**
- * UVX Linac FBP Rack 2:
- *      LCH03 / LCV03 / LCH04 / LCV04
- */
-#elif APPLICATION == UVX_LINAC_RACK2
-
-    #define SIGGEN_TYPE         DampedSine
-    #define SIGGEN_NUM_CYCLES   15
-    #define SIGGEN_FREQ         0.25
-    #define SIGGEN_AMP          10.0
-    #define SIGGEN_OFFSET       0.0
-    #define SIGGEN_AUX_PARAM_0  0.0
-    #define SIGGEN_AUX_PARAM_1  0.0
-    #define SIGGEN_AUX_PARAM_2  10.0
-    #define SIGGEN_AUX_PARAM_3  0.0
-
-/**
- *  WEG pilot batch characterization
- *
- *  Lload = 3.4 mH
- *  Rload = 0.5 Ohm
- *  Vdc-link = 7 V
- *  fbw = 1.33 kHz
- */
-#elif APPLICATION == WEG_PILOT_BATCH_CHARACTERIZATION
-
-    #define SIGGEN_TYPE         DampedSine
-    #define SIGGEN_NUM_CYCLES   15
-    #define SIGGEN_FREQ         0.25
-    #define SIGGEN_AMP          10.0
-    #define SIGGEN_OFFSET       0.0
-    #define SIGGEN_AUX_PARAM_0  0.0
-    #define SIGGEN_AUX_PARAM_1  0.0
-    #define SIGGEN_AUX_PARAM_2  10.0
-    #define SIGGEN_AUX_PARAM_3  0.0
-
-/**
- *  Synchronization tests with ELP, CON and FAC groups
- *
- *  fbw = 1 kHz
- */
-#elif APPLICATION == ELP_FAC_CON_TESTS
-
-    #define SIGGEN_TYPE         Trapezoidal
-    #define SIGGEN_NUM_CYCLES   5
-    #define SIGGEN_FREQ         0.0
-    #define SIGGEN_AMP          1.0
-    #define SIGGEN_OFFSET       0.0
-    #define SIGGEN_AUX_PARAM_0  0.28
-    #define SIGGEN_AUX_PARAM_1  0.02
-    #define SIGGEN_AUX_PARAM_2  0.2
-    #define SIGGEN_AUX_PARAM_3  0.0
-
-#endif
-
+#include "communication_drivers/ps_modules/fbp/fbp.h"
+#include "communication_drivers/ps_modules/ps_modules.h"
 
 #define PS1_ID                    0x0000
 

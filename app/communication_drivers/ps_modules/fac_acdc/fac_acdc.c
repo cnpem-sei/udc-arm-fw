@@ -21,11 +21,8 @@
  *
  */
 
-#include <communication_drivers/psmodules/fac_acdc/fac_acdc.h>
 #include <stdint.h>
 #include <stdbool.h>
-
-#include <communication_drivers/psmodules/ps_modules.h>
 
 #include "inc/hw_memmap.h"
 #include "inc/hw_ipc.h"
@@ -38,6 +35,8 @@
 #include "communication_drivers/event_manager/event_manager.h"
 #include "communication_drivers/iib/iib_data.h"
 #include "communication_drivers/iib/iib_module.h"
+#include "communication_drivers/ps_modules/fac_acdc/fac_acdc.h"
+#include "communication_drivers/ps_modules/ps_modules.h"
 
 #define V_CAPBANK                       g_controller_ctom.net_signals[0]    // HRADC0
 #define IOUT_RECT                       g_controller_ctom.net_signals[1]    // HRADC1

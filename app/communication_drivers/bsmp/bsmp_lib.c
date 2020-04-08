@@ -35,7 +35,7 @@
 #include "communication_drivers/i2c_onboard/exio.h"
 #include "communication_drivers/ipc/ipc_lib.h"
 #include "communication_drivers/parameters/ps_parameters.h"
-#include "communication_drivers/psmodules/fbp_dclink/fbp_dclink.h"
+#include "communication_drivers/ps_modules/fbp_dclink/fbp_dclink.h"
 #include "communication_drivers/rs485/rs485.h"
 #include "communication_drivers/scope/scope.h"
 #include "communication_drivers/system_task/system_task.h"
@@ -401,9 +401,9 @@ static struct bsmp_func bsmp_func_set_serial_termination = {
 };
 
 /**
- * @brief Enable Samples Buffers
+ * @brief Configure source for scope
  *
- * Enable Samples Buffers from ARM and DSP
+ * Configure data source for specified scope
  *
  * @param uint8_t* Pointer to input packet of data
  * @param uint8_t* Pointer to output packet of data
@@ -448,9 +448,11 @@ static struct bsmp_func bsmp_func_cfg_source_scope = {
 };
 
 /**
- * @brief Enable Samples Buffers
+ * @brief Configure sampling frequency for scope
  *
- * Enable Samples Buffers from ARM and DSP
+ * Configure sampling frequency for specified scope. C28 core actually
+ * implements the closest frequency which is a integer submultiple of the base
+ * frequency of the associated timeslicer. *
  *
  * @param uint8_t* Pointer to input packet of data
  * @param uint8_t* Pointer to output packet of data
@@ -495,9 +497,11 @@ static struct bsmp_func bsmp_func_cfg_freq_scope = {
 };
 
 /**
- * @brief Enable Samples Buffers
+ * @brief Configure duration time for scope
  *
- * Enable Samples Buffers from ARM and DSP
+ * Configure duration time for buffer of specified scope. C28 core actually
+ * implements the duration time related to the closest integer submultiple of
+ * the base frequency of the associated timeslicer.
  *
  * @param uint8_t* Pointer to input packet of data
  * @param uint8_t* Pointer to output packet of data

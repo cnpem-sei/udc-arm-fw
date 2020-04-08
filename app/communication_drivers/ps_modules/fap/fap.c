@@ -20,8 +20,6 @@
  *
  */
 
-#include <communication_drivers/psmodules/fap/fap.h>
-#include <communication_drivers/psmodules/ps_modules.h>
 #include <stdint.h>
 #include <stdbool.h>
 
@@ -37,6 +35,8 @@
 #include "communication_drivers/event_manager/event_manager.h"
 #include "communication_drivers/iib/iib_data.h"
 #include "communication_drivers/iib/iib_module.h"
+#include "communication_drivers/ps_modules/fap/fap.h"
+#include "communication_drivers/ps_modules/ps_modules.h"
 
 /**
  * Controller defines

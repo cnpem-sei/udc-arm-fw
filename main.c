@@ -18,21 +18,6 @@
  *
  */
 
-#include <communication_drivers/psmodules/fac_2p_acdc_imas/fac_2p_acdc_imas.h>
-#include <communication_drivers/psmodules/fac_2p_dcdc_imas/fac_2p_dcdc_imas.h>
-#include <communication_drivers/psmodules/fac_2p4s_acdc/fac_2p4s_acdc.h>
-#include <communication_drivers/psmodules/fac_2p4s_dcdc/fac_2p4s_dcdc.h>
-#include <communication_drivers/psmodules/fac_2s_acdc/fac_2s_acdc.h>
-#include <communication_drivers/psmodules/fac_2s_dcdc/fac_2s_dcdc.h>
-#include <communication_drivers/psmodules/fac_acdc/fac_acdc.h>
-#include <communication_drivers/psmodules/fac_dcdc/fac_dcdc.h>
-#include <communication_drivers/psmodules/fac_dcdc_ema/fac_dcdc_ema.h>
-#include <communication_drivers/psmodules/fap_2p2s/fap_2p2s.h>
-#include <communication_drivers/psmodules/fap_4p/fap_4p.h>
-#include <communication_drivers/psmodules/fap/fap.h>
-#include <communication_drivers/psmodules/fbp/fbp.h>
-#include <communication_drivers/psmodules/fbp_dclink/fbp_dclink.h>
-
 #include <stdint.h>
 #include <stdarg.h>
 #include <string.h>
@@ -57,26 +42,41 @@
 #include "driverlib/usb.h"
 #include "driverlib/can.h"
 
-#include "communication_drivers/signals_onboard/signals_onboard.h"
-#include "communication_drivers/rs485/rs485.h"
-#include "communication_drivers/rs485_bkp/rs485_bkp.h"
-#include "communication_drivers/ihm/ihm.h"
-#include "communication_drivers/ethernet/ethernet_uip.h"
-#include "communication_drivers/can/can_bkp.h"
-#include "communication_drivers/usb_device/superv_cmd.h"
-#include "communication_drivers/i2c_onboard/i2c_onboard.h"
-#include "communication_drivers/i2c_onboard/rtc.h"
-#include "communication_drivers/i2c_onboard/eeprom.h"
-#include "communication_drivers/i2c_onboard/exio.h"
-#include "communication_drivers/adcp/adcp.h"
-#include "communication_drivers/timer/timer.h"
+#include "board_drivers/hardware_def.h"
+
+//#include "communication_drivers/signals_onboard/signals_onboard.h"
+//#include "communication_drivers/rs485/rs485.h"
+//#include "communication_drivers/rs485_bkp/rs485_bkp.h"
+//#include "communication_drivers/ihm/ihm.h"
+//#include "communication_drivers/ethernet/ethernet_uip.h"
+//#include "communication_drivers/can/can_bkp.h"
+//#include "communication_drivers/usb_device/superv_cmd.h"
+//#include "communication_drivers/i2c_onboard/i2c_onboard.h"
+//#include "communication_drivers/i2c_onboard/rtc.h"
+//#include "communication_drivers/i2c_onboard/eeprom.h"
+//#include "communication_drivers/i2c_onboard/exio.h"
+//#include "communication_drivers/adcp/adcp.h"
+//#include "communication_drivers/timer/timer.h"
 #include "communication_drivers/system_task/system_task.h"
-#include "communication_drivers/flash/flash_mem.h"
+//#include "communication_drivers/flash/flash_mem.h"
 #include "communication_drivers/parameters/system/system.h"
 #include "communication_drivers/ipc/ipc_lib.h"
-#include "communication_drivers/bsmp/bsmp_lib.h"
+//#include "communication_drivers/bsmp/bsmp_lib.h"
 
-#include "hardware_def.h"
+#include "communication_drivers/ps_modules/fac_2p_acdc_imas/fac_2p_acdc_imas.h"
+#include "communication_drivers/ps_modules/fac_2p_dcdc_imas/fac_2p_dcdc_imas.h"
+#include "communication_drivers/ps_modules/fac_2p4s_acdc/fac_2p4s_acdc.h"
+#include "communication_drivers/ps_modules/fac_2p4s_dcdc/fac_2p4s_dcdc.h"
+#include "communication_drivers/ps_modules/fac_2s_acdc/fac_2s_acdc.h"
+#include "communication_drivers/ps_modules/fac_2s_dcdc/fac_2s_dcdc.h"
+#include "communication_drivers/ps_modules/fac_acdc/fac_acdc.h"
+#include "communication_drivers/ps_modules/fac_dcdc/fac_dcdc.h"
+#include "communication_drivers/ps_modules/fac_dcdc_ema/fac_dcdc_ema.h"
+#include "communication_drivers/ps_modules/fap/fap.h"
+#include "communication_drivers/ps_modules/fap_2p2s/fap_2p2s.h"
+#include "communication_drivers/ps_modules/fap_4p/fap_4p.h"
+#include "communication_drivers/ps_modules/fbp/fbp.h"
+#include "communication_drivers/ps_modules/fbp_dclink/fbp_dclink.h"
 
 extern unsigned long RamfuncsLoadStart;
 extern unsigned long RamfuncsRunStart;

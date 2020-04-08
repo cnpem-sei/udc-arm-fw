@@ -36,7 +36,7 @@
 #include <stdint.h>
 #include "communication_drivers/event_manager/event_manager.h"
 #include "communication_drivers/ipc/ipc_lib.h"
-#include "communication_drivers/psmodules/ps_modules.h"
+#include "communication_drivers/ps_modules/ps_modules.h"
 
 /**
  * Private variables
