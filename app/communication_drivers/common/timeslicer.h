@@ -26,8 +26,6 @@
 #include <stdint.h>
 #include "communication_drivers/common/structs.h"
 
-#define NUM_MAX_TIMESLICERS     4
-
 #define RUN_TIMESLICER(timeslicer)
 #define END_TIMESLICER(timeslicer)
 
@@ -43,11 +41,6 @@ typedef volatile struct
     uint16_t    freq_ratio;
     uint16_t    counter;
 } timeslicer_t;
-
-typedef volatile struct
-{
-    timeslicer_t timeslicer[NUM_MAX_TIMESLICERS];
-} timeslicers_t;
 
 extern void init_timeslicer(timeslicer_t *p_ts, float freq_base);
 extern void cfg_timeslicer(timeslicer_t *p_ts, float freq_sampling);

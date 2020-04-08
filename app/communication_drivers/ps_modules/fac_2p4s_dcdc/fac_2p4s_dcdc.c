@@ -329,9 +329,9 @@ void fac_2p4s_dcdc_system_config()
                 g_ipc_mtoc.control.freq_timeslicer[TIMESLICER_WFMREF].f,
                 WFMREF[0].gain.f, WFMREF[0].offset.f, &g_wfmref_data.data[0][0].f,
                 SIZE_WFMREF, &g_ipc_ctom.ps_module[0].ps_reference.f);
-    //init_buffer(&g_ipc_mtoc.buf_samples[0], &(g_buf_samples_ctom[0].f), SIZE_BUF_SAMPLES_CTOM);
+
     init_scope(&g_ipc_mtoc.scope[0], 48000.0, 2000.0, &(g_buf_samples_ctom[0].f),
-               4096, &I_LOAD_MEAN, (void *) 0);
+               SIZE_BUF_SAMPLES_CTOM, &I_LOAD_MEAN, (void *) 0);
 }
 
 static void init_iib()

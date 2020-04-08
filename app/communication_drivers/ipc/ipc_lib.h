@@ -133,7 +133,6 @@ typedef volatile struct
     ps_module_t     ps_module[NUM_MAX_PS_MODULES];
     siggen_t        siggen;
     wfmref_t        wfmref[NUM_MAX_PS_MODULES];
-    timeslicer_t    timeslicer[NUM_MAX_TIMESLICERS];
     scope_t         scope[NUM_MAX_SCOPES];
 } ipc_ctom_t;
 
@@ -148,7 +147,6 @@ typedef volatile struct
     ps_module_t             ps_module[NUM_MAX_PS_MODULES];
     siggen_t                siggen;
     wfmref_t                wfmref[NUM_MAX_PS_MODULES];
-    timeslicer_t            timeslicer[NUM_MAX_TIMESLICERS];
     scope_t                 scope[NUM_MAX_SCOPES];
     dsp_module_t            dsp_module;
     param_control_t         control;

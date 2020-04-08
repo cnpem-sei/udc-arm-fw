@@ -208,13 +208,13 @@ int main(void) {
 
         case FAC_2P_ACDC_IMAS:
         {
-            //fac_2p_acdc_imas_system_config();
+            fac_2p_acdc_imas_system_config();
             break;
         }
 
         case FAC_2P_DCDC_IMAS:
         {
-            //fac_2p_dcdc_imas_system_config();
+            fac_2p_dcdc_imas_system_config();
             break;
         }
 
