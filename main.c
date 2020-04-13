@@ -166,7 +166,7 @@ int main(void) {
 
         case FAC_2P4S_ACDC:
         {
-            //fac_2p4s_acdc_system_config();
+            fac_2p4s_acdc_system_config();
             break;
         }
 

@@ -856,8 +856,8 @@ uint8_t bsmp_scale_wfmref(uint8_t *input, uint8_t *output)
     {
         if( ( (g_ipc_ctom.ps_module[g_current_ps_id].ps_status.bit.state != RmpWfm) &&
               (g_ipc_ctom.ps_module[g_current_ps_id].ps_status.bit.state != MigWfm) ) ||
-            ( g_ipc_ctom.wfmref[g_current_ps_id].wfmref_data[g_ipc_ctom.wfmref[g_current_ps_id].wfmref_selected.u16].p_buf_idx.f >=
-              g_ipc_ctom.wfmref[g_current_ps_id].wfmref_data[g_ipc_ctom.wfmref[g_current_ps_id].wfmref_selected.u16].p_buf_end.f ) )
+            ( g_ipc_ctom.wfmref[g_current_ps_id].wfmref_data[g_ipc_ctom.wfmref[g_current_ps_id].wfmref_selected.u16].p_buf_idx.p_f >=
+              g_ipc_ctom.wfmref[g_current_ps_id].wfmref_data[g_ipc_ctom.wfmref[g_current_ps_id].wfmref_selected.u16].p_buf_end.p_f ) )
         {
             send_ipc_lowpriority_msg(g_current_ps_id, Update_WfmRef);
             while ((HWREG(MTOCIPC_BASE + IPC_O_MTOCIPCFLG) &
@@ -913,8 +913,8 @@ uint8_t bsmp_select_wfmref(uint8_t *input, uint8_t *output)
     {
         if( ( (g_ipc_ctom.ps_module[g_current_ps_id].ps_status.bit.state != RmpWfm) &&
               (g_ipc_ctom.ps_module[g_current_ps_id].ps_status.bit.state != MigWfm) ) ||
-            ( g_ipc_ctom.wfmref[g_current_ps_id].wfmref_data[g_ipc_ctom.wfmref[g_current_ps_id].wfmref_selected.u16].p_buf_idx.f >=
-              g_ipc_ctom.wfmref[g_current_ps_id].wfmref_data[g_ipc_ctom.wfmref[g_current_ps_id].wfmref_selected.u16].p_buf_end.f ) )
+            ( g_ipc_ctom.wfmref[g_current_ps_id].wfmref_data[g_ipc_ctom.wfmref[g_current_ps_id].wfmref_selected.u16].p_buf_idx.p_f >=
+              g_ipc_ctom.wfmref[g_current_ps_id].wfmref_data[g_ipc_ctom.wfmref[g_current_ps_id].wfmref_selected.u16].p_buf_end.p_f ) )
         {
             send_ipc_lowpriority_msg(g_current_ps_id, Update_WfmRef);
             while ((HWREG(MTOCIPC_BASE + IPC_O_MTOCIPCFLG) &
@@ -1923,7 +1923,7 @@ static bool read_block_wfmref(struct bsmp_curve *curve, uint16_t block,
     //block_data = &(g_wfmref[(block*block_size) >> 2].u8);
     //block_data = ((uint8_t *) *((float **) curve->user)) + block * block_size;
     block_data = ( (uint8_t *) ipc_ctom_translate(
-                   (uint32_t) p_wfmref->wfmref_data[curve->info.id].p_buf_start.f ) ) +
+                   (uint32_t) p_wfmref->wfmref_data[curve->info.id].p_buf_start.p_f ) ) +
                  block * block_size;
     //block_data = WFMREF[g_current_ps_id].wfmref_data[curve->info.id].p_buf_start.f
 
@@ -1950,7 +1950,7 @@ static bool write_block_wfmref(struct bsmp_curve *curve, uint16_t block,
     //block_data = &(g_wfmref[(block*block_size) >> 2].u8);
     //block_data = ((uint8_t *) *((float **) curve->user)) + block * block_size;
     block_data = ( (uint8_t *) ipc_ctom_translate(
-                   (uint32_t) p_wfmref->wfmref_data[curve->info.id].p_buf_start.f ) ) +
+                   (uint32_t) p_wfmref->wfmref_data[curve->info.id].p_buf_start.p_f ) ) +
                  block * block_size;
 
 
@@ -1965,10 +1965,10 @@ static bool write_block_wfmref(struct bsmp_curve *curve, uint16_t block,
     else
     {
         memcpy(block_data, data, len);
-        p_wfmref->wfmref_data[curve->info.id].p_buf_end.f =
+        p_wfmref->wfmref_data[curve->info.id].p_buf_end.p_f =
         //WFMREF[g_current_ps_id].wfmref_data[curve->info.id].p_buf_end.f =
                     (float *) (ipc_mtoc_translate((uint32_t) (block_data + len)) - 2);
-        p_wfmref->wfmref_data[curve->info.id].p_buf_idx.f =
+        p_wfmref->wfmref_data[curve->info.id].p_buf_idx.p_f =
         //WFMREF[g_current_ps_id].wfmref_data[curve->info.id].p_buf_idx.f =
                     (float *) (ipc_mtoc_translate((uint32_t) (block_data + len)));
         return true;
@@ -1991,7 +1991,7 @@ static bool read_block_buf_samples_ctom(struct bsmp_curve *curve, uint16_t block
     buf_t *p_buf = (buf_t *) curve->user;
 
     //block_data = &(g_buf_samples_ctom[(block*block_size) >> 2].u8);
-    block_data = ( (uint8_t *) p_buf->p_buf_start.f) + block * block_size;
+    block_data = ( (uint8_t *) p_buf->p_buf_start.p_f) + block * block_size;
 
     if(g_ipc_ctom.scope[g_current_ps_id].buffer.status == Disabled)
     {

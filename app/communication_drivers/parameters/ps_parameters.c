@@ -36,7 +36,6 @@
 #include "communication_drivers/i2c_onboard/i2c_onboard.h"
 #include "communication_drivers/parameters/ps_parameters.h"
 
-
 static const uint16_t param_addresses[NUM_MAX_PARAMETERS] =
 {
     [PS_Name] = 0x0000,
@@ -99,12 +98,15 @@ static const uint16_t param_addresses[NUM_MAX_PARAMETERS] =
     [Hard_Interlocks_Reset_Time] = 0x480,
     [Soft_Interlocks_Debounce_Time] = 0x500,
     [Soft_Interlocks_Reset_Time] = 0x580,
+
+    [Scope_Sampling_Frequency] = 0x740,
+    [Scope_Source] = 0x750
 };
 
 static uint8_t data_eeprom[32];
 
 //#pragma DATA_SECTION(ps_parameters_bank,"SHARERAMS0_1");
-volatile param_t g_parameters[NUM_MAX_PARAMETERS];
+volatile param_bank_t g_param_bank;
 
 void init_param(param_id_t id, param_type_t type, uint16_t num_elements, uint8_t *p_param)
 {
@@ -112,50 +114,60 @@ void init_param(param_id_t id, param_type_t type, uint16_t num_elements, uint8_t
 
     if(num_elements > 0)
     {
-        g_parameters[id].id = id;
-        g_parameters[id].type = type;
-        g_parameters[id].num_elements = num_elements;
-        g_parameters[id].eeprom_add.u16 = param_addresses[id];
-        g_parameters[id].p_val.u8 = p_param;
+        g_param_bank.param_info[id].id = id;
+        g_param_bank.param_info[id].type = type;
+        g_param_bank.param_info[id].num_elements = num_elements;
+        g_param_bank.param_info[id].eeprom_add.u16 = param_addresses[id];
+        g_param_bank.param_info[id].p_val.u8 = p_param;
 
-        switch(g_parameters[id].type)
+        switch(g_param_bank.param_info[id].type)
         {
             case is_uint8_t:
             {
-                g_parameters[id].size_type = 1;
+                g_param_bank.param_info[id].size_type = 1;
                 for(n = 0; n < num_elements; n++)
                 {
-                    *(g_parameters[id].p_val.u8 + n) = 0;
+                    *(g_param_bank.param_info[id].p_val.u8 + n) = 0;
                 }
                 break;
             }
 
             case is_uint16_t:
             {
-                g_parameters[id].size_type = 2;
+                g_param_bank.param_info[id].size_type = 2;
                 for(n = 0; n < num_elements; n++)
                 {
-                    *(g_parameters[id].p_val.u16 + n) = 0;
+                    *(g_param_bank.param_info[id].p_val.u16 + n) = 0;
                 }
                 break;
             }
 
             case is_uint32_t:
             {
-                g_parameters[id].size_type = 4;
+                g_param_bank.param_info[id].size_type = 4;
                 for(n = 0; n < num_elements; n++)
                 {
-                    *(g_parameters[id].p_val.u32 + n) = 0;
+                    *(g_param_bank.param_info[id].p_val.u32 + n) = 0;
                 }
                 break;
             }
 
             case is_float:
             {
-                g_parameters[id].size_type = 4;
+                g_param_bank.param_info[id].size_type = 4;
                 for(n = 0; n < num_elements; n++)
                 {
-                    *(g_parameters[id].p_val.f + n) = 0.0;
+                    *(g_param_bank.param_info[id].p_val.f + n) = 0.0;
+                }
+                break;
+            }
+
+            case is_p_float:
+            {
+                g_param_bank.param_info[id].size_type = 4;
+                for(n = 0; n < num_elements; n++)
+                {
+                    *(g_param_bank.param_info[id].p_val.p_f + n) = 0x0;
                 }
                 break;
             }
@@ -170,31 +182,37 @@ void init_param(param_id_t id, param_type_t type, uint16_t num_elements, uint8_t
 
 uint8_t set_param(param_id_t id, uint16_t n, float val)
 {
-    if(n < g_parameters[id].num_elements)
+    if(n < g_param_bank.param_info[id].num_elements)
     {
-        switch(g_parameters[id].type)
+        switch(g_param_bank.param_info[id].type)
         {
             case is_uint8_t:
             {
-                *(g_parameters[id].p_val.u8 + n) = (uint8_t) val;
+                *(g_param_bank.param_info[id].p_val.u8 + n) = (uint8_t) val;
                 break;
             }
 
             case is_uint16_t:
             {
-                *(g_parameters[id].p_val.u16 + n) = (uint16_t) val;
+                *(g_param_bank.param_info[id].p_val.u16 + n) = (uint16_t) val;
                 break;
             }
 
             case is_uint32_t:
             {
-                *(g_parameters[id].p_val.u32 + n) = (uint32_t) val;
+                *(g_param_bank.param_info[id].p_val.u32 + n) = (uint32_t) val;
                 break;
             }
 
             case is_float:
             {
-                *(g_parameters[id].p_val.f + n) = val;
+                *(g_param_bank.param_info[id].p_val.f + n) = val;
+                break;
+            }
+
+            case is_p_float:
+            {
+                *(g_param_bank.param_info[id].p_val.p_f + n) = (uint32_t) val;
                 break;
             }
 
@@ -214,28 +232,33 @@ uint8_t set_param(param_id_t id, uint16_t n, float val)
 
 float get_param(param_id_t id, uint16_t n)
 {
-    if(n < g_parameters[id].num_elements)
+    if(n < g_param_bank.param_info[id].num_elements)
     {
-        switch(g_parameters[id].type)
+        switch(g_param_bank.param_info[id].type)
         {
             case is_uint8_t:
             {
-                return (float) *(g_parameters[id].p_val.u8 + n);
+                return (float) *(g_param_bank.param_info[id].p_val.u8 + n);
             }
 
             case is_uint16_t:
             {
-                return (float) *(g_parameters[id].p_val.u16 + n);
+                return (float) *(g_param_bank.param_info[id].p_val.u16 + n);
             }
 
             case is_uint32_t:
             {
-                return (float) *(g_parameters[id].p_val.u32 + n);
+                return (float) *(g_param_bank.param_info[id].p_val.u32 + n);
             }
 
             case is_float:
             {
-                return *(g_parameters[id].p_val.f + n);
+                return *(g_param_bank.param_info[id].p_val.f + n);
+            }
+
+            case is_p_float:
+            {
+                return (uint32_t) (*(g_param_bank.param_info[id].p_val.p_f + n));
             }
 
             default:
@@ -256,17 +279,17 @@ uint8_t save_param_eeprom(param_id_t id, uint16_t n)
     static u_uint16_t u_add;
 
     // Check wheter index is inside parameter range
-    if(n < g_parameters[id].num_elements)
+    if(n < g_param_bank.param_info[id].num_elements)
     {
-        size_type = g_parameters[id].size_type;
+        size_type = g_param_bank.param_info[id].size_type;
 
         // Increment element position on parameter address and prepare for EEPROM
-        u_add.u16 = g_parameters[id].eeprom_add.u16 + size_type*n;
+        u_add.u16 = g_param_bank.param_info[id].eeprom_add.u16 + size_type*n;
         data_eeprom[0] = u_add.u8[1];
         data_eeprom[1] = u_add.u8[0];
 
         // Prepare EEPROM data
-        memcpy(&data_eeprom[2], (g_parameters[id].p_val.u8 + size_type*n),
+        memcpy(&data_eeprom[2], (g_param_bank.param_info[id].p_val.u8 + size_type*n),
                size_type);
 
         // Send new parameter to EEPROM
@@ -289,18 +312,18 @@ uint8_t load_param_eeprom(param_id_t id, uint16_t n)
     static u_uint16_t u_add;
 
     // Check wheter index is inside parameter range
-    if(n < g_parameters[id].num_elements)
+    if(n < g_param_bank.param_info[id].num_elements)
     {
-        size_type = g_parameters[id].size_type;
+        size_type = g_param_bank.param_info[id].size_type;
 
         // Increment element position on parameter address and prepare for EEPROM
-        u_add.u16 = g_parameters[id].eeprom_add.u16 + size_type*n;
+        u_add.u16 = g_param_bank.param_info[id].eeprom_add.u16 + size_type*n;
         data_eeprom[0] = u_add.u8[1];
         data_eeprom[1] = u_add.u8[0];
 
         read_i2c(I2C_SLV_ADDR_EEPROM, DOUBLE_ADDRESS, size_type, data_eeprom);
 
-        memcpy( (g_parameters[id].p_val.u8 + size_type*n), &data_eeprom[0],
+        memcpy( (g_param_bank.param_info[id].p_val.u8 + size_type*n), &data_eeprom[0],
                 size_type);
 
         return 1;
@@ -484,6 +507,15 @@ void init_parameters_bank(void)
 
     init_param(Soft_Interlocks_Reset_Time, is_uint32_t, NUM_MAX_SOFT_INTERLOCKS,
                &g_ipc_mtoc.interlocks.soft_itlks_reset_time[0].u8[0]);
+
+    /**
+     * Scope parameters
+     */
+    init_param(Scope_Sampling_Frequency, is_float, NUM_MAX_SCOPES,
+                &g_param_bank.scope.freq_sampling[0].u8[0]);
+
+    init_param(Scope_Source, is_p_float, NUM_MAX_SCOPES,
+               &g_param_bank.scope.p_source[0].u8[0]);
 }
 
 void save_param_bank(void)
@@ -493,7 +525,7 @@ void save_param_bank(void)
 
     for(id = 0; id < NUM_PARAMETERS; id++)
     {
-        for(n = 0; n < g_parameters[id].num_elements; n++)
+        for(n = 0; n < g_param_bank.param_info[id].num_elements; n++)
         {
             save_param_eeprom(id, n);
         }
@@ -507,7 +539,7 @@ void load_param_bank(void)
 
     for(id = 0; id < NUM_PARAMETERS; id++)
     {
-        for(n = 0; n < g_parameters[id].num_elements; n++)
+        for(n = 0; n < g_param_bank.param_info[id].num_elements; n++)
         {
             load_param_eeprom(id, n);
         }

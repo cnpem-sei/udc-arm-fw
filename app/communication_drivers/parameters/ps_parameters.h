@@ -28,6 +28,7 @@
 #include "communication_drivers/common/structs.h"
 #include "communication_drivers/control/siggen/siggen.h"
 #include "communication_drivers/ps_modules/ps_modules.h"
+#include "communication_drivers/scope/scope.h"
 
 #define SIZE_PS_NAME            64
 
@@ -40,7 +41,7 @@
 #define NUM_MAX_HARD_INTERLOCKS     32
 #define NUM_MAX_SOFT_INTERLOCKS     32
 
-#define NUM_PARAMETERS          52
+#define NUM_PARAMETERS          54
 #define NUM_MAX_PARAMETERS      64
 #define NUM_MAX_FLOATS          200
 
@@ -106,6 +107,9 @@ typedef enum
     Hard_Interlocks_Reset_Time,
     Soft_Interlocks_Debounce_Time,
     Soft_Interlocks_Reset_Time,
+
+    Scope_Sampling_Frequency,
+    Scope_Source
 } param_id_t;
 
 typedef enum
@@ -113,7 +117,8 @@ typedef enum
     is_uint8_t,
     is_uint16_t,
     is_uint32_t,
-    is_float
+    is_float,
+    is_p_float,
 } param_type_t;
 
 typedef union
@@ -122,6 +127,7 @@ typedef union
     uint16_t    *u16;
     uint32_t    *u32;
     float       *f;
+    float       **p_f;
 } p_param_t;
 
 typedef struct
@@ -197,7 +203,23 @@ typedef struct
     u_uint32_t  soft_itlks_reset_time[NUM_MAX_SOFT_INTERLOCKS];
 } param_interlocks_t;
 
-extern volatile param_t g_parameters[NUM_MAX_PARAMETERS];
+typedef struct
+{
+    u_float_t   freq_sampling[NUM_MAX_SCOPES];
+    u_p_float_t p_source[NUM_MAX_SCOPES];
+} param_scope_t;
+
+typedef struct
+{
+    param_t         param_info[NUM_MAX_PARAMETERS];
+    //param_siggen_t  siggen;
+    //param_wfmref_t  wfmref;
+    param_scope_t   scope;
+} param_bank_t;
+
+//extern volatile param_t g_parameters[NUM_MAX_PARAMETERS];
+
+extern volatile param_bank_t g_param_bank;
 
 extern void init_param(param_id_t id, param_type_t type, uint16_t num_elements, uint8_t *p_param);
 extern uint8_t set_param(param_id_t id, uint16_t n, float val);
@@ -210,4 +232,5 @@ extern void save_param_bank(void);
 extern void load_param_bank(void);
 
 #endif /* PS_PARAMETERS_H_ */
+
 

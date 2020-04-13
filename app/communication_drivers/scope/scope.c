@@ -33,26 +33,26 @@ void init_scope(scope_t *p_scp, float freq_base, float freq_sampling,
     init_timeslicer(&p_scp->timeslicer, freq_base);
     cfg_freq_scope(p_scp, freq_sampling);
 
-    p_scp->p_source.f = p_source;
+    p_scp->p_source.p_f = p_source;
     p_scp->p_run_scope = p_run_scope;
 }
 
 void cfg_source_scope(scope_t *p_scp,float *p_source)
 {
-    p_scp->p_source.f = p_source;
+    p_scp->p_source.p_f = p_source;
 }
 
 void cfg_freq_scope(scope_t *p_scp, float freq_sampling)
 {
     cfg_timeslicer(&p_scp->timeslicer, freq_sampling);
-    p_scp->duration.f = ((float) size_buffer(&p_scp->buffer)) / p_scp->timeslicer.freq_sampling.f;
+    p_scp->duration.f = ((float) (size_buffer(&p_scp->buffer) + 1)) / p_scp->timeslicer.freq_sampling.f;
 }
 
 void cfg_duration_scope(scope_t *p_scp, float duration)
 {
     float freq_sampling;
 
-    freq_sampling = ((float) size_buffer(&p_scp->buffer)) / duration;
+    freq_sampling = ((float) (size_buffer(&p_scp->buffer) + 1)) / duration;
     cfg_freq_scope(p_scp, freq_sampling);
 }
 
@@ -73,7 +73,7 @@ void reset_scope(scope_t *p_scp)
 
 void run_scope_shared_ram(scope_t *p_scp)
 {
-    insert_buffer(&p_scp->buffer, *p_scp->p_source.f);
+    insert_buffer(&p_scp->buffer, *p_scp->p_source.p_f);
 }
 
 /// TODO: Prototype for function which uses onboard RAM
