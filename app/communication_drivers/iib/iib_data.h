@@ -301,16 +301,6 @@ typedef volatile struct {
     union {
         float       f;
         uint8_t     u8[4];
-    } Driver1Error;
-
-    union {
-        float       f;
-        uint8_t     u8[4];
-    } Driver2Error;
-
-    union {
-        float       f;
-        uint8_t     u8[4];
     } TempL;
 
     union {
@@ -326,21 +316,6 @@ typedef volatile struct {
     union {
         float       f;
         uint8_t     u8[4];
-    } LeakageCurrent;
-
-    union {
-        float       f;
-        uint8_t     u8[4];
-    } Rack;
-
-    union {
-        float       f;
-        uint8_t     u8[4];
-    } ExternalItlk;
-
-    union {
-        float       f;
-        uint8_t     u8[4];
     } GroundLeakage;
 
     union {
@@ -352,6 +327,12 @@ typedef volatile struct {
         float       f;
         uint8_t     u8[4];
     } RelativeHumidity;
+
+    union {
+        float       f;
+        uint32_t    u32;
+        uint8_t     u8[4];
+    } InterlocksRegister;
 
     uint8_t CanAddress;
 

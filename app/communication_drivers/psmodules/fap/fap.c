@@ -59,8 +59,6 @@
 #define DUTY_CYCLE_IGBT_1       g_controller_ctom.output_signals[0]
 #define DUTY_CYCLE_IGBT_2       g_controller_ctom.output_signals[1]
 
-#define IIB_ITLK_REG            g_controller_mtoc.net_signals[3]
-
 /**
  * Interlocks defines
  */
@@ -148,9 +146,7 @@ static void bsmp_init_server(void)
     create_bsmp_var(47, 0, 4, false, iib_fap.GroundLeakage.u8);
     create_bsmp_var(48, 0, 4, false, iib_fap.BoardTemperature.u8);
     create_bsmp_var(49, 0, 4, false, iib_fap.RelativeHumidity.u8);
-
-    create_bsmp_var(50, 0, 4, false, IIB_ITLK_REG.u8);
-
+    create_bsmp_var(50, 0, 4, false, iib_fap.InterlocksRegister.u8);
 }
 
 /**
@@ -199,7 +195,7 @@ static void handle_can_data(uint8_t *data)
 }
 
 static void update_iib_structure(iib_fap_module_t *module, uint8_t data_id,
-                                                               float data_val)
+                                 float data_val)
 {
     uint8_t id = data_id;
     float_to_bytes_t converter;
@@ -207,8 +203,7 @@ static void update_iib_structure(iib_fap_module_t *module, uint8_t data_id,
     switch (id)
     {
         case 0:
-            converter.f = data_val;
-            IIB_ITLK_REG.u32 = converter.u32;
+            module->InterlocksRegister.f = data_val;
             set_hard_interlock(0, IIB_Itlk);
             break;
 
