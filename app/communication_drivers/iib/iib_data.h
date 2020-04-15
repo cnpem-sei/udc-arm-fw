@@ -311,11 +311,6 @@ typedef volatile struct {
     union {
         float       f;
         uint8_t     u8[4];
-    } Relay;
-
-    union {
-        float       f;
-        uint8_t     u8[4];
     } GroundLeakage;
 
     union {
