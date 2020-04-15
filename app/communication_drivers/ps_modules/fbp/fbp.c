@@ -246,6 +246,11 @@ void fbp_system_config()
                     WFMREF[0].gain.f, WFMREF[0].offset.f, &g_wfmref_data.data_fbp[i][0][0].f,
                     SIZE_WFMREF_FBP, &g_ipc_ctom.ps_module[i].ps_reference.f);
 
-        init_buffer(&g_ipc_mtoc.buf_samples[i], &(g_buf_samples_ctom[i*1024].f), SIZE_BUF_SAMPLES_CTOM/4);
+        init_scope(&g_ipc_mtoc.scope[i], g_ipc_mtoc.control.freq_isr_control.f,
+                   g_param_bank.scope.freq_sampling[i].f,
+                   &(g_buf_samples_ctom[SIZE_BUF_SAMPLES_CTOM * i / NUM_MAX_PS_MODULES].f),
+                   SIZE_BUF_SAMPLES_CTOM / NUM_MAX_PS_MODULES,
+                   g_param_bank.scope.p_source[i].p_f,
+                   (void *) 0);
     }
 }

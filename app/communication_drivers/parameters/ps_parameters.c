@@ -105,7 +105,7 @@ static const uint16_t param_addresses[NUM_MAX_PARAMETERS] =
 
 static uint8_t data_eeprom[32];
 
-//#pragma DATA_SECTION(ps_parameters_bank,"SHARERAMS0_1");
+#pragma DATA_SECTION(g_param_bank,"SHARERAMS0_1");
 volatile param_bank_t g_param_bank;
 
 void init_param(param_id_t id, param_type_t type, uint16_t num_elements, uint8_t *p_param)
@@ -336,7 +336,7 @@ uint8_t load_param_eeprom(param_id_t id, uint16_t n)
 
 void init_parameters_bank(void)
 {
-    init_param(PS_Name, is_uint8_t, SIZE_PS_NAME, &g_ipc_mtoc.ps_name);
+    init_param(PS_Name, is_uint8_t, SIZE_PS_NAME, &g_param_bank.ps_name);
 
     init_param(PS_Model, is_uint16_t, 1, (uint8_t *) &g_ipc_mtoc.ps_model);
 
@@ -356,7 +356,7 @@ void init_parameters_bank(void)
                 &g_ipc_mtoc.communication.rs485_termination.u8[0]);
 
     init_param(UDCNet_Address, is_uint16_t, 1,
-                    &g_ipc_mtoc.communication.udcnet_address.u8[0]);
+               &g_ipc_mtoc.communication.udcnet_address.u8[0]);
 
     init_param(Ethernet_IP, is_uint8_t, 4,
                 &g_ipc_mtoc.communication.ethernet_ip[0]);

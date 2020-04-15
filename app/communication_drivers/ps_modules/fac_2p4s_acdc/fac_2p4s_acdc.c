@@ -198,12 +198,14 @@ void fac_2p4s_acdc_system_config()
 
     init_scope(&g_ipc_mtoc.scope[0], g_ipc_mtoc.control.freq_isr_control.f,
                g_param_bank.scope.freq_sampling[0].f, &(g_buf_samples_ctom[0].f),
-               SIZE_BUF_SAMPLES_CTOM/2, g_param_bank.scope.p_source[0].p_f, (void *) 0);
+               SIZE_BUF_SAMPLES_CTOM/2, g_param_bank.scope.p_source[0].p_f,
+               (void *) 0);
 
     init_scope(&g_ipc_mtoc.scope[1], g_ipc_mtoc.control.freq_isr_control.f,
                g_param_bank.scope.freq_sampling[1].f,
                &(g_buf_samples_ctom[SIZE_BUF_SAMPLES_CTOM/2].f),
-               SIZE_BUF_SAMPLES_CTOM/2, g_param_bank.scope.p_source[1].p_f, (void *) 0);
+               SIZE_BUF_SAMPLES_CTOM/2, g_param_bank.scope.p_source[1].p_f,
+               (void *) 0);
 }
 
 static void init_iib()

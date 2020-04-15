@@ -205,16 +205,46 @@ typedef struct
 
 typedef struct
 {
+    u_uint16_t  type[NUM_MAX_PS_MODULES];
+    u_uint16_t  num_cycles[NUM_MAX_PS_MODULES];
+    u_float_t   freq[NUM_MAX_PS_MODULES];
+    u_float_t   amplitude[NUM_MAX_PS_MODULES];
+    u_float_t   offset[NUM_MAX_PS_MODULES];
+    u_float_t   aux_param_0[NUM_MAX_PS_MODULES];
+    u_float_t   aux_param_1[NUM_MAX_PS_MODULES];
+    u_float_t   aux_param_2[NUM_MAX_PS_MODULES];
+    u_float_t   aux_param_3[NUM_MAX_PS_MODULES];
+} param_siggen_t;
+
+typedef struct
+{
+    u_float_t   sync_mode[NUM_MAX_PS_MODULES];
+    u_float_t   gain[NUM_MAX_PS_MODULES];
+    u_float_t   offset[NUM_MAX_PS_MODULES];
+} param_wfmref_t;
+
+
+typedef struct
+{
     u_float_t   freq_sampling[NUM_MAX_SCOPES];
     u_p_float_t p_source[NUM_MAX_SCOPES];
 } param_scope_t;
 
 typedef struct
 {
-    param_t         param_info[NUM_MAX_PARAMETERS];
-    //param_siggen_t  siggen;
-    //param_wfmref_t  wfmref;
-    param_scope_t   scope;
+    param_t                 param_info[NUM_MAX_PARAMETERS];
+    uint8_t                 ps_name[SIZE_PS_NAME];
+    uint16_t                ps_model;
+    uint16_t                num_ps_modules;
+    param_communication_t   communication;
+    param_control_t         control;
+    param_pwm_t             pwm;
+    param_hradc_t           hradc;
+    param_siggen_t          siggen;
+    param_wfmref_t          wfmref;
+    param_analog_vars_t     analog_vars;
+    param_interlocks_t      interlocks;
+    param_scope_t           scope;
 } param_bank_t;
 
 //extern volatile param_t g_parameters[NUM_MAX_PARAMETERS];

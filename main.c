@@ -130,13 +130,13 @@ int main(void) {
     {
         case FBP:
         {
-            //fbp_system_config();
+            fbp_system_config();
             break;
         }
 
         case FBP_DCLink:
         {
-            //fbp_dclink_system_config();
+            fbp_dclink_system_config();
             break;
         }
 
@@ -148,19 +148,19 @@ int main(void) {
 
         case FAC_DCDC:
         {
-            //fac_dcdc_system_config();
+            fac_dcdc_system_config();
             break;
         }
 
         case FAC_2S_ACDC:
         {
-            //fac_2s_acdc_system_config();
+            fac_2s_acdc_system_config();
             break;
         }
 
         case FAC_2S_DCDC:
         {
-            //fac_2s_dcdc_system_config();
+            fac_2s_dcdc_system_config();
             break;
         }
 
@@ -178,13 +178,13 @@ int main(void) {
 
         case FAP:
         {
-            //fap_system_config();
+            fap_system_config();
             break;
         }
 
         case FAP_4P:
         {
-            //fap_4p_system_config();
+            fap_4p_system_config();
             break;
         }
 
@@ -196,7 +196,7 @@ int main(void) {
 
         case FAP_2P2S:
         {
-            //fap_2p2s_system_config();
+            fap_2p2s_system_config();
             break;
         }
 

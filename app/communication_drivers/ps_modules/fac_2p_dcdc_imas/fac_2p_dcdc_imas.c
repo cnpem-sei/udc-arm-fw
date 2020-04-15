@@ -152,6 +152,8 @@ void fac_2p_dcdc_imas_system_config()
                 WFMREF[0].gain.f, WFMREF[0].offset.f, &g_wfmref_data.data[0][0].f,
                 SIZE_WFMREF, &g_ipc_ctom.ps_module[0].ps_reference.f);
 
-    init_scope(&g_ipc_mtoc.scope[0], 20480.0, 32.0, &(g_buf_samples_ctom[0].f),
-               SIZE_BUF_SAMPLES_CTOM, &I_LOAD, (void *) 0);
+    init_scope(&g_ipc_mtoc.scope[0], g_ipc_mtoc.control.freq_isr_control.f,
+               g_param_bank.scope.freq_sampling[0].f, &(g_buf_samples_ctom[0].f),
+               SIZE_BUF_SAMPLES_CTOM, g_param_bank.scope.p_source[0].p_f,
+               (void *) 0);
 }
