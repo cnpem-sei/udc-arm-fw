@@ -343,6 +343,16 @@ typedef volatile struct {
         uint8_t     u8[4];
     } GroundLeakage;
 
+    union {
+        float       f;
+        uint8_t     u8[4];
+    } BoardTemperature;
+
+    union {
+        float       f;
+        uint8_t     u8[4];
+    } RelativeHumidity;
+
     uint8_t CanAddress;
 
 } iib_fap_module_t;

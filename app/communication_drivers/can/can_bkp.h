@@ -127,6 +127,9 @@ typedef struct
 	uint8_t RelativeHumidity;
 	uint8_t RelativeHumidityAlarm;
 	uint8_t RelativeHumidityItlk;
+	uint8_t BoardTemperature;
+	uint8_t BoardTemperatureAlarm;
+	uint8_t BoardTemperatureItlk;
 	uint8_t Interlock;
 } Q1Module_t;
 
