@@ -131,7 +131,7 @@ typedef volatile struct
         uint32_t    u32;
     } counter_sync_pulse;
     ps_module_t     ps_module[NUM_MAX_PS_MODULES];
-    siggen_t        siggen;
+    siggen_t        siggen[NUM_MAX_PS_MODULES];
     wfmref_t        wfmref[NUM_MAX_PS_MODULES];
     scope_t         scope[NUM_MAX_SCOPES];
 } ipc_ctom_t;
@@ -145,20 +145,19 @@ typedef volatile struct
     uint16_t                ps_model;
     uint16_t                num_ps_modules;
     ps_module_t             ps_module[NUM_MAX_PS_MODULES];
-    siggen_t                siggen;
+    siggen_t                siggen[NUM_MAX_PS_MODULES];
     wfmref_t                wfmref[NUM_MAX_PS_MODULES];
     scope_t                 scope[NUM_MAX_SCOPES];
     dsp_module_t            dsp_module;
-    param_control_t         control;
-    param_pwm_t             pwm;
-    param_hradc_t           hradc;
-    param_analog_vars_t     analog_vars;
-    param_communication_t   communication;
-    param_interlocks_t      interlocks;
+    //param_control_t         control;
+    //param_pwm_t             pwm;
+    //param_hradc_t           hradc;
+    //param_analog_vars_t     analog_vars;
+    //param_communication_t   communication;
+    //param_interlocks_t      interlocks;
 } ipc_mtoc_t;
 
 extern volatile u_float_t g_buf_samples_ctom[SIZE_BUF_SAMPLES_CTOM];
-//extern volatile u_float_t g_buf_samples_mtoc[SIZE_BUF_SAMPLES_MTOC];
 
 extern volatile ipc_ctom_t g_ipc_ctom;
 extern volatile ipc_mtoc_t g_ipc_mtoc;

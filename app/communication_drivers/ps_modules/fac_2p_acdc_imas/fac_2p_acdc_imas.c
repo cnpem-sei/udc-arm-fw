@@ -154,15 +154,15 @@ void fac_2p_acdc_imas_system_config()
     adcp_channel_config();
     bsmp_init_server();
 
-    init_scope(&g_ipc_mtoc.scope[0], g_ipc_mtoc.control.freq_isr_control.f,
-               g_param_bank.scope.freq_sampling[0].f, &(g_buf_samples_ctom[0].f),
-               SIZE_BUF_SAMPLES_CTOM/2, g_param_bank.scope.p_source[0].p_f,
+    init_scope(&g_ipc_mtoc.scope[0], ISR_CONTROL_FREQ.f,
+               SCOPE_FREQ_SAMPLING_PARAM[0].f, &(g_buf_samples_ctom[0].f),
+               SIZE_BUF_SAMPLES_CTOM/2, SCOPE_SOURCE_PARAM[0].p_f,
                (void *) 0);
 
-    init_scope(&g_ipc_mtoc.scope[1], g_ipc_mtoc.control.freq_isr_control.f,
-               g_param_bank.scope.freq_sampling[1].f,
+    init_scope(&g_ipc_mtoc.scope[1], ISR_CONTROL_FREQ.f,
+               SCOPE_FREQ_SAMPLING_PARAM[1].f,
                &(g_buf_samples_ctom[SIZE_BUF_SAMPLES_CTOM/2].f),
-               SIZE_BUF_SAMPLES_CTOM/2, g_param_bank.scope.p_source[1].p_f,
+               SIZE_BUF_SAMPLES_CTOM/2, SCOPE_SOURCE_PARAM[1].p_f,
                (void *) 0);
 
 }

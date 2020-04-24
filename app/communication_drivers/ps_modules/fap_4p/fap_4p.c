@@ -312,14 +312,14 @@ void fap_4p_system_config()
     init_iib();
 
     init_wfmref(&WFMREF[0], WFMREF[0].wfmref_selected.u16, WFMREF[0].sync_mode.enu,
-                g_ipc_mtoc.control.freq_isr_control.f,
-                g_ipc_mtoc.control.freq_timeslicer[TIMESLICER_WFMREF].f,
+                ISR_CONTROL_FREQ.f,
+                TIMESLICER_FREQ[TIMESLICER_WFMREF].f,
                 WFMREF[0].gain.f, WFMREF[0].offset.f, &g_wfmref_data.data[0][0].f,
                 SIZE_WFMREF, &g_ipc_ctom.ps_module[0].ps_reference.f);
 
-    init_scope(&g_ipc_mtoc.scope[0], g_ipc_mtoc.control.freq_isr_control.f,
-               g_param_bank.scope.freq_sampling[0].f, &(g_buf_samples_ctom[0].f),
-               SIZE_BUF_SAMPLES_CTOM, g_param_bank.scope.p_source[0].p_f,
+    init_scope(&g_ipc_mtoc.scope[0], ISR_CONTROL_FREQ.f,
+               SCOPE_FREQ_SAMPLING_PARAM[0].f, &(g_buf_samples_ctom[0].f),
+               SIZE_BUF_SAMPLES_CTOM, SCOPE_SOURCE_PARAM[0].p_f,
                (void *) 0);
 }
 

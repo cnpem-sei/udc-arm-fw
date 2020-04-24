@@ -1004,45 +1004,45 @@ uint8_t bsmp_cfg_siggen(uint8_t *input, uint8_t *output)
     }
     else
     {
-        if(g_ipc_ctom.siggen.enable.u16)
+        if(g_ipc_ctom.siggen[g_current_ps_id].enable.u16)
         {
             *output = 7;
         }
         else
         {
-            g_ipc_mtoc.siggen.type.u16       = (input[1] << 8) | input[0];
+            g_ipc_mtoc.siggen[g_current_ps_id].type.u16 = (input[1] << 8) | input[0];
 
-            g_ipc_mtoc.siggen.num_cycles.u16 = (input[3] << 8) | input[2];
+            g_ipc_mtoc.siggen[g_current_ps_id].num_cycles.u16 = (input[3] << 8) | input[2];
 
-            g_ipc_mtoc.siggen.freq.u32       = (input[7]<< 24) |
-                                                  (input[6] << 16) |
-                                                  (input[5] << 8) | input[4];
+            g_ipc_mtoc.siggen[g_current_ps_id].freq.u32 = (input[7]<< 24) |
+                                                          (input[6] << 16) |
+                                                          (input[5] << 8) | input[4];
 
-            g_ipc_mtoc.siggen.amplitude.u32  = (input[11]<< 24) |
+            g_ipc_mtoc.siggen[g_current_ps_id].amplitude.u32  = (input[11]<< 24) |
                                                   (input[10] << 16) |
                                                   (input[9] << 8) | input[8];
 
-            g_ipc_mtoc.siggen.offset.u32     = (input[15]<< 24) |
+            g_ipc_mtoc.siggen[g_current_ps_id].offset.u32     = (input[15]<< 24) |
                                                   (input[14] << 16) |
                                                   (input[13] << 8) | input[12];
 
-            g_ipc_mtoc.siggen.aux_param[0].u32 = (input[19]<< 24) |
+            g_ipc_mtoc.siggen[g_current_ps_id].aux_param[0].u32 = (input[19]<< 24) |
                                                     (input[18] << 16) |
                                                     (input[17] << 8) | input[16];
 
-            g_ipc_mtoc.siggen.aux_param[1].u32 = (input[23]<< 24) |
+            g_ipc_mtoc.siggen[g_current_ps_id].aux_param[1].u32 = (input[23]<< 24) |
                                                     (input[22] << 16) |
                                                     (input[21] << 8) | input[20];
 
-            g_ipc_mtoc.siggen.aux_param[2].u32 = (input[27]<< 24) |
+            g_ipc_mtoc.siggen[g_current_ps_id].aux_param[2].u32 = (input[27]<< 24) |
                                                     (input[26] << 16) |
                                                     (input[25] << 8) | input[24];
 
-            g_ipc_mtoc.siggen.aux_param[3].u32 = (input[31]<< 24) |
+            g_ipc_mtoc.siggen[g_current_ps_id].aux_param[3].u32 = (input[31]<< 24) |
                                                     (input[30] << 16) |
                                                     (input[29] << 8) | input[28];
 
-            send_ipc_lowpriority_msg(0, Cfg_SigGen);
+            send_ipc_lowpriority_msg(g_current_ps_id, Cfg_SigGen);
 
             while( (HWREG(MTOCIPC_BASE + IPC_O_MTOCIPCFLG) & low_priority_msg_to_reg(Cfg_SigGen) ) &&
                    (ulTimeout<TIMEOUT_DSP_IPC_ACK) )
@@ -1083,19 +1083,19 @@ uint8_t bsmp_set_siggen(uint8_t *input, uint8_t *output)
     }
     else
     {
-        g_ipc_mtoc.siggen.freq.u32       = (input[3]<< 24) |
+        g_ipc_mtoc.siggen[g_current_ps_id].freq.u32       = (input[3]<< 24) |
                                               (input[2] << 16) |
                                               (input[1] << 8) | input[0];
 
-        g_ipc_mtoc.siggen.amplitude.u32  = (input[7]<< 24) |
+        g_ipc_mtoc.siggen[g_current_ps_id].amplitude.u32  = (input[7]<< 24) |
                                               (input[6] << 16) |
                                               (input[5] << 8) | input[4];
 
-        g_ipc_mtoc.siggen.offset.u32     = (input[11]<< 24) |
+        g_ipc_mtoc.siggen[g_current_ps_id].offset.u32     = (input[11]<< 24) |
                                               (input[10] << 16) |
                                               (input[9] << 8) | input[8];
 
-        send_ipc_lowpriority_msg(0, Set_SigGen);
+        send_ipc_lowpriority_msg(g_current_ps_id, Set_SigGen);
 
         while( (HWREG(MTOCIPC_BASE + IPC_O_MTOCIPCFLG) & low_priority_msg_to_reg(Set_SigGen) ) &&
                (ulTimeout<TIMEOUT_DSP_IPC_ACK) )
@@ -2091,14 +2091,14 @@ void bsmp_init(uint8_t server)
     create_bsmp_var(3, server, 128, false, firmwares_version.u8);
     create_bsmp_var(4, server, 4, false, g_ipc_ctom.counter_set_slowref.u8);
     create_bsmp_var(5, server, 4, false, g_ipc_ctom.counter_sync_pulse.u8);
-    create_bsmp_var(6, server, 2, false, g_ipc_ctom.siggen.enable.u8);
-    create_bsmp_var(7, server, 2, false, g_ipc_ctom.siggen.type.u8);
-    create_bsmp_var(8, server, 2, false, g_ipc_ctom.siggen.num_cycles.u8);
-    create_bsmp_var(9, server, 4, false, g_ipc_ctom.siggen.n.u8);
-    create_bsmp_var(10, server, 4, false, g_ipc_ctom.siggen.freq.u8);
-    create_bsmp_var(11, server, 4, false, g_ipc_ctom.siggen.amplitude.u8);
-    create_bsmp_var(12, server, 4, false, g_ipc_ctom.siggen.offset.u8);
-    create_bsmp_var(13, server, 16, false, g_ipc_ctom.siggen.aux_param[0].u8);
+    create_bsmp_var(6, server, 2, false, g_ipc_ctom.siggen[server].enable.u8);
+    create_bsmp_var(7, server, 2, false, g_ipc_ctom.siggen[server].type.u8);
+    create_bsmp_var(8, server, 2, false, g_ipc_ctom.siggen[server].num_cycles.u8);
+    create_bsmp_var(9, server, 4, false, g_ipc_ctom.siggen[server].n.u8);
+    create_bsmp_var(10, server, 4, false, g_ipc_ctom.siggen[server].freq.u8);
+    create_bsmp_var(11, server, 4, false, g_ipc_ctom.siggen[server].amplitude.u8);
+    create_bsmp_var(12, server, 4, false, g_ipc_ctom.siggen[server].offset.u8);
+    create_bsmp_var(13, server, 16, false, g_ipc_ctom.siggen[server].aux_param[0].u8);
     create_bsmp_var(14, server, 2, false, g_ipc_ctom.wfmref[server].wfmref_selected.u8);
     create_bsmp_var(15, server, 2, false, g_ipc_ctom.wfmref[server].sync_mode.u8);
     create_bsmp_var(16, server, 4, false, g_ipc_ctom.wfmref[server].gain.u8);

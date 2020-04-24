@@ -17,8 +17,8 @@
  *
  */
 
-#include<stdint.h>
-#include<stdbool.h>
+#include <stdint.h>
+#include <stdbool.h>
 
 #include "inc/hw_memmap.h"
 #include "inc/hw_ipc.h"
@@ -241,16 +241,16 @@ void fbp_system_config()
     for(i = 0; i < NUM_MAX_PS_MODULES; i++)
     {
         init_wfmref(&WFMREF[i], WFMREF[0].wfmref_selected.u16,
-                    WFMREF[0].sync_mode.enu,g_ipc_mtoc.control.freq_isr_control.f,
-                    g_ipc_mtoc.control.freq_timeslicer[TIMESLICER_WFMREF].f,
+                    WFMREF[0].sync_mode.enu,ISR_CONTROL_FREQ.f,
+                    TIMESLICER_FREQ[TIMESLICER_WFMREF].f,
                     WFMREF[0].gain.f, WFMREF[0].offset.f, &g_wfmref_data.data_fbp[i][0][0].f,
                     SIZE_WFMREF_FBP, &g_ipc_ctom.ps_module[i].ps_reference.f);
 
-        init_scope(&g_ipc_mtoc.scope[i], g_ipc_mtoc.control.freq_isr_control.f,
-                   g_param_bank.scope.freq_sampling[i].f,
+        init_scope(&g_ipc_mtoc.scope[i], ISR_CONTROL_FREQ.f,
+                   SCOPE_FREQ_SAMPLING_PARAM[i].f,
                    &(g_buf_samples_ctom[SIZE_BUF_SAMPLES_CTOM * i / NUM_MAX_PS_MODULES].f),
                    SIZE_BUF_SAMPLES_CTOM / NUM_MAX_PS_MODULES,
-                   g_param_bank.scope.p_source[i].p_f,
+                   SCOPE_SOURCE_PARAM[i].p_f,
                    (void *) 0);
     }
 }

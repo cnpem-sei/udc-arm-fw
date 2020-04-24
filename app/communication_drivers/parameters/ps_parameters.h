@@ -45,6 +45,107 @@
 #define NUM_MAX_PARAMETERS      64
 #define NUM_MAX_FLOATS          200
 
+/**
+ * General info
+ */
+#define PS_NAME                 g_param_bank.ps_name
+#define PS_MODEL                g_param_bank.ps_model
+#define NUM_PS_MODULES          g_param_bank.num_ps_modules
+
+/**
+ * Communication parameters
+ */
+#define COMMAND_INTERFACE       g_param_bank.communication.command_interface
+#define RS485_BAUDRATE          g_param_bank.communication.rs485_baud
+#define RS485_ADDRESS           g_param_bank.communication.rs485_address
+#define RS485_TERMINATION       g_param_bank.communication.rs485_termination
+#define UDCNET_ADDRESS          g_param_bank.communication.udcnet_address
+#define ETHERNET_IP             g_param_bank.communication.ethernet_ip
+#define ETHERNET_MASK           g_param_bank.communication.ethernet_mask
+#define BUZZER_VOLUME           g_param_bank.communication.buzzer_volume
+
+/**
+ * Control parameters
+ */
+#define ISR_CONTROL_FREQ            g_param_bank.control.freq_isr_control
+#define TIMESLICER_FREQ             g_param_bank.control.freq_timeslicer
+
+#define MAX_REF                     g_param_bank.control.max_ref
+#define MIN_REF                     g_param_bank.control.min_ref
+#define MAX_REF_OL                  g_param_bank.control.max_ref_openloop
+#define MIN_REF_OL                  g_param_bank.control.min_ref_openloop
+#define MAX_SLEWRATE_SLOWREF        g_param_bank.control.slewrate_slowref
+#define MAX_SLEWRATE_SIGGEN_AMP     g_param_bank.control.slewrate_siggen_amp
+#define MAX_SLEWRATE_SIGGEN_OFFSET  g_param_bank.control.slewrate_siggen_offset
+#define MAX_SLEWRATE_WFMREF         g_param_bank.control.slewrate_wfmref
+
+/**
+ * PWM parameters
+ */
+#define PWM_FREQ                    g_param_bank.pwm.freq_pwm
+#define PWM_DEAD_TIME               g_param_bank.pwm.dead_time
+#define PWM_MAX_DUTY                g_param_bank.pwm.max_duty
+#define PWM_MIN_DUTY                g_param_bank.pwm.min_duty
+#define PWM_MAX_DUTY_OL             g_param_bank.pwm.max_duty_openloop
+#define PWM_MIN_DUTY_OL             g_param_bank.pwm.min_duty_openloop
+#define PWM_LIM_DUTY_SHARE          g_param_bank.pwm.lim_duty_share
+
+/**
+ * HRADC parameters
+ */
+#define NUM_HRADC_BOARDS            g_param_bank.hradc.num_hradc
+#define HRADC_SPI_CLK               g_param_bank.hradc.freq_spiclk
+#define HRADC_FREQ_SAMP             g_param_bank.hradc.freq_hradc_sampling
+
+#define HRADC_HEATER_ENABLE         g_param_bank.hradc.enable_heater
+#define HRADC_MONITOR_ENABLE        g_param_bank.hradc.enable_monitor
+#define TRANSDUCER_OUTPUT_TYPE      g_param_bank.hradc.type_transducer_output
+#if (HRADC_v2_0)
+    #define TRANSDUCER_GAIN         -g_p_bank.hradc.gain_transducer
+#endif
+#if (HRADC_v2_1)
+    #define TRANSDUCER_GAIN         g_param_bank.hradc.gain_transducer
+#endif
+#define TRANSDUCER_OFFSET           g_param_bank.hradc.offset_transducer
+
+/**
+ * SigGen parameters
+ */
+#define SIGGEN_TYPE_PARAM           g_param_bank.siggen.type
+#define SIGGEN_NUM_CYCLES_PARAM     g_param_bank.siggen.num_cycles
+#define SIGGEN_FREQ_PARAM           g_param_bank.siggen.freq
+#define SIGGEN_AMP_PARAM            g_param_bank.siggen.amplitude
+#define SIGGEN_OFFSET_PARAM         g_param_bank.siggen.offset
+#define SIGGEN_AUX_PARAM            g_param_bank.siggen.aux_param
+
+/**
+ * WfmRef parameters
+ */
+#define WFMREF_SELECTED_PARAM       g_param_bank.wfmref.selected
+#define WFMREF_SYNC_MODE_PARAM      g_param_bank.wfmref.sync_mode
+#define WFMREF_GAIN_PARAM           g_param_bank.wfmref.gain
+#define WFMREF_OFFSET_PARAM         g_param_bank.wfmref.offset
+
+/**
+ * Analog Variables parameters
+ */
+#define ANALOG_VARS_MAX             g_param_bank.analog_vars.max
+#define ANALOG_VARS_MIN             g_param_bank.analog_vars.min
+
+/**
+ * Interlocks parameters
+ */
+#define HARD_INTERLOCKS_DEBOUNCE_TIME   g_param_bank.interlocks.hard_itlks_debounce_time
+#define HARD_INTERLOCKS_RESET_TIME      g_param_bank.interlocks.hard_itlks_reset_time
+#define SOFT_INTERLOCKS_DEBOUNCE_TIME   g_param_bank.interlocks.soft_itlks_debounce_time
+#define SOFT_INTERLOCKS_RESET_TIME      g_param_bank.interlocks.soft_itlks_reset_time
+
+/**
+ * Scope parameters
+ */
+#define SCOPE_FREQ_SAMPLING_PARAM   g_param_bank.scope.freq_sampling
+#define SCOPE_SOURCE_PARAM          g_param_bank.scope.p_source
+
 typedef enum
 {
     PS_Name,
@@ -95,7 +196,7 @@ typedef enum
     SigGen_Offset,
     SigGen_Aux_Param,
 
-    WfmRef_ID_WfmRef,
+    WfmRef_Selected,
     WfmRef_SyncMode,
     WfmRef_Gain,
     WfmRef_Offset,
@@ -156,10 +257,10 @@ typedef struct
 {
     u_float_t   freq_isr_control;
     u_float_t   freq_timeslicer[NUM_MAX_TIMESLICERS];
-    u_float_t   max_ref;
-    u_float_t   min_ref;
-    u_float_t   max_ref_openloop;
-    u_float_t   min_ref_openloop;
+    u_float_t   max_ref[NUM_MAX_PS_MODULES];
+    u_float_t   min_ref[NUM_MAX_PS_MODULES];
+    u_float_t   max_ref_openloop[NUM_MAX_PS_MODULES];
+    u_float_t   min_ref_openloop[NUM_MAX_PS_MODULES];
     u_float_t   slewrate_slowref;
     u_float_t   slewrate_siggen_amp;
     u_float_t   slewrate_siggen_offset;
@@ -205,22 +306,20 @@ typedef struct
 
 typedef struct
 {
-    u_uint16_t  type[NUM_MAX_PS_MODULES];
-    u_uint16_t  num_cycles[NUM_MAX_PS_MODULES];
-    u_float_t   freq[NUM_MAX_PS_MODULES];
-    u_float_t   amplitude[NUM_MAX_PS_MODULES];
-    u_float_t   offset[NUM_MAX_PS_MODULES];
-    u_float_t   aux_param_0[NUM_MAX_PS_MODULES];
-    u_float_t   aux_param_1[NUM_MAX_PS_MODULES];
-    u_float_t   aux_param_2[NUM_MAX_PS_MODULES];
-    u_float_t   aux_param_3[NUM_MAX_PS_MODULES];
+    u_uint16_t  type;
+    u_uint16_t  num_cycles;
+    u_float_t   freq;
+    u_float_t   amplitude;
+    u_float_t   offset;
+    u_float_t   aux_param[NUM_SIGGEN_AUX_PARAM];
 } param_siggen_t;
 
 typedef struct
 {
-    u_float_t   sync_mode[NUM_MAX_PS_MODULES];
-    u_float_t   gain[NUM_MAX_PS_MODULES];
-    u_float_t   offset[NUM_MAX_PS_MODULES];
+    u_float_t   selected;
+    u_float_t   sync_mode;
+    u_float_t   gain;
+    u_float_t   offset;
 } param_wfmref_t;
 
 

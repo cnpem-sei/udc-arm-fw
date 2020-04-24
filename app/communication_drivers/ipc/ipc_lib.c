@@ -80,24 +80,13 @@ void init_ipc(void)
         g_ipc_mtoc.ps_module[uiloop].ps_soft_interlock.u32 = 0;
         g_ipc_mtoc.ps_module[uiloop].ps_hard_interlock.u32 = 0;
 
-        //init_buffer(&g_ipc_mtoc.buf_samples[uiloop], &(g_buf_samples_mtoc[0].f),
-        //            SIZE_BUF_SAMPLES_MTOC);
+        g_ipc_mtoc.siggen[uiloop].enable.u16 = 0;
     }
 
     for (uiloop = 0; uiloop < (uint8_t) get_param(Num_PS_Modules,0); uiloop++)
     {
         g_ipc_mtoc.ps_module[uiloop].ps_status.bit.active = 1;
     }
-
-    /**
-     * Initialize SigGen
-     */
-    g_ipc_mtoc.siggen.enable.u16 = 0;
-
-    /**
-     * Initilize WfmRef
-     */
-    //init_buffer( &(WFMREF.wfmref_data), &(g_wfmref[0].f), SIZE_WFMREF);
 
     /// Convert WfmRef pointers to DSP memory mapping
     //WFMREF.wfmref_data.p_buf_idx.f =

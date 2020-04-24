@@ -126,7 +126,7 @@ int main(void) {
 
 	IPCMtoCBootControlSystem(CBROM_MTOC_BOOTMODE_BOOT_FROM_FLASH);
 
-    switch(g_ipc_mtoc.ps_model)
+    switch((ps_model_t) get_param(PS_Model,0))
     {
         case FBP:
         {
