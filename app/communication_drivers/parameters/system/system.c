@@ -69,6 +69,8 @@ void init_system(void)
 
 	hradc_rst_ctrl(1);
 
+	init_i2c_offboard_isolated();
+
 	init_parameters_bank();
 
 	load_param_bank();
@@ -78,8 +80,6 @@ void init_system(void)
 	init_control_framework(&g_controller_mtoc);
 
 	load_dsp_modules_eeprom();
-
-    init_i2c_offboard_isolated();
 
 	flash_mem_init();
 

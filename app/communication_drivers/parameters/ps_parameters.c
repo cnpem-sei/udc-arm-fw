@@ -34,6 +34,7 @@
 #include "communication_drivers/ipc/ipc_lib.h"
 #include "communication_drivers/i2c_onboard/eeprom.h"
 #include "communication_drivers/i2c_onboard/i2c_onboard.h"
+#include "communication_drivers/i2c_offboard_isolated/i2c_offboard_isolated.h"
 #include "communication_drivers/parameters/ps_parameters.h"
 
 static const uint16_t param_addresses[NUM_MAX_PARAMETERS] =
@@ -293,10 +294,11 @@ uint8_t save_param_eeprom(param_id_t id, uint16_t n)
                size_type);
 
         // Send new parameter to EEPROM
-        GPIOPinWrite(EEPROM_WP_BASE, EEPROM_WP_PIN, OFF);
-        write_i2c(I2C_SLV_ADDR_EEPROM, 2+size_type, data_eeprom);
+        //GPIOPinWrite(EEPROM_WP_BASE, EEPROM_WP_PIN, OFF);
+        //write_i2c(I2C_SLV_ADDR_EEPROM, 2+size_type, data_eeprom);
+        write_i2c_offboard_isolated(I2C_SLV_ADDR_EEPROM, 2+size_type, data_eeprom);
         SysCtlDelay(375000);                // Wait 5 ms for EEPROM write cycle
-        GPIOPinWrite(EEPROM_WP_BASE, EEPROM_WP_PIN, ON);
+        //GPIOPinWrite(EEPROM_WP_BASE, EEPROM_WP_PIN, ON);
 
         return 1;
     }
@@ -321,7 +323,8 @@ uint8_t load_param_eeprom(param_id_t id, uint16_t n)
         data_eeprom[0] = u_add.u8[1];
         data_eeprom[1] = u_add.u8[0];
 
-        read_i2c(I2C_SLV_ADDR_EEPROM, DOUBLE_ADDRESS, size_type, data_eeprom);
+        //read_i2c(I2C_SLV_ADDR_EEPROM, DOUBLE_ADDRESS, size_type, data_eeprom);
+        read_i2c_offboard_isolated(I2C_SLV_ADDR_EEPROM, DOUBLE_ADDRESS, size_type, data_eeprom);
 
         memcpy( (g_param_bank.param_info[id].p_val.u8 + size_type*n), &data_eeprom[0],
                 size_type);
