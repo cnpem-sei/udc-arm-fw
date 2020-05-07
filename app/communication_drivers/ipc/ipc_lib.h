@@ -174,6 +174,4 @@ extern uint16_t ipc_mtoc_busy (uint32_t ulFlags);
 
 extern void get_firmwares_version(void);
 
-extern void init_parameters_bank(void);
-
 #endif /* IPC_LIB_H_ */

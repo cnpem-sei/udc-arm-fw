@@ -52,10 +52,45 @@
 
 void init_system(void)
 {
+    /**
+     * Enable I2C interface for the following onboard componentes (therefore,
+     * it must be initialized before them):
+     *
+     *      - Board temperature sensor
+     *      - EEPROM memory
+     *      - I/O Expander
+     *      - RTC Timer
+     */
+
     init_i2c_onboard();
 
+    /**
+     * Initialize I/O expander. It provides digital I/O for the following
+     * functionalities (therefore, it must be initialized before them):
+     *
+     *      - 5V buffers
+     *      - Buzzer
+     *      - DC/DC converter for isolated circuits
+     *      - Front panel LEDs
+     *      - HRADC
+     *      - IHM
+     *      - RS485
+     *      - SD card
+     */
 	init_extern_io();
 
+	/**
+	 * Initialize 5V buffers. It provides signal path for the following
+     * functionalities (therefore, it must be initialized before them):
+     *
+     *      - Backplane RS485 interface
+     *      - Backplane UART*
+     *      - CAN interface
+     *      - External interruptions and synchronization signals
+     *      - HRADC
+     *      - Offboard I2C interface
+     *      - Non-isolated PWM
+	 */
 	if(HARDWARE_VERSION == 0x21)
     {
 	    buffers_ctrl(1);
@@ -71,9 +106,11 @@ void init_system(void)
 
 	init_i2c_offboard_isolated();
 
+    init_i2c_offboard_external_devices();
+
 	init_parameters_bank();
 
-	load_param_bank();
+	//load_param_bank();
 
 	init_ipc();
 
@@ -98,8 +135,6 @@ void init_system(void)
 	rtc_init();
 
 	adcp_init();
-
-	init_i2c_offboard_external_devices();
 
 	/**
 	 * TODO: Initialization of IHM, CAN, USB and SDRAM

@@ -101,31 +101,30 @@ int main(void) {
 	                         SYSCTL_SYSDIV_1 | SYSCTL_M3SSDIV_2 |
 	                         SYSCTL_XCLKDIV_4);
 
-// Copy time critical code and Flash setup code to RAM
-// This includes the following functions:  InitFlash();
-// The  RamfuncsLoadStart, RamfuncsLoadSize, and RamfuncsRunStart
-// symbols are created by the linker. Refer to the device .cmd file.
+	// Copy time critical code and Flash setup code to RAM
+	// This includes the following functions:  InitFlash();
+	// The  RamfuncsLoadStart, RamfuncsLoadSize, and RamfuncsRunStart
+	// symbols are created by the linker. Refer to the device .cmd file.
     memcpy(&RamfuncsRunStart, &RamfuncsLoadStart, (size_t) &RamfuncsLoadSize);
 
-// Call Flash Initialization to setup flash waitstates
-// This function must reside in RAM
+    // Call Flash Initialization to setup flash waitstates
+    // This function must reside in RAM
     FlashInit();
 
     // Configure the board peripherals
     pinout_setup();
 
-    // assign S0 and S1 of the shared ram for use by the c28
+    // assign S1, S6 and S7 of the shared ram for use by the c28
 	// Details of how c28 uses these memory sections is defined
 	// in the c28 linker file.
 	RAMMReqSharedMemAccess((S1_ACCESS | S6_ACCESS | S7_ACCESS), C28_MASTER);
 
 	init_system();
 
-	// Enable processor interrupts.
-	//IntMasterEnable();
-
+	/// Enable C28 boot
 	IPCMtoCBootControlSystem(CBROM_MTOC_BOOTMODE_BOOT_FROM_FLASH);
 
+    /// Initialize power supply model
     switch((ps_model_t) get_param(PS_Model,0))
     {
         case FBP:
@@ -224,10 +223,15 @@ int main(void) {
         }
     }
 
-    /// Delay to wait C28 initialization of firmware version
+    /**
+     *  Delay to wait C28 initialization of firmware version. This value was
+     *  estimated based on measurements of initialization time.
+     */
     SysCtlDelay(150000);
     GPIOPinWrite(DEBUG_BASE, DEBUG_PIN, ON);
     get_firmwares_version();
+
+    /// Enable processor interrupts.
     IntMasterEnable();
 
     for (;;)

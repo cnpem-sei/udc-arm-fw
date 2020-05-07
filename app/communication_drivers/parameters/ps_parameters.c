@@ -37,7 +37,80 @@
 #include "communication_drivers/i2c_offboard_isolated/i2c_offboard_isolated.h"
 #include "communication_drivers/parameters/ps_parameters.h"
 
-static const uint16_t param_addresses[NUM_MAX_PARAMETERS] =
+const char * default_ps_name = 'Initialization mode - invalid parameter bank                    ';
+const uint8_t default_ip[4] = {10, 0, 25, 43};
+const uint8_t default_ethernet_mask[4] = {255, 255, 255, 0};
+
+static const uint16_t param_addresses_onboard_eeprom[NUM_MAX_PARAMETERS] =
+{
+    [PS_Name] = 0x0000,
+    [PS_Model] = 0x0040,
+    [Num_PS_Modules] = 0x0042,
+
+    [RS485_Baudrate] = 0x0044,
+    [RS485_Address] = 0x0048,
+    [RS485_Termination] = 0x0050,
+    [UDCNet_Address] = 0x0052,
+    [Ethernet_IP] = 0x0054,
+    [Ethernet_Subnet_Mask] = 0x0058,
+    [Command_Interface] = 0x005C,
+    [Buzzer_Volume] = 0x005E,
+
+    [Freq_ISR_Controller] = 0x0080,
+    [Freq_TimeSlicer] = 0x0084,
+    [Max_Ref] = 0x00A0,
+    [Min_Ref] = 0x00A4,
+    [Max_Ref_OpenLoop] = 0x00A8,
+    [Min_Ref_OpenLoop] = 0x00AC,
+    [Max_SlewRate_SlowRef] = 0x00B0,
+    [Max_SlewRate_SigGen_Amp] = 0x00B4,
+    [Max_SlewRate_SigGen_Offset] = 0x00B8,
+    [Max_SlewRate_WfmRef] = 0x00BC,
+
+    [PWM_Freq] = 0x00C0,
+    [PWM_DeadTime] = 0x00C4,
+    [PWM_Max_Duty] = 0x00C8,
+    [PWM_Min_Duty] = 0x00CC,
+    [PWM_Max_Duty_OpenLoop] = 0x00D0,
+    [PWM_Min_Duty_OpenLoop] = 0x00D4,
+    [PWM_Lim_Duty_Share] = 0x00D8,
+
+    [HRADC_Num_Boards] = 0x00E0,
+    [HRADC_Freq_SPICLK] = 0x00E2,
+    [HRADC_Freq_Sampling] = 0x00E4,
+    [HRADC_Enable_Heater] = 0x00E8,
+    [HRADC_Enable_Monitor] = 0x00F0,
+    [HRADC_Type_Transducer] = 0x00F8,
+    [HRADC_Gain_Transducer] = 0x0100,
+    [HRADC_Offset_Transducer] = 0x0110,
+
+    [SigGen_Type] = 0x0120,
+    [SigGen_Num_Cycles] = 0x0122,
+    [SigGen_Freq] = 0x0124,
+    [SigGen_Amplitude] = 0x0128,
+    [SigGen_Offset] = 0x012C,
+    [SigGen_Aux_Param] = 0x0130,
+
+    [WfmRef_Selected] = 0x0140,
+    [WfmRef_SyncMode] = 0x0142,
+    [WfmRef_Gain] = 0x0144,
+    [WfmRef_Offset] = 0x148,
+
+    [Analog_Var_Max] = 0x160,
+    [Analog_Var_Min] = 0x260,
+
+    [Hard_Interlocks_Debounce_Time] = 0x400,
+    [Hard_Interlocks_Reset_Time] = 0x480,
+    [Soft_Interlocks_Debounce_Time] = 0x500,
+    [Soft_Interlocks_Reset_Time] = 0x580,
+
+    [Scope_Sampling_Frequency] = 0x740,
+    [Scope_Source] = 0x750,
+
+    [Enable_Onboard_EEPROM] = 0x1FFF
+};
+
+static const uint16_t param_addresses_offboard_eeprom[NUM_MAX_PARAMETERS] =
 {
     [PS_Name] = 0x0000,
     [PS_Model] = 0x0040,
@@ -118,7 +191,7 @@ void init_param(param_id_t id, param_type_t type, uint16_t num_elements, uint8_t
         g_param_bank.param_info[id].id = id;
         g_param_bank.param_info[id].type = type;
         g_param_bank.param_info[id].num_elements = num_elements;
-        g_param_bank.param_info[id].eeprom_add.u16 = param_addresses[id];
+        g_param_bank.param_info[id].eeprom_add.u16 = param_addresses_offboard_eeprom[id];
         g_param_bank.param_info[id].p_val.u8 = p_param;
 
         switch(g_param_bank.param_info[id].type)
@@ -337,7 +410,211 @@ uint8_t load_param_eeprom(param_id_t id, uint16_t n)
     }
 }
 
-void init_parameters_bank(void)
+uint8_t save_param_onboard_eeprom(param_id_t id, uint16_t n)
+{
+    static uint8_t size_type;
+    static u_uint16_t u_add;
+
+    // Check wheter index is inside parameter range
+    if(n < g_param_bank.param_info[id].num_elements)
+    {
+        size_type = g_param_bank.param_info[id].size_type;
+
+        // Increment element position on parameter address and prepare for EEPROM
+        u_add.u16 = param_addresses_onboard_eeprom[id] + size_type*n;
+        data_eeprom[0] = u_add.u8[1];
+        data_eeprom[1] = u_add.u8[0];
+
+        // Prepare EEPROM data
+        memcpy(&data_eeprom[2], (g_param_bank.param_info[id].p_val.u8 + size_type*n),
+               size_type);
+
+        // Send new parameter to EEPROM
+        GPIOPinWrite(EEPROM_WP_BASE, EEPROM_WP_PIN, OFF);
+        write_i2c(I2C_SLV_ADDR_EEPROM, 2+size_type, data_eeprom);
+        SysCtlDelay(375000);                // Wait 5 ms for EEPROM write cycle
+        GPIOPinWrite(EEPROM_WP_BASE, EEPROM_WP_PIN, ON);
+
+        return 1;
+    }
+    else
+    {
+        return 0;
+    }
+}
+
+uint8_t load_param_onboard_eeprom(param_id_t id, uint16_t n)
+{
+    static uint8_t size_type;
+    static u_uint16_t u_add;
+
+    // Check wheter index is inside parameter range
+    if(n < g_param_bank.param_info[id].num_elements)
+    {
+        size_type = g_param_bank.param_info[id].size_type;
+
+        // Increment element position on parameter address and prepare for EEPROM
+        u_add.u16 = param_addresses_onboard_eeprom[id] + size_type*n;
+        data_eeprom[0] = u_add.u8[1];
+        data_eeprom[1] = u_add.u8[0];
+
+        read_i2c(I2C_SLV_ADDR_EEPROM, DOUBLE_ADDRESS, size_type, data_eeprom);
+
+        memcpy( (g_param_bank.param_info[id].p_val.u8 + size_type*n), &data_eeprom[0],
+                size_type);
+
+        return 1;
+    }
+    else
+    {
+        return 0;
+    }
+}
+
+uint8_t save_param_offboard_eeprom(param_id_t id, uint16_t n)
+{
+    static uint8_t size_type;
+    static u_uint16_t u_add;
+
+    // Check wheter index is inside parameter range
+    if(n < g_param_bank.param_info[id].num_elements)
+    {
+        size_type = g_param_bank.param_info[id].size_type;
+
+        // Increment element position on parameter address and prepare for EEPROM
+        u_add.u16 = param_addresses_offboard_eeprom[id] + size_type*n;
+        data_eeprom[0] = u_add.u8[1];
+        data_eeprom[1] = u_add.u8[0];
+
+        // Prepare EEPROM data
+        memcpy(&data_eeprom[2], (g_param_bank.param_info[id].p_val.u8 + size_type*n),
+               size_type);
+
+        // Send new parameter to EEPROM
+        write_i2c_offboard_isolated(I2C_SLV_ADDR_EEPROM, 2+size_type, data_eeprom);
+        SysCtlDelay(375000);                // Wait 5 ms for EEPROM write cycle
+
+        return 1;
+    }
+    else
+    {
+        return 0;
+    }
+}
+
+uint8_t load_param_offboard_eeprom(param_id_t id, uint16_t n)
+{
+    static uint8_t size_type;
+    static u_uint16_t u_add;
+
+    // Check wheter index is inside parameter range
+    if(n < g_param_bank.param_info[id].num_elements)
+    {
+        size_type = g_param_bank.param_info[id].size_type;
+
+        // Increment element position on parameter address and prepare for EEPROM
+        u_add.u16 = param_addresses_offboard_eeprom[id] + size_type*n;
+        data_eeprom[0] = u_add.u8[1];
+        data_eeprom[1] = u_add.u8[0];
+
+        read_i2c_offboard_isolated(I2C_SLV_ADDR_EEPROM, DOUBLE_ADDRESS, size_type, data_eeprom);
+
+        memcpy( (g_param_bank.param_info[id].p_val.u8 + size_type*n), &data_eeprom[0],
+                size_type);
+
+        return 1;
+    }
+    else
+    {
+        return 0;
+    }
+}
+
+void save_param_bank(void)
+{
+    param_id_t id;
+    uint16_t n;
+
+    for(id = 0; id < NUM_PARAMETERS; id++)
+    {
+        for(n = 0; n < g_param_bank.param_info[id].num_elements; n++)
+        {
+            save_param_eeprom(id, n);
+        }
+    }
+}
+
+void load_param_bank(void)
+{
+    param_id_t id;
+    uint16_t n;
+
+    for(id = 0; id < NUM_PARAMETERS; id++)
+    {
+        for(n = 0; n < g_param_bank.param_info[id].num_elements; n++)
+        {
+            load_param_eeprom(id, n);
+        }
+    }
+}
+
+void save_param_bank_onboard_eeprom(void)
+{
+    param_id_t id;
+    uint16_t n;
+
+    for(id = 0; id < NUM_PARAMETERS; id++)
+    {
+        for(n = 0; n < g_param_bank.param_info[id].num_elements; n++)
+        {
+            save_param_onboard_eeprom(id, n);
+        }
+    }
+}
+
+void load_param_bank_onboard_eeprom(void)
+{
+    param_id_t id;
+    uint16_t n;
+
+    for(id = 0; id < NUM_PARAMETERS; id++)
+    {
+        for(n = 0; n < g_param_bank.param_info[id].num_elements; n++)
+        {
+            load_param_onboard_eeprom(id, n);
+        }
+    }
+}
+
+void save_param_bank_offboard_eeprom(void)
+{
+    param_id_t id;
+    uint16_t n;
+
+    for(id = 0; id < NUM_PARAMETERS; id++)
+    {
+        for(n = 0; n < g_param_bank.param_info[id].num_elements; n++)
+        {
+            save_param_offboard_eeprom(id, n);
+        }
+    }
+}
+
+void load_param_bank_offboard_eeprom(void)
+{
+    param_id_t id;
+    uint16_t n;
+
+    for(id = 0; id < NUM_PARAMETERS; id++)
+    {
+        for(n = 0; n < g_param_bank.param_info[id].num_elements; n++)
+        {
+            load_param_offboard_eeprom(id, n);
+        }
+    }
+}
+
+void init_param_bank_info(void)
 {
     init_param(PS_Name, is_uint8_t, SIZE_PS_NAME, &PS_NAME);
 
@@ -499,30 +776,74 @@ void init_parameters_bank(void)
                &SCOPE_SOURCE_PARAM[0].u8[0]);
 }
 
-void save_param_bank(void)
+uint8_t check_param_bank(void)
 {
-    param_id_t id;
-    uint16_t n;
-
-    for(id = 0; id < NUM_PARAMETERS; id++)
+    if(get_param(PS_Model,0) > 100)
     {
-        for(n = 0; n < g_param_bank.param_info[id].num_elements; n++)
-        {
-            save_param_eeprom(id, n);
-        }
+        return 0;
+    }
+    else
+    {
+        return 1;
     }
 }
 
-void load_param_bank(void)
+void load_param_bank_default(void)
 {
-    param_id_t id;
-    uint16_t n;
+    uint8_t n;
 
-    for(id = 0; id < NUM_PARAMETERS; id++)
+    for(n = 0; n < SIZE_PS_NAME; n++)
     {
-        for(n = 0; n < g_param_bank.param_info[id].num_elements; n++)
+        set_param(PS_Name, n, (float) default_ps_name[n]);
+    }
+
+    set_param(PS_Model, 0, Uninitialized);
+    set_param(Num_PS_Modules, 0, 1);
+
+    set_param(Command_Interface, 0, 0);
+    set_param(RS485_Baudrate, 0, 115200);
+    set_param(RS485_Address, 0, 1);
+    set_param(RS485_Address, 1, 30);
+    set_param(RS485_Address, 2, 30);
+    set_param(RS485_Address, 3, 30);
+    set_param(RS485_Termination, 0, 1);
+
+    for(n = 0; n < 4; n++)
+    {
+        set_param(Ethernet_IP, 0, default_ip[n]);
+        set_param(Ethernet_Subnet_Mask, 0, default_ethernet_mask[n]);
+    }
+
+    set_param(Buzzer_Volume, 0, 1.0);
+}
+
+void init_parameters_bank(void)
+{
+    init_param(Enable_Onboard_EEPROM, is_uint8_t, 1,
+               (uint8_t *) &ENABLE_ONBOARD_EEPROM);
+
+    load_param_onboard_eeprom(Enable_Onboard_EEPROM, 0);
+
+    init_param_bank_info();
+
+    load_param_bank_offboard_eeprom();
+
+    if(check_param_bank())
+    {
+        return;
+    }
+
+    else
+    {
+        if(get_param(Enable_Onboard_EEPROM, 0) == 0)
         {
-            load_param_eeprom(id, n);
+            load_param_bank_onboard_eeprom();
+            if(check_param_bank())
+            {
+                return;
+            }
         }
+
+        load_param_bank_default();
     }
 }

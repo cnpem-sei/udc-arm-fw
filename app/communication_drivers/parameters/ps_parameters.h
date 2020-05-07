@@ -143,8 +143,15 @@
 /**
  * Scope parameters
  */
-#define SCOPE_FREQ_SAMPLING_PARAM   g_param_bank.scope.freq_sampling
-#define SCOPE_SOURCE_PARAM          g_param_bank.scope.p_source
+#define SCOPE_FREQ_SAMPLING_PARAM       g_param_bank.scope.freq_sampling
+#define SCOPE_SOURCE_PARAM              g_param_bank.scope.p_source
+
+/**
+ * Enable Onboard EEPROM. This parameter resides only on onboard EEPROM, and is
+ * used to read parameters bank from onboard EEPROM in case offboard EEPROM is
+ * not available
+ */
+#define ENABLE_ONBOARD_EEPROM           g_param_bank.enable_onboard_eeprom
 
 typedef enum
 {
@@ -210,7 +217,9 @@ typedef enum
     Soft_Interlocks_Reset_Time,
 
     Scope_Sampling_Frequency,
-    Scope_Source
+    Scope_Source,
+
+    Enable_Onboard_EEPROM = NUM_MAX_PARAMETERS-1
 } param_id_t;
 
 typedef enum
@@ -344,6 +353,7 @@ typedef struct
     param_analog_vars_t     analog_vars;
     param_interlocks_t      interlocks;
     param_scope_t           scope;
+    uint16_t                 enable_onboard_eeprom;
 } param_bank_t;
 
 //extern volatile param_t g_parameters[NUM_MAX_PARAMETERS];
