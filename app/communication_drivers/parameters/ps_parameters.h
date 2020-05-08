@@ -155,6 +155,13 @@
 
 typedef enum
 {
+    Default_Initialization,
+    Offboard_EEPROM,
+    Onboard_EEPROM,
+} param_memory_t;
+
+typedef enum
+{
     PS_Name,
     PS_Model,
     Num_PS_Modules,
@@ -353,23 +360,23 @@ typedef struct
     param_analog_vars_t     analog_vars;
     param_interlocks_t      interlocks;
     param_scope_t           scope;
-    uint16_t                 enable_onboard_eeprom;
+    uint16_t                enable_onboard_eeprom;
+    param_memory_t          type_memory;
 } param_bank_t;
-
-//extern volatile param_t g_parameters[NUM_MAX_PARAMETERS];
 
 extern volatile param_bank_t g_param_bank;
 
 extern void init_param(param_id_t id, param_type_t type, uint16_t num_elements, uint8_t *p_param);
 extern uint8_t set_param(param_id_t id, uint16_t n, float val);
-extern uint8_t save_param_eeprom(param_id_t id, uint16_t n);
 extern float get_param(param_id_t id, uint16_t n);
-extern uint8_t load_param_eeprom(param_id_t id, uint16_t n);
+
+extern uint8_t save_param_eeprom(param_id_t id, uint16_t n, param_memory_t type_memory);
+extern uint8_t load_param_eeprom(param_id_t id, uint16_t n, param_memory_t type_memory);
+extern void save_param_bank(param_memory_t type_memory);
+extern void load_param_bank(param_memory_t type_memory);
+
+extern uint8_t check_param_bank(param_memory_t type_memory);
 
 extern void init_parameters_bank(void);
-extern void save_param_bank(void);
-extern void load_param_bank(void);
 
 #endif /* PS_PARAMETERS_H_ */
-
-

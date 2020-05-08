@@ -1393,14 +1393,16 @@ static struct bsmp_func bsmp_func_get_param = {
  */
 uint8_t bsmp_save_param_eeprom(uint8_t *input, uint8_t *output)
 {
-    u_uint16_t id, n;
+    u_uint16_t id, n, type_memory;
 
     id.u8[0] = input[0];
     id.u8[1] = input[1];
     n.u8[0] = input[2];
     n.u8[1] = input[3];
+    type_memory.u8[0] = input[4];
+    type_memory.u8[1] = input[5];
 
-    if( save_param_eeprom( (param_id_t) id.u16, n.u16) )
+    if( save_param_eeprom( (param_id_t) id.u16, n.u16, type_memory.u16) )
     {
         *output = 0;
     }
@@ -1414,7 +1416,7 @@ uint8_t bsmp_save_param_eeprom(uint8_t *input, uint8_t *output)
 
 static struct bsmp_func bsmp_func_save_param_eeprom = {
     .func_p           = bsmp_save_param_eeprom,
-    .info.input_size  = 4,
+    .info.input_size  = 6,
     .info.output_size = 1,
 };
 
@@ -1426,14 +1428,16 @@ static struct bsmp_func bsmp_func_save_param_eeprom = {
  */
 uint8_t bsmp_load_param_eeprom(uint8_t *input, uint8_t *output)
 {
-    u_uint16_t id, n;
+    u_uint16_t id, n, type_memory;
 
     id.u8[0] = input[0];
     id.u8[1] = input[1];
     n.u8[0] = input[2];
     n.u8[1] = input[3];
+    type_memory.u8[0] = input[4];
+    type_memory.u8[1] = input[5];
 
-    if( load_param_eeprom( (param_id_t) id.u16, n.u16) )
+    if( load_param_eeprom( (param_id_t) id.u16, n.u16, type_memory.u16) )
     {
         *output = 0;
     }
@@ -1447,7 +1451,7 @@ uint8_t bsmp_load_param_eeprom(uint8_t *input, uint8_t *output)
 
 static struct bsmp_func bsmp_func_load_param_eeprom = {
     .func_p           = bsmp_load_param_eeprom,
-    .info.input_size  = 4,
+    .info.input_size  = 6,
     .info.output_size = 1,
 };
 
@@ -1459,14 +1463,19 @@ static struct bsmp_func bsmp_func_load_param_eeprom = {
  */
 uint8_t bsmp_save_param_bank(uint8_t *input, uint8_t *output)
 {
-    save_param_bank();
+    u_uint16_t type_memory;
+
+    type_memory.u8[0] = input[0];
+    type_memory.u8[1] = input[1];
+
+    save_param_bank(type_memory.u16);
     *output = 0;
     return *output;
 }
 
 static struct bsmp_func bsmp_func_save_param_bank = {
     .func_p           = bsmp_save_param_bank,
-    .info.input_size  = 0,
+    .info.input_size  = 2,
     .info.output_size = 1,
 };
 
@@ -1478,14 +1487,19 @@ static struct bsmp_func bsmp_func_save_param_bank = {
  */
 uint8_t bsmp_load_param_bank(uint8_t *input, uint8_t *output)
 {
-    load_param_bank();
+    u_uint16_t type_memory;
+
+    type_memory.u8[0] = input[0];
+    type_memory.u8[1] = input[1];
+
+    load_param_bank(type_memory.u16);
     *output = 0;
     return *output;
 }
 
 static struct bsmp_func bsmp_func_load_param_bank = {
     .func_p           = bsmp_load_param_bank,
-    .info.input_size  = 0,
+    .info.input_size  = 2,
     .info.output_size = 1,
 };
 

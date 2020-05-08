@@ -37,9 +37,9 @@
 #include "communication_drivers/i2c_offboard_isolated/i2c_offboard_isolated.h"
 #include "communication_drivers/parameters/ps_parameters.h"
 
-const char * default_ps_name = 'Initialization mode - invalid parameter bank                    ';
-const uint8_t default_ip[4] = {10, 0, 25, 43};
-const uint8_t default_ethernet_mask[4] = {255, 255, 255, 0};
+static const unsigned char * default_ps_name = "Initialization mode - invalid parameter bank                    ";
+static const uint8_t default_ip[4] = {10, 0, 25, 43};
+static const uint8_t default_ethernet_mask[4] = {255, 255, 255, 0};
 
 static const uint16_t param_addresses_onboard_eeprom[NUM_MAX_PARAMETERS] =
 {
@@ -182,439 +182,10 @@ static uint8_t data_eeprom[32];
 #pragma DATA_SECTION(g_param_bank,"SHARERAMS0_1");
 volatile param_bank_t g_param_bank;
 
-void init_param(param_id_t id, param_type_t type, uint16_t num_elements, uint8_t *p_param)
-{
-    uint8_t n;
-
-    if(num_elements > 0)
-    {
-        g_param_bank.param_info[id].id = id;
-        g_param_bank.param_info[id].type = type;
-        g_param_bank.param_info[id].num_elements = num_elements;
-        g_param_bank.param_info[id].eeprom_add.u16 = param_addresses_offboard_eeprom[id];
-        g_param_bank.param_info[id].p_val.u8 = p_param;
-
-        switch(g_param_bank.param_info[id].type)
-        {
-            case is_uint8_t:
-            {
-                g_param_bank.param_info[id].size_type = 1;
-                for(n = 0; n < num_elements; n++)
-                {
-                    *(g_param_bank.param_info[id].p_val.u8 + n) = 0;
-                }
-                break;
-            }
-
-            case is_uint16_t:
-            {
-                g_param_bank.param_info[id].size_type = 2;
-                for(n = 0; n < num_elements; n++)
-                {
-                    *(g_param_bank.param_info[id].p_val.u16 + n) = 0;
-                }
-                break;
-            }
-
-            case is_uint32_t:
-            {
-                g_param_bank.param_info[id].size_type = 4;
-                for(n = 0; n < num_elements; n++)
-                {
-                    *(g_param_bank.param_info[id].p_val.u32 + n) = 0;
-                }
-                break;
-            }
-
-            case is_float:
-            {
-                g_param_bank.param_info[id].size_type = 4;
-                for(n = 0; n < num_elements; n++)
-                {
-                    *(g_param_bank.param_info[id].p_val.f + n) = 0.0;
-                }
-                break;
-            }
-
-            case is_p_float:
-            {
-                g_param_bank.param_info[id].size_type = 4;
-                for(n = 0; n < num_elements; n++)
-                {
-                    *(g_param_bank.param_info[id].p_val.p_f + n) = 0x0;
-                }
-                break;
-            }
-
-            default:
-            {
-                break;
-            }
-        }
-    }
-}
-
-uint8_t set_param(param_id_t id, uint16_t n, float val)
-{
-    if(n < g_param_bank.param_info[id].num_elements)
-    {
-        switch(g_param_bank.param_info[id].type)
-        {
-            case is_uint8_t:
-            {
-                *(g_param_bank.param_info[id].p_val.u8 + n) = (uint8_t) val;
-                break;
-            }
-
-            case is_uint16_t:
-            {
-                *(g_param_bank.param_info[id].p_val.u16 + n) = (uint16_t) val;
-                break;
-            }
-
-            case is_uint32_t:
-            {
-                *(g_param_bank.param_info[id].p_val.u32 + n) = (uint32_t) val;
-                break;
-            }
-
-            case is_float:
-            {
-                *(g_param_bank.param_info[id].p_val.f + n) = val;
-                break;
-            }
-
-            case is_p_float:
-            {
-                *(g_param_bank.param_info[id].p_val.p_f + n) = (uint32_t) val;
-                break;
-            }
-
-            default:
-            {
-                return 0;
-            }
-        }
-
-        return 1;
-    }
-    else
-    {
-        return 0;
-    }
-}
-
-float get_param(param_id_t id, uint16_t n)
-{
-    if(n < g_param_bank.param_info[id].num_elements)
-    {
-        switch(g_param_bank.param_info[id].type)
-        {
-            case is_uint8_t:
-            {
-                return (float) *(g_param_bank.param_info[id].p_val.u8 + n);
-            }
-
-            case is_uint16_t:
-            {
-                return (float) *(g_param_bank.param_info[id].p_val.u16 + n);
-            }
-
-            case is_uint32_t:
-            {
-                return (float) *(g_param_bank.param_info[id].p_val.u32 + n);
-            }
-
-            case is_float:
-            {
-                return *(g_param_bank.param_info[id].p_val.f + n);
-            }
-
-            case is_p_float:
-            {
-                return (uint32_t) (*(g_param_bank.param_info[id].p_val.p_f + n));
-            }
-
-            default:
-            {
-                return NAN;
-            }
-        }
-    }
-    else
-    {
-        return NAN;
-    }
-}
-
-uint8_t save_param_eeprom(param_id_t id, uint16_t n)
-{
-    static uint8_t size_type;
-    static u_uint16_t u_add;
-
-    // Check wheter index is inside parameter range
-    if(n < g_param_bank.param_info[id].num_elements)
-    {
-        size_type = g_param_bank.param_info[id].size_type;
-
-        // Increment element position on parameter address and prepare for EEPROM
-        u_add.u16 = g_param_bank.param_info[id].eeprom_add.u16 + size_type*n;
-        data_eeprom[0] = u_add.u8[1];
-        data_eeprom[1] = u_add.u8[0];
-
-        // Prepare EEPROM data
-        memcpy(&data_eeprom[2], (g_param_bank.param_info[id].p_val.u8 + size_type*n),
-               size_type);
-
-        // Send new parameter to EEPROM
-        //GPIOPinWrite(EEPROM_WP_BASE, EEPROM_WP_PIN, OFF);
-        //write_i2c(I2C_SLV_ADDR_EEPROM, 2+size_type, data_eeprom);
-        write_i2c_offboard_isolated(I2C_SLV_ADDR_EEPROM, 2+size_type, data_eeprom);
-        SysCtlDelay(375000);                // Wait 5 ms for EEPROM write cycle
-        //GPIOPinWrite(EEPROM_WP_BASE, EEPROM_WP_PIN, ON);
-
-        return 1;
-    }
-    else
-    {
-        return 0;
-    }
-}
-
-uint8_t load_param_eeprom(param_id_t id, uint16_t n)
-{
-    static uint8_t size_type;
-    static u_uint16_t u_add;
-
-    // Check wheter index is inside parameter range
-    if(n < g_param_bank.param_info[id].num_elements)
-    {
-        size_type = g_param_bank.param_info[id].size_type;
-
-        // Increment element position on parameter address and prepare for EEPROM
-        u_add.u16 = g_param_bank.param_info[id].eeprom_add.u16 + size_type*n;
-        data_eeprom[0] = u_add.u8[1];
-        data_eeprom[1] = u_add.u8[0];
-
-        //read_i2c(I2C_SLV_ADDR_EEPROM, DOUBLE_ADDRESS, size_type, data_eeprom);
-        read_i2c_offboard_isolated(I2C_SLV_ADDR_EEPROM, DOUBLE_ADDRESS, size_type, data_eeprom);
-
-        memcpy( (g_param_bank.param_info[id].p_val.u8 + size_type*n), &data_eeprom[0],
-                size_type);
-
-        return 1;
-    }
-    else
-    {
-        return 0;
-    }
-}
-
-uint8_t save_param_onboard_eeprom(param_id_t id, uint16_t n)
-{
-    static uint8_t size_type;
-    static u_uint16_t u_add;
-
-    // Check wheter index is inside parameter range
-    if(n < g_param_bank.param_info[id].num_elements)
-    {
-        size_type = g_param_bank.param_info[id].size_type;
-
-        // Increment element position on parameter address and prepare for EEPROM
-        u_add.u16 = param_addresses_onboard_eeprom[id] + size_type*n;
-        data_eeprom[0] = u_add.u8[1];
-        data_eeprom[1] = u_add.u8[0];
-
-        // Prepare EEPROM data
-        memcpy(&data_eeprom[2], (g_param_bank.param_info[id].p_val.u8 + size_type*n),
-               size_type);
-
-        // Send new parameter to EEPROM
-        GPIOPinWrite(EEPROM_WP_BASE, EEPROM_WP_PIN, OFF);
-        write_i2c(I2C_SLV_ADDR_EEPROM, 2+size_type, data_eeprom);
-        SysCtlDelay(375000);                // Wait 5 ms for EEPROM write cycle
-        GPIOPinWrite(EEPROM_WP_BASE, EEPROM_WP_PIN, ON);
-
-        return 1;
-    }
-    else
-    {
-        return 0;
-    }
-}
-
-uint8_t load_param_onboard_eeprom(param_id_t id, uint16_t n)
-{
-    static uint8_t size_type;
-    static u_uint16_t u_add;
-
-    // Check wheter index is inside parameter range
-    if(n < g_param_bank.param_info[id].num_elements)
-    {
-        size_type = g_param_bank.param_info[id].size_type;
-
-        // Increment element position on parameter address and prepare for EEPROM
-        u_add.u16 = param_addresses_onboard_eeprom[id] + size_type*n;
-        data_eeprom[0] = u_add.u8[1];
-        data_eeprom[1] = u_add.u8[0];
-
-        read_i2c(I2C_SLV_ADDR_EEPROM, DOUBLE_ADDRESS, size_type, data_eeprom);
-
-        memcpy( (g_param_bank.param_info[id].p_val.u8 + size_type*n), &data_eeprom[0],
-                size_type);
-
-        return 1;
-    }
-    else
-    {
-        return 0;
-    }
-}
-
-uint8_t save_param_offboard_eeprom(param_id_t id, uint16_t n)
-{
-    static uint8_t size_type;
-    static u_uint16_t u_add;
-
-    // Check wheter index is inside parameter range
-    if(n < g_param_bank.param_info[id].num_elements)
-    {
-        size_type = g_param_bank.param_info[id].size_type;
-
-        // Increment element position on parameter address and prepare for EEPROM
-        u_add.u16 = param_addresses_offboard_eeprom[id] + size_type*n;
-        data_eeprom[0] = u_add.u8[1];
-        data_eeprom[1] = u_add.u8[0];
-
-        // Prepare EEPROM data
-        memcpy(&data_eeprom[2], (g_param_bank.param_info[id].p_val.u8 + size_type*n),
-               size_type);
-
-        // Send new parameter to EEPROM
-        write_i2c_offboard_isolated(I2C_SLV_ADDR_EEPROM, 2+size_type, data_eeprom);
-        SysCtlDelay(375000);                // Wait 5 ms for EEPROM write cycle
-
-        return 1;
-    }
-    else
-    {
-        return 0;
-    }
-}
-
-uint8_t load_param_offboard_eeprom(param_id_t id, uint16_t n)
-{
-    static uint8_t size_type;
-    static u_uint16_t u_add;
-
-    // Check wheter index is inside parameter range
-    if(n < g_param_bank.param_info[id].num_elements)
-    {
-        size_type = g_param_bank.param_info[id].size_type;
-
-        // Increment element position on parameter address and prepare for EEPROM
-        u_add.u16 = param_addresses_offboard_eeprom[id] + size_type*n;
-        data_eeprom[0] = u_add.u8[1];
-        data_eeprom[1] = u_add.u8[0];
-
-        read_i2c_offboard_isolated(I2C_SLV_ADDR_EEPROM, DOUBLE_ADDRESS, size_type, data_eeprom);
-
-        memcpy( (g_param_bank.param_info[id].p_val.u8 + size_type*n), &data_eeprom[0],
-                size_type);
-
-        return 1;
-    }
-    else
-    {
-        return 0;
-    }
-}
-
-void save_param_bank(void)
-{
-    param_id_t id;
-    uint16_t n;
-
-    for(id = 0; id < NUM_PARAMETERS; id++)
-    {
-        for(n = 0; n < g_param_bank.param_info[id].num_elements; n++)
-        {
-            save_param_eeprom(id, n);
-        }
-    }
-}
-
-void load_param_bank(void)
-{
-    param_id_t id;
-    uint16_t n;
-
-    for(id = 0; id < NUM_PARAMETERS; id++)
-    {
-        for(n = 0; n < g_param_bank.param_info[id].num_elements; n++)
-        {
-            load_param_eeprom(id, n);
-        }
-    }
-}
-
-void save_param_bank_onboard_eeprom(void)
-{
-    param_id_t id;
-    uint16_t n;
-
-    for(id = 0; id < NUM_PARAMETERS; id++)
-    {
-        for(n = 0; n < g_param_bank.param_info[id].num_elements; n++)
-        {
-            save_param_onboard_eeprom(id, n);
-        }
-    }
-}
-
-void load_param_bank_onboard_eeprom(void)
-{
-    param_id_t id;
-    uint16_t n;
-
-    for(id = 0; id < NUM_PARAMETERS; id++)
-    {
-        for(n = 0; n < g_param_bank.param_info[id].num_elements; n++)
-        {
-            load_param_onboard_eeprom(id, n);
-        }
-    }
-}
-
-void save_param_bank_offboard_eeprom(void)
-{
-    param_id_t id;
-    uint16_t n;
-
-    for(id = 0; id < NUM_PARAMETERS; id++)
-    {
-        for(n = 0; n < g_param_bank.param_info[id].num_elements; n++)
-        {
-            save_param_offboard_eeprom(id, n);
-        }
-    }
-}
-
-void load_param_bank_offboard_eeprom(void)
-{
-    param_id_t id;
-    uint16_t n;
-
-    for(id = 0; id < NUM_PARAMETERS; id++)
-    {
-        for(n = 0; n < g_param_bank.param_info[id].num_elements; n++)
-        {
-            load_param_offboard_eeprom(id, n);
-        }
-    }
-}
-
-void init_param_bank_info(void)
+/**
+ * Private functions
+ */
+static void init_param_bank_info(void)
 {
     init_param(PS_Name, is_uint8_t, SIZE_PS_NAME, &PS_NAME);
 
@@ -776,26 +347,193 @@ void init_param_bank_info(void)
                &SCOPE_SOURCE_PARAM[0].u8[0]);
 }
 
-uint8_t check_param_bank(void)
+static uint8_t save_param_onboard_eeprom(param_id_t id, uint16_t n)
 {
-    if(get_param(PS_Model,0) > 100)
+    static uint8_t size_type;
+    static u_uint16_t u_add;
+
+    // Check wheter index is inside parameter range
+    if(n < g_param_bank.param_info[id].num_elements)
     {
-        return 0;
+        size_type = g_param_bank.param_info[id].size_type;
+
+        // Increment element position on parameter address and prepare for EEPROM
+        u_add.u16 = param_addresses_onboard_eeprom[id] + size_type*n;
+        data_eeprom[0] = u_add.u8[1];
+        data_eeprom[1] = u_add.u8[0];
+
+        // Prepare EEPROM data
+        memcpy(&data_eeprom[2], (g_param_bank.param_info[id].p_val.u8 + size_type*n),
+               size_type);
+
+        // Send new parameter to EEPROM
+        GPIOPinWrite(EEPROM_WP_BASE, EEPROM_WP_PIN, OFF);
+        write_i2c(I2C_SLV_ADDR_EEPROM, 2+size_type, data_eeprom);
+        SysCtlDelay(375000);                // Wait 5 ms for EEPROM write cycle
+        GPIOPinWrite(EEPROM_WP_BASE, EEPROM_WP_PIN, ON);
+
+        return 1;
     }
     else
     {
-        return 1;
+        return 0;
     }
 }
 
-void load_param_bank_default(void)
+static uint8_t load_param_onboard_eeprom(param_id_t id, uint16_t n)
 {
-    uint8_t n;
+    static uint8_t size_type;
+    static u_uint16_t u_add;
+
+    // Check wheter index is inside parameter range
+    if(n < g_param_bank.param_info[id].num_elements)
+    {
+        size_type = g_param_bank.param_info[id].size_type;
+
+        // Increment element position on parameter address and prepare for EEPROM
+        u_add.u16 = param_addresses_onboard_eeprom[id] + size_type*n;
+        data_eeprom[0] = u_add.u8[1];
+        data_eeprom[1] = u_add.u8[0];
+
+        read_i2c(I2C_SLV_ADDR_EEPROM, DOUBLE_ADDRESS, size_type, data_eeprom);
+
+        memcpy( (g_param_bank.param_info[id].p_val.u8 + size_type*n), &data_eeprom[0],
+                size_type);
+
+        return 1;
+    }
+    else
+    {
+        return 0;
+    }
+}
+
+static uint8_t save_param_offboard_eeprom(param_id_t id, uint16_t n)
+{
+    static uint8_t size_type;
+    static u_uint16_t u_add;
+
+    // Check wheter index is inside parameter range
+    if(n < g_param_bank.param_info[id].num_elements)
+    {
+        size_type = g_param_bank.param_info[id].size_type;
+
+        // Increment element position on parameter address and prepare for EEPROM
+        u_add.u16 = param_addresses_offboard_eeprom[id] + size_type*n;
+        data_eeprom[0] = u_add.u8[1];
+        data_eeprom[1] = u_add.u8[0];
+
+        // Prepare EEPROM data
+        memcpy(&data_eeprom[2], (g_param_bank.param_info[id].p_val.u8 + size_type*n),
+               size_type);
+
+        // Send new parameter to EEPROM
+        write_i2c_offboard_isolated(I2C_SLV_ADDR_EEPROM, 2+size_type, data_eeprom);
+        SysCtlDelay(375000);                // Wait 5 ms for EEPROM write cycle
+
+        return 1;
+    }
+    else
+    {
+        return 0;
+    }
+}
+
+static uint8_t load_param_offboard_eeprom(param_id_t id, uint16_t n)
+{
+    static uint8_t size_type;
+    static u_uint16_t u_add;
+
+    // Check wheter index is inside parameter range
+    if(n < g_param_bank.param_info[id].num_elements)
+    {
+        size_type = g_param_bank.param_info[id].size_type;
+
+        // Increment element position on parameter address and prepare for EEPROM
+        u_add.u16 = param_addresses_offboard_eeprom[id] + size_type*n;
+        data_eeprom[0] = u_add.u8[1];
+        data_eeprom[1] = u_add.u8[0];
+
+        read_i2c_offboard_isolated(I2C_SLV_ADDR_EEPROM, DOUBLE_ADDRESS, size_type, data_eeprom);
+
+        memcpy( (g_param_bank.param_info[id].p_val.u8 + size_type*n), &data_eeprom[0],
+                size_type);
+
+        return 1;
+    }
+    else
+    {
+        return 0;
+    }
+}
+
+static void save_param_bank_onboard_eeprom(void)
+{
+    param_id_t id;
+    uint16_t n;
+
+    for(id = 0; id < NUM_PARAMETERS; id++)
+    {
+        for(n = 0; n < g_param_bank.param_info[id].num_elements; n++)
+        {
+            save_param_onboard_eeprom(id, n);
+        }
+    }
+}
+
+static void load_param_bank_onboard_eeprom(void)
+{
+    param_id_t id;
+    uint16_t n;
+
+    for(id = 0; id < NUM_PARAMETERS; id++)
+    {
+        for(n = 0; n < g_param_bank.param_info[id].num_elements; n++)
+        {
+            load_param_onboard_eeprom(id, n);
+        }
+    }
+}
+
+static void save_param_bank_offboard_eeprom(void)
+{
+    param_id_t id;
+    uint16_t n;
+
+    for(id = 0; id < NUM_PARAMETERS; id++)
+    {
+        for(n = 0; n < g_param_bank.param_info[id].num_elements; n++)
+        {
+            save_param_offboard_eeprom(id, n);
+        }
+    }
+}
+
+static void load_param_bank_offboard_eeprom(void)
+{
+    param_id_t id;
+    uint16_t n;
+
+    for(id = 0; id < NUM_PARAMETERS; id++)
+    {
+        for(n = 0; n < g_param_bank.param_info[id].num_elements; n++)
+        {
+            load_param_offboard_eeprom(id, n);
+        }
+    }
+}
+
+static void load_param_bank_default(void)
+{
+    static uint16_t n;
 
     for(n = 0; n < SIZE_PS_NAME; n++)
     {
         set_param(PS_Name, n, (float) default_ps_name[n]);
     }
+    /*set_param(PS_Name, 0, 'A');
+    set_param(PS_Name, 1, 'B');
+    set_param(PS_Name, 2, 'C');*/
 
     set_param(PS_Model, 0, Uninitialized);
     set_param(Num_PS_Modules, 0, 1);
@@ -810,11 +548,319 @@ void load_param_bank_default(void)
 
     for(n = 0; n < 4; n++)
     {
-        set_param(Ethernet_IP, 0, default_ip[n]);
-        set_param(Ethernet_Subnet_Mask, 0, default_ethernet_mask[n]);
+        set_param(Ethernet_IP, n, default_ip[n]);
+        set_param(Ethernet_Subnet_Mask, n, default_ethernet_mask[n]);
     }
 
     set_param(Buzzer_Volume, 0, 1.0);
+}
+
+static uint8_t check_param_bank_offboard_eeprom(void)
+{
+    if(get_param(PS_Model,0) > 100)
+    {
+        return 0;
+    }
+    else
+    {
+        return 1;
+    }
+}
+
+static uint8_t check_param_bank_onboard_eeprom(void)
+{
+    if(get_param(PS_Model,0) > 100)
+    {
+        return 0;
+    }
+    else
+    {
+        return 1;
+    }
+}
+
+/**
+ * Public functions
+ */
+void init_param(param_id_t id, param_type_t type, uint16_t num_elements, uint8_t *p_param)
+{
+    uint8_t n;
+
+    if(num_elements > 0)
+    {
+        g_param_bank.param_info[id].id = id;
+        g_param_bank.param_info[id].type = type;
+        g_param_bank.param_info[id].num_elements = num_elements;
+        g_param_bank.param_info[id].eeprom_add.u16 = param_addresses_onboard_eeprom[id];
+        g_param_bank.param_info[id].p_val.u8 = p_param;
+
+        switch(g_param_bank.param_info[id].type)
+        {
+            case is_uint8_t:
+            {
+                g_param_bank.param_info[id].size_type = 1;
+                for(n = 0; n < num_elements; n++)
+                {
+                    *(g_param_bank.param_info[id].p_val.u8 + n) = 0;
+                }
+                break;
+            }
+
+            case is_uint16_t:
+            {
+                g_param_bank.param_info[id].size_type = 2;
+                for(n = 0; n < num_elements; n++)
+                {
+                    *(g_param_bank.param_info[id].p_val.u16 + n) = 0;
+                }
+                break;
+            }
+
+            case is_uint32_t:
+            {
+                g_param_bank.param_info[id].size_type = 4;
+                for(n = 0; n < num_elements; n++)
+                {
+                    *(g_param_bank.param_info[id].p_val.u32 + n) = 0;
+                }
+                break;
+            }
+
+            case is_float:
+            {
+                g_param_bank.param_info[id].size_type = 4;
+                for(n = 0; n < num_elements; n++)
+                {
+                    *(g_param_bank.param_info[id].p_val.f + n) = 0.0;
+                }
+                break;
+            }
+
+            case is_p_float:
+            {
+                g_param_bank.param_info[id].size_type = 4;
+                for(n = 0; n < num_elements; n++)
+                {
+                    *(g_param_bank.param_info[id].p_val.p_f + n) = 0x0;
+                }
+                break;
+            }
+
+            default:
+            {
+                break;
+            }
+        }
+    }
+}
+
+uint8_t set_param(param_id_t id, uint16_t n, float val)
+{
+    if(n < g_param_bank.param_info[id].num_elements)
+    {
+        switch(g_param_bank.param_info[id].type)
+        {
+            case is_uint8_t:
+            {
+                *(g_param_bank.param_info[id].p_val.u8 + n) = (uint8_t) val;
+                break;
+            }
+
+            case is_uint16_t:
+            {
+                *(g_param_bank.param_info[id].p_val.u16 + n) = (uint16_t) val;
+                break;
+            }
+
+            case is_uint32_t:
+            {
+                *(g_param_bank.param_info[id].p_val.u32 + n) = (uint32_t) val;
+                break;
+            }
+
+            case is_float:
+            {
+                *(g_param_bank.param_info[id].p_val.f + n) = val;
+                break;
+            }
+
+            case is_p_float:
+            {
+                *(g_param_bank.param_info[id].p_val.p_f + n) = (uint32_t) val;
+                break;
+            }
+
+            default:
+            {
+                return 0;
+            }
+        }
+
+        return 1;
+    }
+    else
+    {
+        return 0;
+    }
+}
+
+float get_param(param_id_t id, uint16_t n)
+{
+    if(n < g_param_bank.param_info[id].num_elements)
+    {
+        switch(g_param_bank.param_info[id].type)
+        {
+            case is_uint8_t:
+            {
+                return (float) *(g_param_bank.param_info[id].p_val.u8 + n);
+            }
+
+            case is_uint16_t:
+            {
+                return (float) *(g_param_bank.param_info[id].p_val.u16 + n);
+            }
+
+            case is_uint32_t:
+            {
+                return (float) *(g_param_bank.param_info[id].p_val.u32 + n);
+            }
+
+            case is_float:
+            {
+                return *(g_param_bank.param_info[id].p_val.f + n);
+            }
+
+            case is_p_float:
+            {
+                return (uint32_t) (*(g_param_bank.param_info[id].p_val.p_f + n));
+            }
+
+            default:
+            {
+                return NAN;
+            }
+        }
+    }
+    else
+    {
+        return NAN;
+    }
+}
+
+uint8_t save_param_eeprom(param_id_t id, uint16_t n, param_memory_t type_memory)
+{
+    switch(type_memory)
+    {
+        case Offboard_EEPROM:
+        {
+            return save_param_offboard_eeprom(id, n);
+        }
+
+        case Onboard_EEPROM:
+        {
+            return save_param_onboard_eeprom(id, n);
+        }
+
+        default:
+        {
+            return 0;
+        }
+    }
+}
+
+uint8_t load_param_eeprom(param_id_t id, uint16_t n, param_memory_t type_memory)
+{
+    switch(type_memory)
+    {
+        case Offboard_EEPROM:
+        {
+            return load_param_offboard_eeprom(id, n);
+        }
+
+        case Onboard_EEPROM:
+        {
+            return load_param_onboard_eeprom(id, n);
+        }
+
+        default:
+        {
+            return 0;
+        }
+    }
+}
+
+void save_param_bank(param_memory_t type_memory)
+{
+    switch(type_memory)
+    {
+        case Offboard_EEPROM:
+        {
+            save_param_bank_offboard_eeprom();
+            break;
+        }
+
+        case Onboard_EEPROM:
+        {
+            save_param_bank_onboard_eeprom();
+            break;
+        }
+
+        default:
+        {
+            break;
+        }
+    }
+}
+
+void load_param_bank(param_memory_t type_memory)
+{
+    switch(type_memory)
+    {
+        case Offboard_EEPROM:
+        {
+            load_param_bank_offboard_eeprom();
+            break;
+        }
+
+        case Onboard_EEPROM:
+        {
+            load_param_bank_onboard_eeprom();
+            break;
+        }
+
+        case Default_Initialization:
+        {
+            load_param_bank_default();
+            break;
+        }
+
+        default:
+        {
+
+            break;
+        }
+    }
+}
+
+uint8_t check_param_bank(param_memory_t type_memory)
+{
+    switch(type_memory)
+    {
+        case Offboard_EEPROM:
+        {
+            return check_param_bank_offboard_eeprom();
+        }
+
+        case Onboard_EEPROM:
+        {
+            return check_param_bank_onboard_eeprom();
+        }
+
+        default:
+        {
+            return 0;
+        }
+    }
 }
 
 void init_parameters_bank(void)
@@ -828,7 +874,7 @@ void init_parameters_bank(void)
 
     load_param_bank_offboard_eeprom();
 
-    if(check_param_bank())
+    if(check_param_bank(Offboard_EEPROM))
     {
         return;
     }
@@ -838,7 +884,7 @@ void init_parameters_bank(void)
         if(get_param(Enable_Onboard_EEPROM, 0) == 0)
         {
             load_param_bank_onboard_eeprom();
-            if(check_param_bank())
+            if(check_param_bank(Onboard_EEPROM))
             {
                 return;
             }

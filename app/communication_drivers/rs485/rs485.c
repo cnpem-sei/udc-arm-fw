@@ -379,7 +379,10 @@ void config_rs485(uint32_t BaudRate)
 	{
 	    BaudRate = BAUDRATE_DEFAULT;
 	    set_param(RS485_Baudrate, 0, BaudRate);
-	    save_param_eeprom(RS485_Baudrate, 0);
+	    /**
+	     * TODO: check if this commented line affects something else
+	     */
+	    //save_param_eeprom(RS485_Baudrate, 0);
 	}
 
 	// Save current configuration of baudrate

@@ -217,6 +217,11 @@ int main(void) {
             break;
         }
 
+        case Uninitialized:
+        {
+            break;
+        }
+
         default:
         {
             break;
