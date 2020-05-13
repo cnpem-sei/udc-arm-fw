@@ -48,6 +48,7 @@ volatile bool PROCESS_POWER_TEMP_SAMPLE = 0;
 volatile bool LED_STATUS_REQUEST = 0;
 volatile bool SAMPLE_ADCP_REQUEST = 0;
 volatile bool ADCP_SAMPLE_AVAILABLE_REQUEST = 0;
+volatile bool RESET_COMMAND_INTERFACE_REQUEST = 0;
 
 void
 TaskSetNew(uint8_t TaskNum)
@@ -96,6 +97,10 @@ TaskSetNew(uint8_t TaskNum)
 
 	case ADCP_SAMPLE_AVAILABLE:
 	    ADCP_SAMPLE_AVAILABLE_REQUEST = 1;
+	    break;
+
+	case RESET_COMMAND_INTERFACE:
+	    RESET_COMMAND_INTERFACE_REQUEST = 1;
 	    break;
 
 	default:
@@ -215,6 +220,16 @@ void TaskCheck(void)
 
             LedCtrl = 1;
         }
+	}
+
+	else if(RESET_COMMAND_INTERFACE_REQUEST)
+	{
+	    RESET_COMMAND_INTERFACE_REQUEST = 0;
+
+	    g_ipc_mtoc.ps_module[0].ps_status.bit.interface = Remote;
+	    g_ipc_mtoc.ps_module[1].ps_status.bit.interface = Remote;
+	    g_ipc_mtoc.ps_module[2].ps_status.bit.interface = Remote;
+	    g_ipc_mtoc.ps_module[3].ps_status.bit.interface = Remote;
 	}
 
 }

@@ -54,6 +54,7 @@ static const uint16_t param_addresses[NUM_MAX_PARAMETERS] =
 
     [Freq_ISR_Controller] = 0x0080,
     [Freq_TimeSlicer] = 0x0084,
+    [Control_Loop_State] = 0x0094,
     [Max_Ref] = 0x00A0,
     [Min_Ref] = 0x00A4,
     [Max_Ref_OpenLoop] = 0x00A8,
@@ -355,6 +356,9 @@ void init_parameters_bank(void)
 
     init_param(Freq_TimeSlicer, is_float, NUM_MAX_TIMESLICERS,
                 &g_ipc_mtoc.control.freq_timeslicer[0].u8[0]);
+
+    init_param(Control_Loop_State, is_uint16_t, 1,
+                    &g_ipc_mtoc.control.loop_state.u8[0]);
 
     init_param(Max_Ref, is_float, 1, &g_ipc_mtoc.control.max_ref.u8[0]);
 

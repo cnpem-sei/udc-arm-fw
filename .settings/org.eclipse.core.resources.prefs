@@ -146,6 +146,8 @@ encoding//FLASH_UDC_V2_1/app/communication_drivers/i2c_offboard_isolated/subdir_
 encoding//FLASH_UDC_V2_1/app/communication_drivers/i2c_offboard_isolated/subdir_vars.mk=UTF-8
 encoding//FLASH_UDC_V2_1/app/communication_drivers/i2c_onboard/subdir_rules.mk=UTF-8
 encoding//FLASH_UDC_V2_1/app/communication_drivers/i2c_onboard/subdir_vars.mk=UTF-8
+encoding//FLASH_UDC_V2_1/app/communication_drivers/ihm/subdir_rules.mk=UTF-8
+encoding//FLASH_UDC_V2_1/app/communication_drivers/ihm/subdir_vars.mk=UTF-8
 encoding//FLASH_UDC_V2_1/app/communication_drivers/iib/subdir_rules.mk=UTF-8
 encoding//FLASH_UDC_V2_1/app/communication_drivers/iib/subdir_vars.mk=UTF-8
 encoding//FLASH_UDC_V2_1/app/communication_drivers/ipc/subdir_rules.mk=UTF-8
@@ -154,8 +156,6 @@ encoding//FLASH_UDC_V2_1/app/communication_drivers/parameters/subdir_rules.mk=UT
 encoding//FLASH_UDC_V2_1/app/communication_drivers/parameters/subdir_vars.mk=UTF-8
 encoding//FLASH_UDC_V2_1/app/communication_drivers/parameters/system/subdir_rules.mk=UTF-8
 encoding//FLASH_UDC_V2_1/app/communication_drivers/parameters/system/subdir_vars.mk=UTF-8
-encoding//FLASH_UDC_V2_1/app/communication_drivers/ps_modules/fbp/subdir_rules.mk=UTF-8
-encoding//FLASH_UDC_V2_1/app/communication_drivers/ps_modules/fbp/subdir_vars.mk=UTF-8
 encoding//FLASH_UDC_V2_1/app/communication_drivers/psmodules/fac_2p4s_acdc/subdir_rules.mk=UTF-8
 encoding//FLASH_UDC_V2_1/app/communication_drivers/psmodules/fac_2p4s_acdc/subdir_vars.mk=UTF-8
 encoding//FLASH_UDC_V2_1/app/communication_drivers/psmodules/fac_2p4s_dcdc/subdir_rules.mk=UTF-8

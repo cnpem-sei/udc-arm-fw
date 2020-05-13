@@ -40,7 +40,7 @@
 #define NUM_MAX_HARD_INTERLOCKS     32
 #define NUM_MAX_SOFT_INTERLOCKS     32
 
-#define NUM_PARAMETERS          52
+#define NUM_PARAMETERS          53
 #define NUM_MAX_PARAMETERS      64
 #define NUM_MAX_FLOATS          200
 
@@ -61,6 +61,7 @@ typedef enum
 
     Freq_ISR_Controller,
     Freq_TimeSlicer,
+    Control_Loop_State,
     Max_Ref,
     Min_Ref,
     Max_Ref_OpenLoop,
@@ -149,6 +150,7 @@ typedef struct
 typedef struct
 {
     u_float_t   freq_isr_control;
+    u_uint16_t  loop_state;
     u_float_t   freq_timeslicer[NUM_MAX_TIMESLICERS];
     u_float_t   max_ref;
     u_float_t   min_ref;
