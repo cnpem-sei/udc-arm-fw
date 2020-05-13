@@ -149,8 +149,8 @@ typedef struct
 
 typedef struct
 {
-    u_float_t   freq_isr_control;
     u_uint16_t  loop_state;
+    u_float_t   freq_isr_control;
     u_float_t   freq_timeslicer[NUM_MAX_TIMESLICERS];
     u_float_t   max_ref;
     u_float_t   min_ref;
