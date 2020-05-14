@@ -665,7 +665,7 @@ void ethernet_process_cmd(void)
 
     // Library will process the packet
     // TODO: Process 4 BSMP servers
-    BSMPprocess(&recv_packet, &send_packet, 0);
+    BSMPprocess(&recv_packet, &send_packet, 0, 0);
 
     httpd_insert_response(send_packet.len,(uint8_t *)send_packet.data);
 

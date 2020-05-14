@@ -233,28 +233,28 @@ void ihm_process_data(void)
     {
         g_current_ps_id = 0;
         g_ipc_mtoc.msg_id = 0;
-        BSMPprocess(&recv_packet, &send_packet, 0);
+        BSMPprocess(&recv_packet, &send_packet, 0, Local);
     }
 
     else if (recv_buffer.data[0] == SERIAL_CH_1_ADDRESS)
     {
         g_current_ps_id = 1;
         g_ipc_mtoc.msg_id = 1;
-        BSMPprocess(&recv_packet, &send_packet, 1);
+        BSMPprocess(&recv_packet, &send_packet, 1, Local);
     }
 
     else if (recv_buffer.data[0] == SERIAL_CH_2_ADDRESS)
     {
         g_current_ps_id = 2;
         g_ipc_mtoc.msg_id = 2;
-        BSMPprocess(&recv_packet, &send_packet, 2);
+        BSMPprocess(&recv_packet, &send_packet, 2, Local);
     }
 
     else if (recv_buffer.data[0] == SERIAL_CH_3_ADDRESS)
     {
         g_current_ps_id = 3;
         g_ipc_mtoc.msg_id = 3;
-        BSMPprocess(&recv_packet, &send_packet, 3);
+        BSMPprocess(&recv_packet, &send_packet, 3, Local);
     }
 
     //GPIOPinWrite(DEBUG_BASE, DEBUG_PIN, OFF);

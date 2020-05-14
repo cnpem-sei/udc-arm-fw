@@ -52,14 +52,20 @@
 #include "bsmp/include/server.h"
 #include "bsmp_lib.h"
 
-#define TIMEOUT_DSP_IPC_ACK     30
+#define TIMEOUT_DSP_IPC_ACK         30
 
-#define SIZE_WFMREF_BLOCK       8192
-#define SIZE_SAMPLES_BUFFER     16384
+#define SIZE_WFMREF_BLOCK           8192
+#define SIZE_SAMPLES_BUFFER         16384
 
 #define NUMBER_OF_BSMP_SERVERS      4
 #define NUMBER_OF_BSMP_CURVES       8
 #define NUMBER_OF_BSMP_FUNCTIONS    50
+
+#define BSMP_QUERY_COMMANDS         0x10
+#define BSMP_READ_COMMANDS          0x20
+#define BSMP_BLOCK_COMMANDS         0x40
+#define BSMP_FUNC_EXECUTE           0x50
+#define BSMP_FUNC_ERROR             0x53
 
 typedef enum
 {
@@ -2242,22 +2248,6 @@ void bsmp_init(uint8_t server)
 }
 
 /**
- * @brief BSMP process data
- *
- * Send received data to BSMP server specified and process
- *
- * @param bsmp_raw_packet* Pointer to received packet
- * @param bsmp_raw_packet* Pointer to store response packet
- * @param uint8_t ID for BSMP server
- */
-
-void BSMPprocess(struct bsmp_raw_packet *recv_packet,
-                 struct bsmp_raw_packet *send_packet, uint8_t server)
-{
-    bsmp_process_packet(&bsmp[server], recv_packet, send_packet);
-}
-
-/**
  * @brief Create new BSMP variable
  *
  * Create new BSMP variable. This function verifies if specified ID respects
@@ -2362,6 +2352,55 @@ void create_bsmp_function(uint8_t func_id, uint8_t server, bsmp_func_t func_p,
 
         bsmp_register_function(&bsmp[server], &bsmp_funcs[server][func_id]);
     }
+}
 
 
+enum bsmp_err bsmp_func_error(uint8_t func_error, struct bsmp_raw_packet *response)
+{
+
+    response->data[0] = BSMP_FUNC_ERROR;       /// CMD_FUNC_ERROR
+    response->data[1] = 0x00;       /// Payload size
+    response->data[2] = 0x01;       /// Payload size
+    response->data[3] = func_error; /// Payload describing func error
+    response->len = 4;
+
+    return BSMP_SUCCESS;
+}
+
+/**
+ * @brief BSMP process data
+ *
+ * Send received data to BSMP server specified and process
+ *
+ * @param bsmp_raw_packet* Pointer to received packet
+ * @param bsmp_raw_packet* Pointer to store response packet
+ * @param uint8_t ID for BSMP server
+ */
+
+void BSMPprocess(struct bsmp_raw_packet *recv_packet,
+                 struct bsmp_raw_packet *send_packet, uint8_t server,
+                 uint16_t command_interface)
+{
+    uint8_t bsmp_cmd_type = recv_packet->data[0] & 0xF0;
+    /**
+     * Check if command interface is correct, or if is one of the possible
+     * conditions is fulfilled
+     */
+    if( (command_interface == get_param(Command_Interface,0)) ||
+        (bsmp_cmd_type == BSMP_READ_COMMANDS ) ||
+        (bsmp_cmd_type == BSMP_QUERY_COMMANDS ) ||
+        (bsmp_cmd_type == BSMP_BLOCK_COMMANDS) ||
+        ((bsmp_cmd_type == BSMP_FUNC_EXECUTE) && (recv_packet->data[3] == 30)) )
+    {
+        bsmp_process_packet(&bsmp[server], recv_packet, send_packet);
+    }
+    else if(command_interface == Remote)
+    {
+        bsmp_func_error(PS_is_Local, send_packet);
+    }
+
+    else if(command_interface == Local)
+    {
+        bsmp_func_error(Invalid_Command, send_packet);
+    }
 }

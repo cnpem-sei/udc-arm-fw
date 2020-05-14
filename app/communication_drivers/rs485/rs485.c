@@ -272,28 +272,28 @@ void rs485_process_data(void)
     {
         g_current_ps_id = 0;
         g_ipc_mtoc.msg_id = 0;
-        BSMPprocess(&recv_packet, &send_packet, 0);
+        BSMPprocess(&recv_packet, &send_packet, 0, Remote);
     }
 
     else if (recv_buffer.data[0] == SERIAL_CH_1_ADDRESS)
 	{
         g_current_ps_id = 1;
         g_ipc_mtoc.msg_id = 1;
-	    BSMPprocess(&recv_packet, &send_packet, 1);
+	    BSMPprocess(&recv_packet, &send_packet, 1, Remote);
 	}
 
 	else if (recv_buffer.data[0] == SERIAL_CH_2_ADDRESS)
     {
         g_current_ps_id = 2;
         g_ipc_mtoc.msg_id = 2;
-        BSMPprocess(&recv_packet, &send_packet, 2);
+        BSMPprocess(&recv_packet, &send_packet, 2, Remote);
     }
 
 	else if (recv_buffer.data[0] == SERIAL_CH_3_ADDRESS)
     {
         g_current_ps_id = 3;
         g_ipc_mtoc.msg_id = 3;
-        BSMPprocess(&recv_packet, &send_packet, 3);
+        BSMPprocess(&recv_packet, &send_packet, 3, Remote);
     }
 
 	else if(recv_buffer.data[0] == BCAST_ADDRESS)
@@ -303,7 +303,7 @@ void rs485_process_data(void)
         {
             g_current_ps_id = idx;
             g_ipc_mtoc.msg_id = idx;
-            BSMPprocess(&recv_packet, &send_packet, idx);
+            BSMPprocess(&recv_packet, &send_packet, idx, Remote);
         }
     }
 
