@@ -10,6 +10,12 @@
 
 #include "bsmp/include/server.h"
 
+#define NUMBER_OF_BSMP_SERVERS      4
+
+#define RUN_BSMP_FUNC(server, idx, input, output)   bsmp[server].funcs.list[idx]->func_p((uint8_t *) input, (uint8_t *) output);
+
+extern bsmp_server_t bsmp[NUMBER_OF_BSMP_SERVERS];
+
 extern void BSMPprocess(struct bsmp_raw_packet *recv_packet,
                         struct bsmp_raw_packet *send_packet, uint8_t server);
 extern void bsmp_init(uint8_t server);
