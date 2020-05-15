@@ -67,22 +67,10 @@
 #define BSMP_FUNC_EXECUTE           0x50
 #define BSMP_FUNC_ERROR             0x53
 
-typedef enum
-{
-    Ok,
-    PS_is_Local,
-    PS_is_Host,
-    PS_Interlocked,
-    PS_Locked,
-    DSP_Timeout,
-    DSP_Busy,
-    Resource_Busy,
-    Invalid_Command
-} bsmp_command_ack_t;
-
-bsmp_server_t bsmp[NUMBER_OF_BSMP_SERVERS];
+volatile bsmp_server_t bsmp[NUMBER_OF_BSMP_SERVERS];
 
 volatile unsigned long ulTimeout;
+
 static uint8_t dummy_u8;
 
 static struct bsmp_var bsmp_vars[NUMBER_OF_BSMP_SERVERS][BSMP_MAX_VARIABLES];
@@ -441,6 +429,49 @@ static struct bsmp_func bsmp_func_set_serial_termination = {
     .info.input_size  = 2,
     .info.output_size = 1,
 };
+
+
+/**
+ * @brief Set command interface
+ *
+ * @param uint8_t* Pointer to input packet of data
+ * @param uint8_t* Pointer to output packet of data
+ */
+uint8_t bsmp_set_command_interface(uint8_t *input, uint8_t *output)
+{
+    ulTimeout=0;
+
+    if(ipc_mtoc_busy(low_priority_msg_to_reg(Set_Command_Interface)))
+    {
+        *output = DSP_Busy;
+    }
+    else
+    {
+        g_ipc_mtoc.ps_module[MSG_ID_MTOC].ps_status.bit.interface =
+                (ps_interface_t)(input[1] << 8) | input[0];
+
+        send_ipc_lowpriority_msg(MSG_ID_MTOC, Set_Command_Interface);
+        while ((HWREG(MTOCIPC_BASE + IPC_O_MTOCIPCFLG) &
+                low_priority_msg_to_reg(Set_Command_Interface)) &&
+                (ulTimeout<TIMEOUT_DSP_IPC_ACK)){
+            ulTimeout++;
+        }
+        if(ulTimeout == TIMEOUT_DSP_IPC_ACK){
+            *output = DSP_Timeout;
+        }
+        else{
+            *output = Ok;
+        }
+    }
+    return *output;
+}
+
+static struct bsmp_func bsmp_func_set_command_interface = {
+    .func_p           = bsmp_set_command_interface,
+    .info.input_size  = 2,
+    .info.output_size = 1,
+};
+
 
 /**
  * @brief Unlock power supply
@@ -1903,7 +1934,7 @@ uint8_t DummyFunc4(uint8_t *input, uint8_t *output)
     *output = Ok;
     return *output;
 }
-
+/*
 uint8_t DummyFunc5(uint8_t *input, uint8_t *output)
 {
     *output = Ok;
@@ -1951,7 +1982,7 @@ uint8_t DummyFunc12(uint8_t *input, uint8_t *output)
     *output = Ok;
     return *output;
 }
-
+*/
 static struct bsmp_func dummy_func1 = {
     .func_p           = DummyFunc1,
     .info.input_size  = 0,      // nothing
@@ -1975,7 +2006,7 @@ static struct bsmp_func dummy_func4 = {
    .info.input_size  = 0,       // nothing
    .info.output_size = 1,      // command_ack
 };
-
+/*
 static struct bsmp_func dummy_func5 = {
    .func_p           = DummyFunc5,
    .info.input_size  = 0,       // nothing
@@ -2023,7 +2054,7 @@ static struct bsmp_func dummy_func12 = {
    .info.input_size  = 0,       // nothing
    .info.output_size = 1,      // command_ack
 };
-
+*/
 
 /**
  *
@@ -2165,12 +2196,12 @@ void bsmp_init(uint8_t server)
     bsmp_register_function(&bsmp[server], &bsmp_func_select_op_mode);           // ID 4
     bsmp_register_function(&bsmp[server], &dummy_func1);                        // ID 5
     bsmp_register_function(&bsmp[server], &bsmp_func_reset_interlocks);         // ID 6
-    bsmp_register_function(&bsmp[server], &dummy_func2);                        // ID 7
-    bsmp_register_function(&bsmp[server], &dummy_func3);                        // ID 8
+    bsmp_register_function(&bsmp[server], &bsmp_func_set_command_interface);    // ID 7
+    bsmp_register_function(&bsmp[server], &dummy_func2);                        // ID 8
     bsmp_register_function(&bsmp[server], &bsmp_func_set_serial_termination);   // ID 9
     bsmp_register_function(&bsmp[server], &bsmp_func_unlock_udc);               // ID 10
     bsmp_register_function(&bsmp[server], &bsmp_func_lock_udc);                 // ID 11
-    bsmp_register_function(&bsmp[server], &dummy_func6);                        // ID 12
+    bsmp_register_function(&bsmp[server], &dummy_func3);                        // ID 12
     bsmp_register_function(&bsmp[server], &bsmp_func_enable_buf_samples);       // ID 13
     bsmp_register_function(&bsmp[server], &bsmp_func_disable_buf_samples);      // ID 14
     bsmp_register_function(&bsmp[server], &bsmp_func_sync_pulse);               // ID 15
@@ -2180,7 +2211,7 @@ void bsmp_init(uint8_t server)
     bsmp_register_function(&bsmp[server], &bsmp_func_scale_wfmref);             // ID 19
     //create_bsmp_function(20, server, &bsmp_select_wfmref, 2, 1);                // ID 20
     bsmp_register_function(&bsmp[server], &bsmp_func_select_wfmref);             // ID 20
-    bsmp_register_function(&bsmp[server], &dummy_func11);                       // ID 21
+    bsmp_register_function(&bsmp[server], &dummy_func4);                       // ID 21
     bsmp_register_function(&bsmp[server], &bsmp_func_reset_wfmref);             // ID 22
     bsmp_register_function(&bsmp[server], &bsmp_func_cfg_siggen);               // ID 23
     bsmp_register_function(&bsmp[server], &bsmp_func_set_siggen);               // ID 24
@@ -2386,11 +2417,13 @@ void BSMPprocess(struct bsmp_raw_packet *recv_packet,
      * Check if command interface is correct, or if is one of the possible
      * conditions is fulfilled
      */
-    if( (command_interface == get_param(Command_Interface,0)) ||
+    //if( (command_interface == get_param(Command_Interface,0)) ||
+    if( (command_interface == g_ipc_ctom.ps_module[MSG_ID_MTOC].ps_status.bit.interface ) ||
         (bsmp_cmd_type == BSMP_READ_COMMANDS ) ||
         (bsmp_cmd_type == BSMP_QUERY_COMMANDS ) ||
         (bsmp_cmd_type == BSMP_BLOCK_COMMANDS) ||
-        ((bsmp_cmd_type == BSMP_FUNC_EXECUTE) && (recv_packet->data[3] == 30)) )
+        ((bsmp_cmd_type == BSMP_FUNC_EXECUTE) && (recv_packet->data[3] == 30)) ||
+        ((bsmp_cmd_type == BSMP_FUNC_EXECUTE) && (recv_packet->data[3] == 7)) )
     {
         bsmp_process_packet(&bsmp[server], recv_packet, send_packet);
     }

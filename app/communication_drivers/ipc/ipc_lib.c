@@ -31,6 +31,7 @@
 #include "driverlib/interrupt.h"
 #include "driverlib/ipc.h"
 
+#include "communication_drivers/bsmp/bsmp_lib.h"
 #include "communication_drivers/i2c_onboard/eeprom.h"
 #include "communication_drivers/i2c_onboard/exio.h"
 
@@ -38,6 +39,8 @@
 
 #define M3_CTOMMSGRAM_START         0x2007F000
 #define C28_CTOMMSGRAM_START        0x0003F800
+
+#define TIMEOUT_DSP_IPC_ACK         30
 
 //#pragma DATA_SECTION(g_wfmref,"SHARERAMS23")
 //volatile u_float_t g_wfmref[SIZE_WFMREF];

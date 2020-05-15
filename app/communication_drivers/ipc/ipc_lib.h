@@ -50,6 +50,9 @@
 #define HARD_INTERLOCK              0x00000004  // IPC3
 #define SOFT_INTERLOCK              0x00000008  // IPC4
 
+#define MSG_ID_MTOC                 g_ipc_mtoc.msg_id
+#define MSG_ID_CTOM                 g_ipc_ctom.msg_id
+
 typedef enum
 {
     Turn_On = 1,
@@ -75,6 +78,7 @@ typedef enum
     Reset_Counters,
     Set_Param,
     Set_DSP_Coeffs,
+    Set_Command_Interface,
     CtoM_Message_Error
 } ipc_mtoc_lowpriority_msg_t;
 
@@ -170,6 +174,6 @@ extern uint16_t ipc_mtoc_busy (uint32_t ulFlags);
 
 extern void get_firmwares_version(void);
 
-extern void init_parameters_bank(void);
+//extern uint8_t set_command_interface(uint8_t *input, uint8_t *output);
 
 #endif /* IPC_LIB_H_ */

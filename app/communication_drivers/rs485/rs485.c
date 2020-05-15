@@ -267,7 +267,6 @@ void rs485_process_data(void)
 
 	recv_packet.len = recv_buffer.index - SERIAL_HEADER - SERIAL_CSUM;
 
-
     if (recv_buffer.data[0] == SERIAL_CH_0_ADDRESS)
     {
         g_current_ps_id = 0;
