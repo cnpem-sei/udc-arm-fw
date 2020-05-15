@@ -232,10 +232,19 @@ void TaskCheck(void)
 	{
 	    RESET_COMMAND_INTERFACE_REQUEST = 0;
 
+        u_uint16_t interface;
+        uint8_t i, dummy = 0;
+        interface.u16 = 0x0000;
+
 	    g_ipc_mtoc.ps_module[0].ps_status.bit.interface = Remote;
 	    g_ipc_mtoc.ps_module[1].ps_status.bit.interface = Remote;
 	    g_ipc_mtoc.ps_module[2].ps_status.bit.interface = Remote;
 	    g_ipc_mtoc.ps_module[3].ps_status.bit.interface = Remote;
+
+        for(i = 0; i < g_ipc_mtoc.num_ps_modules; i++)
+        {
+            RUN_BSMP_FUNC(i, 7, &interface.u8, &dummy);
+        }
 	}
 
 	else if(LOCK_UDC_REQUEST)

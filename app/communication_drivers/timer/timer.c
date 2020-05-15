@@ -42,8 +42,8 @@
 
 uint16_t    time = 0x00;
 uint8_t     iib_sample = 0x00;
-uint16_t    counter_command_interface = 0;
-uint16_t    counter_lock_udc = 0;
+uint32_t    counter_command_interface = 0;
+uint32_t    counter_lock_udc = 0;
 
 /**
  * @brief Interrupt Service Routine for global timer
@@ -78,7 +78,10 @@ void isr_global_timer(void)
 			#endif
 	}
 
-	if(g_ipc_ctom.ps_module[0].ps_status.bit.interface == Local)
+	if( g_ipc_ctom.ps_module[0].ps_status.bit.interface == Local ||
+        g_ipc_ctom.ps_module[1].ps_status.bit.interface == Local ||
+        g_ipc_ctom.ps_module[2].ps_status.bit.interface == Local ||
+        g_ipc_ctom.ps_module[3].ps_status.bit.interface == Local )
 	{
 	    counter_command_interface++;
 	    if(counter_command_interface >= MAX_COUNT_COMMAND_INTERFACE)
