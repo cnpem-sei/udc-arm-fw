@@ -21,6 +21,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+#include "communication_drivers/bsmp/bsmp_lib.h"
 #include "communication_drivers/i2c_onboard/rtc.h"
 #include "communication_drivers/i2c_offboard_isolated/temp_low_power_module.h"
 #include "communication_drivers/signals_onboard/signals_onboard.h"
@@ -40,7 +41,7 @@ volatile uint8_t LedCtrl = 0;
 volatile bool READ_RTC = 0;
 volatile bool READ_IIB = 0;
 volatile bool ITLK_ALARM_RESET = 0;
-volatile bool PROCESS_DISP_MESS = 0;
+volatile bool PROCESS_IHM_MESS = 0;
 volatile bool PROCESS_ETH_MESS = 0;
 volatile bool PROCESS_CAN_MESS = 0;
 volatile bool PROCESS_RS485_MESS = 0;
@@ -48,6 +49,8 @@ volatile bool PROCESS_POWER_TEMP_SAMPLE = 0;
 volatile bool LED_STATUS_REQUEST = 0;
 volatile bool SAMPLE_ADCP_REQUEST = 0;
 volatile bool ADCP_SAMPLE_AVAILABLE_REQUEST = 0;
+volatile bool RESET_COMMAND_INTERFACE_REQUEST = 0;
+volatile bool LOCK_UDC_REQUEST = 0;
 
 void
 TaskSetNew(uint8_t TaskNum)
@@ -66,8 +69,8 @@ TaskSetNew(uint8_t TaskNum)
 		ITLK_ALARM_RESET = 1;
 		break;
 
-	case PROCESS_DISPLAY_MESSAGE:
-		PROCESS_DISP_MESS = 1;
+	case PROCESS_IHM_MESSAGE:
+		PROCESS_IHM_MESS = 1;
 		break;
 
 	case PROCESS_ETHERNET_MESSAGE:
@@ -96,6 +99,14 @@ TaskSetNew(uint8_t TaskNum)
 
 	case ADCP_SAMPLE_AVAILABLE:
 	    ADCP_SAMPLE_AVAILABLE_REQUEST = 1;
+	    break;
+
+	case RESET_COMMAND_INTERFACE:
+	    RESET_COMMAND_INTERFACE_REQUEST = 1;
+	    break;
+
+	case LOCK_UDC:
+	    LOCK_UDC_REQUEST = 1;
 	    break;
 
 	default:
@@ -143,11 +154,11 @@ void TaskCheck(void)
     /**********************************************
      * TODO: Display process data
      * *******************************************/
-	//else if(PROCESS_DISP_MESS)
-	//{
-	//	PROCESS_DISP_MESS = 0;
-	//	display_process_data();
-	//}
+	else if(PROCESS_IHM_MESS)
+	{
+		PROCESS_IHM_MESS = 0;
+		ihm_process_data();
+	}
 
 	else if(READ_RTC)
 	{
@@ -217,4 +228,38 @@ void TaskCheck(void)
         }
 	}
 
+	else if(RESET_COMMAND_INTERFACE_REQUEST)
+	{
+	    RESET_COMMAND_INTERFACE_REQUEST = 0;
+
+        u_uint16_t interface;
+        uint8_t i, dummy = 0;
+        interface.u16 = 0x0000;
+
+	    g_ipc_mtoc.ps_module[0].ps_status.bit.interface = Remote;
+	    g_ipc_mtoc.ps_module[1].ps_status.bit.interface = Remote;
+	    g_ipc_mtoc.ps_module[2].ps_status.bit.interface = Remote;
+	    g_ipc_mtoc.ps_module[3].ps_status.bit.interface = Remote;
+
+        for(i = 0; i < NUM_PS_MODULES; i++)
+        {
+            RUN_BSMP_FUNC(i, 6, &interface.u8, &dummy);
+        }
+	}
+
+	else if(LOCK_UDC_REQUEST)
+	{
+	    LOCK_UDC_REQUEST = 0;
+
+	    u_uint16_t password;
+	    uint8_t i, dummy = 0;
+	    password.u16 = 0xCAFE;
+
+	    for(i = 0; i < NUM_PS_MODULES; i++)
+	    {
+            RUN_BSMP_FUNC(i, 9, &password.u8, &dummy);
+	    }
+
+	    //bsmp[0].funcs.list[11]->func_p(&password.u8, &dummy);
+	}
 }

@@ -52,6 +52,9 @@
 #define HARD_INTERLOCK              0x00000004  // IPC3
 #define SOFT_INTERLOCK              0x00000008  // IPC4
 
+#define MSG_ID_MTOC                 g_ipc_mtoc.msg_id
+#define MSG_ID_CTOM                 g_ipc_ctom.msg_id
+
 typedef enum
 {
     Turn_On = 1,
@@ -81,6 +84,7 @@ typedef enum
     Set_Param,
     Set_DSP_Coeffs,
     Cfg_TimeSlicer,
+    Set_Command_Interface,
     CtoM_Message_Error
 } ipc_mtoc_lowpriority_msg_t;
 

@@ -10,8 +10,28 @@
 
 #include "bsmp/include/server.h"
 
+#define NUMBER_OF_BSMP_SERVERS      4
+
+#define RUN_BSMP_FUNC(server, idx, input, output)   bsmp[server].funcs.list[idx]->func_p((uint8_t *) input, (uint8_t *) output);
+
+typedef enum
+{
+    Ok,
+    PS_is_Local,
+    PS_is_Host,
+    PS_Interlocked,
+    PS_Locked,
+    DSP_Timeout,
+    DSP_Busy,
+    Resource_Busy,
+    Invalid_Command
+} bsmp_command_ack_t;
+
+extern volatile bsmp_server_t bsmp[NUMBER_OF_BSMP_SERVERS];
+
 extern void BSMPprocess(struct bsmp_raw_packet *recv_packet,
-                        struct bsmp_raw_packet *send_packet, uint8_t server);
+                        struct bsmp_raw_packet *send_packet, uint8_t server,
+                        uint16_t command_interface);
 extern void bsmp_init(uint8_t server);
 extern void create_bsmp_var(uint8_t var_id, uint8_t server, uint8_t size,
                             bool writable, volatile uint8_t *p_var);

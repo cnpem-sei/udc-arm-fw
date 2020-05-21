@@ -19,6 +19,9 @@
  */
 
 #include <stdint.h>
+#include <stdarg.h>
+#include <string.h>
+#include <math.h>
 
 #include "inc/hw_sysctl.h"
 #include "inc/hw_ints.h"
@@ -34,1040 +37,265 @@
 #include "driverlib/systick.h"
 #include "driverlib/debug.h"
 
+#include "board_drivers/hardware_def.h"
+
+#include "communication_drivers/bsmp/bsmp_lib.h"
 #include "communication_drivers/rs485/rs485.h"
 #include "communication_drivers/i2c_onboard/rtc.h"
 #include "communication_drivers/i2c_offboard_isolated/temp_low_power_module.h"
-#include "communication_drivers/shared_memory/ctrl_law.h"
-#include "communication_drivers/shared_memory/main_var.h"
+//#include "communication_drivers/shared_memory/ctrl_law.h"
+//#include "communication_drivers/shared_memory/main_var.h"
 #include "communication_drivers/ethernet/ethernet_uip.h"
-#include "communication_drivers/shared_memory/main_var.h"
+//#include "communication_drivers/shared_memory/main_var.h"
 #include "communication_drivers/can/can_bkp.h"
 #include "communication_drivers/system_task/system_task.h"
+#include "communication_drivers/ipc/ipc_lib.h"
+#include "communication_drivers/parameters/ps_parameters.h"
 
-#include "board_drivers/hardware_def.h"
 #include "ihm.h"
 
-#define STX 			0x02
-#define SERIAL_BUF_SIZE	256
+//*****************************************************************************
 
-
-typedef struct
-{
-	 uint8_t buffer_rx [265];
-	 int16_t counter;
-     uint8_t Start;
-     uint8_t Ndado;
-     uint8_t csum;
-}buffer_t;
-
-typedef struct
-{
-	 uint8_t CMD;
-     uint8_t PDADO;
-     uint8_t NDADO;
-     uint8_t DADO[256];
-     uint8_t ACK;
-     uint8_t CKS;
-
-}protocolo_t;
-
-buffer_t Dado;
-protocolo_t Mensagem;
-
+#pragma DATA_SECTION(recv_buffer, "SERIALBUFFER")
+#pragma DATA_SECTION(send_buffer, "SERIALBUFFER")
 
 //*****************************************************************************
 
-// Local = 1 Remote = 0
-static uint8_t LocRem = 0;
+#define SERIAL_HEADER           1   // Destination
+#define SERIAL_CSUM             1
+
+#define SERIAL_MASTER_ADDRESS   0   // Master Address
+#define SERIAL_BUF_SIZE         (SERIAL_HEADER+1024+SERIAL_CSUM)
+
+//#define HIGH_SPEED_BAUD         6000000
+//#define LOW_SPEED_BAUD          115200
+
+//#define BAUDRATE_DEFAULT        HIGH_SPEED_BAUD
+
+static uint8_t SERIAL_CH_0_ADDRESS = 1;
+static uint8_t SERIAL_CH_1_ADDRESS = 2;
+static uint8_t SERIAL_CH_2_ADDRESS = 3;
+static uint8_t SERIAL_CH_3_ADDRESS = 4;
+
+//static uint8_t BCAST_ADDRESS  = 255; // Broadcast Address
+
+volatile uint8_t g_current_ps_id; //Save ID for current power_supply 0 - 3.
+
+
+//*****************************************************************************
+struct serial_buffer
+{
+    uint8_t data[SERIAL_BUF_SIZE];
+    uint16_t index;
+    uint8_t csum;
+};
+
+static struct serial_buffer recv_buffer = {.index = 0};
+static struct serial_buffer send_buffer = {.index = 0};
+
+static struct bsmp_raw_packet recv_packet =
+                             { .data = recv_buffer.data + 1 };
+static struct bsmp_raw_packet send_packet =
+                             { .data = send_buffer.data + 1 };
 
 //*****************************************************************************
 
-// Partir o float em bytes
-union
+static uint8_t MessageOverflow = 0;
+//static uint32_t baudrate = 0;
+
+//*****************************************************************************
+
+void isr_ihm(void)
 {
-   float f;
-   char c[4];
-} floatNchars;
-
-/******************************************************************************************
- *
- * As sub rotinas contidas abaixo se referem a comunica��o com o microcontrolador da IHM
- *
- *
- *******************************************************************************************/
-
-// Sub rotina para aloca��o dos dados recebidos
-void separa_dado(void){
-
-	uint8_t count = 0;
-
-   Mensagem.CMD = Dado.buffer_rx[0];
-   Mensagem.PDADO = Dado.buffer_rx[1];
-   Mensagem.NDADO = Dado.buffer_rx[2];
-
-   for(count = 0; count < Mensagem.NDADO; count++){
-
-      Mensagem.DADO[count] = Dado.buffer_rx[count + 3];
-
-   }
-
-   Mensagem.ACK = Dado.buffer_rx[count + 3];
-
-   Dado.counter = 0;
-   Dado.Ndado = 0;
-
-}
-
-/*******************************************************************************
- *
- * Subrotina destinada a enviar dados para o display via UART2
- *
- ******************************************************************************/
-void send_display(void){
-
-	unsigned int i;
-
-	// Prepare answer
-	Mensagem.CKS = 0;
-
-	Mensagem.CKS -= Mensagem.CMD;
-	Mensagem.CKS -= Mensagem.PDADO;
-	Mensagem.CKS -= Mensagem.NDADO;
-	Mensagem.CKS -= Mensagem.ACK;
-
-	// Send packet
-	UARTCharPutNonBlocking(DISPLAY_UART_BASE,Mensagem.CMD);
-	UARTCharPutNonBlocking(DISPLAY_UART_BASE,Mensagem.PDADO);
-	UARTCharPutNonBlocking(DISPLAY_UART_BASE,Mensagem.NDADO);
-
-
-	for(i = 0; i < Mensagem.NDADO; ++i)
-	{
-		// Wait until have space in the TX buffer
-		while(!UARTSpaceAvail(DISPLAY_UART_BASE));
-		// CheckSum calc
-		Mensagem.CKS -= Mensagem.DADO[i];
-		// Send Byte
-		UARTCharPutNonBlocking(DISPLAY_UART_BASE, Mensagem.DADO[i]);
-	}
-	// Wait until have space in the TX buffer
-	while(!UARTSpaceAvail(DISPLAY_UART_BASE));
-	// Send Byte
-	UARTCharPutNonBlocking(DISPLAY_UART_BASE,Mensagem.ACK);
-	UARTCharPutNonBlocking(DISPLAY_UART_BASE, Mensagem.CKS);
-
-}
-
-/******************************************************************************
- *
- * Processa os comandos enviados pelo display
- *
- ******************************************************************************/
-void process_cmd(){
-	volatile uint8_t mani2, mani3 = 0;
-	uint16_t uInt = 0;
-	uint64_t var64 = 0;
-
-  switch(Mensagem.CMD){
-
-     // Comandos de consulta de par�metros, pede que seja enviado o parametro requerido
-     // Endere�o RS-485
-     case 0x00:
-    	 	   Mensagem.CMD = 0x00;
-    	       Mensagem.PDADO = 0x00;
-    	       Mensagem.NDADO = 0x01;
-    	       //Mensagem.DADO[0] = Parametros.End;
-    	       //Mensagem.DADO[0] = ReadRS485Address();
-    	       Mensagem.DADO[0] = get_rs485_ch_1_address();
-    	       Mensagem.ACK = 0x00;
-    	       send_display(); // Envia mensagem para o Display
-               break;
-     // Modelo da fonte
-     case 0x01:
-    	       Mensagem.CMD = 0x01;
-    	       Mensagem.PDADO = 0x00;
-    	       Mensagem.NDADO = 0x01;
-    	       Mensagem.DADO[0] = power_supply_model_read(0);
-    	       Mensagem.ACK = 0x00;
-    	       send_display(); // Envia mensagem para o Display
-               break;
-     // Data e hora
-     case 0x02:
-    	       // Chamar sub rotina de coleta de dados do RTC
-    	       Mensagem.CMD = 0x02;
-			   Mensagem.PDADO = 0x00;
-			   Mensagem.NDADO = 0x07;
-
-			   var64 = data_hour_read(); // Read actual date and hour
-
-			   Mensagem.DADO[0] = var64 >> 48;
-			   Mensagem.DADO[1] = var64 >> 40;
-			   Mensagem.DADO[2] = var64 >> 32;
-			   Mensagem.DADO[3] = var64 >> 16;
-			   Mensagem.DADO[4] = var64 >> 8;
-			   Mensagem.DADO[5] = var64;
-			   Mensagem.DADO[6] = var64 >> 24;
-			   Mensagem.ACK = 0x00;
-			   send_display(); // Envia mensagem para o Display
-               break;
-     // Valor do PI
-     case 0x03:
-
-               break;
-     // Configura��o do interlock
-     case 0x04:
-    	       Mensagem.CMD = 0x04;
-			   Mensagem.PDADO = 0x00;
-			   Mensagem.NDADO = 0x02;
-			   //Mensagem.DADO[0] = Parametros.ItlkAnalog;
-			   //Mensagem.DADO[1] = Parametros.ItlkStatInput;
-			   Mensagem.ACK = 0x00;
-			   send_display(); // Envia mensagem para o Display
-               break;
-     // Configura��o de Alarme
-     case 0x05:
-    	       Mensagem.CMD = 0x05;
-			   Mensagem.PDADO = 0x00;
-			   Mensagem.NDADO = 0x02;
-			   //Mensagem.DADO[0] = Parametros.AlrmAnlog;
-			   //Mensagem.DADO[1] = Parametros.AlrmStatInput;
-			   Mensagem.ACK = 0x00;
-			   send_display(); // Envia mensagem para o Display
-               break;
-     // Status local/remoto
-     case 0x06:
-    	       Mensagem.CMD = 0x06;
-			   Mensagem.PDADO = 0x00;
-			   Mensagem.NDADO = 0x01;
-			   Mensagem.DADO[0] = LocRem; // Read ajust status
-			   Mensagem.ACK = 0x00;
-			   send_display(); // Envia mensagem para o Display
-               break;
-     // Senha
-     case 0x07:
-    	       Mensagem.CMD = 0x07;
-			   Mensagem.PDADO = 0x00;
-			   Mensagem.NDADO = 0x03;
-			   //Mensagem.DADO[0] = Parametros.Senha >> 16;
-			   //Mensagem.DADO[1] = Parametros.Senha >> 8;
-			   //Mensagem.DADO[2] = Parametros.Senha;
-			   Mensagem.ACK = 0x00;
-			   send_display(); // Envia mensagem para o Display
-               break;
-     // Setpoint das para gera��o de alarme ou interlock por meio das medidas analogicas
-     case 0x08:
-    	       Mensagem.CMD = 0x08;
-    	 	   Mensagem.PDADO = 0x00;
-    	 	   Mensagem.NDADO = 0x0F;
-
-    	 	   //Mensagem.DADO[0] = Parametros.SetPointAn1 >> 8;
-    	 	   //Mensagem.DADO[1] = Parametros.SetPointAn1;
-
-    	 	   //Mensagem.DADO[2] = Parametros.SetPointAn2 >> 8;
-    	 	   //Mensagem.DADO[3] = Parametros.SetPointAn2;
-
-    	 	   //Mensagem.DADO[4] = Parametros.SetPointAn3 >> 8;
-    	 	   //Mensagem.DADO[5] = Parametros.SetPointAn3;
-
-    	 	   //Mensagem.DADO[6] = Parametros.SetPointAn4 >> 8;
-    	 	   //Mensagem.DADO[7] = Parametros.SetPointAn4;
-
-    	 	   //Mensagem.DADO[8] = Parametros.SetPointAn5 >> 8;
-    	 	   //Mensagem.DADO[9] = Parametros.SetPointAn5;
-
-    	 	   //Mensagem.DADO[10] = Parametros.SetPointAn6 >> 8;
-    	 	   //Mensagem.DADO[11] = Parametros.SetPointAn6;
-
-    	 	   //Mensagem.DADO[12] = Parametros.SetPointAn7 >> 8;
-    	 	   //Mensagem.DADO[13] = Parametros.SetPointAn7;
-
-    	 	   //Mensagem.DADO[14] = Parametros.SetPointAn8 >> 8;
-    	 	   //Mensagem.DADO[15] = Parametros.SetPointAn8;
-
-    	 	   Mensagem.ACK = 0x00;
-    	 	   send_display(); // Envia mensagem para o Display
-               break;
-
-	   // Numero de s�rie
-	   case 0x09:
-			   Mensagem.CMD = 0x09;
-			   Mensagem.PDADO = 0x00;
-			   Mensagem.NDADO = 0x08;
-			   //Mensagem.DADO[0] = Parametros.NSerie >> 56;
-			   //Mensagem.DADO[1] = Parametros.NSerie >> 48;
-			   //Mensagem.DADO[2] = Parametros.NSerie >> 40;
-			   //Mensagem.DADO[3] = Parametros.NSerie >> 32;
-			   //Mensagem.DADO[4] = Parametros.NSerie >> 24;
-			   //Mensagem.DADO[5] = Parametros.NSerie >> 16;
-			   //Mensagem.DADO[6] = Parametros.NSerie >> 8;
-			   //Mensagem.DADO[7] = Parametros.NSerie;
-			   Mensagem.ACK = 0x00;
-
-			   send_display(); // Envia mensagem para o Display
-			   break;
-
-     // Comandos de leitura, pede para retornar os dados requeridos
-     // Corrente de sa�da
-     case 0x10:
-    	 	   Mensagem.CMD = 0x10;
-    	 	   Mensagem.PDADO = 0x00;
-    	 	   Mensagem.NDADO = 0x04;
-			   //floatNchars.f = LeituraVarDin.IoutReadF;
-    	 	   floatNchars.f = current_output_read();
-			   Mensagem.DADO[0] = floatNchars.c[0];
-			   Mensagem.DADO[1] = floatNchars.c[1];
-			   Mensagem.DADO[2] = floatNchars.c[2];
-			   Mensagem.DADO[3] = floatNchars.c[3];
-    	 	   Mensagem.ACK = 0x00;
-
-    	 	   send_display(); // Envia mensagem para o Display
-    	 	   break;
-
-     // Leitura da tens�o na sa�da
-     case 0x11:
-    	 	   Mensagem.CMD = 0x11;
-			   Mensagem.PDADO = 0x00;
-			   Mensagem.NDADO = 0x02;
-			   //Mensagem.DADO[0] = LeituraVarDin.IoutMod1;
-			   //Mensagem.DADO[1] = LeituraVarDin.IoutMod2;
-			   Mensagem.DADO[0] = 4;
-			   Mensagem.DADO[1] = 6;
-			   Mensagem.ACK = 0x00;
-
-			   send_display(); // Envia mensagem para o Display
-               break;
-
-     // Leitura da corrente na entrada
-     case 0x12:
-    	 	   Mensagem.CMD = 0x12;
-			   Mensagem.PDADO = 0x00;
-			   Mensagem.NDADO = 0x04;
-
-			   //Mensagem.DADO[0] = LeituraVarDin.ItlkFaseFault;
-			   //Mensagem.DADO[1] = LeituraVarDin.ItlkOverTemp;
-			   //Mensagem.DADO[2] = LeituraVarDin.ItlkDcctFault;
-			   //Mensagem.DADO[3] = LeituraVarDin.ItlkLeakageToGround;
-
-			   Mensagem.ACK = 0x00;
-			   send_display(); // Envia mensagem para o Display
-
-               break;
-     // Temperatura da placa
-     case 0x13:
-    	       //ReadAdcP();
-    	       Mensagem.CMD = 0x13;
-    	       Mensagem.PDADO = 0x00;
-    	       Mensagem.NDADO = 0x02;
-    	       Mensagem.DADO[0] = 0x01;
-    	       Mensagem.DADO[1] = 0x55;
-
-    	       Mensagem.ACK = 0x00;
-    	       send_display(); // Envia mensagem para o Display
-
-               break;
-     // Leitura do status da malha de realimentação
-     case 0x14:
-			   Mensagem.CMD = 0x14;
-			   Mensagem.PDADO = 0x00;
-			   Mensagem.NDADO = 0x01;
-
-			   Mensagem.DADO[0] = control_loop_read();
-
-			   Mensagem.ACK = 0x00;
-			   send_display(); // Envia mensagem para o Display
-
-               break;
-     // Status da chave de saida
-     case 0x15:
-    	       Mensagem.CMD = 0x15;
-    	 	   Mensagem.PDADO = 0x00;
-    	 	   Mensagem.NDADO = 0x01;
-    	 	   Mensagem.DADO[0] = output_sts_read(0);
-
-    	 	   Mensagem.ACK = 0x00;
-    	 	   send_display(); // Envia mensagem para o Display
-               break;
-     // Envia Setpoint de corrente atual
-     case 0x16:
-			   Mensagem.CMD = 0x16;
-			   Mensagem.PDADO = 0x00;
-			   Mensagem.NDADO = 0x04;
-			   floatNchars.f = current_setpoint_read(0);
-			   Mensagem.DADO[0] = floatNchars.c[0];
-			   Mensagem.DADO[1] = floatNchars.c[1];
-			   Mensagem.DADO[2] = floatNchars.c[2];
-			   Mensagem.DADO[3] = floatNchars.c[3];
-			   Mensagem.ACK = 0x00;
-
-			   send_display(); // Envia mensagem para o Display
-               break;
-     // Envia o valor do ganho proporcional atual da malha de controle
-     case 0x17:
-    	       Mensagem.CMD = 0x17;
-    	 	   Mensagem.PDADO = 0x00;
-    	 	   Mensagem.NDADO = 0x04;
-    	 	   floatNchars.f = KpRead();
-    	 	   Mensagem.DADO[0] = floatNchars.c[0];
-    	 	   Mensagem.DADO[1] = floatNchars.c[1];
-    	 	   Mensagem.DADO[2] = floatNchars.c[2];
-    	 	   Mensagem.DADO[3] = floatNchars.c[3];
-    	       Mensagem.ACK = 0x00;
-
-    	       send_display(); // Envia mensagem para o Display
-               break;
-     // Envia o valor do ganho integral atual da malha de controle
-     case 0x18:
-    	       Mensagem.CMD = 0x18;
-    	       Mensagem.PDADO = 0x00;
-    	       Mensagem.NDADO = 0x04;
-			   floatNchars.f = KiRead();
-			   Mensagem.DADO[0] = floatNchars.c[0];
-			   Mensagem.DADO[1] = floatNchars.c[1];
-			   Mensagem.DADO[2] = floatNchars.c[2];
-			   Mensagem.DADO[3] = floatNchars.c[3];
-			   Mensagem.ACK = 0x00;
-
-			   send_display(); // Envia mensagem para o Display
-               break;
-	 // Envia Setpoint de tens�o atual
-	 case 0x19:
-			   Mensagem.CMD = 0x19;
-			   Mensagem.PDADO = 0x00;
-			   Mensagem.NDADO = 0x04;
-			   floatNchars.f = current_setpoint_read(0);
- 			   Mensagem.DADO[0] = floatNchars.c[0];
-			   Mensagem.DADO[1] = floatNchars.c[1];
-			   Mensagem.DADO[2] = floatNchars.c[2];
-			   Mensagem.DADO[3] = floatNchars.c[3];
-			   Mensagem.ACK = 0x00;
-
-			   send_display(); // Envia mensagem para o Display
-			   break;
-	 // Envia o valor do ganho proporcional atual da malha de tens�o
-	 case 0x1A:
-			   Mensagem.CMD = 0x1A;
-			   Mensagem.PDADO = 0x00;
-			   Mensagem.NDADO = 0x04;
-			   floatNchars.f = KpRead();
-			   Mensagem.DADO[0] = floatNchars.c[0];
-			   Mensagem.DADO[1] = floatNchars.c[1];
-			   Mensagem.DADO[2] = floatNchars.c[2];
-			   Mensagem.DADO[3] = floatNchars.c[3];
-			   Mensagem.ACK = 0x00;
-
-			   send_display(); // Envia mensagem para o Display
-			   break;
-	 // Envia o valor do ganho integral atual da malha de tens�o
-	 case 0x1B:
-			   Mensagem.CMD = 0x1B;
-			   Mensagem.PDADO = 0x00;
-			   Mensagem.NDADO = 0x04;
-			   floatNchars.f = KiRead();
-			   Mensagem.DADO[0] = floatNchars.c[0];
-			   Mensagem.DADO[1] = floatNchars.c[1];
-			   Mensagem.DADO[2] = floatNchars.c[2];
-			   Mensagem.DADO[3] = floatNchars.c[3];
-			   Mensagem.ACK = 0x00;
-
-			   send_display(); // Envia mensagem para o Display
-			   break;
-	 // Envia o valor do ganho proporcional atual da malha de corrente
-	 case 0x1C:
-			   Mensagem.CMD = 0x1C;
-			   Mensagem.PDADO = 0x00;
-			   Mensagem.NDADO = 0x04;
-			   floatNchars.f = KpRead();
-			   Mensagem.DADO[0] = floatNchars.c[0];
-			   Mensagem.DADO[1] = floatNchars.c[1];
-			   Mensagem.DADO[2] = floatNchars.c[2];
-			   Mensagem.DADO[3] = floatNchars.c[3];
-			   Mensagem.ACK = 0x00;
-
-			   send_display(); // Envia mensagem para o Display
-			   break;
-	 // Envia o valor do ganho integral atual da malha de corrente
-	 case 0x1D:
-			   Mensagem.CMD = 0x1D;
-			   Mensagem.PDADO = 0x00;
-			   Mensagem.NDADO = 0x04;
-			   floatNchars.f = KiRead();
-			   Mensagem.DADO[0] = floatNchars.c[0];
-			   Mensagem.DADO[1] = floatNchars.c[1];
-			   Mensagem.DADO[2] = floatNchars.c[2];
-			   Mensagem.DADO[3] = floatNchars.c[3];
-			   Mensagem.ACK = 0x00;
-
-			   send_display(); // Envia mensagem para o Display
-			   break;
-     // Comandos de atuação
-     // Seta corrente de saída
-	 case 0x20:
-		       if(LocRem) // Testa se está em Local(0x01)
-		       {
-		    	   floatNchars.c[0] = Mensagem.DADO[0];
-				   floatNchars.c[1] = Mensagem.DADO[1];
-				   floatNchars.c[2] = Mensagem.DADO[2];
-				   floatNchars.c[3] = Mensagem.DADO[3];
-
-				   //SoftStarterIRef(floatNchars.f);
-				   current_setpoint_write(floatNchars.f, 0);
-		       }
-		 	   break;
-
-	 // Seta tensão de saída
-	 case 0x21:
-			   if(LocRem) // Testa se está em Local(0x01)
-			   {
-				   floatNchars.c[0] = Mensagem.DADO[0];
-				   floatNchars.c[1] = Mensagem.DADO[1];
-				   floatNchars.c[2] = Mensagem.DADO[2];
-				   floatNchars.c[3] = Mensagem.DADO[3];
-
-				   //SoftStarterIRef(floatNchars.f);
-				   current_setpoint_write(floatNchars.f, 0);
-
-			   }
-			   break;
-
-     // Liga/desliga saida da fonte
-	 case 0x22:
-		 	   if(LocRem) // Testa se est� em Local(0x01)
-		 	   {
-		 		   //ShmSetStatusFonteOp(Mensagem.DADO[0]);
-
-		 	      output_sts_write(Mensagem.DADO[0], 0);
-
-		 	   }
-    	 	   // Retornar ACK para PIC32 sinalizando que a tarefa foi executada com sucesso
-			   break;
-
-     // Liga/desliga malha de realimenta��o da Fonte
-	 case 0x23:
-		 	   if(LocRem) // Testa se est� em Local(0x01)
-			   {
-
-		 	      control_loop_write(Mensagem.DADO[0]);
-			   }
-			   break;
-
-     // Altera o Status do ajuste para Local ou Remoto
-	 case 0x24:
-		 	   LocRem = Mensagem.DADO[0];
-			   break;
-
-	 // Altera o ganho proporcional da malha de controle "Kp"
-	 case 0x27:
-		 	   if(LocRem) // Testa se est� em Local(0x01)
-			   {
-		 		   floatNchars.c[0] = Mensagem.DADO[0];
-				   floatNchars.c[1] = Mensagem.DADO[1];
-				   floatNchars.c[2] = Mensagem.DADO[2];
-				   floatNchars.c[3] = Mensagem.DADO[3];
-
-				   KpWrite(floatNchars.f, 0);
-
-				   //ShmSetControlKp(floatNchars.f);
-			   }
-		 	   break;
-	 //	Altera o ganho integral da malha de controle "Ki"
-	 case 0x28:
-		 	   if(LocRem) // Testa se est� em Local(0x01)
-		 	   {
-		 		   floatNchars.c[0] = Mensagem.DADO[0];
-				   floatNchars.c[1] = Mensagem.DADO[1];
-				   floatNchars.c[2] = Mensagem.DADO[2];
-				   floatNchars.c[3] = Mensagem.DADO[3];
-
-				   KiWrite(floatNchars.f, 0);
-
-				   //ShmSetControlKi(floatNchars.f);
-		 	   }
-		 	   break;
-	 // Altera o ganho proporcional da malha de tens�o "Kp"
-	 case 0x29:
-			   if(LocRem) // Testa se est� em Local(0x01)
-			   {
-				   floatNchars.c[0] = Mensagem.DADO[0];
-				   floatNchars.c[1] = Mensagem.DADO[1];
-				   floatNchars.c[2] = Mensagem.DADO[2];
-				   floatNchars.c[3] = Mensagem.DADO[3];
-
-				   KpWrite(floatNchars.f, 0);
-
-				   //ShmSetControlKp(floatNchars.f);
-			   }
-			   break;
-	 //	Altera o ganho integral da malha de tens�o "Ki"
-	 case 0x2A:
-			   if(LocRem) // Testa se est� em Local(0x01)
-			   {
-				   floatNchars.c[0] = Mensagem.DADO[0];
-				   floatNchars.c[1] = Mensagem.DADO[1];
-				   floatNchars.c[2] = Mensagem.DADO[2];
-				   floatNchars.c[3] = Mensagem.DADO[3];
-
-				   KiWrite(floatNchars.f, 0);
-
-				   //ShmSetControlKi(floatNchars.f);
-			   }
-			   break;
-	 // Altera o ganho proporcional da malha de corrente "Kp"
-	 case 0x2B:
-			   if(LocRem) // Testa se est� em Local(0x01)
-			   {
-				   floatNchars.c[0] = Mensagem.DADO[0];
-				   floatNchars.c[1] = Mensagem.DADO[1];
-				   floatNchars.c[2] = Mensagem.DADO[2];
-				   floatNchars.c[3] = Mensagem.DADO[3];
-
-				   KpWrite(floatNchars.f, 0);
-
-				   //ShmSetControlKp(floatNchars.f);
-			   }
-			   break;
-	 //	Altera o ganho integral da malha de corrente "Ki"
-	 case 0x2C:
-			   if(LocRem) // Testa se est� em Local(0x01)
-			   {
-				   floatNchars.c[0] = Mensagem.DADO[0];
-				   floatNchars.c[1] = Mensagem.DADO[1];
-				   floatNchars.c[2] = Mensagem.DADO[2];
-				   floatNchars.c[3] = Mensagem.DADO[3];
-
-				   KiWrite(floatNchars.f, 0);
-
-				   //ShmSetControlKi(floatNchars.f);
-			   }
-			   break;
-
-     // Comandos de altera��o de par�metro - essas fun��es s�o utilizadas para tratar o ACK
-     // Os valores recebidos devem ser ajustados
-     // Endere�o RS-485
-     case 0x30:
-
-    	 	   if(LocRem) // Testa se est� em Local(0x01)
-    	 	   {
-    	 		   //SetRS485Address(Mensagem.DADO[0]);
-    	 		   set_rs485_ch_1_address(Mensagem.DADO[0]);
-    	 	   }
-
-               // Chama subrotina para salvar o novo dado na mem�ria n�o vol�til
-               // Retornar ACK para PIC32 sinalizando que a tarefa foi executada com sucesso
-               break;
-     // Data e hora
-     case 0x32:
-    	 	   /*if(Parametros.LocRem) // Testa se est� em Local(0x01)
-    	 	   {
-    	 		   Rtc.RTCano = Mensagem.DADO[0];
-				   Rtc.RTCmes = Mensagem.DADO[1];
-				   Rtc.RTCdia = Mensagem.DADO[2];
-				   Rtc.RTChora = Mensagem.DADO[3];
-				   Rtc.RTCmin = Mensagem.DADO[4];
-				   Rtc.RTCseg = Mensagem.DADO[5];
-				   // Chamar subrotina de ajuste dos dados no RTC
-				   Write_Rtc_Clock();
-				   // Retornar ACK para PIC32 sinalizando que a tarefa foi executada com sucesso
-    	 	   }*/
-               break;
-     // Valor PI
-     case 0x33:
-
-               // Chama subrotina para salvar o novo dado na mem�ria FLASH
-               // Retornar ACK para PIC32 sinalizando que a tarefa foi executada com sucesso
-               break;
-     // Configura��o do interlock
-     case 0x34:
-
-               break;
-     // Configura��o do alarme
-     case 0x35:
-
-               break;
-     //
-     case 0x36:
-
-    	 	  // Retornar ACK para PIC32 sinalizando que a tarefa foi executada com sucesso
-               break;
-     // Salva nova Senha
-     case 0x37:
-    	       //Parametros.Senha = Mensagem.DADO[0];
-    	       mani2 = Mensagem.DADO[1];
-    	       mani3 = Mensagem.DADO[2];
-    	       //Parametros.Senha = Parametros.Senha << 8;
-    	       //Parametros.Senha |= mani2;
-    	       //Parametros.Senha = Parametros.Senha << 8;
-    	       //Parametros.Senha |= mani3;
-    	       // Chamar fun��o que salva a nova senha na mem�ria FLASH
-    	       // Retornar ACK para PIC32 sinalizando que a tarefa foi executada com sucesso
-               break;
-     // Salva novo ajuste de setpoint para ADC
-     case 0x38:
-    	       /*Parametros.SetPointAn1 = Mensagem.DADO[0];
-			   Parametros.SetPointAn1 = Parametros.SetPointAn1 << 8;
-			   Parametros.SetPointAn1 |= Mensagem.DADO[1];
-
-			   Parametros.SetPointAn2 = Mensagem.DADO[2];
-			   Parametros.SetPointAn2 = Parametros.SetPointAn2 << 8;
-			   Parametros.SetPointAn2 |= Mensagem.DADO[3];
-
-			   Parametros.SetPointAn3 = Mensagem.DADO[4];
-			   Parametros.SetPointAn3 = Parametros.SetPointAn3 << 8;
-			   Parametros.SetPointAn3 |= Mensagem.DADO[5];
-
-			   Parametros.SetPointAn4 = Mensagem.DADO[6];
-			   Parametros.SetPointAn4 = Parametros.SetPointAn4 << 8;
-			   Parametros.SetPointAn4 |= Mensagem.DADO[7];
-
-			   Parametros.SetPointAn5 = Mensagem.DADO[8];
-			   Parametros.SetPointAn5 = Parametros.SetPointAn5 << 8;
-			   Parametros.SetPointAn5 |= Mensagem.DADO[9];
-
-			   Parametros.SetPointAn6 = Mensagem.DADO[10];
-			   Parametros.SetPointAn6 = Parametros.SetPointAn6 << 8;
-			   Parametros.SetPointAn6 |= Mensagem.DADO[11];
-
-			   Parametros.SetPointAn7 = Mensagem.DADO[12];
-			   Parametros.SetPointAn7 = Parametros.SetPointAn4 << 8;
-			   Parametros.SetPointAn7 |= Mensagem.DADO[13];
-
-			   Parametros.SetPointAn8 = Mensagem.DADO[14];
-			   Parametros.SetPointAn8 = Parametros.SetPointAn8 << 8;
-			   Parametros.SetPointAn8 |= Mensagem.DADO[15];*/
-			   // Chama fun��o que grava o setpoint na mem�ria FLASH
-			   // Chamar fun��o que envia os setpoints para o ADCP
-			   // Retornar ACK para PIC32 sinalizando que a tarefa foi executada com sucesso
-               break;
-
-     // Comandos de consulta de curva, deve retornar os dados recebidos
-     // Os valores recebidos devem ser ajustados
-     // Curvas armazenadas
-     case 0x40:
-
-               break;
-     // Visualizar curva
-     case 0x41:
-
-               break;
-     // Visualizar parametro da curva
-     case 0x42:
-
-               break;
-
-     // Comandos de ajuste para curva - essas fun��es s�o utilizadas para tratar o ACK
-     // Seleciona curva
-     case 0x50:
-
-               break;
-     // Inicia curva
-     case 0x51:
-
-               break;
-     // Ajusta parametro da curva
-     case 0x52:
-
-               break;
-     // Envia o valor de tens�o do DC link em 12 bits
-     case 0x60:
-    	       Mensagem.CMD = 0x60;
-			   Mensagem.PDADO = 0x00;
-			   Mensagem.NDADO = 0x04;
-
-			   //floatNchars.f = LeituraVarDin.Vin;
-			   Mensagem.DADO[0] = floatNchars.c[0];
-			   Mensagem.DADO[1] = floatNchars.c[1];
-			   Mensagem.DADO[2] = floatNchars.c[2];
-			   Mensagem.DADO[3] = floatNchars.c[3];
-
-			   Mensagem.ACK = 0x00;
-
-			   send_display(); // Envia mensagem para o Display
-    	 	   break;
-	 // Envia o valor de tens�o na carga em 12 bits
-	 case 0x61:
-		 	   Mensagem.CMD = 0x61;
-			   Mensagem.PDADO = 0x00;
-			   Mensagem.NDADO = 0x04;
-
-			   //floatNchars.f = LeituraVarDin.Vout;
-			   Mensagem.DADO[0] = floatNchars.c[0];
-			   Mensagem.DADO[1] = floatNchars.c[1];
-			   Mensagem.DADO[2] = floatNchars.c[2];
-			   Mensagem.DADO[3] = floatNchars.c[3];
-
-			   Mensagem.ACK = 0x00;
-
-			   send_display(); // Envia mensagem para o Display
-			   break;
-	 // Envia o valor da temperatura no dissipador do m�dulo de potencia em 8 bits
-	 case 0x62:
-		 	   Mensagem.CMD = 0x62;
-			   Mensagem.PDADO = 0x00;
-			   Mensagem.NDADO = 0x01;
-			   //Mensagem.DADO[0] = LeituraVarDin.TempDig;
-			   Mensagem.DADO[0] = power_supply_1_temp();
-			   Mensagem.ACK = 0x00;
-
-			   send_display(); // Envia mensagem para o Display
-			   break;
-	 // Envia o valor lido no ch3 do conversor AD
-	 case 0x63:
-
-			   break;
-	 // Envia o valor lido no ch4 do conversor AD
-	 case 0x64:
-
-			   break;
-	 // Envia o valor lido no ch5 do conversor AD
-     case 0x65:
-
-			   break;
-     // Envia o valor lido no ch6 do conversor AD
-	 case 0x66:
-
-			   break;
-	 // Envia o valor lido no ch7 do conversor AD
-     case 0x67:
-
-			   break;
-	 // Envia o endere�o IP
-     case 0x70:
-    	 	   Mensagem.CMD = 0x70;
-    	 	   Mensagem.PDADO = 0x00;
-			   Mensagem.NDADO = 0x04;
-
-			   ip_address_read(&Mensagem.DADO[0], &Mensagem.DADO[1], &Mensagem.DADO[2], &Mensagem.DADO[3]);
-
-			   Mensagem.ACK = 0x00;
-
-			   send_display(); // Envia mensagem para o Display
-    	 	   break;
-
-     case 0x71:
-
-			   ip_address_write(Mensagem.DADO[0], Mensagem.DADO[1], Mensagem.DADO[2], Mensagem.DADO[3]);
-
-			   break;
-
-     // Recebe os dados de ajuste de frequencia e amplitude do gerador de frequencia
-     case 0x80:
-    	 	   /*if(Parametros.LocRem) // Testa se est� em Local(0x01)
-    	 	   {
-    	 		   // Frequencia
-				   uInt = Mensagem.DADO[0];
-				   uInt = uInt << 8;
-				   uInt |= Mensagem.DADO[1];
-
-				   // Amplitude
-				   floatNchars.c[0] = Mensagem.DADO[4];
-				   floatNchars.c[1] = Mensagem.DADO[5];
-				   floatNchars.c[2] = Mensagem.DADO[6];
-				   floatNchars.c[3] = Mensagem.DADO[7];
-
-				   ShmSetFreqGen(Var, floatNchars.f);
-    	 	   }*/
-    	 	   break;
-     // Liga/desliga o gerador de frequencia
-     case 0x81:
-    	 	   /*if(Parametros.LocRem) // Testa se est� em Local(0x01)
-    	 	   {
-    	 		   ShmSetStsFreqGen(Mensagem.DADO[0]);
-    	 	   }*/
-    	 	   break;
-     // Liga/desliga a fun��o "Sweep" para levantar a resposta em frequencia da fonte
-     case 0x82:
-    	 	   /*if(Parametros.LocRem) // Testa se est� em Local(0x01)
-    	 	   {
-    	 		   if(Mensagem.DADO[0] && !LeituraVarDin.RunningFunction)InitSweep();
-				   else if(!Mensagem.DADO[0]) StopSweep();
-    	 	   }*/
-    	 	   break;
-     // Obtem o status e a frequencia atual do gerador de sweep
-     case 0x83:
-    	       Mensagem.CMD = 0x83;
-			   Mensagem.PDADO = 0x00;
-			   Mensagem.NDADO = 0x03;
-
-			   //Mensagem.DADO[0] = ShmGetStsFreqGen();
-
-    	 	   //uInt = ShmGetFreqSet();
-
-    	 	   Mensagem.DADO[1] = uInt >> 8;
-    	 	   Mensagem.DADO[2] = uInt;
-
-			   Mensagem.ACK = 0x00;
-			   send_display(); // Envia mensagem para o Display
-
-    	 	   break;
-     // Liga/desliga a fun��o para teste de linearidade
-     case 0x85:
-    	 	   /*if(Parametros.LocRem) // Testa se est� em Local(0x01)
-    	 	   {
-    	 		   if(Mensagem.DADO[0] && !LeituraVarDin.RunningFunction)SoftStarterStartRamp();
-    	 		   else if(!Mensagem.DADO[0]) SoftStarterStopRamp();
-    	 	   }*/
-
-    	 	   break;
-     // Envia o status de funcionamento da fun��o linearidade
-     case 0x86:
-    	       Mensagem.CMD = 0x86;
-			   Mensagem.PDADO = 0x00;
-			   Mensagem.NDADO = 0x01;
-
-			   //Mensagem.DADO[0] = LeituraVarDin.Ramp1h;
-
-			   Mensagem.ACK = 0x00;
-			   send_display(); // Envia mensagem para o Display
-    	 	   break;
-
-     // Recebe a configura��o de amplitude do Step para o ensaio de resposta ao degrau
-     case 0x90:
-    	 	   /*if(Parametros.LocRem) // Testa se est� em Local(0x01)
-			   {
-    	 		   ConfigStepResponse(Mensagem.DADO[0]);
-			   }*/
-    	 	   break;
-
-     // Recebe o comando para ligar/desligar o ensaio de resposta ao degrau
-     case 0x91:
-    	 	   /*if(Parametros.LocRem) // Testa se est� em Local(0x01)
-			   {
-				   if(Mensagem.DADO[0] && !LeituraVarDin.RunningFunction) InitStepResponse();
-				   else if(!Mensagem.DADO[0]) StopTimerStepResponse();
-			   }*/
-		       break;
-
-	 // Envia os dados de status do ensaio de resposta ao degrau
-	 case 0x92:
-		 	   Mensagem.CMD = 0x92;
-			   Mensagem.PDADO = 0x00;
-			   Mensagem.NDADO = 0x02;
-
-			   //Mensagem.DADO[0] = LeituraVarDin.RunningStepResponse;
-			   //Mensagem.DADO[1] = ReadConfigStepResponse();
-
-			   Mensagem.ACK = 0x00;
-			   send_display(); // Envia mensagem para o Display
-			   break;
-
-	 // Envia os dados referentes ao status do alarme
-	 case 0xA0:
-		       var64 = alarm_status_read();
-
-		 	   Mensagem.CMD = 0xA0;
-			   Mensagem.PDADO = 0x00;
-			   Mensagem.NDADO = 0x04;
-
-			   Mensagem.DADO[0] = var64;
-			   Mensagem.DADO[1] = var64 >> 8;
-			   Mensagem.DADO[2] = var64 >> 16;
-			   Mensagem.DADO[3] = var64 >> 24;
-
-			   Mensagem.ACK = 0x00;
-			   send_display(); // Envia mensagem para o Display
-
-		   	   break;
-
-	 // Reseta interlock e alarme
-     case 0xC0:
-    	 	   //InterlockAlarmReset();
-    	 	   TaskSetNew(CLEAR_ITLK_ALARM);
-    	       break;
-
-	 // Envia os dados referentes ao status do interlock
-	 case 0xE0:
-		 	   Mensagem.CMD = 0xE0;
-			   Mensagem.PDADO = 0x00;
-			   Mensagem.NDADO = 0x08;
-
-			   Mensagem.DADO[0] = hard_interlock_sts(0, 0);
-			   Mensagem.DADO[1] = hard_interlock_sts(1, 0);
-			   Mensagem.DADO[2] = hard_interlock_sts(2, 0);
-			   Mensagem.DADO[3] = hard_interlock_sts(3, 0);
-			   Mensagem.DADO[4] = soft_interlock_sts(0, 0);
-			   Mensagem.DADO[5] = soft_interlock_sts(1, 0);
-			   Mensagem.DADO[6] = soft_interlock_sts(2, 0);
-			   Mensagem.DADO[7] = soft_interlock_sts(3, 0);
-
-			   Mensagem.ACK = 0x00;
-			   send_display(); // Envia mensagem para o Display
-
-			   break;
-
-     default:
-
-    	 	   break;
-
-
-     }
-
-}
-
-void ihm_int_handler(void)
-{
-    unsigned long ulStatus;
+    //uint32_t lChar;
+    uint16_t sCarga;
+    //uint8_t ucChar;
+    uint32_t ulStatus;
+
+    uint8_t time_out = 0;
 
     // Get the interrrupt status.
     ulStatus = UARTIntStatus(DISPLAY_UART_BASE, true);
 
-    if(0x00000040 == ulStatus)
-    {
-    	//NewData = 1;
-    	// Loop while there are characters in the receive FIFO.
-    	while(UARTCharsAvail(DISPLAY_UART_BASE) && Dado.counter < SERIAL_BUF_SIZE)
-    	{
-    		Dado.buffer_rx[Dado.counter] = UARTCharGet(DISPLAY_UART_BASE);
-    		Dado.csum += Dado.buffer_rx[Dado.counter++];
-    	}
-
-    	TaskSetNew(PROCESS_DISPLAY_MESSAGE);
-
-    }
-
     // Clear the asserted interrupts.
     UARTIntClear(DISPLAY_UART_BASE, ulStatus);
 
+    if(UARTRxErrorGet(DISPLAY_UART_BASE)) UARTRxErrorClear(DISPLAY_UART_BASE);
+
+    // Receive Interrupt Mask
+    if(UART_INT_RX == ulStatus || UART_INT_RT == ulStatus)
+    {
+
+        //GPIO1 turn on
+        //GPIOPinWrite(GPIO_PORTP_BASE, GPIO_PIN_7, ON);
+
+        for(time_out = 0; time_out < 50; time_out++)
+        {
+            // Loop while there are characters in the receive FIFO.
+            while(UARTCharsAvail(DISPLAY_UART_BASE) &&
+                  recv_buffer.index < SERIAL_BUF_SIZE)
+            {
+
+                recv_buffer.data[recv_buffer.index] =
+                        (uint8_t)UARTCharGet(DISPLAY_UART_BASE);;
+                recv_buffer.csum += recv_buffer.data[recv_buffer.index++];
+
+                time_out = 0;
+
+            }
+        }
+
+        sCarga = (recv_buffer.data[2]<<8) | recv_buffer.data[3];
+
+        if(recv_buffer.index > sCarga +4)
+        {
+            TaskSetNew(PROCESS_IHM_MESSAGE);
+            //rs485_process_data();
+            MessageOverflow = 0;
+        }
+
+        if(sCarga > SERIAL_BUF_SIZE)
+        {
+            recv_buffer.index = 0;
+            recv_buffer.csum  = 0;
+            send_buffer.index = 0;
+            send_buffer.csum  = 0;
+
+            MessageOverflow = 0;
+        }
+    //#endif
+    }
+
+    // Transmit Interrupt Mask
+    //else if(UART_INT_TX == ulStatus) // TX interrupt
+    //{
+    //    while(UARTBusy(RS485_RD_BASE));
+
+        // Put IC in the reception mode
+    //    GPIOPinWrite(RS485_RD_BASE, RS485_RD_PIN, OFF);
+
+    //}
 }
 
-void display_process_data(void)
+void ihm_tx_handler(void)
 {
+    unsigned int i;
 
-	// Checksum is not zero
-	if(Dado.csum)
-		goto exit;
+    // Prepare answer
+    send_buffer.data[0] = SERIAL_MASTER_ADDRESS;
+    send_buffer.csum    = 0;
 
-	separa_dado(); // Chama sub rotina que tira os dados do buffer e aloca na estrutura
-	process_cmd(); // Chama Sub rotina para interpreta��o dos dados recebidos
+    // Send packet
 
-	exit:
-	Dado.counter = 0;
-	Dado.csum  = 0;
+    // Put IC in the transmition mode
+    //GPIOPinWrite(RS485_RD_BASE, RS485_RD_PIN, ON);
 
-	// Clear new data flag
-	//NewData = 0;
-	//GPIOPinWrite(DEBUG_BASE, DEBUG_PIN, OFF);
+    for(i = 0; i < send_packet.len + SERIAL_HEADER; ++i)
+    {
+        // Wait until have space in the TX buffer
+        while(!UARTSpaceAvail(DISPLAY_UART_BASE));
+        // CheckSum calc
+        send_buffer.csum -= send_buffer.data[i];
+        // Send Byte
+        UARTCharPut(DISPLAY_UART_BASE, send_buffer.data[i]);
+    }
+    // Wait until have space in the TX buffer
+    while(!UARTSpaceAvail(DISPLAY_UART_BASE));
+    // Send Byte
+    UARTCharPut(DISPLAY_UART_BASE, send_buffer.csum);
 
 }
 
-void init_display(void)
+void ihm_process_data(void)
 {
-	// Configura UART0 com baud de 8Mbps, opera��o 8-N-1 devido as limita��es do conversor usb/serial controle
-	UARTConfigSetExpClk(DISPLAY_UART_BASE, SysCtlClockGet(SYSTEM_CLOCK_SPEED), 1000000,
-						(UART_CONFIG_WLEN_8 | UART_CONFIG_STOP_ONE |
-						UART_CONFIG_PAR_NONE));
+    // Received less than HEADER + CSUM bytes
+    if(recv_buffer.index < (SERIAL_HEADER + SERIAL_CSUM))
+        goto exit;
 
-	UARTFIFOEnable(DISPLAY_UART_BASE);
+    // Checksum is not zero
+    if(recv_buffer.csum)
+        goto exit;
 
-	//Habilita interrup��o pela UART (RS-485 BKP)
-	IntRegister(DISPLAY_INT, ihm_int_handler);
-	UARTIntEnable(DISPLAY_UART_BASE, UART_INT_RX | UART_INT_RT);
+    // Packet is not for me
+    if(recv_buffer.data[0] != SERIAL_CH_1_ADDRESS && recv_buffer.data[0] !=
+            SERIAL_CH_2_ADDRESS && recv_buffer.data[0] != SERIAL_CH_3_ADDRESS
+            && recv_buffer.data[0] != SERIAL_CH_0_ADDRESS)
+        goto exit;
 
-	//Seta n�veis de prioridade entre as interrup��es
-	IntPrioritySet(DISPLAY_INT, 2);
+    //GPIOPinWrite(EEPROM_WP_BASE, EEPROM_WP_PIN, ON);
 
-	IntEnable(DISPLAY_INT);
+    recv_packet.len = recv_buffer.index - SERIAL_HEADER - SERIAL_CSUM;
+
+
+    //if ((recv_buffer.data[0] == SERIAL_CH_0_ADDRESS) ||
+    //    (recv_buffer.data[0] == BCAST_ADDRESS))
+    if (recv_buffer.data[0] == SERIAL_CH_0_ADDRESS)
+    {
+        g_current_ps_id = 0;
+        g_ipc_mtoc.msg_id = 0;
+        BSMPprocess(&recv_packet, &send_packet, 0, Local);
+    }
+
+    else if (recv_buffer.data[0] == SERIAL_CH_1_ADDRESS)
+    {
+        g_current_ps_id = 1;
+        g_ipc_mtoc.msg_id = 1;
+        BSMPprocess(&recv_packet, &send_packet, 1, Local);
+    }
+
+    else if (recv_buffer.data[0] == SERIAL_CH_2_ADDRESS)
+    {
+        g_current_ps_id = 2;
+        g_ipc_mtoc.msg_id = 2;
+        BSMPprocess(&recv_packet, &send_packet, 2, Local);
+    }
+
+    else if (recv_buffer.data[0] == SERIAL_CH_3_ADDRESS)
+    {
+        g_current_ps_id = 3;
+        g_ipc_mtoc.msg_id = 3;
+        BSMPprocess(&recv_packet, &send_packet, 3, Local);
+    }
+
+    //GPIOPinWrite(DEBUG_BASE, DEBUG_PIN, OFF);
+
+    //rs485_bkp_tx_handler();
+    //if (recv_buffer.data[0] != BCAST_ADDRESS)
+    //{
+        ihm_tx_handler();
+    //}
+
+    exit:
+    recv_buffer.index = 0;
+    recv_buffer.csum  = 0;
+    send_buffer.index = 0;
+    send_buffer.csum  = 0;
+
 }
 
-uint8_t loc_rem_update(void)
+
+void ihm_init(void)
 {
-	return LocRem;
+    // Configura UART0 com baud de 8Mbps, operacao 8-N-1 devido as limitacoes do conversor usb/serial controle
+    UARTConfigSetExpClk(DISPLAY_UART_BASE, SysCtlClockGet(SYSTEM_CLOCK_SPEED), 1000000,
+                        (UART_CONFIG_WLEN_8 | UART_CONFIG_STOP_ONE |
+                        UART_CONFIG_PAR_NONE));
+
+    UARTFIFOEnable(DISPLAY_UART_BASE);
+    UARTFIFOLevelSet(DISPLAY_UART_BASE, UART_FIFO_TX1_8, UART_FIFO_RX1_8);
+
+    //Habilita interrupcao pela UART (RS-485 BKP)
+    IntRegister(DISPLAY_INT, isr_ihm);
+    UARTIntEnable(DISPLAY_UART_BASE, UART_INT_RX | UART_INT_RT);
+
+    //Seta niveis de prioridade entre as interrupcoes
+    IntPrioritySet(DISPLAY_INT, 2);
+
+    // Enable the UART
+    UARTEnable(DISPLAY_UART_BASE);
+
+    IntEnable(DISPLAY_INT);
 }
+
+
+

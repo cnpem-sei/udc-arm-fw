@@ -53,18 +53,25 @@
 #include "bsmp/include/server.h"
 #include "bsmp_lib.h"
 
-#define TIMEOUT_DSP_IPC_ACK     30
+#define TIMEOUT_DSP_IPC_ACK         30
 
-#define SIZE_WFMREF_BLOCK       8192
-#define SIZE_SAMPLES_BUFFER     16384
+#define SIZE_WFMREF_BLOCK           8192
+#define SIZE_SAMPLES_BUFFER         16384
 
 #define NUMBER_OF_BSMP_SERVERS      4
 #define NUMBER_OF_BSMP_CURVES       8
 #define NUMBER_OF_BSMP_FUNCTIONS    50
 
-bsmp_server_t bsmp[NUMBER_OF_BSMP_SERVERS];
+#define BSMP_QUERY_COMMANDS         0x10
+#define BSMP_READ_COMMANDS          0x20
+#define BSMP_BLOCK_COMMANDS         0x40
+#define BSMP_FUNC_EXECUTE           0x50
+#define BSMP_FUNC_ERROR             0x53
+
+volatile bsmp_server_t bsmp[NUMBER_OF_BSMP_SERVERS];
 
 volatile unsigned long ulTimeout;
+
 static uint8_t dummy_u8;
 
 static struct bsmp_var bsmp_vars[NUMBER_OF_BSMP_SERVERS][BSMP_MAX_VARIABLES];
@@ -85,7 +92,7 @@ static uint8_t bsmp_turn_on(uint8_t *input, uint8_t *output)
 
     if(ipc_mtoc_busy(low_priority_msg_to_reg(Turn_On)))
     {
-        *output = 6;
+        *output = DSP_Busy;
     }
     else
     {
@@ -101,7 +108,7 @@ static uint8_t bsmp_turn_on(uint8_t *input, uint8_t *output)
 
         if(ulTimeout==TIMEOUT_DSP_IPC_ACK)
         {
-            *output = 5;
+            *output = DSP_Timeout;
         }
         else
         {
@@ -110,7 +117,7 @@ static uint8_t bsmp_turn_on(uint8_t *input, uint8_t *output)
                 g_ipc_mtoc.ps_module[0].ps_setpoint.f = get_digital_potentiometer();
             }
 
-            *output = 0;
+            *output = Ok;
         }
     }
 
@@ -136,7 +143,7 @@ static uint8_t bsmp_turn_off(uint8_t *input, uint8_t *output)
     ulTimeout=0;
     if(ipc_mtoc_busy(low_priority_msg_to_reg(Turn_Off)))
     {
-        *output = 6;
+        *output = DSP_Busy;
     }
     else
     {
@@ -148,10 +155,10 @@ static uint8_t bsmp_turn_off(uint8_t *input, uint8_t *output)
             ulTimeout++;
         }
         if(ulTimeout==TIMEOUT_DSP_IPC_ACK){
-            *output = 5;
+            *output = DSP_Timeout;
         }
         else{
-            *output = 0;
+            *output = Ok;
         }
     }
     return *output;
@@ -174,25 +181,37 @@ static struct bsmp_func bsmp_func_turn_off = {
 uint8_t bsmp_open_loop(uint8_t *input, uint8_t *output)
 {
     ulTimeout=0;
-    if(ipc_mtoc_busy(low_priority_msg_to_reg(Open_Loop))){
-        *output = 6;
+
+    if(g_ipc_ctom.ps_module[g_current_ps_id].ps_status.bit.state == Off ||
+       g_ipc_ctom.ps_module[g_current_ps_id].ps_status.bit.unlocked == UNLOCKED)
+    {
+        if(ipc_mtoc_busy(low_priority_msg_to_reg(Open_Loop)))
+        {
+            *output = DSP_Busy;
+        }
+        else
+        {
+            g_ipc_mtoc.ps_module[g_current_ps_id].ps_status.bit.openloop = 1;
+            send_ipc_lowpriority_msg(g_current_ps_id, Open_Loop);
+            while ((HWREG(MTOCIPC_BASE + IPC_O_MTOCIPCFLG) &
+                    low_priority_msg_to_reg(Open_Loop)) &&
+                    (ulTimeout<TIMEOUT_DSP_IPC_ACK)){
+                ulTimeout++;
+            }
+            if(ulTimeout==TIMEOUT_DSP_IPC_ACK){
+                *output = DSP_Timeout;
+            }
+            else{
+                *output = Ok;
+            }
+        }
     }
+
     else
     {
-        g_ipc_mtoc.ps_module[g_current_ps_id].ps_status.bit.openloop = 1;
-        send_ipc_lowpriority_msg(g_current_ps_id, Open_Loop);
-        while ((HWREG(MTOCIPC_BASE + IPC_O_MTOCIPCFLG) &
-                low_priority_msg_to_reg(Open_Loop)) &&
-                (ulTimeout<TIMEOUT_DSP_IPC_ACK)){
-            ulTimeout++;
-        }
-        if(ulTimeout==TIMEOUT_DSP_IPC_ACK){
-            *output = 5;
-        }
-        else{
-            *output = 0;
-        }
+        *output = PS_Locked;
     }
+
     return *output;
 }
 
@@ -212,27 +231,39 @@ static struct bsmp_func bsmp_func_open_loop = {
  */
 uint8_t bsmp_closed_loop(uint8_t *input, uint8_t *output)
 {
-    ulTimeout=0;
-    if(ipc_mtoc_busy(low_priority_msg_to_reg(Close_Loop)))
+    if(g_ipc_ctom.ps_module[g_current_ps_id].ps_status.bit.state == Off ||
+       g_ipc_ctom.ps_module[g_current_ps_id].ps_status.bit.unlocked == UNLOCKED)
     {
-        *output = 6;
+
+        ulTimeout=0;
+
+        if(ipc_mtoc_busy(low_priority_msg_to_reg(Close_Loop)))
+        {
+            *output = DSP_Busy;
+        }
+        else
+        {
+            g_ipc_mtoc.ps_module[g_current_ps_id].ps_status.bit.openloop = 0;
+            send_ipc_lowpriority_msg(g_current_ps_id, Close_Loop);
+            while ((HWREG(MTOCIPC_BASE + IPC_O_MTOCIPCFLG) &
+                    low_priority_msg_to_reg(Close_Loop)) &&
+                    (ulTimeout<TIMEOUT_DSP_IPC_ACK)){
+                ulTimeout++;
+            }
+            if(ulTimeout==TIMEOUT_DSP_IPC_ACK){
+                *output = DSP_Timeout;
+            }
+            else{
+                *output = Ok;
+            }
+        }
     }
+
     else
     {
-        g_ipc_mtoc.ps_module[g_current_ps_id].ps_status.bit.openloop = 0;
-        send_ipc_lowpriority_msg(g_current_ps_id, Close_Loop);
-        while ((HWREG(MTOCIPC_BASE + IPC_O_MTOCIPCFLG) &
-                low_priority_msg_to_reg(Close_Loop)) &&
-                (ulTimeout<TIMEOUT_DSP_IPC_ACK)){
-            ulTimeout++;
-        }
-        if(ulTimeout==TIMEOUT_DSP_IPC_ACK){
-            *output = 5;
-        }
-        else{
-            *output = 0;
-        }
+        *output = PS_Locked;
     }
+
     return *output;
 }
 
@@ -261,7 +292,7 @@ uint8_t bsmp_select_op_mode(uint8_t *input, uint8_t *output)
     ulTimeout=0;
     if(ipc_mtoc_busy(low_priority_msg_to_reg(Operating_Mode)))
     {
-        *output = 6;
+        *output = DSP_Busy;
     }
     else
     {
@@ -274,10 +305,10 @@ uint8_t bsmp_select_op_mode(uint8_t *input, uint8_t *output)
             ulTimeout++;
         }
         if(ulTimeout==TIMEOUT_DSP_IPC_ACK){
-            *output = 5;
+            *output = DSP_Timeout;
         }
         else{
-            *output = 0;
+            *output = Ok;
         }
     }
     return *output;
@@ -305,7 +336,7 @@ uint8_t bsmp_reset_interlocks(uint8_t *input, uint8_t *output)
     ulTimeout=0;
     if(ipc_mtoc_busy(low_priority_msg_to_reg(Reset_Interlocks)))
     {
-        *output = 6;
+        *output = DSP_Busy;
     }
     else
     {
@@ -318,7 +349,7 @@ uint8_t bsmp_reset_interlocks(uint8_t *input, uint8_t *output)
         }
         if(ulTimeout==TIMEOUT_DSP_IPC_ACK)
         {
-            *output = 5;
+            *output = DSP_Timeout;
         }
         else
         {
@@ -366,7 +397,7 @@ uint8_t bsmp_reset_interlocks(uint8_t *input, uint8_t *output)
                     break;
                 }
             }
-            *output = 0;
+            *output = Ok;
         }
     }
     return *output;
@@ -390,7 +421,7 @@ uint8_t bsmp_set_serial_termination(uint8_t *input, uint8_t *output)
 {
     set_param(RS485_Termination, 0, input[0]);
     rs485_term_ctrl(input[0]);
-    *output = 0;
+    *output = Ok;
     return *output;
 }
 
@@ -399,6 +430,186 @@ static struct bsmp_func bsmp_func_set_serial_termination = {
     .info.input_size  = 2,
     .info.output_size = 1,
 };
+
+
+/**
+ * @brief Set command interface
+ *
+ * @param uint8_t* Pointer to input packet of data
+ * @param uint8_t* Pointer to output packet of data
+ */
+uint8_t bsmp_set_command_interface(uint8_t *input, uint8_t *output)
+{
+    ulTimeout=0;
+
+    if(ipc_mtoc_busy(low_priority_msg_to_reg(Set_Command_Interface)))
+    {
+        *output = DSP_Busy;
+    }
+    else
+    {
+        g_ipc_mtoc.ps_module[MSG_ID_MTOC].ps_status.bit.interface =
+                (ps_interface_t)(input[1] << 8) | input[0];
+
+        send_ipc_lowpriority_msg(MSG_ID_MTOC, Set_Command_Interface);
+        while ((HWREG(MTOCIPC_BASE + IPC_O_MTOCIPCFLG) &
+                low_priority_msg_to_reg(Set_Command_Interface)) &&
+                (ulTimeout<TIMEOUT_DSP_IPC_ACK)){
+            ulTimeout++;
+        }
+        if(ulTimeout == TIMEOUT_DSP_IPC_ACK){
+            *output = DSP_Timeout;
+        }
+        else{
+            *output = Ok;
+        }
+    }
+    return *output;
+}
+
+static struct bsmp_func bsmp_func_set_command_interface = {
+    .func_p           = bsmp_set_command_interface,
+    .info.input_size  = 2,
+    .info.output_size = 1,
+};
+
+
+/**
+ * @brief Unlock power supply
+ *
+ * Unlocks specified power supply. The following funcionalities aren't allowed
+ * when the power supply is blocked:
+ *
+ *      - open_loop (if power supply is On)
+ *      - closed_loop (if power supply is On)
+ *      - set_param
+ *      - save_param_eeprom
+ *      - load_param_eeprom
+ *      - save_param_bank
+ *      - load_param_bank
+ *      - set_dsp_coeff
+ *      - save_dsp_coeffs_eeprom
+ *      - load_dsp_coeffs_eeprom
+ *      - save_dsp_modules_eeprom
+ *      - load_dsp_modules_eeprom
+ *
+ * @param uint8_t* Pointer to input packet of data
+ * @param uint8_t* Pointer to output packet of data
+ */
+uint8_t bsmp_unlock_udc(uint8_t *input, uint8_t *output)
+{
+    uint16_t password;
+
+    password =  (uint16_t) (input[1] << 8) | input[0];
+
+    if(password == 0xCAFE)
+    {
+        if(ipc_mtoc_busy(low_priority_msg_to_reg(Unlock_UDC)))
+        {
+            *output = DSP_Busy;
+        }
+        else
+        {
+            send_ipc_lowpriority_msg(g_current_ps_id, Unlock_UDC);
+            while ((HWREG(MTOCIPC_BASE + IPC_O_MTOCIPCFLG) &
+                    low_priority_msg_to_reg(Unlock_UDC)) &&
+                    (ulTimeout<TIMEOUT_DSP_IPC_ACK))
+            {
+                ulTimeout++;
+            }
+            if(ulTimeout == TIMEOUT_DSP_IPC_ACK)
+            {
+                *output = DSP_Timeout;
+            }
+            else
+            {
+                *output = Ok;
+            }
+        }
+    }
+
+    else
+    {
+        *output = Invalid_Command;
+    }
+
+    return *output;
+}
+
+static struct bsmp_func bsmp_func_unlock_udc = {
+    .func_p           = bsmp_unlock_udc,
+    .info.input_size  = 2,
+    .info.output_size = 1,
+};
+
+/**
+ * @brief Lock power supply
+ *
+ * Locks specified power supply. The following funcionalities aren't allowed
+ * when the power supply is blocked:
+ *
+ *      - open_loop (if power supply is On)
+ *      - closed_loop (if power supply is On)
+ *      - set_param
+ *      - save_param_eeprom
+ *      - load_param_eeprom
+ *      - save_param_bank
+ *      - load_param_bank
+ *      - set_dsp_coeff
+ *      - save_dsp_coeffs_eeprom
+ *      - load_dsp_coeffs_eeprom
+ *      - save_dsp_modules_eeprom
+ *      - load_dsp_modules_eeprom
+ *
+ * @param uint8_t* Pointer to input packet of data
+ * @param uint8_t* Pointer to output packet of data
+ */
+uint8_t bsmp_lock_udc(uint8_t *input, uint8_t *output)
+{
+    uint16_t password;
+
+    password =  (uint16_t) (input[1] << 8) | input[0];
+
+    if(password == 0xCAFE)
+    {
+        if(ipc_mtoc_busy(low_priority_msg_to_reg(Lock_UDC)))
+        {
+            *output = DSP_Busy;
+        }
+        else
+        {
+            send_ipc_lowpriority_msg(g_current_ps_id, Lock_UDC);
+            while ((HWREG(MTOCIPC_BASE + IPC_O_MTOCIPCFLG) &
+                    low_priority_msg_to_reg(Lock_UDC)) &&
+                    (ulTimeout<TIMEOUT_DSP_IPC_ACK))
+            {
+                ulTimeout++;
+            }
+            if(ulTimeout == TIMEOUT_DSP_IPC_ACK)
+            {
+                *output = DSP_Timeout;
+            }
+            else
+            {
+                *output = Ok;
+            }
+        }
+    }
+
+    else
+    {
+        *output = Invalid_Command;
+    }
+
+    return *output;
+}
+
+static struct bsmp_func bsmp_func_lock_udc = {
+    .func_p           = bsmp_lock_udc,
+    .info.input_size  = 2,
+    .info.output_size = 1,
+};
+
 
 /**
  * @brief Configure source for scope
@@ -553,7 +764,7 @@ static struct bsmp_func bsmp_func_cfg_duration_scope = {
  * @param uint8_t* Pointer to input packet of data
  * @param uint8_t* Pointer to output packet of data
  */
-uint8_t bsmp_enable_buf_samples(uint8_t *input, uint8_t *output)
+uint8_t bsmp_enable_scope(uint8_t *input, uint8_t *output)
 {
     ulTimeout=0;
 
@@ -561,7 +772,7 @@ uint8_t bsmp_enable_buf_samples(uint8_t *input, uint8_t *output)
 
     if(ipc_mtoc_busy(low_priority_msg_to_reg(Enable_Scope)))
     {
-        *output = 6;
+        *output = DSP_Busy;
     }
     else
     {
@@ -574,18 +785,18 @@ uint8_t bsmp_enable_buf_samples(uint8_t *input, uint8_t *output)
         }
         if(ulTimeout == TIMEOUT_DSP_IPC_ACK)
         {
-            *output = 5;
+            *output = DSP_Timeout;
         }
         else
         {
-            *output = 0;
+            *output = Ok;
         }
     }
     return *output;
 }
 
-static struct bsmp_func bsmp_func_enable_buf_samples = {
-    .func_p           = bsmp_enable_buf_samples,
+static struct bsmp_func bsmp_func_enable_scope = {
+    .func_p           = bsmp_enable_scope,
     .info.input_size  = 0,
     .info.output_size = 1,
 };
@@ -598,7 +809,7 @@ static struct bsmp_func bsmp_func_enable_buf_samples = {
  * @param uint8_t* Pointer to input packet of data
  * @param uint8_t* Pointer to output packet of data
  */
-uint8_t bsmp_disable_buf_samples(uint8_t *input, uint8_t *output)
+uint8_t bsmp_disable_scope(uint8_t *input, uint8_t *output)
 {
     ulTimeout=0;
 
@@ -611,7 +822,7 @@ uint8_t bsmp_disable_buf_samples(uint8_t *input, uint8_t *output)
 
     if(ipc_mtoc_busy(low_priority_msg_to_reg(Disable_Scope)))
     {
-        *output = 6;
+        *output = DSP_Busy;
     }
     else
     {
@@ -624,18 +835,18 @@ uint8_t bsmp_disable_buf_samples(uint8_t *input, uint8_t *output)
         }
         if(ulTimeout == TIMEOUT_DSP_IPC_ACK)
         {
-            *output = 5;
+            *output = DSP_Timeout;
         }
         else
         {
-            *output = 0;
+            *output = Ok;
         }
     }
     return *output;
 }
 
-static struct bsmp_func bsmp_func_disable_buf_samples = {
-    .func_p           = bsmp_disable_buf_samples,
+static struct bsmp_func bsmp_func_disable_scope = {
+    .func_p           = bsmp_disable_scope,
     .info.input_size  = 0,
     .info.output_size = 1,
 };
@@ -653,7 +864,7 @@ uint8_t bsmp_sync_pulse(uint8_t *input, uint8_t *output)
     ulTimeout=0;
     if(ipc_mtoc_busy(SYNC_PULSE))
     {
-        *output = 6;
+        *output = DSP_Busy;
     }
     else
     {
@@ -665,11 +876,11 @@ uint8_t bsmp_sync_pulse(uint8_t *input, uint8_t *output)
         }
         if(ulTimeout==TIMEOUT_DSP_IPC_ACK)
         {
-            *output = 5;
+            *output = DSP_Timeout;
         }
         else
         {
-            *output = 0;
+            *output = Ok;
         }
     }
     return *output;
@@ -694,7 +905,7 @@ uint8_t bsmp_set_slowref (uint8_t *input, uint8_t *output)
     ulTimeout=0;
     if(ipc_mtoc_busy(low_priority_msg_to_reg(Set_SlowRef)))
     {
-        *output = 6;
+        *output = DSP_Busy;
     }
     else
     {
@@ -712,7 +923,7 @@ uint8_t bsmp_set_slowref (uint8_t *input, uint8_t *output)
 
         if(ulTimeout == TIMEOUT_DSP_IPC_ACK)
         {
-            *output = 5;
+            *output = DSP_Timeout;
         }
 
         else
@@ -723,7 +934,7 @@ uint8_t bsmp_set_slowref (uint8_t *input, uint8_t *output)
                 set_digital_potentiometer(g_ipc_ctom.ps_module[0].ps_reference.f);
             }
 
-            *output = 0;
+            *output = Ok;
         }
     }
     return *output;
@@ -748,7 +959,7 @@ uint8_t bsmp_set_slowref_fbp(uint8_t *input, uint8_t *output)
     ulTimeout=0;
     if(ipc_mtoc_busy(low_priority_msg_to_reg(Set_SlowRef_All_PS)))
     {
-        *output = 6;
+        *output = DSP_Busy;
     }
     else
     {
@@ -771,11 +982,11 @@ uint8_t bsmp_set_slowref_fbp(uint8_t *input, uint8_t *output)
         }
         if(ulTimeout==TIMEOUT_DSP_IPC_ACK)
         {
-            *output = 5;
+            *output = DSP_Timeout;
         }
         else
         {
-            *output = 0;
+            *output = Ok;
         }
     }
     return *output;
@@ -800,7 +1011,7 @@ uint8_t bsmp_reset_counters(uint8_t *input, uint8_t *output)
     ulTimeout=0;
     if(ipc_mtoc_busy(low_priority_msg_to_reg(Reset_Counters)))
     {
-        *output = 6;
+        *output = DSP_Busy;
     }
     else
     {
@@ -813,11 +1024,11 @@ uint8_t bsmp_reset_counters(uint8_t *input, uint8_t *output)
         }
         if(ulTimeout==TIMEOUT_DSP_IPC_ACK)
         {
-            *output = 5;
+            *output = DSP_Timeout;
         }
         else
         {
-            *output = 0;
+            *output = Ok;
         }
     }
     return *output;
@@ -850,7 +1061,7 @@ uint8_t bsmp_scale_wfmref(uint8_t *input, uint8_t *output)
 
     if(ipc_mtoc_busy(low_priority_msg_to_reg(Update_WfmRef)))
     {
-        *output = 6;
+        *output = DSP_Busy;
     }
     else
     {
@@ -868,16 +1079,16 @@ uint8_t bsmp_scale_wfmref(uint8_t *input, uint8_t *output)
             }
             if(ulTimeout==TIMEOUT_DSP_IPC_ACK)
             {
-                *output = 5;
+                *output = DSP_Timeout;
             }
             else
             {
-                *output = 0;
+                *output = Ok;
             }
         }
         else
         {
-            *output = 7;
+            *output = Resource_Busy;
         }
     }
 
@@ -907,7 +1118,7 @@ uint8_t bsmp_select_wfmref(uint8_t *input, uint8_t *output)
 
     if(ipc_mtoc_busy(low_priority_msg_to_reg(Update_WfmRef)))
     {
-        *output = 6;
+        *output = DSP_Busy;
     }
     else
     {
@@ -925,16 +1136,16 @@ uint8_t bsmp_select_wfmref(uint8_t *input, uint8_t *output)
             }
             if(ulTimeout==TIMEOUT_DSP_IPC_ACK)
             {
-                *output = 5;
+                *output = DSP_Timeout;
             }
             else
             {
-                *output = 0;
+                *output = Ok;
             }
         }
         else
         {
-            *output = 7;
+            *output = Resource_Busy;
         }
     }
 
@@ -960,7 +1171,7 @@ uint8_t bsmp_reset_wfmref(uint8_t *input, uint8_t *output)
     ulTimeout=0;
     if(ipc_mtoc_busy(low_priority_msg_to_reg(Reset_WfmRef)))
     {
-        *output = 6;
+        *output = DSP_Busy;
     }
     else
     {
@@ -973,11 +1184,11 @@ uint8_t bsmp_reset_wfmref(uint8_t *input, uint8_t *output)
         }
         if(ulTimeout==TIMEOUT_DSP_IPC_ACK)
         {
-            *output = 5;
+            *output = DSP_Timeout;
         }
         else
         {
-            *output = 0;
+            *output = Ok;
         }
     }
     return *output;
@@ -1000,13 +1211,13 @@ uint8_t bsmp_cfg_siggen(uint8_t *input, uint8_t *output)
     ulTimeout=0;
     if(ipc_mtoc_busy(low_priority_msg_to_reg(Cfg_SigGen)))
     {
-        *output = 6;
+        *output = DSP_Busy;
     }
     else
     {
         if(g_ipc_ctom.siggen[g_current_ps_id].enable.u16)
         {
-            *output = 7;
+            *output = Resource_Busy;
         }
         else
         {
@@ -1051,11 +1262,11 @@ uint8_t bsmp_cfg_siggen(uint8_t *input, uint8_t *output)
             }
             if(ulTimeout==TIMEOUT_DSP_IPC_ACK)
             {
-                *output = 5;
+                *output = DSP_Timeout;
             }
             else
             {
-                *output = 0;
+                *output = Ok;
             }
         }
     }
@@ -1079,7 +1290,7 @@ uint8_t bsmp_set_siggen(uint8_t *input, uint8_t *output)
     ulTimeout=0;
     if(ipc_mtoc_busy(low_priority_msg_to_reg(Set_SigGen)))
     {
-        *output = 6;
+        *output = DSP_Busy;
     }
     else
     {
@@ -1104,11 +1315,11 @@ uint8_t bsmp_set_siggen(uint8_t *input, uint8_t *output)
         }
         if(ulTimeout==TIMEOUT_DSP_IPC_ACK)
         {
-            *output = 5;
+            *output = DSP_Timeout;
         }
         else
         {
-            *output = 0;
+            *output = Ok;
         }
     }
     return *output;
@@ -1131,7 +1342,7 @@ uint8_t bsmp_enable_siggen(uint8_t *input, uint8_t *output)
     ulTimeout=0;
     if(ipc_mtoc_busy(low_priority_msg_to_reg(Enable_SigGen)))
     {
-        *output = 6;
+        *output = DSP_Busy;
     }
     else
     {
@@ -1144,11 +1355,11 @@ uint8_t bsmp_enable_siggen(uint8_t *input, uint8_t *output)
         }
         if(ulTimeout==TIMEOUT_DSP_IPC_ACK)
         {
-            *output = 5;
+            *output = DSP_Timeout;
         }
         else
         {
-            *output = 0;
+            *output = Ok;
         }
     }
     return *output;
@@ -1171,7 +1382,7 @@ uint8_t bsmp_disable_siggen(uint8_t *input, uint8_t *output)
     ulTimeout=0;
     if(ipc_mtoc_busy(low_priority_msg_to_reg(Disable_SigGen)))
     {
-        *output = 6;
+        *output = DSP_Busy;
     }
     else
     {
@@ -1184,11 +1395,11 @@ uint8_t bsmp_disable_siggen(uint8_t *input, uint8_t *output)
         }
         if(ulTimeout==TIMEOUT_DSP_IPC_ACK)
         {
-            *output = 5;
+            *output = DSP_Timeout;
         }
         else
         {
-            *output = 0;
+            *output = Ok;
         }
     }
     return *output;
@@ -1325,20 +1536,28 @@ uint8_t bsmp_set_param(uint8_t *input, uint8_t *output)
     u_uint16_t id, n;
     u_float_t u_val;
 
-    id.u8[0] = input[0];
-    id.u8[1] = input[1];
-    n.u8[0] = input[2];
-    n.u8[1] = input[3];
-
-    memcpy(&u_val.u8[0], &input[4], 4);
-
-    if( set_param( (param_id_t) id.u16, n.u16, u_val.f) )
+    if(g_ipc_ctom.ps_module[g_current_ps_id].ps_status.bit.unlocked)
     {
-        *output = 0;
+        id.u8[0] = input[0];
+        id.u8[1] = input[1];
+        n.u8[0] = input[2];
+        n.u8[1] = input[3];
+
+        memcpy(&u_val.u8[0], &input[4], 4);
+
+        if( set_param( (param_id_t) id.u16, n.u16, u_val.f) )
+        {
+            *output = Ok;
+        }
+        else
+        {
+            *output = Invalid_Command;
+        }
     }
+
     else
     {
-        *output = 8;
+        *output = PS_Locked;
     }
 
     return *output;
@@ -1395,20 +1614,28 @@ uint8_t bsmp_save_param_eeprom(uint8_t *input, uint8_t *output)
 {
     u_uint16_t id, n, type_memory;
 
-    id.u8[0] = input[0];
-    id.u8[1] = input[1];
-    n.u8[0] = input[2];
-    n.u8[1] = input[3];
-    type_memory.u8[0] = input[4];
-    type_memory.u8[1] = input[5];
-
-    if( save_param_eeprom( (param_id_t) id.u16, n.u16, type_memory.u16) )
+    if(g_ipc_ctom.ps_module[g_current_ps_id].ps_status.bit.unlocked)
     {
-        *output = 0;
+        id.u8[0] = input[0];
+        id.u8[1] = input[1];
+        n.u8[0] = input[2];
+        n.u8[1] = input[3];
+        type_memory.u8[0] = input[4];
+        type_memory.u8[1] = input[5];
+
+        if( save_param_eeprom( (param_id_t) id.u16, n.u16, type_memory.u16) )
+        {
+            *output = Ok;
+        }
+        else
+        {
+            *output = Invalid_Command;
+        }
     }
+
     else
     {
-        *output = 8;
+        *output = PS_Locked;
     }
 
     return *output;
@@ -1430,20 +1657,28 @@ uint8_t bsmp_load_param_eeprom(uint8_t *input, uint8_t *output)
 {
     u_uint16_t id, n, type_memory;
 
-    id.u8[0] = input[0];
-    id.u8[1] = input[1];
-    n.u8[0] = input[2];
-    n.u8[1] = input[3];
-    type_memory.u8[0] = input[4];
-    type_memory.u8[1] = input[5];
-
-    if( load_param_eeprom( (param_id_t) id.u16, n.u16, type_memory.u16) )
+    if(g_ipc_ctom.ps_module[g_current_ps_id].ps_status.bit.unlocked)
     {
-        *output = 0;
+        id.u8[0] = input[0];
+        id.u8[1] = input[1];
+        n.u8[0] = input[2];
+        n.u8[1] = input[3];
+        type_memory.u8[0] = input[4];
+        type_memory.u8[1] = input[5];
+
+        if( load_param_eeprom( (param_id_t) id.u16, n.u16, type_memory.u16) )
+        {
+            *output = Ok;
+        }
+        else
+        {
+            *output = Invalid_Command;
+        }
     }
+
     else
     {
-        *output = 8;
+        *output = PS_Locked;
     }
 
     return *output;
@@ -1465,11 +1700,20 @@ uint8_t bsmp_save_param_bank(uint8_t *input, uint8_t *output)
 {
     u_uint16_t type_memory;
 
-    type_memory.u8[0] = input[0];
-    type_memory.u8[1] = input[1];
+    if(g_ipc_ctom.ps_module[g_current_ps_id].ps_status.bit.unlocked)
+    {
+        type_memory.u8[0] = input[0];
+        type_memory.u8[1] = input[1];
 
-    save_param_bank(type_memory.u16);
-    *output = 0;
+        save_param_bank(type_memory.u16);
+        *output = Ok;
+    }
+
+    else
+    {
+        *output = PS_Locked;
+    }
+
     return *output;
 }
 
@@ -1489,11 +1733,19 @@ uint8_t bsmp_load_param_bank(uint8_t *input, uint8_t *output)
 {
     u_uint16_t type_memory;
 
-    type_memory.u8[0] = input[0];
-    type_memory.u8[1] = input[1];
+    if(g_ipc_ctom.ps_module[g_current_ps_id].ps_status.bit.unlocked)
+    {
+        type_memory.u8[0] = input[0];
+        type_memory.u8[1] = input[1];
 
-    load_param_bank(type_memory.u16);
-    *output = 0;
+        load_param_bank(type_memory.u16);
+    }
+
+    else
+    {
+        *output = PS_Locked;
+    }
+
     return *output;
 }
 
@@ -1513,48 +1765,57 @@ uint8_t bsmp_set_dsp_coeffs(uint8_t *input, uint8_t *output)
 {
     u_uint16_t dsp_class, id;
 
-    ulTimeout = 0;
-    dsp_class.u8[0] = input[0];
-    dsp_class.u8[1] = input[1];
-    id.u8[0] = input[2];
-    id.u8[1] = input[3];
-
-    // Perform typecast of pointer to avoid local variable of size NUM_MAX_COEFFS_DSP
-    // TODO: use same technic over rest of code?
-    if( set_dsp_coeffs( &g_controller_mtoc, (dsp_class_t) dsp_class.u16, id.u16,
-                       (float *) &input[4]) )
+    if(g_ipc_ctom.ps_module[g_current_ps_id].ps_status.bit.unlocked)
     {
-        if(ipc_mtoc_busy(low_priority_msg_to_reg(Set_DSP_Coeffs)))
-        {
-            *output = 6;
-        }
+        ulTimeout = 0;
 
-        else
-        {
-            g_ipc_mtoc.dsp_module.dsp_class = (dsp_class_t) dsp_class.u16;
-            g_ipc_mtoc.dsp_module.id = id.u16;
-            send_ipc_lowpriority_msg(0, Set_DSP_Coeffs);
-            while ((HWREG(MTOCIPC_BASE + IPC_O_MTOCIPCFLG) &
-            low_priority_msg_to_reg(Set_DSP_Coeffs)) &&
-            (ulTimeout<TIMEOUT_DSP_IPC_ACK))
-            {
-                ulTimeout++;
-            }
+        dsp_class.u8[0] = input[0];
+        dsp_class.u8[1] = input[1];
+        id.u8[0] = input[2];
+        id.u8[1] = input[3];
 
-            if(ulTimeout==TIMEOUT_DSP_IPC_ACK)
+        // Perform typecast of pointer to avoid local variable of size NUM_MAX_COEFFS_DSP
+        // TODO: use same technic over rest of code?
+        if( set_dsp_coeffs( &g_controller_mtoc, (dsp_class_t) dsp_class.u16, id.u16,
+                           (float *) &input[4]) )
+        {
+            if(ipc_mtoc_busy(low_priority_msg_to_reg(Set_DSP_Coeffs)))
             {
-                *output = 5;
+                *output = DSP_Busy;
             }
 
             else
             {
-                *output = 0;
+                g_ipc_mtoc.dsp_module.dsp_class = (dsp_class_t) dsp_class.u16;
+                g_ipc_mtoc.dsp_module.id = id.u16;
+                send_ipc_lowpriority_msg(0, Set_DSP_Coeffs);
+                while ((HWREG(MTOCIPC_BASE + IPC_O_MTOCIPCFLG) &
+                low_priority_msg_to_reg(Set_DSP_Coeffs)) &&
+                (ulTimeout<TIMEOUT_DSP_IPC_ACK))
+                {
+                    ulTimeout++;
+                }
+
+                if(ulTimeout==TIMEOUT_DSP_IPC_ACK)
+                {
+                    *output = DSP_Timeout;
+                }
+
+                else
+                {
+                    *output = Ok;
+                }
             }
         }
+        else
+        {
+            *output = Invalid_Command;
+        }
     }
+
     else
     {
-        *output = 8;
+        *output = PS_Locked;
     }
 
     return *output;
@@ -1614,18 +1875,26 @@ uint8_t bsmp_save_dsp_coeffs_eeprom(uint8_t *input, uint8_t *output)
 {
     u_uint16_t dsp_class, id;
 
-    dsp_class.u8[0] = input[0];
-    dsp_class.u8[1] = input[1];
-    id.u8[0] = input[2];
-    id.u8[1] = input[3];
-
-    if( save_dsp_coeffs_eeprom( (dsp_class_t) dsp_class.u16, id.u16) )
+    if(g_ipc_ctom.ps_module[g_current_ps_id].ps_status.bit.unlocked)
     {
-        *output = 0;
+        dsp_class.u8[0] = input[0];
+        dsp_class.u8[1] = input[1];
+        id.u8[0] = input[2];
+        id.u8[1] = input[3];
+
+        if( save_dsp_coeffs_eeprom( (dsp_class_t) dsp_class.u16, id.u16) )
+        {
+            *output = Ok;
+        }
+        else
+        {
+            *output = Invalid_Command;
+        }
     }
+
     else
     {
-        *output = 8;
+        *output = PS_Locked;
     }
 
     return *output;
@@ -1647,44 +1916,52 @@ uint8_t bsmp_load_dsp_coeffs_eeprom(uint8_t *input, uint8_t *output)
 {
     u_uint16_t dsp_class, id;
 
-    dsp_class.u8[0] = input[0];
-    dsp_class.u8[1] = input[1];
-    id.u8[0] = input[2];
-    id.u8[1] = input[3];
-
-    if( load_dsp_coeffs_eeprom( (dsp_class_t) dsp_class.u16, id.u16) )
+    if(g_ipc_ctom.ps_module[g_current_ps_id].ps_status.bit.unlocked)
     {
-        if(ipc_mtoc_busy(low_priority_msg_to_reg(Set_DSP_Coeffs)))
-        {
-            *output = 6;
-        }
+        dsp_class.u8[0] = input[0];
+        dsp_class.u8[1] = input[1];
+        id.u8[0] = input[2];
+        id.u8[1] = input[3];
 
-        else
+        if( load_dsp_coeffs_eeprom( (dsp_class_t) dsp_class.u16, id.u16) )
         {
-            g_ipc_mtoc.dsp_module.dsp_class = (dsp_class_t) dsp_class.u16;
-            g_ipc_mtoc.dsp_module.id = id.u16;
-            send_ipc_lowpriority_msg(0, Set_DSP_Coeffs);
-            while ((HWREG(MTOCIPC_BASE + IPC_O_MTOCIPCFLG) &
-            low_priority_msg_to_reg(Set_DSP_Coeffs)) &&
-            (ulTimeout<TIMEOUT_DSP_IPC_ACK))
+            if(ipc_mtoc_busy(low_priority_msg_to_reg(Set_DSP_Coeffs)))
             {
-                ulTimeout++;
-            }
-
-            if(ulTimeout==TIMEOUT_DSP_IPC_ACK)
-            {
-                *output = 5;
+                *output = DSP_Busy;
             }
 
             else
             {
-                *output = 0;
+                g_ipc_mtoc.dsp_module.dsp_class = (dsp_class_t) dsp_class.u16;
+                g_ipc_mtoc.dsp_module.id = id.u16;
+                send_ipc_lowpriority_msg(0, Set_DSP_Coeffs);
+                while ((HWREG(MTOCIPC_BASE + IPC_O_MTOCIPCFLG) &
+                low_priority_msg_to_reg(Set_DSP_Coeffs)) &&
+                (ulTimeout<TIMEOUT_DSP_IPC_ACK))
+                {
+                    ulTimeout++;
+                }
+
+                if(ulTimeout==TIMEOUT_DSP_IPC_ACK)
+                {
+                    *output = DSP_Timeout;
+                }
+
+                else
+                {
+                    *output = Ok;
+                }
             }
         }
+        else
+        {
+            *output = Invalid_Command;
+        }
     }
+
     else
     {
-        *output = 8;
+        *output = PS_Locked;
     }
 
     return *output;
@@ -1704,8 +1981,17 @@ static struct bsmp_func bsmp_func_load_dsp_coeffs_eeprom = {
  */
 uint8_t bsmp_save_dsp_modules_eeprom(uint8_t *input, uint8_t *output)
 {
-    save_dsp_modules_eeprom();
-    *output = 0;
+    if(g_ipc_ctom.ps_module[g_current_ps_id].ps_status.bit.unlocked)
+    {
+        save_dsp_modules_eeprom();
+        *output = Ok;
+    }
+
+    else
+    {
+        *output = PS_Locked;
+    }
+
     return *output;
 }
 
@@ -1723,8 +2009,17 @@ static struct bsmp_func bsmp_func_save_dsp_modules_eeprom = {
  */
 uint8_t bsmp_load_dsp_modules_eeprom(uint8_t *input, uint8_t *output)
 {
-    load_dsp_modules_eeprom();
-    *output = 0;
+    if(g_ipc_ctom.ps_module[g_current_ps_id].ps_status.bit.unlocked)
+    {
+        load_dsp_modules_eeprom();
+        *output = Ok;
+    }
+
+    else
+    {
+        *output = PS_Locked;
+    }
+
     return *output;
 }
 
@@ -1760,7 +2055,7 @@ uint8_t bsmp_reset_udc(uint8_t *input, uint8_t *output)
         SysCtlReset();
     }
 
-    *output = 7;
+    *output = Resource_Busy;
     return *output;
 }
 
@@ -1776,73 +2071,7 @@ static struct bsmp_func bsmp_func_reset_udc = {
  */
 uint8_t DummyFunc1(uint8_t *input, uint8_t *output)
 {
-    *output = 0;
-    return *output;
-}
-
-uint8_t DummyFunc2(uint8_t *input, uint8_t *output)
-{
-    *output = 0;
-    return *output;
-}
-
-uint8_t DummyFunc3(uint8_t *input, uint8_t *output)
-{
-    *output = 0;
-    return *output;
-}
-
-uint8_t DummyFunc4(uint8_t *input, uint8_t *output)
-{
-    *output = 0;
-    return *output;
-}
-
-uint8_t DummyFunc5(uint8_t *input, uint8_t *output)
-{
-    *output = 0;
-    return *output;
-}
-
-uint8_t DummyFunc6(uint8_t *input, uint8_t *output)
-{
-    *output = 0;
-    return *output;
-}
-
-uint8_t DummyFunc7(uint8_t *input, uint8_t *output)
-{
-    *output = 0;
-    return *output;
-}
-
-uint8_t DummyFunc8(uint8_t *input, uint8_t *output)
-{
-    *output = 0;
-    return *output;
-}
-
-uint8_t DummyFunc9(uint8_t *input, uint8_t *output)
-{
-    *output = 0;
-    return *output;
-}
-
-uint8_t DummyFunc10(uint8_t *input, uint8_t *output)
-{
-    *output = 0;
-    return *output;
-}
-
-uint8_t DummyFunc11(uint8_t *input, uint8_t *output)
-{
-    *output = 0;
-    return *output;
-}
-
-uint8_t DummyFunc12(uint8_t *input, uint8_t *output)
-{
-    *output = 0;
+    *output = Ok;
     return *output;
 }
 
@@ -1851,73 +2080,6 @@ static struct bsmp_func dummy_func1 = {
     .info.input_size  = 0,      // nothing
     .info.output_size = 1,      // command_ack
 };
-
-static struct bsmp_func dummy_func2 = {
-   .func_p           = DummyFunc2,
-   .info.input_size  = 0,       // nothing
-   .info.output_size = 1,      // command_ack
-};
-
-static struct bsmp_func dummy_func3 = {
-   .func_p           = DummyFunc3,
-   .info.input_size  = 0,       // nothing
-   .info.output_size = 1,      // command_ack
-};
-
-static struct bsmp_func dummy_func4 = {
-   .func_p           = DummyFunc4,
-   .info.input_size  = 0,       // nothing
-   .info.output_size = 1,      // command_ack
-};
-
-static struct bsmp_func dummy_func5 = {
-   .func_p           = DummyFunc5,
-   .info.input_size  = 0,       // nothing
-   .info.output_size = 1,      // command_ack
-};
-
-static struct bsmp_func dummy_func6 = {
-   .func_p           = DummyFunc6,
-   .info.input_size  = 0,       // nothing
-   .info.output_size = 1,      // command_ack
-};
-
-static struct bsmp_func dummy_func7 = {
-   .func_p           = DummyFunc7,
-   .info.input_size  = 0,       // nothing
-   .info.output_size = 1,      // command_ack
-};
-
-static struct bsmp_func dummy_func8 = {
-   .func_p           = DummyFunc8,
-   .info.input_size  = 0,       // nothing
-   .info.output_size = 1,      // command_ack
-};
-
-static struct bsmp_func dummy_func9 = {
-   .func_p           = DummyFunc9,
-   .info.input_size  = 0,       // nothing
-   .info.output_size = 1,      // command_ack
-};
-
-static struct bsmp_func dummy_func10 = {
-   .func_p           = DummyFunc10,
-   .info.input_size  = 0,       // nothing
-   .info.output_size = 1,      // command_ack
-};
-
-static struct bsmp_func dummy_func11 = {
-   .func_p           = DummyFunc11,
-   .info.input_size  = 0,       // nothing
-   .info.output_size = 1,      // command_ack
-};
-
-static struct bsmp_func dummy_func12 = {
-   .func_p           = DummyFunc12,
-   .info.input_size  = 0,       // nothing
-   .info.output_size = 1,      // command_ack
-};
-
 
 /**
  *
@@ -2057,24 +2219,24 @@ void bsmp_init(uint8_t server)
     bsmp_register_function(&bsmp[server], &bsmp_func_open_loop);                // ID 2
     bsmp_register_function(&bsmp[server], &bsmp_func_closed_loop);              // ID 3
     bsmp_register_function(&bsmp[server], &bsmp_func_select_op_mode);           // ID 4
-    bsmp_register_function(&bsmp[server], &dummy_func1);                        // ID 5
-    bsmp_register_function(&bsmp[server], &bsmp_func_reset_interlocks);         // ID 6
-    bsmp_register_function(&bsmp[server], &dummy_func2);                        // ID 7
-    bsmp_register_function(&bsmp[server], &dummy_func3);                        // ID 8
-    bsmp_register_function(&bsmp[server], &bsmp_func_set_serial_termination);   // ID 9
+    bsmp_register_function(&bsmp[server], &bsmp_func_reset_interlocks);         // ID 5
+    bsmp_register_function(&bsmp[server], &bsmp_func_set_command_interface);    // ID 6
+    bsmp_register_function(&bsmp[server], &bsmp_func_set_serial_termination);   // ID 7
+    bsmp_register_function(&bsmp[server], &bsmp_func_unlock_udc);               // ID 8
+    bsmp_register_function(&bsmp[server], &bsmp_func_lock_udc);                 // ID 9
     bsmp_register_function(&bsmp[server], &bsmp_func_cfg_source_scope);         // ID 10
     bsmp_register_function(&bsmp[server], &bsmp_func_cfg_freq_scope);           // ID 11
     bsmp_register_function(&bsmp[server], &bsmp_func_cfg_duration_scope);       // ID 12
-    bsmp_register_function(&bsmp[server], &bsmp_func_enable_buf_samples);       // ID 13
-    bsmp_register_function(&bsmp[server], &bsmp_func_disable_buf_samples);      // ID 14
+    bsmp_register_function(&bsmp[server], &bsmp_func_enable_scope);             // ID 13
+    bsmp_register_function(&bsmp[server], &bsmp_func_disable_scope);            // ID 14
     bsmp_register_function(&bsmp[server], &bsmp_func_sync_pulse);               // ID 15
     bsmp_register_function(&bsmp[server], &bsmp_func_set_slowref);              // ID 16
     bsmp_register_function(&bsmp[server], &bsmp_func_set_slowref_fbp);          // ID 17
     bsmp_register_function(&bsmp[server], &bsmp_func_reset_counters);           // ID 18
     bsmp_register_function(&bsmp[server], &bsmp_func_scale_wfmref);             // ID 19
-    //create_bsmp_function(20, server, &bsmp_select_wfmref, 2, 1);                // ID 20
+    //create_bsmp_function(20, server, &bsmp_select_wfmref, 2, 1);              // ID 20
     bsmp_register_function(&bsmp[server], &bsmp_func_select_wfmref);            // ID 20
-    bsmp_register_function(&bsmp[server], &dummy_func11);                       // ID 21
+    bsmp_register_function(&bsmp[server], &dummy_func1);                        // ID 21
     bsmp_register_function(&bsmp[server], &bsmp_func_reset_wfmref);             // ID 22
     bsmp_register_function(&bsmp[server], &bsmp_func_cfg_siggen);               // ID 23
     bsmp_register_function(&bsmp[server], &bsmp_func_set_siggen);               // ID 24
@@ -2139,22 +2301,6 @@ void bsmp_init(uint8_t server)
     create_bsmp_curve(2, server, 16, 1024, false,
                       &g_ipc_mtoc.scope[server].buffer,
                       read_block_buf_samples_ctom, write_block_dummy);
-}
-
-/**
- * @brief BSMP process data
- *
- * Send received data to BSMP server specified and process
- *
- * @param bsmp_raw_packet* Pointer to received packet
- * @param bsmp_raw_packet* Pointer to store response packet
- * @param uint8_t ID for BSMP server
- */
-
-void BSMPprocess(struct bsmp_raw_packet *recv_packet,
-                 struct bsmp_raw_packet *send_packet, uint8_t server)
-{
-    bsmp_process_packet(&bsmp[server], recv_packet, send_packet);
 }
 
 /**
@@ -2262,6 +2408,57 @@ void create_bsmp_function(uint8_t func_id, uint8_t server, bsmp_func_t func_p,
 
         bsmp_register_function(&bsmp[server], &bsmp_funcs[server][func_id]);
     }
+}
 
 
+enum bsmp_err bsmp_func_error(uint8_t func_error, struct bsmp_raw_packet *response)
+{
+
+    response->data[0] = BSMP_FUNC_ERROR;       /// CMD_FUNC_ERROR
+    response->data[1] = 0x00;       /// Payload size
+    response->data[2] = 0x01;       /// Payload size
+    response->data[3] = func_error; /// Payload describing func error
+    response->len = 4;
+
+    return BSMP_SUCCESS;
+}
+
+/**
+ * @brief BSMP process data
+ *
+ * Send received data to BSMP server specified and process
+ *
+ * @param bsmp_raw_packet* Pointer to received packet
+ * @param bsmp_raw_packet* Pointer to store response packet
+ * @param uint8_t ID for BSMP server
+ */
+
+void BSMPprocess(struct bsmp_raw_packet *recv_packet,
+                 struct bsmp_raw_packet *send_packet, uint8_t server,
+                 uint16_t command_interface)
+{
+    uint8_t bsmp_cmd_type = recv_packet->data[0] & 0xF0;
+    /**
+     * Check if command interface is correct, or if is one of the possible
+     * conditions is fulfilled
+     */
+    //if( (command_interface == get_param(Command_Interface,0)) ||
+    if( (command_interface == g_ipc_ctom.ps_module[MSG_ID_MTOC].ps_status.bit.interface ) ||
+        (bsmp_cmd_type == BSMP_READ_COMMANDS ) ||
+        (bsmp_cmd_type == BSMP_QUERY_COMMANDS ) ||
+        (bsmp_cmd_type == BSMP_BLOCK_COMMANDS) ||
+        ((bsmp_cmd_type == BSMP_FUNC_EXECUTE) && (recv_packet->data[3] == 30)) ||
+        ((bsmp_cmd_type == BSMP_FUNC_EXECUTE) && (recv_packet->data[3] == 6)) )
+    {
+        bsmp_process_packet(&bsmp[server], recv_packet, send_packet);
+    }
+    else if(command_interface == Remote)
+    {
+        bsmp_func_error(PS_is_Local, send_packet);
+    }
+
+    else if(command_interface == Local)
+    {
+        bsmp_func_error(Invalid_Command, send_packet);
+    }
 }

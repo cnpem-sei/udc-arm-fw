@@ -89,7 +89,7 @@
 						</toolChain>
 					</folderInfo>
 					<sourceEntries>
-						<entry excluding="app/communication_drivers/ps_modules/ps_modules.c|app/communication_drivers/ps_modules/fac_dcdc_ema|app/communication_drivers/ps_modules/fac_acdc|F28M36x_generic_wshared_M3_RAM.cmd|app/board_drivers/set_pinout_ctrl_card.c|app/communication_drivers/usb_device/usb_device.c|F28M36x_generic_M3_FLASH.cmd|F28M36x_generic_wshared_M3_FLASH_2.cmd|app/communication_drivers/ihm" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+						<entry excluding="app/communication_drivers/ps_modules/ps_modules.c|app/communication_drivers/ps_modules/fac_dcdc_ema|app/communication_drivers/ps_modules/fac_acdc|F28M36x_generic_wshared_M3_RAM.cmd|app/board_drivers/set_pinout_ctrl_card.c|app/communication_drivers/usb_device/usb_device.c|F28M36x_generic_M3_FLASH.cmd|F28M36x_generic_wshared_M3_FLASH_2.cmd" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>

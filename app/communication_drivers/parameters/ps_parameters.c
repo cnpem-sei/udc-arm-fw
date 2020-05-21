@@ -58,6 +58,7 @@ static const uint16_t param_addresses_onboard_eeprom[NUM_MAX_PARAMETERS] =
 
     [Freq_ISR_Controller] = 0x0080,
     [Freq_TimeSlicer] = 0x0084,
+    [Control_Loop_State] = 0x0094,
     [Max_Ref] = 0x00A0,
     [Min_Ref] = 0x00A4,
     [Max_Ref_OpenLoop] = 0x00A8,
@@ -220,7 +221,9 @@ static void init_param_bank_info(void)
     init_param(Freq_ISR_Controller, is_float, 1, &ISR_CONTROL_FREQ.u8[0]);
 
     init_param(Freq_TimeSlicer, is_float, NUM_MAX_TIMESLICERS,
-                &TIMESLICER_FREQ[0].u8[0]);
+               &TIMESLICER_FREQ[0].u8[0]);
+
+    init_param(Control_Loop_State, is_uint16_t, 1, &LOOP_STATE.u8[0]);
 
     init_param(Max_Ref, is_float, 1, &MAX_REF[0].u8[0]);
 

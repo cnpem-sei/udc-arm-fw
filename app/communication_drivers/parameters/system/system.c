@@ -136,8 +136,10 @@ void init_system(void)
 
 	adcp_init();
 
+	ihm_init();
+
 	/**
-	 * TODO: Initialization of IHM, CAN, USB and SDRAM
+	 * TODO: Initialization of CAN, USB and SDRAM
 	 */
 	init_can_bkp();
 	//InitUSBSerialDevice();
