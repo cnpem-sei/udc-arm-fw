@@ -27,7 +27,7 @@
  * TODO: Put here your defines. Just what is local. If you don't
  * need to access it from other module, consider use a constant (const)
  */
-#define PASSWORD    0xCAFE
+//#define PASSWORD    0xCAFE
 
 /**
  * TODO: Put here your constants and variables. Always use static for 

@@ -21,18 +21,19 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+#include "communication_drivers/adcp/adcp.h"
 #include "communication_drivers/bsmp/bsmp_lib.h"
+#include "communication_drivers/can/can_bkp.h"
+#include "communication_drivers/i2c_onboard/eeprom.h"
+#include "communication_drivers/i2c_onboard/exio.h"
 #include "communication_drivers/i2c_onboard/rtc.h"
 #include "communication_drivers/i2c_offboard_isolated/temp_low_power_module.h"
-#include "communication_drivers/signals_onboard/signals_onboard.h"
+#include "communication_drivers/ihm/ihm.h"
+#include "communication_drivers/ipc/ipc_lib.h"
+#include "communication_drivers/parameters/ps_parameters.h"
 #include "communication_drivers/rs485_bkp/rs485_bkp.h"
 #include "communication_drivers/rs485/rs485.h"
-#include "communication_drivers/ihm/ihm.h"
-#include "communication_drivers/can/can_bkp.h"
-#include "communication_drivers/ipc/ipc_lib.h"
-#include "communication_drivers/i2c_onboard/eeprom.h"
-#include "communication_drivers/adcp/adcp.h"
-#include "communication_drivers/i2c_onboard/exio.h"
+#include "communication_drivers/signals_onboard/signals_onboard.h"
 
 #include "system_task.h"
 
@@ -253,7 +254,7 @@ void TaskCheck(void)
 
 	    u_uint16_t password;
 	    uint8_t i, dummy = 0;
-	    password.u16 = 0xCAFE;
+	    password.u16 = PASSWORD;
 
 	    for(i = 0; i < NUM_PS_MODULES; i++)
 	    {

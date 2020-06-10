@@ -77,7 +77,11 @@ void init_ipc(void)
     for (uiloop = 0; uiloop < NUM_MAX_PS_MODULES; uiloop++)
     {
         g_ipc_mtoc.ps_module[uiloop].ps_status.all = 0;
+
+        g_ipc_mtoc.ps_module[uiloop].ps_status.bit.interface = get_param(Command_Interface,0);
         g_ipc_mtoc.ps_module[uiloop].ps_status.bit.model = get_param(PS_Model,0);
+        g_ipc_mtoc.ps_module[uiloop].ps_status.bit.openloop = get_param(Control_Loop_State,0);
+
         g_ipc_mtoc.ps_module[uiloop].ps_setpoint.f = 0.0;
         g_ipc_mtoc.ps_module[uiloop].ps_reference.f = 0.0;
         g_ipc_mtoc.ps_module[uiloop].ps_soft_interlock.u32 = 0;

@@ -147,6 +147,7 @@
 #define SCOPE_FREQ_SAMPLING_PARAM       g_param_bank.scope.freq_sampling
 #define SCOPE_SOURCE_PARAM              g_param_bank.scope.p_source
 
+#define PASSWORD                        g_param_bank.password
 /**
  * Enable Onboard EEPROM. This parameter resides only on onboard EEPROM, and is
  * used to read parameters bank from onboard EEPROM in case offboard EEPROM is
@@ -228,6 +229,7 @@ typedef enum
     Scope_Sampling_Frequency,
     Scope_Source,
 
+    Password = NUM_MAX_PARAMETERS-2,
     Enable_Onboard_EEPROM = NUM_MAX_PARAMETERS-1
 } param_id_t;
 
@@ -363,6 +365,7 @@ typedef struct
     param_analog_vars_t     analog_vars;
     param_interlocks_t      interlocks;
     param_scope_t           scope;
+    uint16_t                password;
     uint16_t                enable_onboard_eeprom;
     param_memory_t          type_memory;
 } param_bank_t;

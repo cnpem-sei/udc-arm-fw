@@ -502,7 +502,7 @@ uint8_t bsmp_unlock_udc(uint8_t *input, uint8_t *output)
 
     password =  (uint16_t) (input[1] << 8) | input[0];
 
-    if(password == 0xCAFE)
+    if(password == PASSWORD)
     {
         if(ipc_mtoc_busy(low_priority_msg_to_reg(Unlock_UDC)))
         {
@@ -570,7 +570,7 @@ uint8_t bsmp_lock_udc(uint8_t *input, uint8_t *output)
 
     password =  (uint16_t) (input[1] << 8) | input[0];
 
-    if(password == 0xCAFE)
+    if(password == PASSWORD)
     {
         if(ipc_mtoc_busy(low_priority_msg_to_reg(Lock_UDC)))
         {

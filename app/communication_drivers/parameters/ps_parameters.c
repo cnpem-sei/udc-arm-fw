@@ -108,6 +108,7 @@ static const uint16_t param_addresses_onboard_eeprom[NUM_MAX_PARAMETERS] =
     [Scope_Sampling_Frequency] = 0x740,
     [Scope_Source] = 0x750,
 
+    [Password] = 0x1FFD,
     [Enable_Onboard_EEPROM] = 0x1FFF
 };
 
@@ -868,6 +869,11 @@ uint8_t check_param_bank(param_memory_t type_memory)
 
 void init_parameters_bank(void)
 {
+    init_param(Password, is_uint16_t, 1,
+               (uint8_t *) &PASSWORD);
+
+    load_param_onboard_eeprom(Password, 0);
+
     init_param(Enable_Onboard_EEPROM, is_uint8_t, 1,
                (uint8_t *) &ENABLE_ONBOARD_EEPROM);
 
