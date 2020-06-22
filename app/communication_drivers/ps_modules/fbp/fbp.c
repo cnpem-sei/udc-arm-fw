@@ -67,24 +67,6 @@
 static uint8_t dummy_u8;
 
 /**
-* @brief Initialize IPC Parameters.
-*
-* Setup IPC global configurations.
-*
-*/
-static void ipc_init_parameters(void)
-{
-    volatile uint8_t uiloop, uiloop2;
-
-    for (uiloop = 0; uiloop < (uint8_t) get_param(Num_PS_Modules,0); uiloop++)
-    {
-        g_ipc_mtoc.ps_module[uiloop].ps_status.bit.model = FBP;
-        g_ipc_mtoc.ps_module[uiloop].ps_status.bit.active = 1;
-        g_ipc_mtoc.ps_module[uiloop].ps_status.bit.openloop = 1;
-    }
-}
-
-/**
 * @brief Initialize ADCP Channels.
 *
 * Setup ADCP specific parameters for FBP operation.

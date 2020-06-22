@@ -32,6 +32,10 @@
 #include "communication_drivers/ps_modules/fbp_dclink/fbp_dclink.h"
 #include "communication_drivers/ps_modules/ps_modules.h"
 
+#define MOD_1_ID                0x0
+#define MOD_2_ID                0x1
+#define MOD_3_ID                0x2
+
 #define V_DCLINK_OUTPUT         g_controller_mtoc.net_signals[0]    // ANI0
 #define V_PS1_OUTPUT            g_controller_mtoc.net_signals[1]    // ANI1
 #define V_PS2_OUTPUT            g_controller_mtoc.net_signals[2]    // ANI3
@@ -84,14 +88,50 @@ static void adcp_channel_config(void)
 */
 static void bsmp_init_server(void)
 {
-    create_bsmp_var(25, 0, 4, false, g_ipc_ctom.ps_module[0].ps_soft_interlock.u8);
-    create_bsmp_var(26, 0, 4, false, g_ipc_ctom.ps_module[0].ps_hard_interlock.u8);
-    create_bsmp_var(27, 0, 4, false, PIN_STATUS_ALL_PS_FAIL.u8);
-    create_bsmp_var(28, 0, 4, false, V_DCLINK_OUTPUT.u8);
-    create_bsmp_var(29, 0, 4, false, V_PS1_OUTPUT.u8);
-    create_bsmp_var(30, 0, 4, false, V_PS2_OUTPUT.u8);
-    create_bsmp_var(31, 0, 4, false, V_PS3_OUTPUT.u8);
-    create_bsmp_var(32, 0, 1, false, DIGITAL_POT_VOLTAGE.u8);
+    create_bsmp_var(25, MOD_1_ID, 4, false, g_ipc_ctom.ps_module[0].ps_soft_interlock.u8);
+    create_bsmp_var(26, MOD_1_ID, 4, false, g_ipc_ctom.ps_module[0].ps_hard_interlock.u8);
+    create_bsmp_var(27, MOD_1_ID, 4, false, PIN_STATUS_ALL_PS_FAIL.u8);
+    create_bsmp_var(28, MOD_1_ID, 4, false, V_DCLINK_OUTPUT.u8);
+    create_bsmp_var(29, MOD_1_ID, 4, false, V_PS1_OUTPUT.u8);
+    create_bsmp_var(30, MOD_1_ID, 4, false, V_PS2_OUTPUT.u8);
+    create_bsmp_var(31, MOD_1_ID, 4, false, V_PS3_OUTPUT.u8);
+    create_bsmp_var(32, MOD_1_ID, 1, false, DIGITAL_POT_VOLTAGE.u8);
+
+    /// Module 1 BSMP server already initialized
+
+    /// Module 2 initialization
+    bsmp_init(MOD_2_ID);
+
+    /// All modules share these variables
+    modify_bsmp_var(0, MOD_2_ID, g_ipc_ctom.ps_module[0].ps_status.u8);
+    modify_bsmp_var(1, MOD_2_ID, g_ipc_ctom.ps_module[0].ps_setpoint.u8);
+    modify_bsmp_var(2, MOD_2_ID, g_ipc_ctom.ps_module[0].ps_reference.u8);
+
+    create_bsmp_var(25, MOD_2_ID, 4, false, g_ipc_ctom.ps_module[0].ps_soft_interlock.u8);
+    create_bsmp_var(26, MOD_2_ID, 4, false, g_ipc_ctom.ps_module[0].ps_hard_interlock.u8);
+    create_bsmp_var(27, MOD_2_ID, 4, false, PIN_STATUS_ALL_PS_FAIL.u8);
+    create_bsmp_var(28, MOD_2_ID, 4, false, V_DCLINK_OUTPUT.u8);
+    create_bsmp_var(29, MOD_2_ID, 4, false, V_PS1_OUTPUT.u8);
+    create_bsmp_var(30, MOD_2_ID, 4, false, V_PS2_OUTPUT.u8);
+    create_bsmp_var(31, MOD_2_ID, 4, false, V_PS3_OUTPUT.u8);
+    create_bsmp_var(32, MOD_2_ID, 1, false, DIGITAL_POT_VOLTAGE.u8);
+
+    /// Module 3 initialization
+    bsmp_init(MOD_3_ID);
+
+    /// All modules share these variables
+    modify_bsmp_var(0, MOD_3_ID, g_ipc_ctom.ps_module[0].ps_status.u8);
+    modify_bsmp_var(1, MOD_3_ID, g_ipc_ctom.ps_module[0].ps_setpoint.u8);
+    modify_bsmp_var(2, MOD_3_ID, g_ipc_ctom.ps_module[0].ps_reference.u8);
+
+    create_bsmp_var(25, MOD_3_ID, 4, false, g_ipc_ctom.ps_module[0].ps_soft_interlock.u8);
+    create_bsmp_var(26, MOD_3_ID, 4, false, g_ipc_ctom.ps_module[0].ps_hard_interlock.u8);
+    create_bsmp_var(27, MOD_3_ID, 4, false, PIN_STATUS_ALL_PS_FAIL.u8);
+    create_bsmp_var(28, MOD_3_ID, 4, false, V_DCLINK_OUTPUT.u8);
+    create_bsmp_var(29, MOD_3_ID, 4, false, V_PS1_OUTPUT.u8);
+    create_bsmp_var(30, MOD_3_ID, 4, false, V_PS2_OUTPUT.u8);
+    create_bsmp_var(31, MOD_3_ID, 4, false, V_PS3_OUTPUT.u8);
+    create_bsmp_var(32, MOD_3_ID, 1, false, DIGITAL_POT_VOLTAGE.u8);
 }
 
 /**
