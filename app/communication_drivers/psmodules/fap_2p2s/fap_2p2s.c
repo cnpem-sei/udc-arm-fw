@@ -315,7 +315,7 @@ static void init_iib()
     iib_fap_2p2s[2].CanAddress = 3;
     iib_fap_2p2s[3].CanAddress = 4;
 
-    init_iib_module(&g_iib_module, &handle_can_data);
+    init_iib_module_can_data(&g_iib_module_can_data, &handle_can_data);
 }
 
 static void handle_can_data(uint8_t *data)
@@ -323,7 +323,7 @@ static void handle_can_data(uint8_t *data)
     uint8_t iib_address;
     uint8_t data_id;
 
-    float_to_bytes_t converter;
+    convert_to_bytes_t converter;
 
     iib_address     = data[0];
     data_id         = data[1];
@@ -340,7 +340,7 @@ static void update_iib_structure(iib_fap_module_t *module, uint8_t data_id,
                                                         float data_val)
 {
     uint8_t id = data_id;
-    float_to_bytes_t converter;
+    convert_to_bytes_t converter;
 
     switch (id)
     {

@@ -37,6 +37,7 @@
 #include "communication_drivers/event_manager/event_manager.h"
 #include "communication_drivers/iib/iib_data.h"
 #include "communication_drivers/iib/iib_module.h"
+#include "communication_drivers/can/can_bkp.h"
 
 /**
  * Controller defines
@@ -78,16 +79,24 @@ static volatile iib_fap_module_t iib_fap;
 volatile hard_interlocks_t hard_interlocks;
 
 static void init_iib();
+
 static void handle_can_data(uint8_t *data);
-static void update_iib_structure(iib_fap_module_t *module, uint8_t data_id,
-                                                               float data_val);
-static void handle_interlock_message(uint8_t *data);
-static void handle_alarm_message(uint8_t *data);
+static void handle_can_interlock(uint8_t *data);
+static void handle_can_alarm(uint8_t *data);
+
+static void update_iib_data_structure(iib_fap_module_t *module, uint8_t data_id,
+                                                                float data_val);
+
+static void update_iib_interlock_structure(iib_fap_module_t *module, uint8_t data_id,
+                                                                     uint32_t data_val);
+
+static void update_iib_alarm_structure(iib_fap_module_t *module, uint8_t data_id,
+                                                                 uint32_t data_val);
 
 /**
 * @brief Initialize ADCP Channels.
 *
-* Setup ADCP specific parameters for FAC ACDC operation.
+* Setup ADCP specific parameters for FAP operation.
 *
 */
 static void adcp_channel_config(void)
@@ -147,6 +156,7 @@ static void bsmp_init_server(void)
     create_bsmp_var(48, 0, 4, false, iib_fap.BoardTemperature.u8);
     create_bsmp_var(49, 0, 4, false, iib_fap.RelativeHumidity.u8);
     create_bsmp_var(50, 0, 4, false, iib_fap.InterlocksRegister.u8);
+    create_bsmp_var(51, 0, 4, false, iib_fap.AlarmsRegister.u8);
 }
 
 /**
@@ -172,17 +182,19 @@ static void init_iib()
 {
     iib_fap.CanAddress = 1;
 
-    init_iib_module(&g_iib_module, &handle_can_data);
+    init_iib_module_can_data(&g_iib_module_can_data, &handle_can_data);
+
+    init_iib_module_can_interlock(&g_iib_module_can_interlock, &handle_can_interlock);
+
+    init_iib_module_can_alarm(&g_iib_module_can_alarm, &handle_can_alarm);
 }
 
 static void handle_can_data(uint8_t *data)
 {
-    uint8_t iib_address;
     uint8_t data_id;
 
-    float_to_bytes_t converter;
+    convert_to_bytes_t converter;
 
-    iib_address     = data[0];
     data_id         = data[1];
 
     converter.u8[0] = data[4];
@@ -190,79 +202,101 @@ static void handle_can_data(uint8_t *data)
     converter.u8[2] = data[6];
     converter.u8[3] = data[7];
 
-    update_iib_structure(&iib_fap, data_id, converter.f);
-
+    update_iib_data_structure(&iib_fap, data_id, converter.f);
 }
 
-static void update_iib_structure(iib_fap_module_t *module, uint8_t data_id,
-                                 float data_val)
+static void handle_can_interlock(uint8_t *data)
+{
+    uint8_t data_id;
+
+    convert_to_bytes_t converter;
+
+    data_id         = data[1];
+
+    converter.u8[0] = data[4];
+    converter.u8[1] = data[5];
+    converter.u8[2] = data[6];
+    converter.u8[3] = data[7];
+
+    update_iib_interlock_structure(&iib_fap, data_id, converter.u32);
+}
+
+static void handle_can_alarm(uint8_t *data)
+{
+    uint8_t data_id;
+
+    convert_to_bytes_t converter;
+
+    data_id         = data[1];
+
+    converter.u8[0] = data[4];
+    converter.u8[1] = data[5];
+    converter.u8[2] = data[6];
+    converter.u8[3] = data[7];
+
+    update_iib_alarm_structure(&iib_fap, data_id, converter.u32);
+}
+
+static void update_iib_data_structure(iib_fap_module_t *module, uint8_t data_id,
+                                                                float data_val)
 {
     uint8_t id = data_id;
-    float_to_bytes_t converter;
 
     switch (id)
     {
         case 0:
-            module->InterlocksRegister.f = data_val;
-            set_hard_interlock(0, IIB_Itlk);
-            break;
-
-        case 1:
-            // TODO: Handle alarm message
-            break;
-        case 2:
             module->Vin.f = data_val;
             break;
 
-        case 3:
+        case 1:
             module->Vout.f = data_val;
             break;
 
-        case 4:
+        case 2:
             module->IoutA1.f = data_val;
             break;
 
-        case 5:
+        case 3:
             module->IoutA2.f = data_val;
             break;
 
-        case 6:
+        case 4:
             module->TempIGBT1.f = data_val;
             break;
 
-        case 7:
+        case 5:
             module->TempIGBT2.f = data_val;
             break;
 
-        case 8:
+        case 6:
             module->DriveVoltage.f = data_val;
             break;
 
-        case 9:
+        case 7:
             module->Drive1Current.f = data_val;
             break;
 
-        case 10:
+        case 8:
             module->Drive2Current.f = data_val;
             break;
 
-        case 11:
+        case 9:
             module->TempL.f = data_val;
             break;
 
-        case 12:
+        case 10:
             module->TempHeatSink.f = data_val;
             break;
 
-        case 13:
+        case 11:
             module->GroundLeakage.f = data_val;
             break;
 
-        case 14:
+        case 12:
             module->BoardTemperature.f = data_val;
             break;
 
-        case 15:
+        case 13:
             module->RelativeHumidity.f = data_val;
             break;
 
@@ -270,3 +304,54 @@ static void update_iib_structure(iib_fap_module_t *module, uint8_t data_id,
             break;
     }
 }
+
+static void update_iib_interlock_structure(iib_fap_module_t *module, uint8_t data_id,
+                                                                     uint32_t data_val)
+{
+    uint8_t id = data_id;
+
+    switch (id)
+    {
+        case 0:
+            if(g_can_reset_flag)
+            {
+                module->InterlocksRegister.u32 = data_val;
+                set_hard_interlock(0, IIB_Itlk);
+            }
+
+            break;
+
+        case 1:
+            g_can_reset_flag = 1;
+            module->InterlocksRegister.u32 = 0;
+            break;
+
+        default:
+            break;
+    }
+}
+
+static void update_iib_alarm_structure(iib_fap_module_t *module, uint8_t data_id,
+                                                                 uint32_t data_val)
+{
+    uint8_t id = data_id;
+
+    switch (id)
+    {
+        case 0:
+            module->AlarmsRegister.u32 = data_val;
+            break;
+
+        case 1:
+            module->AlarmsRegister.u32 = 0;
+            break;
+
+        default:
+            break;
+    }
+}
+
+
+
+
+

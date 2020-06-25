@@ -142,7 +142,7 @@ static void init_iib_modules()
     iib_input_stage.CanAddress = 1;
     iib_command_drawer.CanAddress = 2;
 
-    init_iib_module(&g_iib_module, &handle_can_data);
+    init_iib_module_can_data(&g_iib_module_can_data, &handle_can_data);
 }
 
 static void handle_can_data(uint8_t *data)
@@ -150,7 +150,7 @@ static void handle_can_data(uint8_t *data)
     uint8_t iib_address;
     uint8_t data_id;
 
-    float_to_bytes_t converter;
+    convert_to_bytes_t converter;
 
     iib_address     = data[0];
     data_id         = data[1];
@@ -169,7 +169,7 @@ static void update_iib_structure_is(uint8_t data_id, float data_val)
     uint8_t id;
     id = data_id;
 
-    float_to_bytes_t converter;
+    convert_to_bytes_t converter;
 
     switch(id) {
         case 0:
@@ -206,7 +206,7 @@ static void update_iib_structure_cd(uint8_t data_id, float data_val)
     uint8_t id;
     id = data_id;
 
-    float_to_bytes_t converter;
+    convert_to_bytes_t converter;
 
     switch(id) {
         case 0:

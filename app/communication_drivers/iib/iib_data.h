@@ -41,14 +41,14 @@ typedef volatile struct
         volatile uint32_t   u32;
         volatile uint8_t    u8[4];
         volatile float      f;
-    } iib_itlk_lim[NUM_MAX_IIB_SIGNALS];
+    } iib_itlk[NUM_MAX_IIB_SIGNALS];
 
     union
     {
         volatile uint32_t   u32;
         volatile uint8_t    u8[4];
         volatile float      f;
-    } iib_alm_lim[NUM_MAX_IIB_SIGNALS];
+    } iib_alarm[NUM_MAX_IIB_SIGNALS];
 
 } iib_framwork_t;
 
@@ -325,9 +325,15 @@ typedef volatile struct {
 
     union {
         float       f;
-        uint32_t    u32;
         uint8_t     u8[4];
+        uint32_t    u32;
     } InterlocksRegister;
+
+    union {
+        float       f;
+        uint8_t     u8[4];
+        uint32_t    u32;
+    } AlarmsRegister;
 
     uint8_t CanAddress;
 
@@ -337,6 +343,6 @@ typedef union {
     float       f;
     uint8_t     u8[4];
     uint32_t    u32;
-} float_to_bytes_t;
+} convert_to_bytes_t;
 
 #endif /* IIB_DATA_H_ */
