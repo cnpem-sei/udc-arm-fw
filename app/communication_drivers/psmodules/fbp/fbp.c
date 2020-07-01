@@ -276,10 +276,10 @@ static void bsmp_init_server(void)
         create_bsmp_var(42, server, 2, false, g_ipc_ctom.ps_module[PS3_ID].ps_status.u8);
         create_bsmp_var(43, server, 2, false, g_ipc_ctom.ps_module[PS4_ID].ps_status.u8);
 
-        create_bsmp_var(44, server, 4, false, g_ipc_ctom.ps_module[PS1_ID].ps_setpoint.u8);
-        create_bsmp_var(45, server, 4, false, g_ipc_ctom.ps_module[PS2_ID].ps_setpoint.u8);
-        create_bsmp_var(46, server, 4, false, g_ipc_ctom.ps_module[PS3_ID].ps_setpoint.u8);
-        create_bsmp_var(47, server, 4, false, g_ipc_ctom.ps_module[PS4_ID].ps_setpoint.u8);
+        create_bsmp_var(44, server, 4, false, g_ipc_mtoc.ps_module[PS1_ID].ps_setpoint.u8);
+        create_bsmp_var(45, server, 4, false, g_ipc_mtoc.ps_module[PS2_ID].ps_setpoint.u8);
+        create_bsmp_var(46, server, 4, false, g_ipc_mtoc.ps_module[PS3_ID].ps_setpoint.u8);
+        create_bsmp_var(47, server, 4, false, g_ipc_mtoc.ps_module[PS4_ID].ps_setpoint.u8);
 
         create_bsmp_var(48, server, 4, false, g_ipc_ctom.ps_module[PS1_ID].ps_reference.u8);
         create_bsmp_var(49, server, 4, false, g_ipc_ctom.ps_module[PS2_ID].ps_reference.u8);
