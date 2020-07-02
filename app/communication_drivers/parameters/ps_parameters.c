@@ -60,45 +60,46 @@ static const uint16_t param_addresses_onboard_eeprom[NUM_MAX_PARAMETERS] =
     [Freq_TimeSlicer] = 0x0084,
     [Control_Loop_State] = 0x0094,
     [Max_Ref] = 0x00A0,
-    [Min_Ref] = 0x00A4,
-    [Max_Ref_OpenLoop] = 0x00A8,
-    [Min_Ref_OpenLoop] = 0x00AC,
-    [Max_SlewRate_SlowRef] = 0x00B0,
-    [Max_SlewRate_SigGen_Amp] = 0x00B4,
-    [Max_SlewRate_SigGen_Offset] = 0x00B8,
-    [Max_SlewRate_WfmRef] = 0x00BC,
+    [Min_Ref] = 0x00B0,
+    [Max_Ref_OpenLoop] = 0x00C0,
+    [Min_Ref_OpenLoop] = 0x00D0,
+    //[Max_SlewRate_SlowRef] = 0x00B0,
+    //[Max_SlewRate_SigGen_Amp] = 0x00B4,
+    //[Max_SlewRate_SigGen_Offset] = 0x00B8,
+    //[Max_SlewRate_WfmRef] = 0x00BC,
 
-    [PWM_Freq] = 0x00C0,
-    [PWM_DeadTime] = 0x00C4,
-    [PWM_Max_Duty] = 0x00C8,
-    [PWM_Min_Duty] = 0x00CC,
-    [PWM_Max_Duty_OpenLoop] = 0x00D0,
-    [PWM_Min_Duty_OpenLoop] = 0x00D4,
-    [PWM_Lim_Duty_Share] = 0x00D8,
+    [PWM_Freq] = 0x00E0,
+    [PWM_DeadTime] = 0x00E4,
+    [PWM_Max_Duty] = 0x00E8,
+    [PWM_Min_Duty] = 0x00EC,
+    [PWM_Max_Duty_OpenLoop] = 0x00F0,
+    [PWM_Min_Duty_OpenLoop] = 0x00F4,
+    [PWM_Lim_Duty_Share] = 0x00F8,
 
-    [HRADC_Num_Boards] = 0x00E0,
-    [HRADC_Freq_SPICLK] = 0x00E2,
-    [HRADC_Freq_Sampling] = 0x00E4,
-    [HRADC_Enable_Heater] = 0x00E8,
-    [HRADC_Enable_Monitor] = 0x00F0,
-    [HRADC_Type_Transducer] = 0x00F8,
-    [HRADC_Gain_Transducer] = 0x0100,
-    [HRADC_Offset_Transducer] = 0x0110,
+    [HRADC_Num_Boards] = 0x0100,
+    [HRADC_Freq_SPICLK] = 0x0102,
+    [HRADC_Freq_Sampling] = 0x0104,
+    [HRADC_Enable_Heater] = 0x0108,
+    [HRADC_Enable_Monitor] = 0x0110,
+    [HRADC_Type_Transducer] = 0x0118,
+    [HRADC_Gain_Transducer] = 0x0120,
+    [HRADC_Offset_Transducer] = 0x0130,
 
-    [SigGen_Type] = 0x0120,
-    [SigGen_Num_Cycles] = 0x0122,
-    [SigGen_Freq] = 0x0124,
-    [SigGen_Amplitude] = 0x0128,
-    [SigGen_Offset] = 0x012C,
-    [SigGen_Aux_Param] = 0x0130,
+    [SigGen_Type] = 0x0140,
+    [SigGen_Num_Cycles] = 0x0142,
+    [SigGen_Freq] = 0x0144,
+    [SigGen_Amplitude] = 0x0148,
+    [SigGen_Offset] = 0x014C,
+    [SigGen_Aux_Param] = 0x0150,
 
-    [WfmRef_Selected] = 0x0140,
-    [WfmRef_SyncMode] = 0x0142,
-    [WfmRef_Gain] = 0x0144,
-    [WfmRef_Offset] = 0x148,
+    [WfmRef_Selected] = 0x01C0,
+    [WfmRef_SyncMode] = 0x01C8,
+    [WfmRef_Frequency] = 0x1D0,
+    [WfmRef_Gain] = 0x01E0,
+    [WfmRef_Offset] = 0x1F0,
 
-    [Analog_Var_Max] = 0x160,
-    [Analog_Var_Min] = 0x260,
+    [Analog_Var_Max] = 0x200,
+    [Analog_Var_Min] = 0x300,
 
     [Hard_Interlocks_Debounce_Time] = 0x400,
     [Hard_Interlocks_Reset_Time] = 0x480,
@@ -114,69 +115,71 @@ static const uint16_t param_addresses_onboard_eeprom[NUM_MAX_PARAMETERS] =
 
 static const uint16_t param_addresses_offboard_eeprom[NUM_MAX_PARAMETERS] =
 {
-    [PS_Name] = 0x0000,
-    [PS_Model] = 0x0040,
-    [Num_PS_Modules] = 0x0042,
+     [PS_Name] = 0x0000,
+     [PS_Model] = 0x0040,
+     [Num_PS_Modules] = 0x0042,
 
-    [RS485_Baudrate] = 0x0044,
-    [RS485_Address] = 0x0048,
-    [RS485_Termination] = 0x0050,
-    [UDCNet_Address] = 0x0052,
-    [Ethernet_IP] = 0x0054,
-    [Ethernet_Subnet_Mask] = 0x0058,
-    [Command_Interface] = 0x005C,
-    [Buzzer_Volume] = 0x005E,
+     [RS485_Baudrate] = 0x0044,
+     [RS485_Address] = 0x0048,
+     [RS485_Termination] = 0x0050,
+     [UDCNet_Address] = 0x0052,
+     [Ethernet_IP] = 0x0054,
+     [Ethernet_Subnet_Mask] = 0x0058,
+     [Command_Interface] = 0x005C,
+     [Buzzer_Volume] = 0x005E,
 
-    [Freq_ISR_Controller] = 0x0080,
-    [Freq_TimeSlicer] = 0x0084,
-    [Max_Ref] = 0x00A0,
-    [Min_Ref] = 0x00A4,
-    [Max_Ref_OpenLoop] = 0x00A8,
-    [Min_Ref_OpenLoop] = 0x00AC,
-    [Max_SlewRate_SlowRef] = 0x00B0,
-    [Max_SlewRate_SigGen_Amp] = 0x00B4,
-    [Max_SlewRate_SigGen_Offset] = 0x00B8,
-    [Max_SlewRate_WfmRef] = 0x00BC,
+     [Freq_ISR_Controller] = 0x0080,
+     [Freq_TimeSlicer] = 0x0084,
+     [Control_Loop_State] = 0x0094,
+     [Max_Ref] = 0x00A0,
+     [Min_Ref] = 0x00B0,
+     [Max_Ref_OpenLoop] = 0x00C0,
+     [Min_Ref_OpenLoop] = 0x00D0,
+     //[Max_SlewRate_SlowRef] = 0x00B0,
+     //[Max_SlewRate_SigGen_Amp] = 0x00B4,
+     //[Max_SlewRate_SigGen_Offset] = 0x00B8,
+     //[Max_SlewRate_WfmRef] = 0x00BC,
 
-    [PWM_Freq] = 0x00C0,
-    [PWM_DeadTime] = 0x00C4,
-    [PWM_Max_Duty] = 0x00C8,
-    [PWM_Min_Duty] = 0x00CC,
-    [PWM_Max_Duty_OpenLoop] = 0x00D0,
-    [PWM_Min_Duty_OpenLoop] = 0x00D4,
-    [PWM_Lim_Duty_Share] = 0x00D8,
+     [PWM_Freq] = 0x00E0,
+     [PWM_DeadTime] = 0x00E4,
+     [PWM_Max_Duty] = 0x00E8,
+     [PWM_Min_Duty] = 0x00EC,
+     [PWM_Max_Duty_OpenLoop] = 0x00F0,
+     [PWM_Min_Duty_OpenLoop] = 0x00F4,
+     [PWM_Lim_Duty_Share] = 0x00F8,
 
-    [HRADC_Num_Boards] = 0x00E0,
-    [HRADC_Freq_SPICLK] = 0x00E2,
-    [HRADC_Freq_Sampling] = 0x00E4,
-    [HRADC_Enable_Heater] = 0x00E8,
-    [HRADC_Enable_Monitor] = 0x00F0,
-    [HRADC_Type_Transducer] = 0x00F8,
-    [HRADC_Gain_Transducer] = 0x0100,
-    [HRADC_Offset_Transducer] = 0x0110,
+     [HRADC_Num_Boards] = 0x0100,
+     [HRADC_Freq_SPICLK] = 0x0102,
+     [HRADC_Freq_Sampling] = 0x0104,
+     [HRADC_Enable_Heater] = 0x0108,
+     [HRADC_Enable_Monitor] = 0x0110,
+     [HRADC_Type_Transducer] = 0x0118,
+     [HRADC_Gain_Transducer] = 0x0120,
+     [HRADC_Offset_Transducer] = 0x0130,
 
-    [SigGen_Type] = 0x0120,
-    [SigGen_Num_Cycles] = 0x0122,
-    [SigGen_Freq] = 0x0124,
-    [SigGen_Amplitude] = 0x0128,
-    [SigGen_Offset] = 0x012C,
-    [SigGen_Aux_Param] = 0x0130,
+     [SigGen_Type] = 0x0140,
+     [SigGen_Num_Cycles] = 0x0142,
+     [SigGen_Freq] = 0x0144,
+     [SigGen_Amplitude] = 0x0148,
+     [SigGen_Offset] = 0x014C,
+     [SigGen_Aux_Param] = 0x0150,
 
-    [WfmRef_Selected] = 0x0140,
-    [WfmRef_SyncMode] = 0x0142,
-    [WfmRef_Gain] = 0x0144,
-    [WfmRef_Offset] = 0x148,
+     [WfmRef_Selected] = 0x01C0,
+     [WfmRef_SyncMode] = 0x01C8,
+     [WfmRef_Frequency] = 0x1D0,
+     [WfmRef_Gain] = 0x01E0,
+     [WfmRef_Offset] = 0x1F0,
 
-    [Analog_Var_Max] = 0x160,
-    [Analog_Var_Min] = 0x260,
+     [Analog_Var_Max] = 0x200,
+     [Analog_Var_Min] = 0x300,
 
-    [Hard_Interlocks_Debounce_Time] = 0x400,
-    [Hard_Interlocks_Reset_Time] = 0x480,
-    [Soft_Interlocks_Debounce_Time] = 0x500,
-    [Soft_Interlocks_Reset_Time] = 0x580,
+     [Hard_Interlocks_Debounce_Time] = 0x400,
+     [Hard_Interlocks_Reset_Time] = 0x480,
+     [Soft_Interlocks_Debounce_Time] = 0x500,
+     [Soft_Interlocks_Reset_Time] = 0x580,
 
-    [Scope_Sampling_Frequency] = 0x740,
-    [Scope_Source] = 0x750
+     [Scope_Sampling_Frequency] = 0x740,
+     [Scope_Source] = 0x750,
 };
 
 static uint8_t data_eeprom[32];
@@ -226,15 +229,15 @@ static void init_param_bank_info(void)
 
     init_param(Control_Loop_State, is_uint16_t, 1, &LOOP_STATE.u8[0]);
 
-    init_param(Max_Ref, is_float, 1, &MAX_REF[0].u8[0]);
+    init_param(Max_Ref, is_float, 4, &MAX_REF[0].u8[0]);
 
-    init_param(Min_Ref, is_float, 1, &MIN_REF[0].u8[0]);
+    init_param(Min_Ref, is_float, 4, &MIN_REF[0].u8[0]);
 
-    init_param(Max_Ref_OpenLoop, is_float, 1, &MAX_REF_OL[0].u8[0]);
+    init_param(Max_Ref_OpenLoop, is_float, 4, &MAX_REF_OL[0].u8[0]);
 
-    init_param(Min_Ref_OpenLoop, is_float, 1, &MIN_REF_OL[0].u8[0]);
+    init_param(Min_Ref_OpenLoop, is_float, 4, &MIN_REF_OL[0].u8[0]);
 
-    init_param(Max_SlewRate_SlowRef, is_float, 1, &MAX_SLEWRATE_SLOWREF.u8[0]);
+    /*init_param(Max_SlewRate_SlowRef, is_float, 1, &MAX_SLEWRATE_SLOWREF.u8[0]);
 
     init_param(Max_SlewRate_SigGen_Amp, is_float, 1,
                &MAX_SLEWRATE_SIGGEN_AMP.u8[0]);
@@ -242,7 +245,7 @@ static void init_param_bank_info(void)
     init_param(Max_SlewRate_SigGen_Offset, is_float, 1,
                &MAX_SLEWRATE_SIGGEN_OFFSET.u8[0]);
 
-    init_param(Max_SlewRate_WfmRef, is_float, 1, &MAX_SLEWRATE_WFMREF.u8[0]);
+    init_param(Max_SlewRate_WfmRef, is_float, 1, &MAX_SLEWRATE_WFMREF.u8[0]);*/
 
     /**
      * PWM parameters
@@ -306,13 +309,15 @@ static void init_param_bank_info(void)
     /**
      * WfmRef parameters
      */
-    init_param(WfmRef_Selected, is_uint16_t, 1, &WFMREF_SELECTED_PARAM.u8[0]);
+    init_param(WfmRef_Selected, is_uint16_t, 4, &WFMREF_SELECTED_PARAM[0].u8[0]);
 
-    init_param(WfmRef_SyncMode, is_uint16_t, 1, &WFMREF_SYNC_MODE_PARAM.u8[0]);
+    init_param(WfmRef_SyncMode, is_uint16_t, 4, &WFMREF_SYNC_MODE_PARAM[0].u8[0]);
 
-    init_param(WfmRef_Gain, is_float, 1, &WFMREF_GAIN_PARAM.u8[0]);
+    init_param(WfmRef_Frequency, is_float, 4, &WFMREF_FREQUENCY_PARAM[0].u8[0]);
 
-    init_param(WfmRef_Offset, is_float, 1, &WFMREF_OFFSET_PARAM.u8[0]);
+    init_param(WfmRef_Gain, is_float, 4, &WFMREF_GAIN_PARAM[0].u8[0]);
+
+    init_param(WfmRef_Offset, is_float, 4, &WFMREF_OFFSET_PARAM[0].u8[0]);
 
 
     /**

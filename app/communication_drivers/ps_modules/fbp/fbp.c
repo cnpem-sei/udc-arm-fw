@@ -179,10 +179,10 @@ static void bsmp_init_server(void)
         create_bsmp_var(42, server, 2, false, g_ipc_ctom.ps_module[PS3_ID].ps_status.u8);
         create_bsmp_var(43, server, 2, false, g_ipc_ctom.ps_module[PS4_ID].ps_status.u8);
 
-        create_bsmp_var(44, server, 4, false, g_ipc_ctom.ps_module[PS1_ID].ps_setpoint.u8);
-        create_bsmp_var(45, server, 4, false, g_ipc_ctom.ps_module[PS2_ID].ps_setpoint.u8);
-        create_bsmp_var(46, server, 4, false, g_ipc_ctom.ps_module[PS3_ID].ps_setpoint.u8);
-        create_bsmp_var(47, server, 4, false, g_ipc_ctom.ps_module[PS4_ID].ps_setpoint.u8);
+        create_bsmp_var(44, server, 4, false, g_ipc_mtoc.ps_module[PS1_ID].ps_setpoint.u8);
+        create_bsmp_var(45, server, 4, false, g_ipc_mtoc.ps_module[PS2_ID].ps_setpoint.u8);
+        create_bsmp_var(46, server, 4, false, g_ipc_mtoc.ps_module[PS3_ID].ps_setpoint.u8);
+        create_bsmp_var(47, server, 4, false, g_ipc_mtoc.ps_module[PS4_ID].ps_setpoint.u8);
 
         create_bsmp_var(48, server, 4, false, g_ipc_ctom.ps_module[PS1_ID].ps_reference.u8);
         create_bsmp_var(49, server, 4, false, g_ipc_ctom.ps_module[PS2_ID].ps_reference.u8);
@@ -222,17 +222,23 @@ void fbp_system_config()
 
     for(i = 0; i < NUM_MAX_PS_MODULES; i++)
     {
-        init_wfmref(&WFMREF[i], WFMREF[0].wfmref_selected.u16,
+        /*init_wfmref(&WFMREF[i], WFMREF[0].wfmref_selected.u16,
                     WFMREF[0].sync_mode.enu,ISR_CONTROL_FREQ.f,
                     TIMESLICER_FREQ[TIMESLICER_WFMREF].f,
                     WFMREF[0].gain.f, WFMREF[0].offset.f, &g_wfmref_data.data_fbp[i][0][0].f,
+                    SIZE_WFMREF_FBP, &g_ipc_ctom.ps_module[i].ps_reference.f);*/
+
+        init_wfmref(&WFMREF[i], WFMREF_SELECTED_PARAM[i].u16,
+                    WFMREF_SYNC_MODE_PARAM[i].u16, ISR_CONTROL_FREQ.f,
+                    WFMREF_FREQUENCY_PARAM[i].f,
+                    WFMREF_GAIN_PARAM[i].f, WFMREF_OFFSET_PARAM[i].f,
+                    &g_wfmref_data.data_fbp[i][0][0].f,
                     SIZE_WFMREF_FBP, &g_ipc_ctom.ps_module[i].ps_reference.f);
 
         init_scope(&g_ipc_mtoc.scope[i], ISR_CONTROL_FREQ.f,
                    SCOPE_FREQ_SAMPLING_PARAM[i].f,
                    &(g_buf_samples_ctom[SIZE_BUF_SAMPLES_CTOM * i / NUM_MAX_PS_MODULES].f),
                    SIZE_BUF_SAMPLES_CTOM / NUM_MAX_PS_MODULES,
-                   SCOPE_SOURCE_PARAM[i].p_f,
-                   (void *) 0);
+                   SCOPE_SOURCE_PARAM[i].p_f, (void *) 0);
     }
 }
