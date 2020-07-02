@@ -147,11 +147,11 @@ uint8_t save_dsp_coeffs_eeprom(dsp_class_t dsp_class, uint16_t id)
     if( size_coeffs > 32 )
     {
         // Send new parameter to EEPROM
-        //GPIOPinWrite(EEPROM_WP_BASE, EEPROM_WP_PIN, OFF);
-        //write_i2c(I2C_SLV_ADDR_EEPROM, 2+32, data_eeprom);
-        write_i2c_offboard_isolated(I2C_SLV_ADDR_EEPROM, 2+32, data_eeprom);
+        GPIOPinWrite(EEPROM_WP_BASE, EEPROM_WP_PIN, OFF);
+        write_i2c(I2C_SLV_ADDR_EEPROM, 2+32, data_eeprom);
+        //write_i2c_offboard_isolated(I2C_SLV_ADDR_EEPROM, 2+32, data_eeprom);
         for (ulLoop=0;ulLoop<100000;ulLoop++){};
-        //GPIOPinWrite(EEPROM_WP_BASE, EEPROM_WP_PIN, ON);
+        GPIOPinWrite(EEPROM_WP_BASE, EEPROM_WP_PIN, ON);
 
         u_add.u16 += 32;
         data_eeprom[0] = u_add.u8[1];
@@ -159,20 +159,20 @@ uint8_t save_dsp_coeffs_eeprom(dsp_class_t dsp_class, uint16_t id)
         memcpy(&data_eeprom[2], &data_eeprom[34], size_coeffs-32);
 
         // Send new parameter to EEPROM
-        //GPIOPinWrite(EEPROM_WP_BASE, EEPROM_WP_PIN, OFF);
-        //write_i2c(I2C_SLV_ADDR_EEPROM, 2+(size_coeffs-32), data_eeprom);
-        write_i2c_offboard_isolated(I2C_SLV_ADDR_EEPROM, 2+(size_coeffs-32), data_eeprom);
+        GPIOPinWrite(EEPROM_WP_BASE, EEPROM_WP_PIN, OFF);
+        write_i2c(I2C_SLV_ADDR_EEPROM, 2+(size_coeffs-32), data_eeprom);
+        //write_i2c_offboard_isolated(I2C_SLV_ADDR_EEPROM, 2+(size_coeffs-32), data_eeprom);
         for (ulLoop=0;ulLoop<100000;ulLoop++){};
-        //GPIOPinWrite(EEPROM_WP_BASE, EEPROM_WP_PIN, ON);
+        GPIOPinWrite(EEPROM_WP_BASE, EEPROM_WP_PIN, ON);
     }
     else
     {
         // Send new parameter to EEPROM
-        //GPIOPinWrite(EEPROM_WP_BASE, EEPROM_WP_PIN, OFF);
-        //write_i2c(I2C_SLV_ADDR_EEPROM, 2+size_coeffs, data_eeprom);
-        write_i2c_offboard_isolated(I2C_SLV_ADDR_EEPROM, 2+size_coeffs, data_eeprom);
+        GPIOPinWrite(EEPROM_WP_BASE, EEPROM_WP_PIN, OFF);
+        write_i2c(I2C_SLV_ADDR_EEPROM, 2+size_coeffs, data_eeprom);
+        //write_i2c_offboard_isolated(I2C_SLV_ADDR_EEPROM, 2+size_coeffs, data_eeprom);
         for (ulLoop=0;ulLoop<100000;ulLoop++){};
-        //GPIOPinWrite(EEPROM_WP_BASE, EEPROM_WP_PIN, ON);
+        GPIOPinWrite(EEPROM_WP_BASE, EEPROM_WP_PIN, ON);
     }
 
     return 1;
@@ -237,11 +237,11 @@ uint8_t load_dsp_coeffs_eeprom(dsp_class_t dsp_class, uint16_t id)
     if( size_coeffs > 32 )
     {
         // Send new parameter to EEPROM
-        //GPIOPinWrite(EEPROM_WP_BASE, EEPROM_WP_PIN, OFF);
-        //read_i2c(I2C_SLV_ADDR_EEPROM, DOUBLE_ADDRESS, 32, data_eeprom);
-        read_i2c_offboard_isolated(I2C_SLV_ADDR_EEPROM, DOUBLE_ADDRESS, 32, data_eeprom);
+        GPIOPinWrite(EEPROM_WP_BASE, EEPROM_WP_PIN, OFF);
+        read_i2c(I2C_SLV_ADDR_EEPROM, DOUBLE_ADDRESS, 32, data_eeprom);
+        //read_i2c_offboard_isolated(I2C_SLV_ADDR_EEPROM, DOUBLE_ADDRESS, 32, data_eeprom);
         for (ulLoop=0;ulLoop<100000;ulLoop++){};
-        //GPIOPinWrite(EEPROM_WP_BASE, EEPROM_WP_PIN, ON);
+        GPIOPinWrite(EEPROM_WP_BASE, EEPROM_WP_PIN, ON);
 
         memcpy(p_val, &data_eeprom, 32);
 
@@ -250,18 +250,18 @@ uint8_t load_dsp_coeffs_eeprom(dsp_class_t dsp_class, uint16_t id)
         data_eeprom[1] = u_add.u8[0];
 
         // Send new parameter to EEPROM
-        //GPIOPinWrite(EEPROM_WP_BASE, EEPROM_WP_PIN, OFF);
-        //read_i2c(I2C_SLV_ADDR_EEPROM, DOUBLE_ADDRESS, size_coeffs-32, data_eeprom);
-        read_i2c_offboard_isolated(I2C_SLV_ADDR_EEPROM, DOUBLE_ADDRESS, size_coeffs-32, data_eeprom);
+        GPIOPinWrite(EEPROM_WP_BASE, EEPROM_WP_PIN, OFF);
+        read_i2c(I2C_SLV_ADDR_EEPROM, DOUBLE_ADDRESS, size_coeffs-32, data_eeprom);
+        //read_i2c_offboard_isolated(I2C_SLV_ADDR_EEPROM, DOUBLE_ADDRESS, size_coeffs-32, data_eeprom);
         for (ulLoop=0;ulLoop<100000;ulLoop++){};
-        //GPIOPinWrite(EEPROM_WP_BASE, EEPROM_WP_PIN, ON);
+        GPIOPinWrite(EEPROM_WP_BASE, EEPROM_WP_PIN, ON);
 
         memcpy(p_val+32, &data_eeprom, size_coeffs-32);
     }
     else
     {
-        //read_i2c(I2C_SLV_ADDR_EEPROM, DOUBLE_ADDRESS, size_coeffs, data_eeprom);
-        read_i2c_offboard_isolated(I2C_SLV_ADDR_EEPROM, DOUBLE_ADDRESS, size_coeffs, data_eeprom);
+        read_i2c(I2C_SLV_ADDR_EEPROM, DOUBLE_ADDRESS, size_coeffs, data_eeprom);
+        //read_i2c_offboard_isolated(I2C_SLV_ADDR_EEPROM, DOUBLE_ADDRESS, size_coeffs, data_eeprom);
         memcpy( p_val, &data_eeprom, size_coeffs);
     }
 
