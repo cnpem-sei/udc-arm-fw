@@ -213,7 +213,7 @@ static void init_iib_modules()
     fac_2s_acdc_cmd[MOD_A_ID].CanAddress = 3;
     fac_2s_acdc_cmd[MOD_B_ID].CanAddress = 4;
 
-    init_iib_module(&g_iib_module, &handle_can_data);
+    init_iib_module_can_data(&g_iib_module_can_data, &handle_can_data);
 }
 
 static void handle_can_data(uint8_t *data)
@@ -221,7 +221,7 @@ static void handle_can_data(uint8_t *data)
     uint8_t iib_address;
     uint8_t data_id;
 
-    float_to_bytes_t converter;
+    convert_to_bytes_t converter;
 
     iib_address     = data[0];
     data_id         = data[1];
@@ -245,7 +245,7 @@ static void update_iib_structure_fac_is(uint8_t iib_id, uint8_t data_id, float d
     uint8_t cmd_id;
     cmd_id = data_id;
 
-    float_to_bytes_t converter;
+    convert_to_bytes_t converter;
 
     switch(cmd_id) {
         case 0:
@@ -290,7 +290,7 @@ static void update_iib_structure_fac_cmd(uint8_t iib_id, uint8_t data_id, float 
     uint8_t mod_idx;
     cmd_id = data_id;
 
-    float_to_bytes_t converter;
+    convert_to_bytes_t converter;
 
     if (iib_id == 2) mod_idx = 0;
     if (iib_id == 3) mod_idx = 1;

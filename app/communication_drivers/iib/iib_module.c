@@ -21,39 +21,34 @@
 
 #include "iib_module.h"
 
-iib_module_t g_iib_module;
+iib_module_t g_iib_module_can_data;
 
-void init_iib_module(iib_module_t *iib_module,
-                                           void (*handle_can_data) (uint8_t*))
+iib_module_t g_iib_module_can_interlock;
+
+iib_module_t g_iib_module_can_alarm;
+
+
+void init_iib_module_can_data(iib_module_t *iib_module_can_data,
+                              void (*handle_can_data_message) (uint8_t*))
 {
-    iib_module->handle_can_data             = handle_can_data;
+    iib_module_can_data->handle_can_data_message                = handle_can_data_message;
 }
 
-/**
- * TODO: Put here your includes
- */
 
-/**
- * TODO: Put here your defines. Just what is local. If you don't
- * need to access it from other module, consider use a constant (const)
- */
+void init_iib_module_can_interlock(iib_module_t *iib_module_can_interlock,
+                                   void (*handle_can_interlock_message) (uint8_t*))
+{
+    iib_module_can_interlock->handle_can_interlock_message      = handle_can_interlock_message;
+}
 
 
-/**
- * TODO: Put here your constants and variables. Always use static for 
- * private members.
- */
-
-/**
- * TODO: Put here your function prototypes for private functions. Use
- * static in declaration.
- */
+void init_iib_module_can_alarm(iib_module_t *iib_module_can_alarm,
+                               void (*handle_can_alarm_message) (uint8_t*))
+{
+    iib_module_can_alarm->handle_can_alarm_message              = handle_can_alarm_message;
+}
 
 
-/**
- * TODO: Put here the implementation for your public functions.
- */
 
-/**
- * TODO: Put here the implementation for your private functions.
- */
+
+
