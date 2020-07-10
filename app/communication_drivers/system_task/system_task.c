@@ -131,7 +131,7 @@ void TaskCheck(void)
     else if(PROCESS_CAN_MESS)
     {
       PROCESS_CAN_MESS = 0;
-      //can_check();
+      can_check();
     }
 
 	else if(SAMPLE_ADCP_REQUEST)

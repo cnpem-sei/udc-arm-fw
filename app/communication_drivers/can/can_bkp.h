@@ -61,5 +61,6 @@ extern void send_reset_iib_message(uint8_t iib_address);
 extern void get_data_from_iib(void);
 extern void get_interlock_from_iib(void);
 extern void get_alarm_from_iib(void);
+extern void can_check(void);
 
 #endif /* APP_COMMUNICATION_DRIVERS_CAN_CAN_BKP_H_ */
