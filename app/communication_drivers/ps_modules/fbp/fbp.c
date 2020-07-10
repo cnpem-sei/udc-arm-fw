@@ -66,6 +66,23 @@
 
 static uint8_t dummy_u8;
 
+typedef enum
+{
+    Load_Overcurrent,
+    Load_Overvoltage,
+    DCLink_Overvoltage,
+    DCLink_Undervoltage,
+    Opened_Relay_Fault,
+    DCLink_Fuse_Fault,
+    MOSFETs_Driver_Fault,
+    Welded_Relay_Fault
+} hard_interlocks_t;
+
+typedef enum
+{
+    Heatsink_Overtemperature
+} soft_interlocks_t;
+
 /**
 * @brief Initialize ADCP Channels.
 *

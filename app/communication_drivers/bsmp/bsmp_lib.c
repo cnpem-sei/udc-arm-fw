@@ -1053,11 +1053,11 @@ uint8_t bsmp_cfg_wfmref(uint8_t *input, uint8_t *output)
 {
     memcpy(WFMREF[g_current_ps_id].wfmref_selected.u8, &input[0], 2);
     memcpy(WFMREF[g_current_ps_id].sync_mode.u8, &input[2], 2);
-    memcpy(WFMREF[g_current_ps_id].frequency.u8, &input[4], 4);
+    memcpy(WFMREF[g_current_ps_id].lerp.freq_base.u8, &input[4], 4);
     memcpy(WFMREF[g_current_ps_id].gain.u8, &input[8], 4);
     memcpy(WFMREF[g_current_ps_id].offset.u8, &input[12], 4);
 
-    if(ipc_mtoc_busy(low_priority_msg_to_reg(Update_WfmRef)))
+    if(ipc_mtoc_busy(low_priority_msg_to_reg(Cfg_WfmRef)))
     {
         *output = DSP_Busy;
     }
@@ -1068,9 +1068,9 @@ uint8_t bsmp_cfg_wfmref(uint8_t *input, uint8_t *output)
             ( g_ipc_ctom.wfmref[g_current_ps_id].wfmref_data[g_ipc_ctom.wfmref[g_current_ps_id].wfmref_selected.u16].p_buf_idx.p_f >=
               g_ipc_ctom.wfmref[g_current_ps_id].wfmref_data[g_ipc_ctom.wfmref[g_current_ps_id].wfmref_selected.u16].p_buf_end.p_f ) )
         {
-            send_ipc_lowpriority_msg(g_current_ps_id, Update_WfmRef);
+            send_ipc_lowpriority_msg(g_current_ps_id, Cfg_WfmRef);
             while ((HWREG(MTOCIPC_BASE + IPC_O_MTOCIPCFLG) &
-                    low_priority_msg_to_reg(Update_WfmRef)) &&
+                    low_priority_msg_to_reg(Cfg_WfmRef)) &&
                     (ulTimeout<TIMEOUT_DSP_IPC_ACK))
             {
                 ulTimeout++;
@@ -2395,7 +2395,7 @@ void bsmp_init(uint8_t server)
     create_bsmp_var(13, server, 16, false, g_ipc_ctom.siggen[server].aux_param[0].u8);
     create_bsmp_var(14, server, 2, false, g_ipc_ctom.wfmref[server].wfmref_selected.u8);
     create_bsmp_var(15, server, 2, false, g_ipc_ctom.wfmref[server].sync_mode.u8);
-    create_bsmp_var(16, server, 4, false, g_ipc_ctom.wfmref[server].frequency.u8);
+    create_bsmp_var(16, server, 4, false, g_ipc_ctom.wfmref[server].lerp.freq_base.u8);
     create_bsmp_var(17, server, 4, false, g_ipc_ctom.wfmref[server].gain.u8);
     create_bsmp_var(18, server, 4, false, g_ipc_ctom.wfmref[server].offset.u8);
     create_bsmp_var(19, server, 4, false, g_ipc_mtoc.wfmref[server].wfmref_data[0].p_buf_start.u8);

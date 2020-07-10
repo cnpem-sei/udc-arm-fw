@@ -94,6 +94,15 @@ typedef enum
     Rack_Interlock
 } hard_interlocks_t;
 
+typedef enum
+{
+    DCCT_1_Fault,
+    DCCT_2_Fault,
+    DCCT_High_Difference,
+    Load_Feedback_1_Fault,
+    Load_Feedback_2_Fault
+} soft_interlocks_t;
+
 volatile iib_output_stage_t fac_2s_dcdc_os[2];
 
 static void init_iib();

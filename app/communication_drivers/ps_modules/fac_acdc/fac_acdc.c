@@ -65,6 +65,12 @@ typedef enum
     IIB_Itlk
 } hard_interlocks_t;
 
+typedef enum
+{
+    Heatsink_Overtemperature,
+    Inductors_Overtemperature
+} soft_interlocks_t;
+
 volatile iib_input_stage_t iib_input_stage;
 volatile iib_command_drawer_t iib_command_drawer;
 

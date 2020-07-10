@@ -46,6 +46,24 @@
 #define PIN_STATUS_ALL_PS_FAIL  g_controller_ctom.net_signals[0]
 
 #define I2C_SLV_ADDR_DIG_POT    0b0101000
+
+typedef enum
+{
+    Power_Module_1_Fault,
+    Power_Module_2_Fault,
+    Power_Module_3_Fault,
+    Total_Output_Overvoltage,
+    Power_Module_1_Overvoltage,
+    Power_Module_2_Overvoltage,
+    Power_Module_3_Overvoltage,
+    Total_Output_Undervoltage,
+    Power_Module_1_Undervoltage,
+    Power_Module_2_Undervoltage,
+    Power_Module_3_Undervoltage,
+    Smoke_Detector,
+    External_Interlock
+} hard_interlocks_t;
+
 /**
 * @brief Initialize ADCP Channels.
 *

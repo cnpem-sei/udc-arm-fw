@@ -137,6 +137,17 @@ typedef enum
     ARM_2_Overcurrent
 } hard_interlocks_t;
 
+typedef enum
+{
+    DCCT_1_Fault,
+    DCCT_2_Fault,
+    DCCT_High_Difference,
+    Load_Feedback_1_Fault,
+    Load_Feedback_2_Fault,
+    Arms_High_Difference,
+    IGBTs_Current_High_Difference
+} soft_interlocks_t;
+
 static volatile iib_fap_module_t iib_fap_2p2s[4];
 volatile hard_interlocks_t hard_interlocks;
 

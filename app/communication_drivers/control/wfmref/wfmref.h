@@ -50,6 +50,8 @@ typedef volatile struct
 {
     uint16_t        counter;
     uint16_t        max_count;
+    float           freq_lerp;
+    u_float_t       freq_base;
     float           inv_decimation;
     float           fraction;
     float           out;
@@ -73,13 +75,6 @@ typedef volatile struct
     } sync_mode;
 
     wfmref_lerp_t   lerp;
-
-    union
-    {
-        uint8_t     u8[4];
-        uint32_t    u32;
-        float       f;
-    } frequency;
 
     union
     {
