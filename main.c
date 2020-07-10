@@ -232,9 +232,8 @@ int main(void) {
 
     for (;;)
     {
-        for (ulLoop = 0; ulLoop < 1000; ulLoop++)
-        {
-            TaskCheck();
-        }
+
+        TaskCheck();
+
     }
 }

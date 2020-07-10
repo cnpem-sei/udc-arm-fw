@@ -50,6 +50,11 @@
 // A flag to indicate that some reception error occurred.
 //
 //*****************************************************************************
+volatile bool g_bRXFlag1 = 0;
+
+volatile bool g_bRXFlag2 = 0;
+
+volatile bool g_bRXFlag3 = 0;
 
 volatile bool g_bErrFlag = 0;
 
@@ -123,7 +128,10 @@ void can_int_handler(void)
 
         CANIntClear(CAN0_BASE, MESSAGE_DATA_IIB_OBJ_ID);
 
-        get_data_from_iib();
+        g_bRXFlag1 = 1;
+
+        // Indicate new message object 1 that needs to be processed
+        TaskSetNew(PROCESS_CAN_MESSAGE);
 
         // Since the message was sent, clear any error flags.
         g_bErrFlag = 0;
@@ -139,7 +147,10 @@ void can_int_handler(void)
 
         CANIntClear(CAN0_BASE, MESSAGE_ITLK_IIB_OBJ_ID);
 
-        get_interlock_from_iib();
+        g_bRXFlag2 = 1;
+
+        // Indicate new message object 2 that needs to be processed
+        TaskSetNew(PROCESS_CAN_MESSAGE);
 
         // Since the message was sent, clear any error flags.
         g_bErrFlag = 0;
@@ -155,7 +166,10 @@ void can_int_handler(void)
 
         CANIntClear(CAN0_BASE, MESSAGE_ALARM_IIB_OBJ_ID);
 
-        get_alarm_from_iib();
+        g_bRXFlag3 = 1;
+
+        // Indicate new message object 3 that needs to be processed
+        TaskSetNew(PROCESS_CAN_MESSAGE);
 
         // Since the message was sent, clear any error flags.
         g_bErrFlag = 0;
@@ -248,32 +262,32 @@ void init_can_bkp(void)
 
     //message object 1
     rx_message_data_iib.ulMsgID           = MESSAGE_DATA_IIB_ID;
-    rx_message_data_iib.ulMsgIDMask       = 0;
-    rx_message_data_iib.ulFlags           = MSG_OBJ_RX_INT_ENABLE;
+    rx_message_data_iib.ulMsgIDMask       = 0xfffff;
+    rx_message_data_iib.ulFlags           = (MSG_OBJ_RX_INT_ENABLE | MSG_OBJ_USE_ID_FILTER | MSG_OBJ_FIFO);
     rx_message_data_iib.ulMsgLen          = MESSAGE_DATA_IIB_LEN;
 
     CANMessageSet(CAN0_BASE, MESSAGE_DATA_IIB_OBJ_ID, &rx_message_data_iib, MSG_OBJ_TYPE_RX);
 
     //message object 2
     rx_message_itlk_iib.ulMsgID           = MESSAGE_ITLK_IIB_ID;
-    rx_message_itlk_iib.ulMsgIDMask       = 0;
-    rx_message_itlk_iib.ulFlags           = MSG_OBJ_RX_INT_ENABLE;
+    rx_message_itlk_iib.ulMsgIDMask       = 0xfffff;
+    rx_message_itlk_iib.ulFlags           = (MSG_OBJ_RX_INT_ENABLE | MSG_OBJ_USE_ID_FILTER | MSG_OBJ_FIFO);
     rx_message_itlk_iib.ulMsgLen          = MESSAGE_ITLK_IIB_LEN;
 
     CANMessageSet(CAN0_BASE, MESSAGE_ITLK_IIB_OBJ_ID, &rx_message_itlk_iib, MSG_OBJ_TYPE_RX);
 
     //message object 3
     rx_message_alarm_iib.ulMsgID          = MESSAGE_ALARM_IIB_ID;
-    rx_message_alarm_iib.ulMsgIDMask      = 0;
-    rx_message_alarm_iib.ulFlags          = MSG_OBJ_RX_INT_ENABLE;
+    rx_message_alarm_iib.ulMsgIDMask      = 0xfffff;
+    rx_message_alarm_iib.ulFlags          = (MSG_OBJ_RX_INT_ENABLE | MSG_OBJ_USE_ID_FILTER | MSG_OBJ_FIFO);
     rx_message_alarm_iib.ulMsgLen         = MESSAGE_ALARM_IIB_LEN;
 
     CANMessageSet(CAN0_BASE, MESSAGE_ALARM_IIB_OBJ_ID, &rx_message_alarm_iib, MSG_OBJ_TYPE_RX);
 
     //message object 4
     rx_message_param_iib.ulMsgID          = MESSAGE_PARAM_IIB_ID;
-    rx_message_param_iib.ulMsgIDMask      = 0;
-    rx_message_param_iib.ulFlags          = MSG_OBJ_RX_INT_ENABLE;
+    rx_message_param_iib.ulMsgIDMask      = 0xfffff;
+    rx_message_param_iib.ulFlags          = (MSG_OBJ_RX_INT_ENABLE | MSG_OBJ_USE_ID_FILTER | MSG_OBJ_FIFO);
     rx_message_param_iib.ulMsgLen         = MESSAGE_PARAM_IIB_LEN;
 
     CANMessageSet(CAN0_BASE, MESSAGE_PARAM_IIB_OBJ_ID, &rx_message_param_iib, MSG_OBJ_TYPE_RX);
@@ -281,13 +295,13 @@ void init_can_bkp(void)
     //message object 5
     tx_message_reset_udc.ulMsgID          = MESSAGE_RESET_UDC_ID;
     tx_message_reset_udc.ulMsgIDMask      = 0;
-    tx_message_reset_udc.ulFlags          = MSG_OBJ_TX_INT_ENABLE;
+    tx_message_reset_udc.ulFlags          = (MSG_OBJ_TX_INT_ENABLE | MSG_OBJ_FIFO);
     tx_message_reset_udc.ulMsgLen         = MESSAGE_RESET_UDC_LEN;
 
     //message object 6
     tx_message_param_udc.ulMsgID         = MESSAGE_PARAM_UDC_ID;
     tx_message_param_udc.ulMsgIDMask     = 0;
-    tx_message_param_udc.ulFlags         = MSG_OBJ_TX_INT_ENABLE;
+    tx_message_param_udc.ulFlags         = (MSG_OBJ_TX_INT_ENABLE | MSG_OBJ_FIFO);
     tx_message_param_udc.ulMsgLen        = MESSAGE_PARAM_UDC_LEN;
 
 }
@@ -330,7 +344,26 @@ void get_alarm_from_iib(void)
     g_iib_module_can_alarm.handle_can_alarm_message(message_alarm_iib);
 }
 
+void can_check(void)
+{
+    if(g_bRXFlag1)
+    {
+        get_data_from_iib();
+        g_bRXFlag1 = 0;
+    }
 
+    if(g_bRXFlag2)
+    {
+        get_interlock_from_iib();
+        g_bRXFlag2 = 0;
+    }
+
+    if(g_bRXFlag3)
+    {
+        get_alarm_from_iib();
+        g_bRXFlag3 = 0;
+    }
+}
 
 
 
