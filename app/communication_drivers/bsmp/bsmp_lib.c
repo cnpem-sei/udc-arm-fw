@@ -1049,15 +1049,13 @@ static struct bsmp_func bsmp_func_reset_counters = {
  * @param uint8_t* Pointer to input packet of data
  * @param uint8_t* Pointer to output packet of data
  */
-uint8_t bsmp_scale_wfmref(uint8_t *input, uint8_t *output)
+uint8_t bsmp_cfg_wfmref(uint8_t *input, uint8_t *output)
 {
-    memcpy(WFMREF[g_current_ps_id].gain.u8, &input[0], 4);
-    memcpy(WFMREF[g_current_ps_id].offset.u8, &input[4], 4);
-
-    /// TODO: fix this temporary solution
-    WFMREF[1].sync_mode.enu = WFMREF[0].sync_mode.enu;
-    WFMREF[2].sync_mode.enu = WFMREF[0].sync_mode.enu;
-    WFMREF[3].sync_mode.enu = WFMREF[0].sync_mode.enu;
+    memcpy(WFMREF[g_current_ps_id].wfmref_selected.u8, &input[0], 2);
+    memcpy(WFMREF[g_current_ps_id].sync_mode.u8, &input[2], 2);
+    memcpy(WFMREF[g_current_ps_id].frequency.u8, &input[4], 4);
+    memcpy(WFMREF[g_current_ps_id].gain.u8, &input[8], 4);
+    memcpy(WFMREF[g_current_ps_id].offset.u8, &input[12], 4);
 
     if(ipc_mtoc_busy(low_priority_msg_to_reg(Update_WfmRef)))
     {
@@ -1095,9 +1093,9 @@ uint8_t bsmp_scale_wfmref(uint8_t *input, uint8_t *output)
     return *output;
 }
 
-static struct bsmp_func bsmp_func_scale_wfmref = {
-    .func_p           = bsmp_scale_wfmref,
-    .info.input_size  = 8,     // gain (4) + offset (4)
+static struct bsmp_func bsmp_func_cfg_wfmref = {
+    .func_p           = bsmp_cfg_wfmref,
+    .info.input_size  = 16,     // idx (2) + sync_mode (2) + freq (4) + gain (4) + offset (4)
     .info.output_size = 1,      // command_ack
 };
 
@@ -1420,7 +1418,7 @@ static struct bsmp_func bsmp_func_disable_siggen = {
  * @param uint8_t* Pointer to input packet of data
  * @param uint8_t* Pointer to output packet of data
  */
-uint8_t bsmp_set_slowref_readback(uint8_t *input, uint8_t *output)
+uint8_t bsmp_set_slowref_readback_mon(uint8_t *input, uint8_t *output)
 {
     uint8_t result;
 
@@ -1457,8 +1455,8 @@ uint8_t bsmp_set_slowref_readback(uint8_t *input, uint8_t *output)
     return result;
 }
 
-static struct bsmp_func bsmp_func_set_slowref_readback = {
-    .func_p           = bsmp_set_slowref_readback,
+static struct bsmp_func bsmp_func_set_slowref_readback_mon = {
+    .func_p           = bsmp_set_slowref_readback_mon,
     .info.input_size  = 4,
     .info.output_size = 4,
 };
@@ -1472,7 +1470,7 @@ static struct bsmp_func bsmp_func_set_slowref_readback = {
  * @param uint8_t* Pointer to input packet of data
  * @param uint8_t* Pointer to output packet of data
  */
-uint8_t bsmp_set_slowref_fbp_readback(uint8_t *input, uint8_t *output)
+uint8_t bsmp_set_slowref_fbp_readback_mon(uint8_t *input, uint8_t *output)
 {
     uint8_t result;
 
@@ -1519,8 +1517,126 @@ uint8_t bsmp_set_slowref_fbp_readback(uint8_t *input, uint8_t *output)
     return result;
 }
 
-static struct bsmp_func bsmp_func_set_slowref_fbp_readback = {
-    .func_p           = bsmp_set_slowref_fbp_readback,
+static struct bsmp_func bsmp_func_set_slowref_fbp_readback_mon = {
+    .func_p           = bsmp_set_slowref_fbp_readback_mon,
+    .info.input_size  = 16,
+    .info.output_size = 16,
+};
+
+/**
+ * @brief Set SlowRef setpoint BSMP Function and return load current
+ *
+ * Set setpoint for SlowRef operation mode in specified power supply and return
+ * reference
+ *
+ * @param uint8_t* Pointer to input packet of data
+ * @param uint8_t* Pointer to output packet of data
+ */
+uint8_t bsmp_set_slowref_readback_ref(uint8_t *input, uint8_t *output)
+{
+    uint8_t result;
+
+    ulTimeout = 0;
+
+    if(ipc_mtoc_busy(low_priority_msg_to_reg(Set_SlowRef)))
+    {
+        result = 6;
+    }
+    else
+    {
+        g_ipc_mtoc.ps_module[g_current_ps_id].ps_setpoint.u32 = (input[3]<< 24) |
+                (input[2] << 16)|(input[1] << 8) | input[0];
+
+        send_ipc_lowpriority_msg(g_current_ps_id, Set_SlowRef);
+
+        while ((HWREG(MTOCIPC_BASE + IPC_O_MTOCIPCFLG) &
+                low_priority_msg_to_reg(Set_SlowRef)) &&
+                (ulTimeout<TIMEOUT_DSP_IPC_ACK))
+        {
+            ulTimeout++;
+        }
+        if(ulTimeout==TIMEOUT_DSP_IPC_ACK)
+        {
+            result = 5;
+        }
+        else
+        {
+            memcpy(output,g_ipc_ctom.ps_module[g_current_ps_id].ps_reference.u8,4);
+            result = 0;
+        }
+    }
+
+    return result;
+}
+
+static struct bsmp_func bsmp_func_set_slowref_readback_ref = {
+    .func_p           = bsmp_set_slowref_readback_ref,
+    .info.input_size  = 4,
+    .info.output_size = 4,
+};
+
+/**
+ * @brief Set SlowRef FBP BSMP Function and return load currents
+ *
+ * Configure setpoint for all FBP power supplies in SlowRef mode and return
+ * references of each one.
+ *
+ * @param uint8_t* Pointer to input packet of data
+ * @param uint8_t* Pointer to output packet of data
+ */
+uint8_t bsmp_set_slowref_fbp_readback_ref(uint8_t *input, uint8_t *output)
+{
+    uint8_t result;
+
+    ulTimeout=0;
+
+    if(ipc_mtoc_busy(low_priority_msg_to_reg(Set_SlowRef_All_PS)))
+    {
+        result = 6;
+    }
+    else
+    {
+        g_ipc_mtoc.ps_module[0].ps_setpoint.u32 = (input[3]<< 24)  |
+                (input[2] << 16)  | (input[1] << 8)  | input[0];
+        g_ipc_mtoc.ps_module[1].ps_setpoint.u32 = (input[7]<< 24)  |
+                (input[6] << 16)  | (input[5] << 8)  | input[4];
+        g_ipc_mtoc.ps_module[2].ps_setpoint.u32 = (input[11]<< 24) |
+                (input[10] << 16) | (input[9] << 8)  | input[8];
+        g_ipc_mtoc.ps_module[3].ps_setpoint.u32 = (input[15]<< 24) |
+                (input[14] << 16) | (input[13] << 8) | input[12];
+
+        GPIOPinWrite(DEBUG_BASE, DEBUG_PIN, ON);
+
+        send_ipc_lowpriority_msg(0, Set_SlowRef_All_PS);
+
+        while ((HWREG(MTOCIPC_BASE + IPC_O_MTOCIPCFLG) &
+                low_priority_msg_to_reg(Set_SlowRef_All_PS)) &&
+                (ulTimeout<TIMEOUT_DSP_IPC_ACK))
+        {
+            ulTimeout++;
+        }
+
+        GPIOPinWrite(DEBUG_BASE, DEBUG_PIN, OFF);
+
+        if(ulTimeout==TIMEOUT_DSP_IPC_ACK)
+        {
+            result = 5;
+        }
+        else
+        {
+            memcpy(output,g_ipc_ctom.ps_module[0].ps_reference.u8,4);
+            memcpy(output+4,g_ipc_ctom.ps_module[1].ps_reference.u8,4);
+            memcpy(output+8,g_ipc_ctom.ps_module[2].ps_reference.u8,4);
+            memcpy(output+12,g_ipc_ctom.ps_module[3].ps_reference.u8,4);
+
+            result = 0;
+        }
+    }
+    return result;
+}
+
+static struct bsmp_func bsmp_func_set_slowref_fbp_readback_ref = {
+    .func_p           = bsmp_set_slowref_fbp_readback_ref,
     .info.input_size  = 16,
     .info.output_size = 16,
 };
@@ -2232,31 +2348,33 @@ void bsmp_init(uint8_t server)
     bsmp_register_function(&bsmp[server], &bsmp_func_sync_pulse);               // ID 15
     bsmp_register_function(&bsmp[server], &bsmp_func_set_slowref);              // ID 16
     bsmp_register_function(&bsmp[server], &bsmp_func_set_slowref_fbp);          // ID 17
-    bsmp_register_function(&bsmp[server], &bsmp_func_reset_counters);           // ID 18
-    bsmp_register_function(&bsmp[server], &bsmp_func_scale_wfmref);             // ID 19
-    //create_bsmp_function(20, server, &bsmp_select_wfmref, 2, 1);              // ID 20
-    bsmp_register_function(&bsmp[server], &bsmp_func_select_wfmref);            // ID 20
-    bsmp_register_function(&bsmp[server], &dummy_func1);                        // ID 21
-    bsmp_register_function(&bsmp[server], &bsmp_func_reset_wfmref);             // ID 22
-    bsmp_register_function(&bsmp[server], &bsmp_func_cfg_siggen);               // ID 23
-    bsmp_register_function(&bsmp[server], &bsmp_func_set_siggen);               // ID 24
-    bsmp_register_function(&bsmp[server], &bsmp_func_enable_siggen);            // ID 25
-    bsmp_register_function(&bsmp[server], &bsmp_func_disable_siggen);           // ID 26
-    bsmp_register_function(&bsmp[server], &bsmp_func_set_slowref_readback);     // ID 27
-    bsmp_register_function(&bsmp[server], &bsmp_func_set_slowref_fbp_readback); // ID 28
-    bsmp_register_function(&bsmp[server], &bsmp_func_set_param);                // ID 29
-    bsmp_register_function(&bsmp[server], &bsmp_func_get_param);                // ID 30
-    bsmp_register_function(&bsmp[server], &bsmp_func_save_param_eeprom);        // ID 31
-    bsmp_register_function(&bsmp[server], &bsmp_func_load_param_eeprom);        // ID 32
-    bsmp_register_function(&bsmp[server], &bsmp_func_save_param_bank);          // ID 33
-    bsmp_register_function(&bsmp[server], &bsmp_func_load_param_bank);          // ID 34
-    bsmp_register_function(&bsmp[server], &bsmp_func_set_dsp_coeffs);           // ID 35
-    bsmp_register_function(&bsmp[server], &bsmp_func_get_dsp_coeff);            // ID 36
-    bsmp_register_function(&bsmp[server], &bsmp_func_save_dsp_coeffs_eeprom);   // ID 37
-    bsmp_register_function(&bsmp[server], &bsmp_func_load_dsp_coeffs_eeprom);   // ID 38
-    bsmp_register_function(&bsmp[server], &bsmp_func_save_dsp_modules_eeprom);  // ID 39
-    bsmp_register_function(&bsmp[server], &bsmp_func_load_dsp_modules_eeprom);  // ID 40
-    bsmp_register_function(&bsmp[server], &bsmp_func_reset_udc);                // ID 41
+    bsmp_register_function(&bsmp[server], &bsmp_func_set_slowref_readback_mon); // ID 18
+    bsmp_register_function(&bsmp[server], &bsmp_func_set_slowref_fbp_readback_mon); // ID 19
+    bsmp_register_function(&bsmp[server], &bsmp_func_set_slowref_readback_ref); // ID 20
+    bsmp_register_function(&bsmp[server], &bsmp_func_set_slowref_fbp_readback_ref); // ID 21
+    bsmp_register_function(&bsmp[server], &bsmp_func_reset_counters);           // ID 22
+    bsmp_register_function(&bsmp[server], &bsmp_func_cfg_wfmref);               // ID 23
+    //create_bsmp_function(20, server, &bsmp_select_wfmref, 2, 1);              // ID 24
+    bsmp_register_function(&bsmp[server], &bsmp_func_select_wfmref);            // ID 24
+    bsmp_register_function(&bsmp[server], &dummy_func1);                        // ID 25
+    bsmp_register_function(&bsmp[server], &bsmp_func_reset_wfmref);             // ID 26
+    bsmp_register_function(&bsmp[server], &bsmp_func_cfg_siggen);               // ID 27
+    bsmp_register_function(&bsmp[server], &bsmp_func_set_siggen);               // ID 28
+    bsmp_register_function(&bsmp[server], &bsmp_func_enable_siggen);            // ID 29
+    bsmp_register_function(&bsmp[server], &bsmp_func_disable_siggen);           // ID 30
+    bsmp_register_function(&bsmp[server], &bsmp_func_set_param);                // ID 31
+    bsmp_register_function(&bsmp[server], &bsmp_func_get_param);                // ID 32
+    bsmp_register_function(&bsmp[server], &bsmp_func_save_param_eeprom);        // ID 33
+    bsmp_register_function(&bsmp[server], &bsmp_func_load_param_eeprom);        // ID 34
+    bsmp_register_function(&bsmp[server], &bsmp_func_save_param_bank);          // ID 35
+    bsmp_register_function(&bsmp[server], &bsmp_func_load_param_bank);          // ID 36
+    bsmp_register_function(&bsmp[server], &bsmp_func_set_dsp_coeffs);           // ID 37
+    bsmp_register_function(&bsmp[server], &bsmp_func_get_dsp_coeff);            // ID 38
+    bsmp_register_function(&bsmp[server], &bsmp_func_save_dsp_coeffs_eeprom);   // ID 39
+    bsmp_register_function(&bsmp[server], &bsmp_func_load_dsp_coeffs_eeprom);   // ID 40
+    bsmp_register_function(&bsmp[server], &bsmp_func_save_dsp_modules_eeprom);  // ID 41
+    bsmp_register_function(&bsmp[server], &bsmp_func_load_dsp_modules_eeprom);  // ID 42
+    bsmp_register_function(&bsmp[server], &bsmp_func_reset_udc);                // ID 43
 
     /**
      * BSMP Variable Register
@@ -2277,15 +2395,21 @@ void bsmp_init(uint8_t server)
     create_bsmp_var(13, server, 16, false, g_ipc_ctom.siggen[server].aux_param[0].u8);
     create_bsmp_var(14, server, 2, false, g_ipc_ctom.wfmref[server].wfmref_selected.u8);
     create_bsmp_var(15, server, 2, false, g_ipc_ctom.wfmref[server].sync_mode.u8);
-    create_bsmp_var(16, server, 4, false, g_ipc_ctom.wfmref[server].gain.u8);
-    create_bsmp_var(17, server, 4, false, g_ipc_ctom.wfmref[server].offset.u8);
-    create_bsmp_var(18, server, 4, false, g_ipc_mtoc.wfmref[server].wfmref_data[0].p_buf_start.u8);
-    create_bsmp_var(19, server, 4, false, g_ipc_mtoc.wfmref[server].wfmref_data[0].p_buf_end.u8);
-    create_bsmp_var(20, server, 4, false, g_ipc_ctom.wfmref[server].wfmref_data[0].p_buf_idx.u8);
-    create_bsmp_var(21, server, 4, false, g_ipc_mtoc.wfmref[server].wfmref_data[1].p_buf_start.u8);
-    create_bsmp_var(22, server, 4, false, g_ipc_mtoc.wfmref[server].wfmref_data[1].p_buf_end.u8);
-    create_bsmp_var(23, server, 4, false, g_ipc_ctom.wfmref[server].wfmref_data[1].p_buf_idx.u8);
-    create_bsmp_var(24, server, 1, false, &dummy_u8);   // Reserved common variable
+    create_bsmp_var(16, server, 4, false, g_ipc_ctom.wfmref[server].frequency.u8);
+    create_bsmp_var(17, server, 4, false, g_ipc_ctom.wfmref[server].gain.u8);
+    create_bsmp_var(18, server, 4, false, g_ipc_ctom.wfmref[server].offset.u8);
+    create_bsmp_var(19, server, 4, false, g_ipc_mtoc.wfmref[server].wfmref_data[0].p_buf_start.u8);
+    create_bsmp_var(20, server, 4, false, g_ipc_mtoc.wfmref[server].wfmref_data[0].p_buf_end.u8);
+    create_bsmp_var(21, server, 4, false, g_ipc_ctom.wfmref[server].wfmref_data[0].p_buf_idx.u8);
+    create_bsmp_var(22, server, 4, false, g_ipc_mtoc.wfmref[server].wfmref_data[1].p_buf_start.u8);
+    create_bsmp_var(23, server, 4, false, g_ipc_mtoc.wfmref[server].wfmref_data[1].p_buf_end.u8);
+    create_bsmp_var(24, server, 4, false, g_ipc_ctom.wfmref[server].wfmref_data[1].p_buf_idx.u8);
+    create_bsmp_var(25, server, 4, false, g_ipc_ctom.scope[server].timeslicer.freq_sampling.u8);
+    create_bsmp_var(26, server, 4, false, g_ipc_ctom.scope[server].duration.u8);
+    create_bsmp_var(27, server, 4, false, g_ipc_ctom.scope[server].p_source.u8);
+    create_bsmp_var(28, server, 1, false, &dummy_u8);   // Reserved common variable
+    create_bsmp_var(29, server, 1, false, &dummy_u8);   // Reserved common variable
+    create_bsmp_var(30, server, 1, false, &dummy_u8);   // Reserved common variable
 
     /**
      * BSMP Curves Register

@@ -88,14 +88,14 @@ static void adcp_channel_config(void)
 */
 static void bsmp_init_server(void)
 {
-    create_bsmp_var(25, MOD_1_ID, 4, false, g_ipc_ctom.ps_module[0].ps_soft_interlock.u8);
-    create_bsmp_var(26, MOD_1_ID, 4, false, g_ipc_ctom.ps_module[0].ps_hard_interlock.u8);
-    create_bsmp_var(27, MOD_1_ID, 4, false, PIN_STATUS_ALL_PS_FAIL.u8);
-    create_bsmp_var(28, MOD_1_ID, 4, false, V_DCLINK_OUTPUT.u8);
-    create_bsmp_var(29, MOD_1_ID, 4, false, V_PS1_OUTPUT.u8);
-    create_bsmp_var(30, MOD_1_ID, 4, false, V_PS2_OUTPUT.u8);
-    create_bsmp_var(31, MOD_1_ID, 4, false, V_PS3_OUTPUT.u8);
-    create_bsmp_var(32, MOD_1_ID, 1, false, DIGITAL_POT_VOLTAGE.u8);
+    create_bsmp_var(31, MOD_1_ID, 4, false, g_ipc_ctom.ps_module[0].ps_soft_interlock.u8);
+    create_bsmp_var(32, MOD_1_ID, 4, false, g_ipc_ctom.ps_module[0].ps_hard_interlock.u8);
+    create_bsmp_var(33, MOD_1_ID, 4, false, PIN_STATUS_ALL_PS_FAIL.u8);
+    create_bsmp_var(34, MOD_1_ID, 4, false, V_DCLINK_OUTPUT.u8);
+    create_bsmp_var(35, MOD_1_ID, 4, false, V_PS1_OUTPUT.u8);
+    create_bsmp_var(36, MOD_1_ID, 4, false, V_PS2_OUTPUT.u8);
+    create_bsmp_var(37, MOD_1_ID, 4, false, V_PS3_OUTPUT.u8);
+    create_bsmp_var(38, MOD_1_ID, 1, false, DIGITAL_POT_VOLTAGE.u8);
 
     /// Module 1 BSMP server already initialized
 
@@ -107,14 +107,14 @@ static void bsmp_init_server(void)
     modify_bsmp_var(1, MOD_2_ID, g_ipc_ctom.ps_module[0].ps_setpoint.u8);
     modify_bsmp_var(2, MOD_2_ID, g_ipc_ctom.ps_module[0].ps_reference.u8);
 
-    create_bsmp_var(25, MOD_2_ID, 4, false, g_ipc_ctom.ps_module[0].ps_soft_interlock.u8);
-    create_bsmp_var(26, MOD_2_ID, 4, false, g_ipc_ctom.ps_module[0].ps_hard_interlock.u8);
-    create_bsmp_var(27, MOD_2_ID, 4, false, PIN_STATUS_ALL_PS_FAIL.u8);
-    create_bsmp_var(28, MOD_2_ID, 4, false, V_DCLINK_OUTPUT.u8);
-    create_bsmp_var(29, MOD_2_ID, 4, false, V_PS1_OUTPUT.u8);
-    create_bsmp_var(30, MOD_2_ID, 4, false, V_PS2_OUTPUT.u8);
-    create_bsmp_var(31, MOD_2_ID, 4, false, V_PS3_OUTPUT.u8);
-    create_bsmp_var(32, MOD_2_ID, 1, false, DIGITAL_POT_VOLTAGE.u8);
+    create_bsmp_var(31, MOD_2_ID, 4, false, g_ipc_ctom.ps_module[0].ps_soft_interlock.u8);
+    create_bsmp_var(32, MOD_2_ID, 4, false, g_ipc_ctom.ps_module[0].ps_hard_interlock.u8);
+    create_bsmp_var(33, MOD_2_ID, 4, false, PIN_STATUS_ALL_PS_FAIL.u8);
+    create_bsmp_var(34, MOD_2_ID, 4, false, V_DCLINK_OUTPUT.u8);
+    create_bsmp_var(35, MOD_2_ID, 4, false, V_PS1_OUTPUT.u8);
+    create_bsmp_var(36, MOD_2_ID, 4, false, V_PS2_OUTPUT.u8);
+    create_bsmp_var(37, MOD_2_ID, 4, false, V_PS3_OUTPUT.u8);
+    create_bsmp_var(38, MOD_2_ID, 1, false, DIGITAL_POT_VOLTAGE.u8);
 
     /// Module 3 initialization
     bsmp_init(MOD_3_ID);
@@ -124,14 +124,14 @@ static void bsmp_init_server(void)
     modify_bsmp_var(1, MOD_3_ID, g_ipc_ctom.ps_module[0].ps_setpoint.u8);
     modify_bsmp_var(2, MOD_3_ID, g_ipc_ctom.ps_module[0].ps_reference.u8);
 
-    create_bsmp_var(25, MOD_3_ID, 4, false, g_ipc_ctom.ps_module[0].ps_soft_interlock.u8);
-    create_bsmp_var(26, MOD_3_ID, 4, false, g_ipc_ctom.ps_module[0].ps_hard_interlock.u8);
-    create_bsmp_var(27, MOD_3_ID, 4, false, PIN_STATUS_ALL_PS_FAIL.u8);
-    create_bsmp_var(28, MOD_3_ID, 4, false, V_DCLINK_OUTPUT.u8);
-    create_bsmp_var(29, MOD_3_ID, 4, false, V_PS1_OUTPUT.u8);
-    create_bsmp_var(30, MOD_3_ID, 4, false, V_PS2_OUTPUT.u8);
-    create_bsmp_var(31, MOD_3_ID, 4, false, V_PS3_OUTPUT.u8);
-    create_bsmp_var(32, MOD_3_ID, 1, false, DIGITAL_POT_VOLTAGE.u8);
+    create_bsmp_var(31, MOD_3_ID, 4, false, g_ipc_ctom.ps_module[0].ps_soft_interlock.u8);
+    create_bsmp_var(32, MOD_3_ID, 4, false, g_ipc_ctom.ps_module[0].ps_hard_interlock.u8);
+    create_bsmp_var(33, MOD_3_ID, 4, false, PIN_STATUS_ALL_PS_FAIL.u8);
+    create_bsmp_var(34, MOD_3_ID, 4, false, V_DCLINK_OUTPUT.u8);
+    create_bsmp_var(35, MOD_3_ID, 4, false, V_PS1_OUTPUT.u8);
+    create_bsmp_var(36, MOD_3_ID, 4, false, V_PS2_OUTPUT.u8);
+    create_bsmp_var(37, MOD_3_ID, 4, false, V_PS3_OUTPUT.u8);
+    create_bsmp_var(38, MOD_3_ID, 1, false, DIGITAL_POT_VOLTAGE.u8);
 }
 
 /**

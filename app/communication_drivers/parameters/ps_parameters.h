@@ -185,10 +185,6 @@ typedef enum
     Min_Ref,
     Max_Ref_OpenLoop,
     Min_Ref_OpenLoop,
-    //Max_SlewRate_SlowRef,
-    //Max_SlewRate_SigGen_Amp,
-    //Max_SlewRate_SigGen_Offset,
-    //Max_SlewRate_WfmRef,
 
     PWM_Freq,
     PWM_DeadTime,

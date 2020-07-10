@@ -59,7 +59,8 @@ typedef enum
     Rectifier_Overvoltage,
     Rectifier_Undervoltage,
     Rectifier_Overcurrent,
-    AC_Mains_Contactor_Fault,
+    Welded_Contactor_Fault,
+    Opened_Contactor_Fault,
     IGBT_Driver_Fault,
     IIB_Itlk
 } hard_interlocks_t;
@@ -98,28 +99,28 @@ static void adcp_channel_config(void)
 */
 static void bsmp_init_server(void)
 {
-    create_bsmp_var(25, 0, 4, false, g_ipc_ctom.ps_module[0].ps_soft_interlock.u8);
-    create_bsmp_var(26, 0, 4, false, g_ipc_ctom.ps_module[0].ps_hard_interlock.u8);
-    create_bsmp_var(27, 0, 4, false, V_CAPBANK.u8);
-    create_bsmp_var(28, 0, 4, false, VOUT_RECT.u8);
-    create_bsmp_var(29, 0, 4, false, IOUT_RECT.u8);
-    create_bsmp_var(30, 0, 4, false, TEMP_HEATSINK.u8);
-    create_bsmp_var(31, 0, 4, false, TEMP_INDUCTORS.u8);
-    create_bsmp_var(32, 0, 4, false, DUTY_CYCLE.u8);
+    create_bsmp_var(31, 0, 4, false, g_ipc_ctom.ps_module[0].ps_soft_interlock.u8);
+    create_bsmp_var(32, 0, 4, false, g_ipc_ctom.ps_module[0].ps_hard_interlock.u8);
+    create_bsmp_var(33, 0, 4, false, V_CAPBANK.u8);
+    create_bsmp_var(34, 0, 4, false, VOUT_RECT.u8);
+    create_bsmp_var(35, 0, 4, false, IOUT_RECT.u8);
+    create_bsmp_var(36, 0, 4, false, TEMP_HEATSINK.u8);
+    create_bsmp_var(37, 0, 4, false, TEMP_INDUCTORS.u8);
+    create_bsmp_var(38, 0, 4, false, DUTY_CYCLE.u8);
 
-    create_bsmp_var(33, 0, 4, false, iib_input_stage.Iin.u8);
-    create_bsmp_var(34, 0, 4, false, iib_input_stage.VdcLink.u8);
-    create_bsmp_var(35, 0, 4, false, iib_input_stage.TempL.u8);
-    create_bsmp_var(36, 0, 4, false, iib_input_stage.TempHeatsink.u8);
+    create_bsmp_var(39, 0, 4, false, iib_input_stage.Iin.u8);
+    create_bsmp_var(40, 0, 4, false, iib_input_stage.VdcLink.u8);
+    create_bsmp_var(41, 0, 4, false, iib_input_stage.TempL.u8);
+    create_bsmp_var(42, 0, 4, false, iib_input_stage.TempHeatsink.u8);
 
-    create_bsmp_var(37, 0, 4, false, iib_command_drawer.Vout.u8);
-    create_bsmp_var(38, 0, 4, false, iib_command_drawer.VcapBank.u8);
-    create_bsmp_var(39, 0, 4, false, iib_command_drawer.TempL.u8);
-    create_bsmp_var(40, 0, 4, false, iib_command_drawer.TempHeatSink.u8);
-    create_bsmp_var(41, 0, 4, false, iib_command_drawer.GroundLeakage.u8);
+    create_bsmp_var(43, 0, 4, false, iib_command_drawer.Vout.u8);
+    create_bsmp_var(44, 0, 4, false, iib_command_drawer.VcapBank.u8);
+    create_bsmp_var(45, 0, 4, false, iib_command_drawer.TempL.u8);
+    create_bsmp_var(46, 0, 4, false, iib_command_drawer.TempHeatSink.u8);
+    create_bsmp_var(47, 0, 4, false, iib_command_drawer.GroundLeakage.u8);
 
-    create_bsmp_var(42, 0, 4, false, IIB_ITLK_REG_IS.u8);
-    create_bsmp_var(43, 0, 4, false, IIB_ITLK_REG_CD.u8);
+    create_bsmp_var(48, 0, 4, false, IIB_ITLK_REG_IS.u8);
+    create_bsmp_var(49, 0, 4, false, IIB_ITLK_REG_CD.u8);
 }
 
 /**

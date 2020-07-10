@@ -78,7 +78,8 @@ typedef enum
 {
     CapBank_Overvoltage,
     Rectifier_Overcurrent,
-    AC_Mains_Contactor_Fault,
+    Welded_Contactor_Fault,
+    Opened_Contactor_Fault,
     IIB_1_Itlk,
     IIB_2_Itlk,
     IIB_3_Itlk,
@@ -122,28 +123,28 @@ static void bsmp_init_server(void)
     /**
      * Create module A specific variables
      */
-    create_bsmp_var(25, MOD_A_ID, 4, false, g_ipc_ctom.ps_module[MOD_A_ID].ps_soft_interlock.u8);
-    create_bsmp_var(26, MOD_A_ID, 4, false, g_ipc_ctom.ps_module[MOD_A_ID].ps_hard_interlock.u8);
-    create_bsmp_var(27, MOD_A_ID, 4, false, V_CAPBANK_MOD_A.u8);
-    create_bsmp_var(28, MOD_A_ID, 4, false, VOUT_RECT_MOD_A.u8);
-    create_bsmp_var(29, MOD_A_ID, 4, false, IOUT_RECT_MOD_A.u8);
-    create_bsmp_var(30, MOD_A_ID, 4, false, TEMP_HEATSINK_MOD_A.u8);
-    create_bsmp_var(31, MOD_A_ID, 4, false, TEMP_INDUCTORS_MOD_A.u8);
-    create_bsmp_var(32, MOD_A_ID, 4, false, DUTY_CYCLE_MOD_A.u8);
+    create_bsmp_var(31, MOD_A_ID, 4, false, g_ipc_ctom.ps_module[MOD_A_ID].ps_soft_interlock.u8);
+    create_bsmp_var(32, MOD_A_ID, 4, false, g_ipc_ctom.ps_module[MOD_A_ID].ps_hard_interlock.u8);
+    create_bsmp_var(33, MOD_A_ID, 4, false, V_CAPBANK_MOD_A.u8);
+    create_bsmp_var(34, MOD_A_ID, 4, false, VOUT_RECT_MOD_A.u8);
+    create_bsmp_var(35, MOD_A_ID, 4, false, IOUT_RECT_MOD_A.u8);
+    create_bsmp_var(36, MOD_A_ID, 4, false, TEMP_HEATSINK_MOD_A.u8);
+    create_bsmp_var(37, MOD_A_ID, 4, false, TEMP_INDUCTORS_MOD_A.u8);
+    create_bsmp_var(38, MOD_A_ID, 4, false, DUTY_CYCLE_MOD_A.u8);
 
-    create_bsmp_var(33, MOD_A_ID, 4, false, fac_2s_acdc_is[MOD_A_ID].Iin.u8);
-    create_bsmp_var(34, MOD_A_ID, 4, false, fac_2s_acdc_is[MOD_A_ID].VdcLink.u8);
-    create_bsmp_var(35, MOD_A_ID, 4, false, fac_2s_acdc_is[MOD_A_ID].TempL.u8);
-    create_bsmp_var(36, MOD_A_ID, 4, false, fac_2s_acdc_is[MOD_A_ID].TempHeatsink.u8);
+    create_bsmp_var(39, MOD_A_ID, 4, false, fac_2s_acdc_is[MOD_A_ID].Iin.u8);
+    create_bsmp_var(40, MOD_A_ID, 4, false, fac_2s_acdc_is[MOD_A_ID].VdcLink.u8);
+    create_bsmp_var(41, MOD_A_ID, 4, false, fac_2s_acdc_is[MOD_A_ID].TempL.u8);
+    create_bsmp_var(42, MOD_A_ID, 4, false, fac_2s_acdc_is[MOD_A_ID].TempHeatsink.u8);
 
-    create_bsmp_var(37, MOD_A_ID, 4, false, fac_2s_acdc_cmd[MOD_A_ID].Vout.u8);
-    create_bsmp_var(38, MOD_A_ID, 4, false, fac_2s_acdc_cmd[MOD_A_ID].VcapBank.u8);
-    create_bsmp_var(39, MOD_A_ID, 4, false, fac_2s_acdc_cmd[MOD_A_ID].TempL.u8);
-    create_bsmp_var(40, MOD_A_ID, 4, false, fac_2s_acdc_cmd[MOD_A_ID].TempHeatSink.u8);
-    create_bsmp_var(41, MOD_A_ID, 4, false, fac_2s_acdc_cmd[MOD_A_ID].GroundLeakage.u8);
+    create_bsmp_var(43, MOD_A_ID, 4, false, fac_2s_acdc_cmd[MOD_A_ID].Vout.u8);
+    create_bsmp_var(44, MOD_A_ID, 4, false, fac_2s_acdc_cmd[MOD_A_ID].VcapBank.u8);
+    create_bsmp_var(45, MOD_A_ID, 4, false, fac_2s_acdc_cmd[MOD_A_ID].TempL.u8);
+    create_bsmp_var(46, MOD_A_ID, 4, false, fac_2s_acdc_cmd[MOD_A_ID].TempHeatSink.u8);
+    create_bsmp_var(47, MOD_A_ID, 4, false, fac_2s_acdc_cmd[MOD_A_ID].GroundLeakage.u8);
 
-    create_bsmp_var(42, MOD_A_ID, 4, false, IIB_ITLK_REG_FAC_IS_A.u8);
-    create_bsmp_var(43, MOD_A_ID, 4, false, IIB_ITLK_REG_FAC_CMD_A.u8);
+    create_bsmp_var(48, MOD_A_ID, 4, false, IIB_ITLK_REG_FAC_IS_A.u8);
+    create_bsmp_var(49, MOD_A_ID, 4, false, IIB_ITLK_REG_FAC_CMD_A.u8);
 
     /**
      * Create module B specific variables
@@ -157,28 +158,28 @@ static void bsmp_init_server(void)
     modify_bsmp_var(1, MOD_B_ID, g_ipc_ctom.ps_module[0].ps_setpoint.u8);
     modify_bsmp_var(2, MOD_B_ID, g_ipc_ctom.ps_module[0].ps_reference.u8);
 
-    create_bsmp_var(25, MOD_B_ID, 4, false, g_ipc_ctom.ps_module[MOD_B_ID].ps_soft_interlock.u8);
-    create_bsmp_var(26, MOD_B_ID, 4, false, g_ipc_ctom.ps_module[MOD_B_ID].ps_hard_interlock.u8);
-    create_bsmp_var(27, MOD_B_ID, 4, false, V_CAPBANK_MOD_B.u8);
-    create_bsmp_var(28, MOD_B_ID, 4, false, VOUT_RECT_MOD_B.u8);
-    create_bsmp_var(29, MOD_B_ID, 4, false, IOUT_RECT_MOD_B.u8);
-    create_bsmp_var(30, MOD_B_ID, 4, false, TEMP_HEATSINK_MOD_B.u8);
-    create_bsmp_var(31, MOD_B_ID, 4, false, TEMP_INDUCTORS_MOD_B.u8);
-    create_bsmp_var(32, MOD_B_ID, 4, false, DUTY_CYCLE_MOD_B.u8);
+    create_bsmp_var(31, MOD_B_ID, 4, false, g_ipc_ctom.ps_module[MOD_B_ID].ps_soft_interlock.u8);
+    create_bsmp_var(32, MOD_B_ID, 4, false, g_ipc_ctom.ps_module[MOD_B_ID].ps_hard_interlock.u8);
+    create_bsmp_var(33, MOD_B_ID, 4, false, V_CAPBANK_MOD_B.u8);
+    create_bsmp_var(34, MOD_B_ID, 4, false, VOUT_RECT_MOD_B.u8);
+    create_bsmp_var(35, MOD_B_ID, 4, false, IOUT_RECT_MOD_B.u8);
+    create_bsmp_var(36, MOD_B_ID, 4, false, TEMP_HEATSINK_MOD_B.u8);
+    create_bsmp_var(37, MOD_B_ID, 4, false, TEMP_INDUCTORS_MOD_B.u8);
+    create_bsmp_var(38, MOD_B_ID, 4, false, DUTY_CYCLE_MOD_B.u8);
 
-    create_bsmp_var(33, MOD_B_ID, 4, false, fac_2s_acdc_is[MOD_B_ID].Iin.u8);
-    create_bsmp_var(34, MOD_B_ID, 4, false, fac_2s_acdc_is[MOD_B_ID].VdcLink.u8);
-    create_bsmp_var(35, MOD_B_ID, 4, false, fac_2s_acdc_is[MOD_B_ID].TempL.u8);
-    create_bsmp_var(36, MOD_B_ID, 4, false, fac_2s_acdc_is[MOD_B_ID].TempHeatsink.u8);
+    create_bsmp_var(39, MOD_B_ID, 4, false, fac_2s_acdc_is[MOD_B_ID].Iin.u8);
+    create_bsmp_var(40, MOD_B_ID, 4, false, fac_2s_acdc_is[MOD_B_ID].VdcLink.u8);
+    create_bsmp_var(41, MOD_B_ID, 4, false, fac_2s_acdc_is[MOD_B_ID].TempL.u8);
+    create_bsmp_var(42, MOD_B_ID, 4, false, fac_2s_acdc_is[MOD_B_ID].TempHeatsink.u8);
 
-    create_bsmp_var(37, MOD_B_ID, 4, false, fac_2s_acdc_cmd[MOD_B_ID].Vout.u8);
-    create_bsmp_var(38, MOD_B_ID, 4, false, fac_2s_acdc_cmd[MOD_B_ID].VcapBank.u8);
-    create_bsmp_var(39, MOD_B_ID, 4, false, fac_2s_acdc_cmd[MOD_B_ID].TempL.u8);
-    create_bsmp_var(40, MOD_B_ID, 4, false, fac_2s_acdc_cmd[MOD_B_ID].TempHeatSink.u8);
-    create_bsmp_var(41, MOD_B_ID, 4, false, fac_2s_acdc_cmd[MOD_B_ID].GroundLeakage.u8);
+    create_bsmp_var(43, MOD_B_ID, 4, false, fac_2s_acdc_cmd[MOD_B_ID].Vout.u8);
+    create_bsmp_var(44, MOD_B_ID, 4, false, fac_2s_acdc_cmd[MOD_B_ID].VcapBank.u8);
+    create_bsmp_var(45, MOD_B_ID, 4, false, fac_2s_acdc_cmd[MOD_B_ID].TempL.u8);
+    create_bsmp_var(46, MOD_B_ID, 4, false, fac_2s_acdc_cmd[MOD_B_ID].TempHeatSink.u8);
+    create_bsmp_var(47, MOD_B_ID, 4, false, fac_2s_acdc_cmd[MOD_B_ID].GroundLeakage.u8);
 
-    create_bsmp_var(42, MOD_B_ID, 4, false, IIB_ITLK_REG_FAC_IS_B.u8);
-    create_bsmp_var(43, MOD_B_ID, 4, false, IIB_ITLK_REG_FAC_CMD_B.u8);
+    create_bsmp_var(48, MOD_B_ID, 4, false, IIB_ITLK_REG_FAC_IS_B.u8);
+    create_bsmp_var(49, MOD_B_ID, 4, false, IIB_ITLK_REG_FAC_CMD_B.u8);
 }
 
 /**

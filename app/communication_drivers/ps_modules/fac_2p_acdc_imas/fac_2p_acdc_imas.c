@@ -82,7 +82,8 @@ typedef enum
 {
     CapBank_Overvoltage,
     Rectifier_Overcurrent,
-    AC_Mains_Contactor_Fault,
+    Welded_Contactor_Fault,
+    Opened_Contactor_Fault,
     Module_A_Interlock,
     Module_B_Interlock,
     DCDC_Interlock
@@ -117,11 +118,11 @@ static void bsmp_init_server(void)
     /**
      * Create module A specific variables
      */
-    create_bsmp_var(25, MOD_A_ID, 4, false, g_ipc_ctom.ps_module[MOD_A_ID].ps_soft_interlock.u8);
-    create_bsmp_var(26, MOD_A_ID, 4, false, g_ipc_ctom.ps_module[MOD_A_ID].ps_hard_interlock.u8);
-    create_bsmp_var(27, MOD_A_ID, 4, false, V_CAPBANK_MOD_A.u8);
-    create_bsmp_var(28, MOD_A_ID, 4, false, IOUT_RECT_MOD_A.u8);
-    create_bsmp_var(29, MOD_A_ID, 4, false, DUTY_CYCLE_MOD_A.u8);
+    create_bsmp_var(31, MOD_A_ID, 4, false, g_ipc_ctom.ps_module[MOD_A_ID].ps_soft_interlock.u8);
+    create_bsmp_var(32, MOD_A_ID, 4, false, g_ipc_ctom.ps_module[MOD_A_ID].ps_hard_interlock.u8);
+    create_bsmp_var(33, MOD_A_ID, 4, false, V_CAPBANK_MOD_A.u8);
+    create_bsmp_var(34, MOD_A_ID, 4, false, IOUT_RECT_MOD_A.u8);
+    create_bsmp_var(35, MOD_A_ID, 4, false, DUTY_CYCLE_MOD_A.u8);
 
     /**
      * Create module B specific variables
@@ -135,11 +136,11 @@ static void bsmp_init_server(void)
     modify_bsmp_var(1, MOD_B_ID, g_ipc_ctom.ps_module[0].ps_setpoint.u8);
     modify_bsmp_var(2, MOD_B_ID, g_ipc_ctom.ps_module[0].ps_reference.u8);
 
-    create_bsmp_var(25, MOD_B_ID, 4, false, g_ipc_ctom.ps_module[MOD_B_ID].ps_soft_interlock.u8);
-    create_bsmp_var(26, MOD_B_ID, 4, false, g_ipc_ctom.ps_module[MOD_B_ID].ps_hard_interlock.u8);
-    create_bsmp_var(27, MOD_B_ID, 4, false, V_CAPBANK_MOD_B.u8);
-    create_bsmp_var(28, MOD_B_ID, 4, false, IOUT_RECT_MOD_B.u8);
-    create_bsmp_var(29, MOD_B_ID, 4, false, DUTY_CYCLE_MOD_B.u8);
+    create_bsmp_var(31, MOD_B_ID, 4, false, g_ipc_ctom.ps_module[MOD_B_ID].ps_soft_interlock.u8);
+    create_bsmp_var(32, MOD_B_ID, 4, false, g_ipc_ctom.ps_module[MOD_B_ID].ps_hard_interlock.u8);
+    create_bsmp_var(33, MOD_B_ID, 4, false, V_CAPBANK_MOD_B.u8);
+    create_bsmp_var(34, MOD_B_ID, 4, false, IOUT_RECT_MOD_B.u8);
+    create_bsmp_var(35, MOD_B_ID, 4, false, DUTY_CYCLE_MOD_B.u8);
 }
 
 /**

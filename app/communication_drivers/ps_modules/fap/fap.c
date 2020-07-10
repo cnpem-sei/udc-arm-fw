@@ -69,7 +69,8 @@ typedef enum
     Load_Overvoltage,
     DCLink_Overvoltage,
     DCLink_Undervoltage,
-    DCLink_Contactor_Fault,
+    Welded_Contactor_Fault,
+    Opened_Contactor_Fault,
     IGBT_1_Overcurrent,
     IGBT_2_Overcurrent,
     IIB_Itlk
@@ -127,36 +128,36 @@ static void adcp_channel_config(void)
 */
 static void bsmp_init_server(void)
 {
-    create_bsmp_var(25, 0, 4, false, g_ipc_ctom.ps_module[0].ps_soft_interlock.u8);
-    create_bsmp_var(26, 0, 4, false, g_ipc_ctom.ps_module[0].ps_hard_interlock.u8);
+    create_bsmp_var(31, 0, 4, false, g_ipc_ctom.ps_module[0].ps_soft_interlock.u8);
+    create_bsmp_var(32, 0, 4, false, g_ipc_ctom.ps_module[0].ps_hard_interlock.u8);
 
-    create_bsmp_var(27, 0, 4, false, I_LOAD_MEAN.u8);
-    create_bsmp_var(28, 0, 4, false, I_LOAD_1.u8);
-    create_bsmp_var(29, 0, 4, false, I_LOAD_2.u8);
+    create_bsmp_var(33, 0, 4, false, I_LOAD_MEAN.u8);
+    create_bsmp_var(34, 0, 4, false, I_LOAD_1.u8);
+    create_bsmp_var(35, 0, 4, false, I_LOAD_2.u8);
 
-    create_bsmp_var(30, 0, 4, false, V_DCLINK.u8);
-    create_bsmp_var(31, 0, 4, false, I_IGBT_1.u8);
-    create_bsmp_var(32, 0, 4, false, I_IGBT_2.u8);
-    create_bsmp_var(33, 0, 4, false, DUTY_CYCLE_IGBT_1.u8);
-    create_bsmp_var(34, 0, 4, false, DUTY_CYCLE_IGBT_2.u8);
-    create_bsmp_var(35, 0, 4, false, DUTY_DIFF.u8);
+    create_bsmp_var(36, 0, 4, false, V_DCLINK.u8);
+    create_bsmp_var(37, 0, 4, false, I_IGBT_1.u8);
+    create_bsmp_var(38, 0, 4, false, I_IGBT_2.u8);
+    create_bsmp_var(39, 0, 4, false, DUTY_CYCLE_IGBT_1.u8);
+    create_bsmp_var(40, 0, 4, false, DUTY_CYCLE_IGBT_2.u8);
+    create_bsmp_var(41, 0, 4, false, DUTY_DIFF.u8);
 
-    create_bsmp_var(36, 0, 4, false, iib_fap.Vin.u8);
-    create_bsmp_var(37, 0, 4, false, iib_fap.Vout.u8);
-    create_bsmp_var(38, 0, 4, false, iib_fap.IoutA1.u8);
-    create_bsmp_var(39, 0, 4, false, iib_fap.IoutA2.u8);
-    create_bsmp_var(40, 0, 4, false, iib_fap.TempIGBT1.u8);
-    create_bsmp_var(41, 0, 4, false, iib_fap.TempIGBT2.u8);
-    create_bsmp_var(42, 0, 4, false, iib_fap.DriveVoltage.u8);
-    create_bsmp_var(43, 0, 4, false, iib_fap.Drive1Current.u8);
-    create_bsmp_var(44, 0, 4, false, iib_fap.Drive2Current.u8);
-    create_bsmp_var(45, 0, 4, false, iib_fap.TempL.u8);
-    create_bsmp_var(46, 0, 4, false, iib_fap.TempHeatSink.u8);
-    create_bsmp_var(47, 0, 4, false, iib_fap.GroundLeakage.u8);
-    create_bsmp_var(48, 0, 4, false, iib_fap.BoardTemperature.u8);
-    create_bsmp_var(49, 0, 4, false, iib_fap.RelativeHumidity.u8);
-    create_bsmp_var(50, 0, 4, false, iib_fap.InterlocksRegister.u8);
-    create_bsmp_var(51, 0, 4, false, iib_fap.AlarmsRegister.u8);
+    create_bsmp_var(42, 0, 4, false, iib_fap.Vin.u8);
+    create_bsmp_var(43, 0, 4, false, iib_fap.Vout.u8);
+    create_bsmp_var(44, 0, 4, false, iib_fap.IoutA1.u8);
+    create_bsmp_var(45, 0, 4, false, iib_fap.IoutA2.u8);
+    create_bsmp_var(46, 0, 4, false, iib_fap.TempIGBT1.u8);
+    create_bsmp_var(47, 0, 4, false, iib_fap.TempIGBT2.u8);
+    create_bsmp_var(48, 0, 4, false, iib_fap.DriveVoltage.u8);
+    create_bsmp_var(49, 0, 4, false, iib_fap.Drive1Current.u8);
+    create_bsmp_var(50, 0, 4, false, iib_fap.Drive2Current.u8);
+    create_bsmp_var(51, 0, 4, false, iib_fap.TempL.u8);
+    create_bsmp_var(52, 0, 4, false, iib_fap.TempHeatSink.u8);
+    create_bsmp_var(53, 0, 4, false, iib_fap.GroundLeakage.u8);
+    create_bsmp_var(54, 0, 4, false, iib_fap.BoardTemperature.u8);
+    create_bsmp_var(55, 0, 4, false, iib_fap.RelativeHumidity.u8);
+    create_bsmp_var(56, 0, 4, false, iib_fap.InterlocksRegister.u8);
+    create_bsmp_var(57, 0, 4, false, iib_fap.AlarmsRegister.u8);
 }
 
 /**

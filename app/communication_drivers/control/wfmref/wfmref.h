@@ -79,6 +79,13 @@ typedef volatile struct
         uint8_t     u8[4];
         uint32_t    u32;
         float       f;
+    } frequency;
+
+    union
+    {
+        uint8_t     u8[4];
+        uint32_t    u32;
+        float       f;
     } gain;
 
     union

@@ -200,117 +200,117 @@ static void adcp_channel_config(void)
 */
 static void bsmp_init_server(void)
 {
-    create_bsmp_var(25, 0, 4, false, g_ipc_ctom.ps_module[0].ps_soft_interlock.u8);
-    create_bsmp_var(26, 0, 4, false, g_ipc_ctom.ps_module[0].ps_hard_interlock.u8);
+    create_bsmp_var(31, 0, 4, false, g_ipc_ctom.ps_module[0].ps_soft_interlock.u8);
+    create_bsmp_var(32, 0, 4, false, g_ipc_ctom.ps_module[0].ps_hard_interlock.u8);
 
-    create_bsmp_var(27, 0, 4, false, I_LOAD_MEAN.u8);
-    create_bsmp_var(28, 0, 4, false, I_LOAD_1.u8);
-    create_bsmp_var(29, 0, 4, false, I_LOAD_2.u8);
+    create_bsmp_var(33, 0, 4, false, I_LOAD_MEAN.u8);
+    create_bsmp_var(34, 0, 4, false, I_LOAD_1.u8);
+    create_bsmp_var(35, 0, 4, false, I_LOAD_2.u8);
 
-    create_bsmp_var(30, 0, 4, false, I_ARM_1.u8);
-    create_bsmp_var(31, 0, 4, false, I_ARM_2.u8);
+    create_bsmp_var(36, 0, 4, false, I_ARM_1.u8);
+    create_bsmp_var(37, 0, 4, false, I_ARM_2.u8);
 
-    create_bsmp_var(32, 0, 4, false, V_LOAD.u8);
+    create_bsmp_var(38, 0, 4, false, V_LOAD.u8);
 
-    create_bsmp_var(33, 0, 4, false, V_CAPBANK_MOD_1.u8);
-    create_bsmp_var(34, 0, 4, false, V_CAPBANK_MOD_2.u8);
-    create_bsmp_var(35, 0, 4, false, V_CAPBANK_MOD_3.u8);
-    create_bsmp_var(36, 0, 4, false, V_CAPBANK_MOD_4.u8);
-    create_bsmp_var(37, 0, 4, false, V_CAPBANK_MOD_5.u8);
-    create_bsmp_var(38, 0, 4, false, V_CAPBANK_MOD_6.u8);
-    create_bsmp_var(39, 0, 4, false, V_CAPBANK_MOD_7.u8);
-    create_bsmp_var(40, 0, 4, false, V_CAPBANK_MOD_8.u8);
+    create_bsmp_var(39, 0, 4, false, V_CAPBANK_MOD_1.u8);
+    create_bsmp_var(40, 0, 4, false, V_CAPBANK_MOD_2.u8);
+    create_bsmp_var(41, 0, 4, false, V_CAPBANK_MOD_3.u8);
+    create_bsmp_var(42, 0, 4, false, V_CAPBANK_MOD_4.u8);
+    create_bsmp_var(43, 0, 4, false, V_CAPBANK_MOD_5.u8);
+    create_bsmp_var(44, 0, 4, false, V_CAPBANK_MOD_6.u8);
+    create_bsmp_var(45, 0, 4, false, V_CAPBANK_MOD_7.u8);
+    create_bsmp_var(46, 0, 4, false, V_CAPBANK_MOD_8.u8);
 
-    create_bsmp_var(41, 0, 4, false, V_OUT_MOD_1.u8);
-    create_bsmp_var(42, 0, 4, false, V_OUT_MOD_2.u8);
-    create_bsmp_var(43, 0, 4, false, V_OUT_MOD_3.u8);
-    create_bsmp_var(44, 0, 4, false, V_OUT_MOD_4.u8);
-    create_bsmp_var(45, 0, 4, false, V_OUT_MOD_5.u8);
-    create_bsmp_var(46, 0, 4, false, V_OUT_MOD_6.u8);
-    create_bsmp_var(47, 0, 4, false, V_OUT_MOD_7.u8);
-    create_bsmp_var(48, 0, 4, false, V_OUT_MOD_8.u8);
+    create_bsmp_var(47, 0, 4, false, V_OUT_MOD_1.u8);
+    create_bsmp_var(48, 0, 4, false, V_OUT_MOD_2.u8);
+    create_bsmp_var(49, 0, 4, false, V_OUT_MOD_3.u8);
+    create_bsmp_var(50, 0, 4, false, V_OUT_MOD_4.u8);
+    create_bsmp_var(51, 0, 4, false, V_OUT_MOD_5.u8);
+    create_bsmp_var(52, 0, 4, false, V_OUT_MOD_6.u8);
+    create_bsmp_var(53, 0, 4, false, V_OUT_MOD_7.u8);
+    create_bsmp_var(54, 0, 4, false, V_OUT_MOD_8.u8);
 
-    create_bsmp_var(49, 0, 4, false, DUTY_CYCLE_MOD_1.u8);
-    create_bsmp_var(50, 0, 4, false, DUTY_CYCLE_MOD_2.u8);
-    create_bsmp_var(51, 0, 4, false, DUTY_CYCLE_MOD_3.u8);
-    create_bsmp_var(52, 0, 4, false, DUTY_CYCLE_MOD_4.u8);
-    create_bsmp_var(53, 0, 4, false, DUTY_CYCLE_MOD_5.u8);
-    create_bsmp_var(54, 0, 4, false, DUTY_CYCLE_MOD_6.u8);
-    create_bsmp_var(55, 0, 4, false, DUTY_CYCLE_MOD_7.u8);
-    create_bsmp_var(56, 0, 4, false, DUTY_CYCLE_MOD_8.u8);
+    create_bsmp_var(55, 0, 4, false, DUTY_CYCLE_MOD_1.u8);
+    create_bsmp_var(56, 0, 4, false, DUTY_CYCLE_MOD_2.u8);
+    create_bsmp_var(57, 0, 4, false, DUTY_CYCLE_MOD_3.u8);
+    create_bsmp_var(58, 0, 4, false, DUTY_CYCLE_MOD_4.u8);
+    create_bsmp_var(59, 0, 4, false, DUTY_CYCLE_MOD_5.u8);
+    create_bsmp_var(60, 0, 4, false, DUTY_CYCLE_MOD_6.u8);
+    create_bsmp_var(61, 0, 4, false, DUTY_CYCLE_MOD_7.u8);
+    create_bsmp_var(62, 0, 4, false, DUTY_CYCLE_MOD_8.u8);
 
-    create_bsmp_var(57, 0, 4, false, fac_os[0].Iin.u8);
-    create_bsmp_var(58, 0, 4, false, fac_os[0].Iout.u8);
-    create_bsmp_var(59, 0, 4, false, fac_os[0].VdcLink.u8);
-    create_bsmp_var(60, 0, 4, false, fac_os[0].TempL.u8);
-    create_bsmp_var(61, 0, 4, false, fac_os[0].TempHeatSink.u8);
-    create_bsmp_var(62, 0, 4, false, fac_os[0].Driver1Error.u8);
-    create_bsmp_var(63, 0, 4, false, fac_os[0].Driver2Error.u8);
+    create_bsmp_var(63, 0, 4, false, fac_os[0].Iin.u8);
+    create_bsmp_var(64, 0, 4, false, fac_os[0].Iout.u8);
+    create_bsmp_var(65, 0, 4, false, fac_os[0].VdcLink.u8);
+    create_bsmp_var(66, 0, 4, false, fac_os[0].TempL.u8);
+    create_bsmp_var(67, 0, 4, false, fac_os[0].TempHeatSink.u8);
+    create_bsmp_var(68, 0, 4, false, fac_os[0].Driver1Error.u8);
+    create_bsmp_var(69, 0, 4, false, fac_os[0].Driver2Error.u8);
 
-    create_bsmp_var(64, 0, 4, false, fac_os[1].Iin.u8);
-    create_bsmp_var(65, 0, 4, false, fac_os[1].Iout.u8);
-    create_bsmp_var(66, 0, 4, false, fac_os[1].VdcLink.u8);
-    create_bsmp_var(67, 0, 4, false, fac_os[1].TempL.u8);
-    create_bsmp_var(68, 0, 4, false, fac_os[1].TempHeatSink.u8);
-    create_bsmp_var(69, 0, 4, false, fac_os[1].Driver1Error.u8);
-    create_bsmp_var(70, 0, 4, false, fac_os[1].Driver2Error.u8);
+    create_bsmp_var(70, 0, 4, false, fac_os[1].Iin.u8);
+    create_bsmp_var(71, 0, 4, false, fac_os[1].Iout.u8);
+    create_bsmp_var(72, 0, 4, false, fac_os[1].VdcLink.u8);
+    create_bsmp_var(73, 0, 4, false, fac_os[1].TempL.u8);
+    create_bsmp_var(74, 0, 4, false, fac_os[1].TempHeatSink.u8);
+    create_bsmp_var(75, 0, 4, false, fac_os[1].Driver1Error.u8);
+    create_bsmp_var(76, 0, 4, false, fac_os[1].Driver2Error.u8);
 
-    create_bsmp_var(71, 0, 4, false, fac_os[2].Iin.u8);
-    create_bsmp_var(72, 0, 4, false, fac_os[2].Iout.u8);
-    create_bsmp_var(73, 0, 4, false, fac_os[2].VdcLink.u8);
-    create_bsmp_var(74, 0, 4, false, fac_os[2].TempL.u8);
-    create_bsmp_var(75, 0, 4, false, fac_os[2].TempHeatSink.u8);
-    create_bsmp_var(76, 0, 4, false, fac_os[2].Driver1Error.u8);
-    create_bsmp_var(77, 0, 4, false, fac_os[2].Driver2Error.u8);
+    create_bsmp_var(77, 0, 4, false, fac_os[2].Iin.u8);
+    create_bsmp_var(78, 0, 4, false, fac_os[2].Iout.u8);
+    create_bsmp_var(79, 0, 4, false, fac_os[2].VdcLink.u8);
+    create_bsmp_var(80, 0, 4, false, fac_os[2].TempL.u8);
+    create_bsmp_var(81, 0, 4, false, fac_os[2].TempHeatSink.u8);
+    create_bsmp_var(82, 0, 4, false, fac_os[2].Driver1Error.u8);
+    create_bsmp_var(83, 0, 4, false, fac_os[2].Driver2Error.u8);
 
-    create_bsmp_var(78, 0, 4, false, fac_os[3].Iin.u8);
-    create_bsmp_var(79, 0, 4, false, fac_os[3].Iout.u8);
-    create_bsmp_var(80, 0, 4, false, fac_os[3].VdcLink.u8);
-    create_bsmp_var(81, 0, 4, false, fac_os[3].TempL.u8);
-    create_bsmp_var(82, 0, 4, false, fac_os[3].TempHeatSink.u8);
-    create_bsmp_var(83, 0, 4, false, fac_os[3].Driver1Error.u8);
-    create_bsmp_var(84, 0, 4, false, fac_os[3].Driver2Error.u8);
+    create_bsmp_var(84, 0, 4, false, fac_os[3].Iin.u8);
+    create_bsmp_var(85, 0, 4, false, fac_os[3].Iout.u8);
+    create_bsmp_var(86, 0, 4, false, fac_os[3].VdcLink.u8);
+    create_bsmp_var(87, 0, 4, false, fac_os[3].TempL.u8);
+    create_bsmp_var(88, 0, 4, false, fac_os[3].TempHeatSink.u8);
+    create_bsmp_var(89, 0, 4, false, fac_os[3].Driver1Error.u8);
+    create_bsmp_var(90, 0, 4, false, fac_os[3].Driver2Error.u8);
 
-    create_bsmp_var(85, 0, 4, false, fac_os[4].Iin.u8);
-    create_bsmp_var(86, 0, 4, false, fac_os[4].Iout.u8);
-    create_bsmp_var(87, 0, 4, false, fac_os[4].VdcLink.u8);
-    create_bsmp_var(88, 0, 4, false, fac_os[4].TempL.u8);
-    create_bsmp_var(89, 0, 4, false, fac_os[4].TempHeatSink.u8);
-    create_bsmp_var(90, 0, 4, false, fac_os[4].Driver1Error.u8);
-    create_bsmp_var(91, 0, 4, false, fac_os[4].Driver2Error.u8);
+    create_bsmp_var(91, 0, 4, false, fac_os[4].Iin.u8);
+    create_bsmp_var(92, 0, 4, false, fac_os[4].Iout.u8);
+    create_bsmp_var(93, 0, 4, false, fac_os[4].VdcLink.u8);
+    create_bsmp_var(94, 0, 4, false, fac_os[4].TempL.u8);
+    create_bsmp_var(95, 0, 4, false, fac_os[4].TempHeatSink.u8);
+    create_bsmp_var(96, 0, 4, false, fac_os[4].Driver1Error.u8);
+    create_bsmp_var(97, 0, 4, false, fac_os[4].Driver2Error.u8);
 
-    create_bsmp_var(92, 0, 4, false, fac_os[5].Iin.u8);
-    create_bsmp_var(93, 0, 4, false, fac_os[5].Iout.u8);
-    create_bsmp_var(94, 0, 4, false, fac_os[5].VdcLink.u8);
-    create_bsmp_var(95, 0, 4, false, fac_os[5].TempL.u8);
-    create_bsmp_var(96, 0, 4, false, fac_os[5].TempHeatSink.u8);
-    create_bsmp_var(97, 0, 4, false, fac_os[5].Driver1Error.u8);
-    create_bsmp_var(98, 0, 4, false, fac_os[5].Driver2Error.u8);
+    create_bsmp_var(98, 0, 4, false, fac_os[5].Iin.u8);
+    create_bsmp_var(99, 0, 4, false, fac_os[5].Iout.u8);
+    create_bsmp_var(100, 0, 4, false, fac_os[5].VdcLink.u8);
+    create_bsmp_var(101, 0, 4, false, fac_os[5].TempL.u8);
+    create_bsmp_var(102, 0, 4, false, fac_os[5].TempHeatSink.u8);
+    create_bsmp_var(103, 0, 4, false, fac_os[5].Driver1Error.u8);
+    create_bsmp_var(104, 0, 4, false, fac_os[5].Driver2Error.u8);
 
-    create_bsmp_var(99, 0, 4, false, fac_os[6].Iin.u8);
-    create_bsmp_var(100, 0, 4, false, fac_os[6].Iout.u8);
-    create_bsmp_var(101, 0, 4, false, fac_os[6].VdcLink.u8);
-    create_bsmp_var(102, 0, 4, false, fac_os[6].TempL.u8);
-    create_bsmp_var(103, 0, 4, false, fac_os[6].TempHeatSink.u8);
-    create_bsmp_var(104, 0, 4, false, fac_os[6].Driver1Error.u8);
-    create_bsmp_var(105, 0, 4, false, fac_os[6].Driver2Error.u8);
+    create_bsmp_var(105, 0, 4, false, fac_os[6].Iin.u8);
+    create_bsmp_var(106, 0, 4, false, fac_os[6].Iout.u8);
+    create_bsmp_var(107, 0, 4, false, fac_os[6].VdcLink.u8);
+    create_bsmp_var(108, 0, 4, false, fac_os[6].TempL.u8);
+    create_bsmp_var(109, 0, 4, false, fac_os[6].TempHeatSink.u8);
+    create_bsmp_var(110, 0, 4, false, fac_os[6].Driver1Error.u8);
+    create_bsmp_var(111, 0, 4, false, fac_os[6].Driver2Error.u8);
 
-    create_bsmp_var(106, 0, 4, false, fac_os[7].Iin.u8);
-    create_bsmp_var(107, 0, 4, false, fac_os[7].Iout.u8);
-    create_bsmp_var(108, 0, 4, false, fac_os[7].VdcLink.u8);
-    create_bsmp_var(109, 0, 4, false, fac_os[7].TempL.u8);
-    create_bsmp_var(110, 0, 4, false, fac_os[7].TempHeatSink.u8);
-    create_bsmp_var(111, 0, 4, false, fac_os[7].Driver1Error.u8);
-    create_bsmp_var(112, 0, 4, false, fac_os[7].Driver2Error.u8);
+    create_bsmp_var(112, 0, 4, false, fac_os[7].Iin.u8);
+    create_bsmp_var(113, 0, 4, false, fac_os[7].Iout.u8);
+    create_bsmp_var(114, 0, 4, false, fac_os[7].VdcLink.u8);
+    create_bsmp_var(115, 0, 4, false, fac_os[7].TempL.u8);
+    create_bsmp_var(116, 0, 4, false, fac_os[7].TempHeatSink.u8);
+    create_bsmp_var(117, 0, 4, false, fac_os[7].Driver1Error.u8);
+    create_bsmp_var(118, 0, 4, false, fac_os[7].Driver2Error.u8);
 
-    create_bsmp_var(113, 0, 4, false, IIB_ITLK_REG_1.u8);
-    create_bsmp_var(114, 0, 4, false, IIB_ITLK_REG_2.u8);
-    create_bsmp_var(115, 0, 4, false, IIB_ITLK_REG_3.u8);
-    create_bsmp_var(116, 0, 4, false, IIB_ITLK_REG_4.u8);
-    create_bsmp_var(117, 0, 4, false, IIB_ITLK_REG_5.u8);
-    create_bsmp_var(118, 0, 4, false, IIB_ITLK_REG_6.u8);
-    create_bsmp_var(119, 0, 4, false, IIB_ITLK_REG_7.u8);
-    create_bsmp_var(120, 0, 4, false, IIB_ITLK_REG_8.u8);
+    create_bsmp_var(119, 0, 4, false, IIB_ITLK_REG_1.u8);
+    create_bsmp_var(120, 0, 4, false, IIB_ITLK_REG_2.u8);
+    create_bsmp_var(121, 0, 4, false, IIB_ITLK_REG_3.u8);
+    create_bsmp_var(122, 0, 4, false, IIB_ITLK_REG_4.u8);
+    create_bsmp_var(123, 0, 4, false, IIB_ITLK_REG_5.u8);
+    create_bsmp_var(124, 0, 4, false, IIB_ITLK_REG_6.u8);
+    create_bsmp_var(125, 0, 4, false, IIB_ITLK_REG_7.u8);
+    create_bsmp_var(126, 0, 4, false, IIB_ITLK_REG_8.u8);
 }
 
 /**
