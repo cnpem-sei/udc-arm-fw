@@ -1989,7 +1989,7 @@ static struct bsmp_func bsmp_func_get_dsp_coeff = {
  */
 uint8_t bsmp_save_dsp_coeffs_eeprom(uint8_t *input, uint8_t *output)
 {
-    u_uint16_t dsp_class, id;
+    u_uint16_t dsp_class, id, type_memory;
 
     if(g_ipc_ctom.ps_module[g_current_ps_id].ps_status.bit.unlocked)
     {
@@ -1997,8 +1997,10 @@ uint8_t bsmp_save_dsp_coeffs_eeprom(uint8_t *input, uint8_t *output)
         dsp_class.u8[1] = input[1];
         id.u8[0] = input[2];
         id.u8[1] = input[3];
+        type_memory.u8[0] = input[4];
+        type_memory.u8[1] = input[5];
 
-        if( save_dsp_coeffs_eeprom( (dsp_class_t) dsp_class.u16, id.u16) )
+        if( save_dsp_coeffs_eeprom( (dsp_class_t) dsp_class.u16, id.u16, type_memory.u16) )
         {
             *output = Ok;
         }
@@ -2018,7 +2020,7 @@ uint8_t bsmp_save_dsp_coeffs_eeprom(uint8_t *input, uint8_t *output)
 
 static struct bsmp_func bsmp_func_save_dsp_coeffs_eeprom = {
     .func_p           = bsmp_save_dsp_coeffs_eeprom,
-    .info.input_size  = 4,
+    .info.input_size  = 6,
     .info.output_size = 1,
 };
 
@@ -2030,7 +2032,7 @@ static struct bsmp_func bsmp_func_save_dsp_coeffs_eeprom = {
  */
 uint8_t bsmp_load_dsp_coeffs_eeprom(uint8_t *input, uint8_t *output)
 {
-    u_uint16_t dsp_class, id;
+    u_uint16_t dsp_class, id, type_memory;
 
     if(g_ipc_ctom.ps_module[g_current_ps_id].ps_status.bit.unlocked)
     {
@@ -2038,8 +2040,10 @@ uint8_t bsmp_load_dsp_coeffs_eeprom(uint8_t *input, uint8_t *output)
         dsp_class.u8[1] = input[1];
         id.u8[0] = input[2];
         id.u8[1] = input[3];
+        type_memory.u8[0] = input[4];
+        type_memory.u8[1] = input[5];
 
-        if( load_dsp_coeffs_eeprom( (dsp_class_t) dsp_class.u16, id.u16) )
+        if( load_dsp_coeffs_eeprom( (dsp_class_t) dsp_class.u16, id.u16, type_memory.u16) )
         {
             if(ipc_mtoc_busy(low_priority_msg_to_reg(Set_DSP_Coeffs)))
             {
@@ -2085,7 +2089,7 @@ uint8_t bsmp_load_dsp_coeffs_eeprom(uint8_t *input, uint8_t *output)
 
 static struct bsmp_func bsmp_func_load_dsp_coeffs_eeprom = {
     .func_p           = bsmp_load_dsp_coeffs_eeprom,
-    .info.input_size  = 4,
+    .info.input_size  = 6,
     .info.output_size = 1,
 };
 
@@ -2097,9 +2101,14 @@ static struct bsmp_func bsmp_func_load_dsp_coeffs_eeprom = {
  */
 uint8_t bsmp_save_dsp_modules_eeprom(uint8_t *input, uint8_t *output)
 {
+    u_uint16_t type_memory;
+
     if(g_ipc_ctom.ps_module[g_current_ps_id].ps_status.bit.unlocked)
     {
-        save_dsp_modules_eeprom();
+        type_memory.u8[0] = input[0];
+        type_memory.u8[1] = input[1];
+
+        save_dsp_modules_eeprom(type_memory.u16);
         *output = Ok;
     }
 
@@ -2113,7 +2122,7 @@ uint8_t bsmp_save_dsp_modules_eeprom(uint8_t *input, uint8_t *output)
 
 static struct bsmp_func bsmp_func_save_dsp_modules_eeprom = {
     .func_p           = bsmp_save_dsp_modules_eeprom,
-    .info.input_size  = 0,
+    .info.input_size  = 2,
     .info.output_size = 1,
 };
 
@@ -2125,9 +2134,14 @@ static struct bsmp_func bsmp_func_save_dsp_modules_eeprom = {
  */
 uint8_t bsmp_load_dsp_modules_eeprom(uint8_t *input, uint8_t *output)
 {
+    u_uint16_t type_memory;
+
     if(g_ipc_ctom.ps_module[g_current_ps_id].ps_status.bit.unlocked)
     {
-        load_dsp_modules_eeprom();
+        type_memory.u8[0] = input[0];
+        type_memory.u8[1] = input[1];
+
+        load_dsp_modules_eeprom(type_memory.u16);
         *output = Ok;
     }
 
@@ -2141,7 +2155,7 @@ uint8_t bsmp_load_dsp_modules_eeprom(uint8_t *input, uint8_t *output)
 
 static struct bsmp_func bsmp_func_load_dsp_modules_eeprom = {
     .func_p           = bsmp_load_dsp_modules_eeprom,
-    .info.input_size  = 0,
+    .info.input_size  = 2,
     .info.output_size = 1,
 };
 

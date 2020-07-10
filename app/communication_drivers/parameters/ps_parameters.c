@@ -32,7 +32,6 @@
 
 #include "board_drivers/hardware_def.h"
 #include "communication_drivers/ipc/ipc_lib.h"
-#include "communication_drivers/i2c_onboard/eeprom.h"
 #include "communication_drivers/i2c_onboard/i2c_onboard.h"
 #include "communication_drivers/i2c_offboard_isolated/i2c_offboard_isolated.h"
 #include "communication_drivers/parameters/ps_parameters.h"
@@ -63,10 +62,6 @@ static const uint16_t param_addresses_onboard_eeprom[NUM_MAX_PARAMETERS] =
     [Min_Ref] = 0x00B0,
     [Max_Ref_OpenLoop] = 0x00C0,
     [Min_Ref_OpenLoop] = 0x00D0,
-    //[Max_SlewRate_SlowRef] = 0x00B0,
-    //[Max_SlewRate_SigGen_Amp] = 0x00B4,
-    //[Max_SlewRate_SigGen_Offset] = 0x00B8,
-    //[Max_SlewRate_WfmRef] = 0x00BC,
 
     [PWM_Freq] = 0x00E0,
     [PWM_DeadTime] = 0x00E4,
@@ -135,10 +130,6 @@ static const uint16_t param_addresses_offboard_eeprom[NUM_MAX_PARAMETERS] =
      [Min_Ref] = 0x00B0,
      [Max_Ref_OpenLoop] = 0x00C0,
      [Min_Ref_OpenLoop] = 0x00D0,
-     //[Max_SlewRate_SlowRef] = 0x00B0,
-     //[Max_SlewRate_SigGen_Amp] = 0x00B4,
-     //[Max_SlewRate_SigGen_Offset] = 0x00B8,
-     //[Max_SlewRate_WfmRef] = 0x00BC,
 
      [PWM_Freq] = 0x00E0,
      [PWM_DeadTime] = 0x00E4,
@@ -890,6 +881,7 @@ void init_parameters_bank(void)
 
     if(check_param_bank(Offboard_EEPROM))
     {
+        //load_dsp_modules_eeprom(Offboard_EEPROM);
         return;
     }
 
@@ -900,6 +892,7 @@ void init_parameters_bank(void)
             load_param_bank_onboard_eeprom();
             if(check_param_bank(Onboard_EEPROM))
             {
+                //load_dsp_modules_eeprom(Onboard_EEPROM);
                 return;
             }
         }

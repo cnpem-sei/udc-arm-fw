@@ -116,7 +116,7 @@ void init_system(void)
 
 	init_control_framework(&g_controller_mtoc);
 
-	load_dsp_modules_eeprom();
+	load_dsp_modules_eeprom(Onboard_EEPROM);
 
 	flash_mem_init();
 

@@ -27,6 +27,7 @@
 #include <math.h>
 #include "communication_drivers/common/structs.h"
 #include "communication_drivers/control/siggen/siggen.h"
+#include "communication_drivers/i2c_onboard/eeprom.h"
 #include "communication_drivers/ps_modules/ps_modules.h"
 #include "communication_drivers/scope/scope.h"
 
@@ -155,13 +156,6 @@
  * not available
  */
 #define ENABLE_ONBOARD_EEPROM           g_param_bank.enable_onboard_eeprom
-
-typedef enum
-{
-    Default_Initialization,
-    Offboard_EEPROM,
-    Onboard_EEPROM,
-} param_memory_t;
 
 typedef enum
 {

@@ -26,10 +26,17 @@
 
 #define I2C_SLV_ADDR_EEPROM 0x50        // 7 bits address
 
-extern uint8_t save_dsp_coeffs_eeprom(dsp_class_t dsp_class, uint16_t id);
-extern uint8_t load_dsp_coeffs_eeprom(dsp_class_t dsp_class, uint16_t id);
+typedef enum
+{
+    Default_Initialization,
+    Offboard_EEPROM,
+    Onboard_EEPROM,
+} param_memory_t;
 
-extern void save_dsp_modules_eeprom(void);
-extern void load_dsp_modules_eeprom(void);
+extern uint8_t save_dsp_coeffs_eeprom(dsp_class_t dsp_class, uint16_t id, param_memory_t type_memory);
+extern uint8_t load_dsp_coeffs_eeprom(dsp_class_t dsp_class, uint16_t id, param_memory_t type_memory);
+
+extern void save_dsp_modules_eeprom(param_memory_t type_memory);
+extern void load_dsp_modules_eeprom(param_memory_t type_memory);
 
 #endif /* EEPROM_H_ */
