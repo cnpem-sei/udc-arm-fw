@@ -75,12 +75,12 @@ typedef enum
     Load_Feedback_Fault,
 } soft_interlocks_t;
 
-volatile iib_output_stage_t iib_output_stage;
+volatile iib_fac_os_t iib_output_stage;
 volatile hard_interlocks_t hard_interlocks;
 
 static void init_iib_modules();
 static void handle_can_data(uint8_t *data);
-static void update_iib_structure(iib_output_stage_t *module, uint8_t data_id,
+static void update_iib_structure(iib_fac_os_t *module, uint8_t data_id,
                                                                float data_val);
 
 static void handle_interlock_message(uint8_t *data);
@@ -183,7 +183,7 @@ static void handle_can_data(uint8_t *data)
     update_iib_structure(&iib_output_stage, data_id, converter.f);
 }
 
-static void update_iib_structure(iib_output_stage_t *module, uint8_t data_id,
+static void update_iib_structure(iib_fac_os_t *module, uint8_t data_id,
                                                                float data_val)
 {
     uint8_t id;

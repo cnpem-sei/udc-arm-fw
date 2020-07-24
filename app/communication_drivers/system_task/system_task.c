@@ -177,12 +177,55 @@ void TaskCheck(void)
     /**********************************************
      * TODO: Reset interlocks
      * *******************************************/
-	//else if(ITLK_ALARM_RESET)
-	//{
-	//	ITLK_ALARM_RESET = 0;
-    //
-	//	interlock_alarm_reset();
-	//}
+	else if(ITLK_ALARM_RESET)
+	{
+		ITLK_ALARM_RESET = 0;
+
+		//interlock_alarm_reset();
+		switch(g_ipc_ctom.ps_module[0].ps_status.bit.model)
+        {
+            case FAC_DCDC:
+            case FAC_DCDC_EMA:
+            case FAP:
+            {
+                send_reset_iib_message(1);
+                break;
+            }
+
+            case FAC_ACDC:
+            case FAC_2S_DCDC:
+            {
+                send_reset_iib_message(1);
+                send_reset_iib_message(2);
+                break;
+            }
+
+            case FAC_2S_ACDC:
+            case FAC_2P4S_ACDC:
+            case FAP_4P:
+            case FAP_2P2S:
+            {
+                send_reset_iib_message(1);
+                send_reset_iib_message(2);
+                send_reset_iib_message(3);
+                send_reset_iib_message(4);
+                break;
+            }
+
+            case FAC_2P4S_DCDC:
+            {
+                send_reset_iib_message(1);
+                send_reset_iib_message(2);
+                send_reset_iib_message(3);
+                send_reset_iib_message(4);
+                send_reset_iib_message(5);
+                send_reset_iib_message(6);
+                send_reset_iib_message(7);
+                send_reset_iib_message(8);
+                break;
+            }
+        }
+	}
 
 	else if(PROCESS_POWER_TEMP_SAMPLE)
 	{

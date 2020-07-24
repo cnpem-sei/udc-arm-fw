@@ -58,7 +58,7 @@ volatile bool g_bRXFlag3 = 0;
 
 volatile bool g_bErrFlag = 0;
 
-volatile bool g_can_reset_flag = 1;
+volatile uint8_t g_can_reset_flag[NUM_MAX_IIB_BOARDS] = {1};
 
 tCANMsgObject tx_message_reset_udc;
 
@@ -308,7 +308,7 @@ void init_can_bkp(void)
 
 void send_reset_iib_message(uint8_t iib_address)
 {
-    g_can_reset_flag = 0;
+    g_can_reset_flag[iib_address-1] = 0;
 
     message_reset_udc[0] = iib_address;
 

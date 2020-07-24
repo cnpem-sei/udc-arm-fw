@@ -44,6 +44,8 @@
 #define MESSAGE_PARAM_UDC_LEN         8
 #define MESSAGE_PARAM_UDC_OBJ_ID      6
 
+#define NUM_MAX_IIB_BOARDS      8
+
 typedef enum {
     MESSAGE_DATA_IIB_ID = 1,
     MESSAGE_ITLK_IIB_ID,
@@ -53,7 +55,7 @@ typedef enum {
     MESSAGE_PARAM_UDC_ID
 }can_message_id_t;
 
-extern volatile bool g_can_reset_flag;
+extern volatile uint8_t g_can_reset_flag[NUM_MAX_IIB_BOARDS];
 
 extern void init_can_bkp(void);
 extern void can_int_handler(void);

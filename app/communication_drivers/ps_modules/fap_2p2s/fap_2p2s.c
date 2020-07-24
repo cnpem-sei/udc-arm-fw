@@ -258,9 +258,9 @@ static void bsmp_init_server(void)
     create_bsmp_var(67, 0, 4, false, iib_fap_2p2s[0].IoutA2.u8);
     create_bsmp_var(68, 0, 4, false, iib_fap_2p2s[0].TempIGBT1.u8);
     create_bsmp_var(69, 0, 4, false, iib_fap_2p2s[0].TempIGBT2.u8);
-    create_bsmp_var(70, 0, 4, false, iib_fap_2p2s[0].DriveVoltage.u8);
-    create_bsmp_var(71, 0, 4, false, iib_fap_2p2s[0].Drive1Current.u8);
-    create_bsmp_var(72, 0, 4, false, iib_fap_2p2s[0].Drive2Current.u8);
+    create_bsmp_var(70, 0, 4, false, iib_fap_2p2s[0].DriverVoltage.u8);
+    create_bsmp_var(71, 0, 4, false, iib_fap_2p2s[0].Driver1Current.u8);
+    create_bsmp_var(72, 0, 4, false, iib_fap_2p2s[0].Driver2Current.u8);
     create_bsmp_var(73, 0, 4, false, iib_fap_2p2s[0].TempL.u8);
     create_bsmp_var(74, 0, 4, false, iib_fap_2p2s[0].TempHeatSink.u8);
     create_bsmp_var(75, 0, 4, false, iib_fap_2p2s[0].GroundLeakage.u8);
@@ -275,9 +275,9 @@ static void bsmp_init_server(void)
     create_bsmp_var(83, 0, 4, false, iib_fap_2p2s[1].IoutA2.u8);
     create_bsmp_var(84, 0, 4, false, iib_fap_2p2s[1].TempIGBT1.u8);
     create_bsmp_var(85, 0, 4, false, iib_fap_2p2s[1].TempIGBT2.u8);
-    create_bsmp_var(86, 0, 4, false, iib_fap_2p2s[1].DriveVoltage.u8);
-    create_bsmp_var(87, 0, 4, false, iib_fap_2p2s[1].Drive1Current.u8);
-    create_bsmp_var(88, 0, 4, false, iib_fap_2p2s[1].Drive2Current.u8);
+    create_bsmp_var(86, 0, 4, false, iib_fap_2p2s[1].DriverVoltage.u8);
+    create_bsmp_var(87, 0, 4, false, iib_fap_2p2s[1].Driver1Current.u8);
+    create_bsmp_var(88, 0, 4, false, iib_fap_2p2s[1].Driver2Current.u8);
     create_bsmp_var(89, 0, 4, false, iib_fap_2p2s[1].TempL.u8);
     create_bsmp_var(90, 0, 4, false, iib_fap_2p2s[1].TempHeatSink.u8);
     create_bsmp_var(91, 0, 4, false, iib_fap_2p2s[1].GroundLeakage.u8);
@@ -292,9 +292,9 @@ static void bsmp_init_server(void)
     create_bsmp_var(99, 0, 4, false, iib_fap_2p2s[2].IoutA2.u8);
     create_bsmp_var(100, 0, 4, false, iib_fap_2p2s[2].TempIGBT1.u8);
     create_bsmp_var(101, 0, 4, false, iib_fap_2p2s[2].TempIGBT2.u8);
-    create_bsmp_var(102, 0, 4, false, iib_fap_2p2s[2].DriveVoltage.u8);
-    create_bsmp_var(103, 0, 4, false, iib_fap_2p2s[2].Drive1Current.u8);
-    create_bsmp_var(104, 0, 4, false, iib_fap_2p2s[2].Drive2Current.u8);
+    create_bsmp_var(102, 0, 4, false, iib_fap_2p2s[2].DriverVoltage.u8);
+    create_bsmp_var(103, 0, 4, false, iib_fap_2p2s[2].Driver1Current.u8);
+    create_bsmp_var(104, 0, 4, false, iib_fap_2p2s[2].Driver2Current.u8);
     create_bsmp_var(105, 0, 4, false, iib_fap_2p2s[2].TempL.u8);
     create_bsmp_var(106, 0, 4, false, iib_fap_2p2s[2].TempHeatSink.u8);
     create_bsmp_var(107, 0, 4, false, iib_fap_2p2s[2].GroundLeakage.u8);
@@ -309,9 +309,9 @@ static void bsmp_init_server(void)
     create_bsmp_var(115, 0, 4, false, iib_fap_2p2s[3].IoutA2.u8);
     create_bsmp_var(116, 0, 4, false, iib_fap_2p2s[3].TempIGBT1.u8);
     create_bsmp_var(117, 0, 4, false, iib_fap_2p2s[3].TempIGBT2.u8);
-    create_bsmp_var(118, 0, 4, false, iib_fap_2p2s[3].DriveVoltage.u8);
-    create_bsmp_var(119, 0, 4, false, iib_fap_2p2s[3].Drive1Current.u8);
-    create_bsmp_var(120, 0, 4, false, iib_fap_2p2s[3].Drive2Current.u8);
+    create_bsmp_var(118, 0, 4, false, iib_fap_2p2s[3].DriverVoltage.u8);
+    create_bsmp_var(119, 0, 4, false, iib_fap_2p2s[3].Driver1Current.u8);
+    create_bsmp_var(120, 0, 4, false, iib_fap_2p2s[3].Driver2Current.u8);
     create_bsmp_var(121, 0, 4, false, iib_fap_2p2s[3].TempL.u8);
     create_bsmp_var(122, 0, 4, false, iib_fap_2p2s[3].TempHeatSink.u8);
     create_bsmp_var(123, 0, 4, false, iib_fap_2p2s[3].GroundLeakage.u8);
@@ -437,15 +437,15 @@ static void update_iib_structure(iib_fap_module_t *module, uint8_t data_id,
             break;
 
         case 8:
-            module->DriveVoltage.f = data_val;
+            module->DriverVoltage.f = data_val;
             break;
 
         case 9:
-            module->Drive1Current.f = data_val;
+            module->Driver1Current.f = data_val;
             break;
 
         case 10:
-            module->Drive2Current.f = data_val;
+            module->Driver2Current.f = data_val;
             break;
 
         case 11:

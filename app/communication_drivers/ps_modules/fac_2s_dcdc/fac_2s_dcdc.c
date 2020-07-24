@@ -103,11 +103,11 @@ typedef enum
     Load_Feedback_2_Fault
 } soft_interlocks_t;
 
-volatile iib_output_stage_t fac_2s_dcdc_os[2];
+volatile iib_fac_os_t fac_2s_dcdc_os[2];
 
 static void init_iib();
 static void handle_can_data(uint8_t *data);
-static void update_iib_structure(iib_output_stage_t *module, uint8_t data_id,
+static void update_iib_structure(iib_fac_os_t *module, uint8_t data_id,
                                                                float data_val);
 
 /**
@@ -161,16 +161,12 @@ static void bsmp_init_server(void)
     create_bsmp_var(46, 0, 4, false, fac_2s_dcdc_os[0].VdcLink.u8);
     create_bsmp_var(47, 0, 4, false, fac_2s_dcdc_os[0].TempL.u8);
     create_bsmp_var(48, 0, 4, false, fac_2s_dcdc_os[0].TempHeatSink.u8);
-    create_bsmp_var(49, 0, 4, false, fac_2s_dcdc_os[0].Driver1Error.u8);
-    create_bsmp_var(50, 0, 4, false, fac_2s_dcdc_os[0].Driver2Error.u8);
 
     create_bsmp_var(51, 0, 4, false, fac_2s_dcdc_os[1].Iin.u8);
     create_bsmp_var(52, 0, 4, false, fac_2s_dcdc_os[1].Iout.u8);
     create_bsmp_var(53, 0, 4, false, fac_2s_dcdc_os[1].VdcLink.u8);
     create_bsmp_var(54, 0, 4, false, fac_2s_dcdc_os[1].TempL.u8);
     create_bsmp_var(55, 0, 4, false, fac_2s_dcdc_os[1].TempHeatSink.u8);
-    create_bsmp_var(56, 0, 4, false, fac_2s_dcdc_os[1].Driver1Error.u8);
-    create_bsmp_var(57, 0, 4, false, fac_2s_dcdc_os[1].Driver2Error.u8);
 
     create_bsmp_var(58, 0, 4, false, IIB_ITLK_REG_1.u8);
     create_bsmp_var(59, 0, 4, false, IIB_ITLK_REG_2.u8);
@@ -225,7 +221,7 @@ static void handle_can_data(uint8_t *data)
     update_iib_structure(&fac_2s_dcdc_os[iib_address-1], data_id, converter.f);
 }
 
-static void update_iib_structure(iib_output_stage_t *module, uint8_t data_id,
+static void update_iib_structure(iib_fac_os_t *module, uint8_t data_id,
                                                                float data_val)
 {
     uint8_t id;
@@ -274,14 +270,6 @@ static void update_iib_structure(iib_output_stage_t *module, uint8_t data_id,
 
         case 8:
             module->TempHeatSink.f = data_val;
-            break;
-
-        case 9:
-            module->Driver1Error.f = data_val;
-            break;
-
-        case 10:
-            module->Driver2Error.f = data_val;
             break;
 
         default:

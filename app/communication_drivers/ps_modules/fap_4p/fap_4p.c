@@ -246,9 +246,9 @@ static void bsmp_init_server(void)
     create_bsmp_var(61, 0, 4, false, iib_fap_4p[0].IoutA2.u8);
     create_bsmp_var(62, 0, 4, false, iib_fap_4p[0].TempIGBT1.u8);
     create_bsmp_var(63, 0, 4, false, iib_fap_4p[0].TempIGBT2.u8);
-    create_bsmp_var(64, 0, 4, false, iib_fap_4p[0].DriveVoltage.u8);
-    create_bsmp_var(65, 0, 4, false, iib_fap_4p[0].Drive1Current.u8);
-    create_bsmp_var(66, 0, 4, false, iib_fap_4p[0].Drive2Current.u8);
+    create_bsmp_var(64, 0, 4, false, iib_fap_4p[0].DriverVoltage.u8);
+    create_bsmp_var(65, 0, 4, false, iib_fap_4p[0].Driver1Current.u8);
+    create_bsmp_var(66, 0, 4, false, iib_fap_4p[0].Driver2Current.u8);
     create_bsmp_var(67, 0, 4, false, iib_fap_4p[0].TempL.u8);
     create_bsmp_var(68, 0, 4, false, iib_fap_4p[0].TempHeatSink.u8);
     create_bsmp_var(69, 0, 4, false, iib_fap_4p[0].GroundLeakage.u8);
@@ -263,9 +263,9 @@ static void bsmp_init_server(void)
     create_bsmp_var(77, 0, 4, false, iib_fap_4p[1].IoutA2.u8);
     create_bsmp_var(78, 0, 4, false, iib_fap_4p[1].TempIGBT1.u8);
     create_bsmp_var(79, 0, 4, false, iib_fap_4p[1].TempIGBT2.u8);
-    create_bsmp_var(80, 0, 4, false, iib_fap_4p[1].DriveVoltage.u8);
-    create_bsmp_var(81, 0, 4, false, iib_fap_4p[1].Drive1Current.u8);
-    create_bsmp_var(82, 0, 4, false, iib_fap_4p[1].Drive2Current.u8);
+    create_bsmp_var(80, 0, 4, false, iib_fap_4p[1].DriverVoltage.u8);
+    create_bsmp_var(81, 0, 4, false, iib_fap_4p[1].Driver1Current.u8);
+    create_bsmp_var(82, 0, 4, false, iib_fap_4p[1].Driver2Current.u8);
     create_bsmp_var(83, 0, 4, false, iib_fap_4p[1].TempL.u8);
     create_bsmp_var(84, 0, 4, false, iib_fap_4p[1].TempHeatSink.u8);
     create_bsmp_var(85, 0, 4, false, iib_fap_4p[1].GroundLeakage.u8);
@@ -280,9 +280,9 @@ static void bsmp_init_server(void)
     create_bsmp_var(93, 0, 4, false, iib_fap_4p[2].IoutA2.u8);
     create_bsmp_var(94, 0, 4, false, iib_fap_4p[2].TempIGBT1.u8);
     create_bsmp_var(95, 0, 4, false, iib_fap_4p[2].TempIGBT2.u8);
-    create_bsmp_var(96, 0, 4, false, iib_fap_4p[2].DriveVoltage.u8);
-    create_bsmp_var(97, 0, 4, false, iib_fap_4p[2].Drive1Current.u8);
-    create_bsmp_var(98, 0, 4, false, iib_fap_4p[2].Drive2Current.u8);
+    create_bsmp_var(96, 0, 4, false, iib_fap_4p[2].DriverVoltage.u8);
+    create_bsmp_var(97, 0, 4, false, iib_fap_4p[2].Driver1Current.u8);
+    create_bsmp_var(98, 0, 4, false, iib_fap_4p[2].Driver2Current.u8);
     create_bsmp_var(99, 0, 4, false, iib_fap_4p[2].TempL.u8);
     create_bsmp_var(100, 0, 4, false, iib_fap_4p[2].TempHeatSink.u8);
     create_bsmp_var(101, 0, 4, false, iib_fap_4p[2].GroundLeakage.u8);
@@ -297,9 +297,9 @@ static void bsmp_init_server(void)
     create_bsmp_var(109, 0, 4, false, iib_fap_4p[3].IoutA2.u8);
     create_bsmp_var(110, 0, 4, false, iib_fap_4p[3].TempIGBT1.u8);
     create_bsmp_var(111, 0, 4, false, iib_fap_4p[3].TempIGBT2.u8);
-    create_bsmp_var(112, 0, 4, false, iib_fap_4p[3].DriveVoltage.u8);
-    create_bsmp_var(113, 0, 4, false, iib_fap_4p[3].Drive1Current.u8);
-    create_bsmp_var(114, 0, 4, false, iib_fap_4p[3].Drive2Current.u8);
+    create_bsmp_var(112, 0, 4, false, iib_fap_4p[3].DriverVoltage.u8);
+    create_bsmp_var(113, 0, 4, false, iib_fap_4p[3].Driver1Current.u8);
+    create_bsmp_var(114, 0, 4, false, iib_fap_4p[3].Driver2Current.u8);
     create_bsmp_var(115, 0, 4, false, iib_fap_4p[3].TempL.u8);
     create_bsmp_var(116, 0, 4, false, iib_fap_4p[3].TempHeatSink.u8);
     create_bsmp_var(117, 0, 4, false, iib_fap_4p[3].GroundLeakage.u8);
@@ -425,15 +425,15 @@ static void update_iib_structure(iib_fap_module_t *module, uint8_t data_id,
             break;
 
         case 8:
-            module->DriveVoltage.f = data_val;
+            module->DriverVoltage.f = data_val;
             break;
 
         case 9:
-            module->Drive1Current.f = data_val;
+            module->Driver1Current.f = data_val;
             break;
 
         case 10:
-            module->Drive2Current.f = data_val;
+            module->Driver2Current.f = data_val;
             break;
 
         case 11:

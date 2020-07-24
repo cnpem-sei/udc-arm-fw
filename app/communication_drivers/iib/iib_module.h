@@ -24,10 +24,6 @@
 
 #include <stdint.h>
 
-/**
- * TODO: Put here your defines. Just what need 
- * to be accessed by other modules.
- */
 typedef struct {
     void (*handle_can_data_message) (uint8_t*);
     void (*handle_can_interlock_message) (uint8_t*);

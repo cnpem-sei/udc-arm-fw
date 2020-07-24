@@ -42,6 +42,8 @@
 /**
  * Controller defines
  */
+
+/// DSP Net Signals
 #define I_LOAD_1                g_controller_ctom.net_signals[0]    // HRADC0
 #define I_LOAD_2                g_controller_ctom.net_signals[1]    // HRADC1
 #define V_DCLINK                g_controller_ctom.net_signals[2]    // HRADC2
@@ -51,14 +53,18 @@
 #define I_LOAD_DIFF             g_controller_ctom.net_signals[16]
 
 #define I_IGBTS_DIFF            g_controller_ctom.net_signals[6]
-#define I_IGBT_1                g_controller_mtoc.net_signals[0]    // ANI0
-#define I_IGBT_2                g_controller_mtoc.net_signals[1]    // ANI1
 
 #define DUTY_MEAN               g_controller_ctom.net_signals[5]
 #define DUTY_DIFF               g_controller_ctom.net_signals[7]
 
 #define DUTY_CYCLE_IGBT_1       g_controller_ctom.output_signals[0]
 #define DUTY_CYCLE_IGBT_2       g_controller_ctom.output_signals[1]
+
+/// ARM Net Signals
+#define I_IGBT_1                g_controller_mtoc.net_signals[0]    // ANI0
+#define I_IGBT_2                g_controller_mtoc.net_signals[1]    // ANI1
+
+#define V_LOAD                  g_controller_mtoc.net_signals[2]
 
 /**
  * Interlocks defines
@@ -76,23 +82,23 @@ typedef enum
     IIB_Itlk
 } hard_interlocks_t;
 
+typedef enum
+{
+    DCCT_1_Fault,
+    DCCT_2_Fault,
+    DCCT_High_Difference,
+    Load_Feedback_1_Fault,
+    Load_Feedback_2_Fault,
+    IGBTs_Current_High_Difference,
+} soft_interlocks_t;
+
 static volatile iib_fap_module_t iib_fap;
-volatile hard_interlocks_t hard_interlocks;
 
 static void init_iib();
 
 static void handle_can_data(uint8_t *data);
 static void handle_can_interlock(uint8_t *data);
 static void handle_can_alarm(uint8_t *data);
-
-static void update_iib_data_structure(iib_fap_module_t *module, uint8_t data_id,
-                                                                float data_val);
-
-static void update_iib_interlock_structure(iib_fap_module_t *module, uint8_t data_id,
-                                                                     uint32_t data_val);
-
-static void update_iib_alarm_structure(iib_fap_module_t *module, uint8_t data_id,
-                                                                 uint32_t data_val);
 
 /**
 * @brief Initialize ADCP Channels.
@@ -138,6 +144,7 @@ static void bsmp_init_server(void)
     create_bsmp_var(36, 0, 4, false, V_DCLINK.u8);
     create_bsmp_var(37, 0, 4, false, I_IGBT_1.u8);
     create_bsmp_var(38, 0, 4, false, I_IGBT_2.u8);
+
     create_bsmp_var(39, 0, 4, false, DUTY_CYCLE_IGBT_1.u8);
     create_bsmp_var(40, 0, 4, false, DUTY_CYCLE_IGBT_2.u8);
     create_bsmp_var(41, 0, 4, false, DUTY_DIFF.u8);
@@ -148,9 +155,9 @@ static void bsmp_init_server(void)
     create_bsmp_var(45, 0, 4, false, iib_fap.IoutA2.u8);
     create_bsmp_var(46, 0, 4, false, iib_fap.TempIGBT1.u8);
     create_bsmp_var(47, 0, 4, false, iib_fap.TempIGBT2.u8);
-    create_bsmp_var(48, 0, 4, false, iib_fap.DriveVoltage.u8);
-    create_bsmp_var(49, 0, 4, false, iib_fap.Drive1Current.u8);
-    create_bsmp_var(50, 0, 4, false, iib_fap.Drive2Current.u8);
+    create_bsmp_var(48, 0, 4, false, iib_fap.DriverVoltage.u8);
+    create_bsmp_var(49, 0, 4, false, iib_fap.Driver1Current.u8);
+    create_bsmp_var(50, 0, 4, false, iib_fap.Driver2Current.u8);
     create_bsmp_var(51, 0, 4, false, iib_fap.TempL.u8);
     create_bsmp_var(52, 0, 4, false, iib_fap.TempHeatSink.u8);
     create_bsmp_var(53, 0, 4, false, iib_fap.GroundLeakage.u8);
@@ -189,175 +196,140 @@ static void init_iib()
     iib_fap.CanAddress = 1;
 
     init_iib_module_can_data(&g_iib_module_can_data, &handle_can_data);
-
     init_iib_module_can_interlock(&g_iib_module_can_interlock, &handle_can_interlock);
-
     init_iib_module_can_alarm(&g_iib_module_can_alarm, &handle_can_alarm);
 }
 
 static void handle_can_data(uint8_t *data)
 {
-    uint8_t data_id;
+    switch(data[1])
+    {
+        case 0:
+        {
+            memcpy(iib_fap.Vin.u8, &data[4], 4);
+            break;
+        }
+        case 1:
+        {
+            memcpy(iib_fap.Vout.u8, &data[4], 4);
+            V_LOAD.f = iib_fap.Vout.f;
+            break;
+        }
+        case 2:
+        {
+            memcpy(iib_fap.IoutA1.u8, &data[4], 4);
+            break;
+        }
+        case 3:
+        {
+            memcpy(iib_fap.IoutA2.u8, &data[4], 4);
+            break;
+        }
+        case 4:
+        {
+            memcpy(iib_fap.TempIGBT1.u8, &data[4], 4);
+            break;
+        }
+        case 5:
+        {
+            memcpy(iib_fap.TempIGBT2.u8, &data[4], 4);
+            break;
+        }
+        case 6:
+        {
+            memcpy(iib_fap.DriverVoltage.u8, &data[4], 4);
+            break;
+        }
+        case 7:
+        {
+            memcpy(iib_fap.Driver1Current.u8, &data[4], 4);
+            break;
+        }
+        case 8:
+        {
+            memcpy(iib_fap.Driver2Current.u8, &data[4], 4);
+            break;
+        }
+        case 9:
+        {
+            memcpy(iib_fap.TempL.u8, &data[4], 4);
+            break;
+        }
+        case 10:
+        {
+            memcpy(iib_fap.TempHeatSink.u8, &data[4], 4);
+            break;
+        }
+        case 11:
+        {
+            memcpy(iib_fap.GroundLeakage.u8, &data[4], 4);
+            break;
+        }
+        case 12:
+        {
+            memcpy(iib_fap.BoardTemperature.u8, &data[4], 4);
+            break;
+        }
+        case 13:
+        {
+            memcpy(iib_fap.RelativeHumidity.u8, &data[4], 4);
+            break;
+        }
 
-    convert_to_bytes_t converter;
-
-    data_id         = data[1];
-
-    converter.u8[0] = data[4];
-    converter.u8[1] = data[5];
-    converter.u8[2] = data[6];
-    converter.u8[3] = data[7];
-
-    update_iib_data_structure(&iib_fap, data_id, converter.f);
+        default:
+        {
+            break;
+        }
+    }
 }
 
 static void handle_can_interlock(uint8_t *data)
 {
-    uint8_t data_id;
+    switch (data[1])
+    {
+        case 0:
+        {
+            if(g_can_reset_flag[0])
+            {
+                memcpy(iib_fap.InterlocksRegister.u8, &data[4], 4);
+                set_hard_interlock(0, IIB_Itlk);
+            }
+            break;
+        }
 
-    convert_to_bytes_t converter;
+        case 1:
+        {
+            g_can_reset_flag[0] = 1;
+            iib_fap.InterlocksRegister.u32 = 0;
+            break;
+        }
 
-    data_id         = data[1];
-
-    converter.u8[0] = data[4];
-    converter.u8[1] = data[5];
-    converter.u8[2] = data[6];
-    converter.u8[3] = data[7];
-
-    update_iib_interlock_structure(&iib_fap, data_id, converter.u32);
+        default:
+        {
+            break;
+        }
+    }
 }
 
 static void handle_can_alarm(uint8_t *data)
 {
-    uint8_t data_id;
-
-    convert_to_bytes_t converter;
-
-    data_id         = data[1];
-
-    converter.u8[0] = data[4];
-    converter.u8[1] = data[5];
-    converter.u8[2] = data[6];
-    converter.u8[3] = data[7];
-
-    update_iib_alarm_structure(&iib_fap, data_id, converter.u32);
-}
-
-static void update_iib_data_structure(iib_fap_module_t *module, uint8_t data_id,
-                                                                float data_val)
-{
-    uint8_t id = data_id;
-
-    switch (id)
+    switch(data[1])
     {
-        case 0:
-            module->Vin.f = data_val;
-            break;
+       case 0:
+       {
+           memcpy(iib_fap.AlarmsRegister.u8, &data[4], 4);
+           break;
+       }
 
-        case 1:
-            module->Vout.f = data_val;
-            break;
+       case 1:
+       {
+           iib_fap.AlarmsRegister.u32 = 0;
+           break;
+       }
 
-        case 2:
-            module->IoutA1.f = data_val;
-            break;
-
-        case 3:
-            module->IoutA2.f = data_val;
-            break;
-
-        case 4:
-            module->TempIGBT1.f = data_val;
-            break;
-
-        case 5:
-            module->TempIGBT2.f = data_val;
-            break;
-
-        case 6:
-            module->DriveVoltage.f = data_val;
-            break;
-
-        case 7:
-            module->Drive1Current.f = data_val;
-            break;
-
-        case 8:
-            module->Drive2Current.f = data_val;
-            break;
-
-        case 9:
-            module->TempL.f = data_val;
-            break;
-
-        case 10:
-            module->TempHeatSink.f = data_val;
-            break;
-
-        case 11:
-            module->GroundLeakage.f = data_val;
-            break;
-
-        case 12:
-            module->BoardTemperature.f = data_val;
-            break;
-
-        case 13:
-            module->RelativeHumidity.f = data_val;
-            break;
-
-        default:
-            break;
+       default:
+       {
+           break;
+       }
     }
 }
-
-static void update_iib_interlock_structure(iib_fap_module_t *module, uint8_t data_id,
-                                                                     uint32_t data_val)
-{
-    uint8_t id = data_id;
-
-    switch (id)
-    {
-        case 0:
-            if(g_can_reset_flag)
-            {
-                module->InterlocksRegister.u32 = data_val;
-                set_hard_interlock(0, IIB_Itlk);
-            }
-
-            break;
-
-        case 1:
-            g_can_reset_flag = 1;
-            module->InterlocksRegister.u32 = 0;
-            break;
-
-        default:
-            break;
-    }
-}
-
-static void update_iib_alarm_structure(iib_fap_module_t *module, uint8_t data_id,
-                                                                 uint32_t data_val)
-{
-    uint8_t id = data_id;
-
-    switch (id)
-    {
-        case 0:
-            module->AlarmsRegister.u32 = data_val;
-            break;
-
-        case 1:
-            module->AlarmsRegister.u32 = 0;
-            break;
-
-        default:
-            break;
-    }
-}
-
-
-
-
-

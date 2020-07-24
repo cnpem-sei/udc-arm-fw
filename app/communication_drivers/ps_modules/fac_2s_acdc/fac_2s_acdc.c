@@ -86,8 +86,8 @@ typedef enum
     IIB_4_Itlk
 } hard_interlocks_t;
 
-volatile iib_input_stage_t fac_2s_acdc_is[2];
-volatile iib_command_drawer_t fac_2s_acdc_cmd[2];
+volatile iib_fac_is_t fac_2s_acdc_is[2];
+volatile iib_fac_cmd_t fac_2s_acdc_cmd[2];
 
 static void init_iib_modules();
 static void handle_can_data(uint8_t *data);
@@ -133,14 +133,14 @@ static void bsmp_init_server(void)
     create_bsmp_var(38, MOD_A_ID, 4, false, DUTY_CYCLE_MOD_A.u8);
 
     create_bsmp_var(39, MOD_A_ID, 4, false, fac_2s_acdc_is[MOD_A_ID].Iin.u8);
-    create_bsmp_var(40, MOD_A_ID, 4, false, fac_2s_acdc_is[MOD_A_ID].VdcLink.u8);
+    create_bsmp_var(40, MOD_A_ID, 4, false, fac_2s_acdc_is[MOD_A_ID].Vin.u8);
     create_bsmp_var(41, MOD_A_ID, 4, false, fac_2s_acdc_is[MOD_A_ID].TempL.u8);
     create_bsmp_var(42, MOD_A_ID, 4, false, fac_2s_acdc_is[MOD_A_ID].TempHeatsink.u8);
 
     create_bsmp_var(43, MOD_A_ID, 4, false, fac_2s_acdc_cmd[MOD_A_ID].Vout.u8);
     create_bsmp_var(44, MOD_A_ID, 4, false, fac_2s_acdc_cmd[MOD_A_ID].VcapBank.u8);
-    create_bsmp_var(45, MOD_A_ID, 4, false, fac_2s_acdc_cmd[MOD_A_ID].TempL.u8);
-    create_bsmp_var(46, MOD_A_ID, 4, false, fac_2s_acdc_cmd[MOD_A_ID].TempHeatSink.u8);
+    create_bsmp_var(45, MOD_A_ID, 4, false, fac_2s_acdc_cmd[MOD_A_ID].TempRectInductor.u8);
+    create_bsmp_var(46, MOD_A_ID, 4, false, fac_2s_acdc_cmd[MOD_A_ID].TempRectHeatSink.u8);
     create_bsmp_var(47, MOD_A_ID, 4, false, fac_2s_acdc_cmd[MOD_A_ID].GroundLeakage.u8);
 
     create_bsmp_var(48, MOD_A_ID, 4, false, IIB_ITLK_REG_FAC_IS_A.u8);
@@ -168,14 +168,14 @@ static void bsmp_init_server(void)
     create_bsmp_var(38, MOD_B_ID, 4, false, DUTY_CYCLE_MOD_B.u8);
 
     create_bsmp_var(39, MOD_B_ID, 4, false, fac_2s_acdc_is[MOD_B_ID].Iin.u8);
-    create_bsmp_var(40, MOD_B_ID, 4, false, fac_2s_acdc_is[MOD_B_ID].VdcLink.u8);
+    create_bsmp_var(40, MOD_B_ID, 4, false, fac_2s_acdc_is[MOD_B_ID].Vin.u8);
     create_bsmp_var(41, MOD_B_ID, 4, false, fac_2s_acdc_is[MOD_B_ID].TempL.u8);
     create_bsmp_var(42, MOD_B_ID, 4, false, fac_2s_acdc_is[MOD_B_ID].TempHeatsink.u8);
 
     create_bsmp_var(43, MOD_B_ID, 4, false, fac_2s_acdc_cmd[MOD_B_ID].Vout.u8);
     create_bsmp_var(44, MOD_B_ID, 4, false, fac_2s_acdc_cmd[MOD_B_ID].VcapBank.u8);
-    create_bsmp_var(45, MOD_B_ID, 4, false, fac_2s_acdc_cmd[MOD_B_ID].TempL.u8);
-    create_bsmp_var(46, MOD_B_ID, 4, false, fac_2s_acdc_cmd[MOD_B_ID].TempHeatSink.u8);
+    create_bsmp_var(45, MOD_B_ID, 4, false, fac_2s_acdc_cmd[MOD_B_ID].TempRectInductor.u8);
+    create_bsmp_var(46, MOD_B_ID, 4, false, fac_2s_acdc_cmd[MOD_B_ID].TempRectHeatSink.u8);
     create_bsmp_var(47, MOD_B_ID, 4, false, fac_2s_acdc_cmd[MOD_B_ID].GroundLeakage.u8);
 
     create_bsmp_var(48, MOD_B_ID, 4, false, IIB_ITLK_REG_FAC_IS_B.u8);
@@ -269,7 +269,7 @@ static void update_iib_structure_fac_is(uint8_t iib_id, uint8_t data_id, float d
             break;
 
         case 3:
-            fac_2s_acdc_is[iib_id].VdcLink.f = data_val;
+            fac_2s_acdc_is[iib_id].Vin.f = data_val;
             break;
 
         case 4:
@@ -321,11 +321,11 @@ static void update_iib_structure_fac_cmd(uint8_t iib_id, uint8_t data_id, float 
             break;
 
         case 4:
-            fac_2s_acdc_cmd[mod_idx].TempL.f = data_val;
+            fac_2s_acdc_cmd[mod_idx].TempRectInductor.f = data_val;
             break;
 
         case 5:
-            fac_2s_acdc_cmd[mod_idx].TempHeatSink.f = data_val;
+            fac_2s_acdc_cmd[mod_idx].TempRectHeatSink.f = data_val;
             break;
 
         case 6:

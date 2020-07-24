@@ -29,6 +29,7 @@
 #include "communication_drivers/ipc/ipc_lib.h"
 #include "communication_drivers/adcp/adcp.h"
 #include "communication_drivers/bsmp/bsmp_lib.h"
+#include "communication_drivers/can/can_bkp.h"
 #include "communication_drivers/control/control.h"
 #include "communication_drivers/control/wfmref/wfmref.h"
 #include "communication_drivers/event_manager/event_manager.h"
@@ -37,6 +38,11 @@
 #include "communication_drivers/ps_modules/fac_dcdc/fac_dcdc.h"
 #include "communication_drivers/ps_modules/ps_modules.h"
 
+/**
+ * Controller defines
+ */
+
+/// DSP Net Signals
 #define I_LOAD_1            g_controller_ctom.net_signals[0]
 #define I_LOAD_2            g_controller_ctom.net_signals[1]
 #define V_CAPBANK           g_controller_ctom.net_signals[2]
@@ -44,11 +50,6 @@
 #define I_LOAD_MEAN         g_controller_ctom.net_signals[4]
 #define I_LOAD_ERROR        g_controller_ctom.net_signals[5]
 #define I_LOAD_DIFF         g_controller_ctom.net_signals[10]
-
-#define v_LOAD              g_controller_mtoc.net_signals[0]
-#define TEMP_INDUCTORS      g_controller_mtoc.net_signals[1]
-#define TEMP_IGBT           g_controller_mtoc.net_signals[2]
-#define IIB_ITLK_REG_1      g_controller_mtoc.net_signals[4]
 
 #define DUTY_CYCLE          g_controller_ctom.output_signals[0]
 
@@ -61,7 +62,6 @@ typedef enum
     Load_Overvoltage,
     CapBank_Overvoltage,
     CapBank_Undervoltage,
-    IGBT_Driver_Fault,
     IIB_Itlk,
     External_Interlock,
     Rack_Interlock
@@ -69,8 +69,6 @@ typedef enum
 
 typedef enum
 {
-    Inductors_Overtemperature,
-    IGBT_Overtemperature,
     DCCT_1_Fault,
     DCCT_2_Fault,
     DCCT_High_Difference,
@@ -78,16 +76,13 @@ typedef enum
     Load_Feedback_2_Fault,
 } soft_interlocks_t;
 
-volatile iib_output_stage_t iib_output_stage;
-volatile hard_interlocks_t hard_interlocks;
+volatile iib_fac_os_t iib_fac_os;
 
 static void init_iib_modules();
-static void handle_can_data(uint8_t *data);
-static void update_iib_structure(iib_output_stage_t *module, uint8_t data_id,
-                                                               float data_val);
 
-static void handle_interlock_message(uint8_t *data);
-static void handle_alarm_message(uint8_t *data);
+static void handle_can_data(uint8_t *data);
+static void handle_can_interlock(uint8_t *data);
+static void handle_can_alarm(uint8_t *data);
 
 /**
 * @brief Initialize ADCP Channels.
@@ -122,25 +117,24 @@ static void bsmp_init_server(void)
     create_bsmp_var(34, 0, 4, false, I_LOAD_1.u8);
     create_bsmp_var(35, 0, 4, false, I_LOAD_2.u8);
 
-    create_bsmp_var(36, 0, 4, false, v_LOAD.u8);
-    create_bsmp_var(37, 0, 4, false, V_CAPBANK.u8);
+    create_bsmp_var(36, 0, 4, false, V_CAPBANK.u8);
 
-    create_bsmp_var(38, 0, 4, false, TEMP_INDUCTORS.u8);
-    create_bsmp_var(39, 0, 4, false, TEMP_IGBT.u8);
-    create_bsmp_var(40, 0, 4, false, DUTY_CYCLE.u8);
+    create_bsmp_var(37, 0, 4, false, DUTY_CYCLE.u8);
 
-    // Output Module 1
-    create_bsmp_var(41, 0, 4, false, iib_output_stage.Iin.u8);
-    create_bsmp_var(42, 0, 4, false, iib_output_stage.Iout.u8);
-    create_bsmp_var(43, 0, 4, false, iib_output_stage.VdcLink.u8);
-    create_bsmp_var(44, 0, 4, false, iib_output_stage.TempIGBT1.u8);
-    create_bsmp_var(45, 0, 4, false, iib_output_stage.TempIGBT2.u8);
-    create_bsmp_var(46, 0, 4, false, iib_output_stage.TempL.u8);
-    create_bsmp_var(47, 0, 4, false, iib_output_stage.TempHeatSink.u8);
-    create_bsmp_var(48, 0, 4, false, iib_output_stage.Driver1Error.u8);
-    create_bsmp_var(49, 0, 4, false, iib_output_stage.Driver2Error.u8);
-
-    create_bsmp_var(50, 0, 4, false, IIB_ITLK_REG_1.u8);
+    create_bsmp_var(38, 0, 4, false, iib_fac_os.VdcLink.u8);
+    create_bsmp_var(39, 0, 4, false, iib_fac_os.Iin.u8);
+    create_bsmp_var(40, 0, 4, false, iib_fac_os.Iout.u8);
+    create_bsmp_var(41, 0, 4, false, iib_fac_os.TempIGBT1.u8);
+    create_bsmp_var(42, 0, 4, false, iib_fac_os.TempIGBT2.u8);
+    create_bsmp_var(43, 0, 4, false, iib_fac_os.TempL.u8);
+    create_bsmp_var(44, 0, 4, false, iib_fac_os.TempHeatSink.u8);
+    create_bsmp_var(45, 0, 4, false, iib_fac_os.DriverVoltage.u8);
+    create_bsmp_var(46, 0, 4, false, iib_fac_os.Driver1Current.u8);
+    create_bsmp_var(47, 0, 4, false, iib_fac_os.Driver2Current.u8);
+    create_bsmp_var(48, 0, 4, false, iib_fac_os.BoardTemperature.u8);
+    create_bsmp_var(49, 0, 4, false, iib_fac_os.RelativeHumidity.u8);
+    create_bsmp_var(50, 0, 4, false, iib_fac_os.InterlocksRegister.u8);
+    create_bsmp_var(51, 0, 4, false, iib_fac_os.AlarmsRegister.u8);
 }
 
 /**
@@ -169,84 +163,132 @@ void fac_dcdc_system_config()
 
 static void init_iib_modules()
 {
-    iib_output_stage.CanAddress = 1;
+    iib_fac_os.CanAddress = 1;
 
     init_iib_module_can_data(&g_iib_module_can_data, &handle_can_data);
+    init_iib_module_can_interlock(&g_iib_module_can_interlock, &handle_can_interlock);
+    init_iib_module_can_alarm(&g_iib_module_can_alarm, &handle_can_alarm);
 }
 
 static void handle_can_data(uint8_t *data)
 {
-    uint8_t iib_address;
-    uint8_t data_id;
-
-    convert_to_bytes_t converter;
-
-    iib_address     = data[0];
-    data_id         = data[1];
-
-    converter.u8[0] = data[4];
-    converter.u8[1] = data[5];
-    converter.u8[2] = data[6];
-    converter.u8[3] = data[7];
-
-    update_iib_structure(&iib_output_stage, data_id, converter.f);
-}
-
-static void update_iib_structure(iib_output_stage_t *module, uint8_t data_id,
-                                                               float data_val)
-{
-    uint8_t id;
-    id = data_id;
-
-    convert_to_bytes_t converter;
-
-    switch (id) {
+    switch(data[1])
+    {
         case 0:
-            converter.f = data_val;
-            IIB_ITLK_REG_1.u32 = converter.u32;
-            set_hard_interlock(0, IIB_Itlk);
+        {
+            memcpy(iib_fac_os.VdcLink.u8, &data[4], 4);
             break;
+        }
         case 1:
-            //TODO: Handle alarm message
+        {
+            memcpy(iib_fac_os.Iin.u8, &data[4], 4);
             break;
+        }
         case 2:
-            module->Iin.f = data_val;
+        {
+            memcpy(iib_fac_os.Iout.u8, &data[4], 4);
             break;
-
+        }
         case 3:
-            module->Iout.f = data_val;
+        {
+            memcpy(iib_fac_os.TempIGBT1.u8, &data[4], 4);
             break;
-
+        }
         case 4:
-            module->VdcLink.f = data_val;
+        {
+            memcpy(iib_fac_os.TempIGBT2.u8, &data[4], 4);
             break;
-
+        }
         case 5:
-            module->TempIGBT1.f = data_val;
+        {
+            memcpy(iib_fac_os.DriverVoltage.u8, &data[4], 4);
             break;
-
+        }
         case 6:
-            module->TempIGBT2.f = data_val;
+        {
+            memcpy(iib_fac_os.Driver1Current.u8, &data[4], 4);
             break;
-
+        }
         case 7:
-            module->TempL.f = data_val;
+        {
+            memcpy(iib_fac_os.Driver2Current.u8, &data[4], 4);
             break;
-
+        }
         case 8:
-            module->TempHeatSink.f = data_val;
+        {
+            memcpy(iib_fac_os.TempL.u8, &data[4], 4);
             break;
-
+        }
         case 9:
-            module->Driver1Error.f = data_val;
+        {
+            memcpy(iib_fac_os.TempHeatSink.u8, &data[4], 4);
             break;
-
+        }
         case 10:
-            module->Driver2Error.f = data_val;
+        {
+            memcpy(iib_fac_os.BoardTemperature.u8, &data[4], 4);
             break;
+        }
+        case 11:
+        {
+            memcpy(iib_fac_os.RelativeHumidity.u8, &data[4], 4);
+            break;
+        }
 
         default:
+        {
             break;
+        }
     }
 }
 
+static void handle_can_interlock(uint8_t *data)
+{
+    switch(data[1])
+    {
+       case 0:
+       {
+           if(g_can_reset_flag[0])
+           {
+               memcpy(iib_fac_os.InterlocksRegister.u8, &data[4], 4);
+               set_hard_interlock(0, IIB_Itlk);
+           }
+           break;
+       }
+
+       case 1:
+       {
+           g_can_reset_flag[0] = 1;
+           iib_fac_os.InterlocksRegister.u32 = 0;
+           break;
+       }
+
+       default:
+       {
+           break;
+       }
+    }
+}
+
+static void handle_can_alarm(uint8_t *data)
+{
+    switch(data[1])
+    {
+       case 0:
+       {
+           memcpy(iib_fac_os.AlarmsRegister.u8, &data[4], 4);
+           break;
+       }
+
+       case 1:
+       {
+           iib_fac_os.AlarmsRegister.u32 = 0;
+           break;
+       }
+
+       default:
+       {
+           break;
+       }
+    }
+}

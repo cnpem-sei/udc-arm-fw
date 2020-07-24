@@ -135,11 +135,11 @@ typedef enum
     IIB_8_Itlk
 } hard_interlocks_t;
 
-volatile iib_output_stage_t fac_os[8];
+volatile iib_fac_os_t fac_os[8];
 
 static void init_iib();
 static void handle_can_data(uint8_t *data);
-static void update_iib_structure(iib_output_stage_t *module, uint8_t data_id,
+static void update_iib_structure(iib_fac_os_t *module, uint8_t data_id,
                                                                float data_val);
 
 /**
@@ -244,64 +244,48 @@ static void bsmp_init_server(void)
     create_bsmp_var(65, 0, 4, false, fac_os[0].VdcLink.u8);
     create_bsmp_var(66, 0, 4, false, fac_os[0].TempL.u8);
     create_bsmp_var(67, 0, 4, false, fac_os[0].TempHeatSink.u8);
-    create_bsmp_var(68, 0, 4, false, fac_os[0].Driver1Error.u8);
-    create_bsmp_var(69, 0, 4, false, fac_os[0].Driver2Error.u8);
 
     create_bsmp_var(70, 0, 4, false, fac_os[1].Iin.u8);
     create_bsmp_var(71, 0, 4, false, fac_os[1].Iout.u8);
     create_bsmp_var(72, 0, 4, false, fac_os[1].VdcLink.u8);
     create_bsmp_var(73, 0, 4, false, fac_os[1].TempL.u8);
     create_bsmp_var(74, 0, 4, false, fac_os[1].TempHeatSink.u8);
-    create_bsmp_var(75, 0, 4, false, fac_os[1].Driver1Error.u8);
-    create_bsmp_var(76, 0, 4, false, fac_os[1].Driver2Error.u8);
 
     create_bsmp_var(77, 0, 4, false, fac_os[2].Iin.u8);
     create_bsmp_var(78, 0, 4, false, fac_os[2].Iout.u8);
     create_bsmp_var(79, 0, 4, false, fac_os[2].VdcLink.u8);
     create_bsmp_var(80, 0, 4, false, fac_os[2].TempL.u8);
     create_bsmp_var(81, 0, 4, false, fac_os[2].TempHeatSink.u8);
-    create_bsmp_var(82, 0, 4, false, fac_os[2].Driver1Error.u8);
-    create_bsmp_var(83, 0, 4, false, fac_os[2].Driver2Error.u8);
 
     create_bsmp_var(84, 0, 4, false, fac_os[3].Iin.u8);
     create_bsmp_var(85, 0, 4, false, fac_os[3].Iout.u8);
     create_bsmp_var(86, 0, 4, false, fac_os[3].VdcLink.u8);
     create_bsmp_var(87, 0, 4, false, fac_os[3].TempL.u8);
     create_bsmp_var(88, 0, 4, false, fac_os[3].TempHeatSink.u8);
-    create_bsmp_var(89, 0, 4, false, fac_os[3].Driver1Error.u8);
-    create_bsmp_var(90, 0, 4, false, fac_os[3].Driver2Error.u8);
 
     create_bsmp_var(91, 0, 4, false, fac_os[4].Iin.u8);
     create_bsmp_var(92, 0, 4, false, fac_os[4].Iout.u8);
     create_bsmp_var(93, 0, 4, false, fac_os[4].VdcLink.u8);
     create_bsmp_var(94, 0, 4, false, fac_os[4].TempL.u8);
     create_bsmp_var(95, 0, 4, false, fac_os[4].TempHeatSink.u8);
-    create_bsmp_var(96, 0, 4, false, fac_os[4].Driver1Error.u8);
-    create_bsmp_var(97, 0, 4, false, fac_os[4].Driver2Error.u8);
 
     create_bsmp_var(98, 0, 4, false, fac_os[5].Iin.u8);
     create_bsmp_var(99, 0, 4, false, fac_os[5].Iout.u8);
     create_bsmp_var(100, 0, 4, false, fac_os[5].VdcLink.u8);
     create_bsmp_var(101, 0, 4, false, fac_os[5].TempL.u8);
     create_bsmp_var(102, 0, 4, false, fac_os[5].TempHeatSink.u8);
-    create_bsmp_var(103, 0, 4, false, fac_os[5].Driver1Error.u8);
-    create_bsmp_var(104, 0, 4, false, fac_os[5].Driver2Error.u8);
 
     create_bsmp_var(105, 0, 4, false, fac_os[6].Iin.u8);
     create_bsmp_var(106, 0, 4, false, fac_os[6].Iout.u8);
     create_bsmp_var(107, 0, 4, false, fac_os[6].VdcLink.u8);
     create_bsmp_var(108, 0, 4, false, fac_os[6].TempL.u8);
     create_bsmp_var(109, 0, 4, false, fac_os[6].TempHeatSink.u8);
-    create_bsmp_var(110, 0, 4, false, fac_os[6].Driver1Error.u8);
-    create_bsmp_var(111, 0, 4, false, fac_os[6].Driver2Error.u8);
 
     create_bsmp_var(112, 0, 4, false, fac_os[7].Iin.u8);
     create_bsmp_var(113, 0, 4, false, fac_os[7].Iout.u8);
     create_bsmp_var(114, 0, 4, false, fac_os[7].VdcLink.u8);
     create_bsmp_var(115, 0, 4, false, fac_os[7].TempL.u8);
     create_bsmp_var(116, 0, 4, false, fac_os[7].TempHeatSink.u8);
-    create_bsmp_var(117, 0, 4, false, fac_os[7].Driver1Error.u8);
-    create_bsmp_var(118, 0, 4, false, fac_os[7].Driver2Error.u8);
 
     create_bsmp_var(119, 0, 4, false, IIB_ITLK_REG_1.u8);
     create_bsmp_var(120, 0, 4, false, IIB_ITLK_REG_2.u8);
@@ -369,7 +353,7 @@ static void handle_can_data(uint8_t *data)
     update_iib_structure(&fac_os[iib_address-1], data_id, converter.f);
 }
 
-static void update_iib_structure(iib_output_stage_t *module, uint8_t data_id,
+static void update_iib_structure(iib_fac_os_t *module, uint8_t data_id,
                                                                float data_val)
 {
     uint8_t id;
@@ -443,14 +427,6 @@ static void update_iib_structure(iib_output_stage_t *module, uint8_t data_id,
 
         case 8:
             module->TempHeatSink.f = data_val;
-            break;
-
-        case 9:
-            module->Driver1Error.f = data_val;
-            break;
-
-        case 10:
-            module->Driver2Error.f = data_val;
             break;
 
         default:

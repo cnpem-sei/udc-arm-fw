@@ -31,6 +31,7 @@
 #include "communication_drivers/ipc/ipc_lib.h"
 #include "communication_drivers/adcp/adcp.h"
 #include "communication_drivers/bsmp/bsmp_lib.h"
+#include "communication_drivers/can/can_bkp.h"
 #include "communication_drivers/control/control.h"
 #include "communication_drivers/event_manager/event_manager.h"
 #include "communication_drivers/iib/iib_data.h"
@@ -38,17 +39,24 @@
 #include "communication_drivers/ps_modules/fac_acdc/fac_acdc.h"
 #include "communication_drivers/ps_modules/ps_modules.h"
 
+/**
+ * IIB Defines
+ */
+#define IIB_IS_ADDRESS      1
+#define IIB_CMD_ADDRESS     2
+
+/**
+ * Controller defines
+ */
+
+/// DSP Net Signals
 #define V_CAPBANK                       g_controller_ctom.net_signals[0]    // HRADC0
 #define IOUT_RECT                       g_controller_ctom.net_signals[1]    // HRADC1
 
-#define VOUT_RECT                       g_controller_mtoc.net_signals[0]
-#define TEMP_HEATSINK                   g_controller_mtoc.net_signals[1]
-#define TEMP_INDUCTORS                  g_controller_mtoc.net_signals[2]
-
 #define DUTY_CYCLE                      g_controller_ctom.output_signals[0]
 
-#define IIB_ITLK_REG_IS                 g_controller_mtoc.net_signals[3]
-#define IIB_ITLK_REG_CD                 g_controller_mtoc.net_signals[4]
+/// ARM Net Signals
+#define VOUT_RECT                       g_controller_mtoc.net_signals[0]
 
 /**
  * Interlocks defines
@@ -61,23 +69,22 @@ typedef enum
     Rectifier_Overcurrent,
     Welded_Contactor_Fault,
     Opened_Contactor_Fault,
-    IGBT_Driver_Fault,
-    IIB_Itlk
+    IIB_IS_Itlk,
+    IIB_Cmd_Itlk
 } hard_interlocks_t;
 
-typedef enum
+/*typedef enum
 {
-    Heatsink_Overtemperature,
-    Inductors_Overtemperature
-} soft_interlocks_t;
+} soft_interlocks_t;*/
 
-volatile iib_input_stage_t iib_input_stage;
-volatile iib_command_drawer_t iib_command_drawer;
+volatile iib_fac_is_t iib_fac_is;
+volatile iib_fac_cmd_t iib_fac_cmd;
 
 static void init_iib_modules();
+
 static void handle_can_data(uint8_t *data);
-static void update_iib_structure_is(uint8_t data_id, float data_val);
-static void update_iib_structure_cd(uint8_t data_id, float data_val);
+static void handle_can_interlock(uint8_t *data);
+static void handle_can_alarm(uint8_t *data);
 
 /**
 * @brief Initialize ADCP Channels.
@@ -107,26 +114,36 @@ static void bsmp_init_server(void)
 {
     create_bsmp_var(31, 0, 4, false, g_ipc_ctom.ps_module[0].ps_soft_interlock.u8);
     create_bsmp_var(32, 0, 4, false, g_ipc_ctom.ps_module[0].ps_hard_interlock.u8);
+
     create_bsmp_var(33, 0, 4, false, V_CAPBANK.u8);
-    create_bsmp_var(34, 0, 4, false, VOUT_RECT.u8);
-    create_bsmp_var(35, 0, 4, false, IOUT_RECT.u8);
-    create_bsmp_var(36, 0, 4, false, TEMP_HEATSINK.u8);
-    create_bsmp_var(37, 0, 4, false, TEMP_INDUCTORS.u8);
-    create_bsmp_var(38, 0, 4, false, DUTY_CYCLE.u8);
+    create_bsmp_var(34, 0, 4, false, IOUT_RECT.u8);
 
-    create_bsmp_var(39, 0, 4, false, iib_input_stage.Iin.u8);
-    create_bsmp_var(40, 0, 4, false, iib_input_stage.VdcLink.u8);
-    create_bsmp_var(41, 0, 4, false, iib_input_stage.TempL.u8);
-    create_bsmp_var(42, 0, 4, false, iib_input_stage.TempHeatsink.u8);
+    create_bsmp_var(35, 0, 4, false, DUTY_CYCLE.u8);
 
-    create_bsmp_var(43, 0, 4, false, iib_command_drawer.Vout.u8);
-    create_bsmp_var(44, 0, 4, false, iib_command_drawer.VcapBank.u8);
-    create_bsmp_var(45, 0, 4, false, iib_command_drawer.TempL.u8);
-    create_bsmp_var(46, 0, 4, false, iib_command_drawer.TempHeatSink.u8);
-    create_bsmp_var(47, 0, 4, false, iib_command_drawer.GroundLeakage.u8);
+    create_bsmp_var(36, 0, 4, false, iib_fac_is.Iin.u8);
+    create_bsmp_var(37, 0, 4, false, iib_fac_is.Vin.u8);
+    create_bsmp_var(38, 0, 4, false, iib_fac_is.TempIGBT.u8);
+    create_bsmp_var(39, 0, 4, false, iib_fac_is.DriverVoltage.u8);
+    create_bsmp_var(40, 0, 4, false, iib_fac_is.DriverCurrent.u8);
+    create_bsmp_var(41, 0, 4, false, iib_fac_is.TempL.u8);
+    create_bsmp_var(42, 0, 4, false, iib_fac_is.TempHeatsink.u8);
+    create_bsmp_var(43, 0, 4, false, iib_fac_is.BoardTemperature.u8);
+    create_bsmp_var(44, 0, 4, false, iib_fac_is.RelativeHumidity.u8);
+    create_bsmp_var(45, 0, 4, false, iib_fac_is.InterlocksRegister.u8);
+    create_bsmp_var(46, 0, 4, false, iib_fac_is.AlarmsRegister.u8);
 
-    create_bsmp_var(48, 0, 4, false, IIB_ITLK_REG_IS.u8);
-    create_bsmp_var(49, 0, 4, false, IIB_ITLK_REG_CD.u8);
+    create_bsmp_var(47, 0, 4, false, iib_fac_cmd.Vout.u8);
+    create_bsmp_var(48, 0, 4, false, iib_fac_cmd.VcapBank.u8);
+    create_bsmp_var(49, 0, 4, false, iib_fac_cmd.TempRectInductor.u8);
+    create_bsmp_var(50, 0, 4, false, iib_fac_cmd.TempRectHeatSink.u8);
+    create_bsmp_var(51, 0, 4, false, iib_fac_cmd.ExternalBoardsVoltage.u8);
+    create_bsmp_var(52, 0, 4, false, iib_fac_cmd.AuxiliaryBoardCurrent.u8);
+    create_bsmp_var(53, 0, 4, false, iib_fac_cmd.IDBBoardCurrent.u8);
+    create_bsmp_var(54, 0, 4, false, iib_fac_cmd.GroundLeakage.u8);
+    create_bsmp_var(55, 0, 4, false, iib_fac_cmd.BoardTemperature.u8);
+    create_bsmp_var(56, 0, 4, false, iib_fac_cmd.RelativeHumidity.u8);
+    create_bsmp_var(57, 0, 4, false, iib_fac_cmd.InterlocksRegister.u8);
+    create_bsmp_var(58, 0, 4, false, iib_fac_cmd.AlarmsRegister.u8);
 }
 
 /**
@@ -149,10 +166,12 @@ void fac_acdc_system_config()
 
 static void init_iib_modules()
 {
-    iib_input_stage.CanAddress = 1;
-    iib_command_drawer.CanAddress = 2;
+    iib_fac_is.CanAddress = IIB_IS_ADDRESS;
+    iib_fac_cmd.CanAddress = IIB_CMD_ADDRESS;
 
     init_iib_module_can_data(&g_iib_module_can_data, &handle_can_data);
+    init_iib_module_can_interlock(&g_iib_module_can_interlock, &handle_can_interlock);
+    init_iib_module_can_alarm(&g_iib_module_can_alarm, &handle_can_alarm);
 }
 
 static void handle_can_data(uint8_t *data)
@@ -160,94 +179,280 @@ static void handle_can_data(uint8_t *data)
     uint8_t iib_address;
     uint8_t data_id;
 
-    convert_to_bytes_t converter;
+    iib_address = data[0];
+    data_id    = data[1];
 
-    iib_address     = data[0];
-    data_id         = data[1];
+    switch(iib_address)
+    {
+        /// Data from FAC IS
+        case IIB_IS_ADDRESS:
+        {
+            switch(data_id)
+            {
+                case 0:
+                {
+                    memcpy(iib_fac_is.Vin.u8, &data[4], 4);
+                    VOUT_RECT.f = iib_fac_is.Vin.f;
+                    break;
+                }
+                case 1:
+                {
+                    memcpy(iib_fac_is.Iin.u8, &data[4], 4);
+                    break;
+                }
+                case 2:
+                {
+                    memcpy(iib_fac_is.TempIGBT.u8, &data[4], 4);
+                    break;
+                }
+                case 3:
+                {
+                    memcpy(iib_fac_is.DriverVoltage.u8, &data[4], 4);
+                    break;
+                }
+                case 4:
+                {
+                    memcpy(iib_fac_is.DriverCurrent.u8, &data[4], 4);
+                    break;
+                }
+                case 5:
+                {
+                    memcpy(iib_fac_is.TempL.u8, &data[4], 4);
+                    break;
+                }
+                case 6:
+                {
+                    memcpy(iib_fac_is.TempHeatsink.u8, &data[4], 4);
+                    break;
+                }
+                case 7:
+                {
+                    memcpy(iib_fac_is.BoardTemperature.u8, &data[4], 4);
+                    break;
+                }
+                case 8:
+                {
+                    memcpy(iib_fac_is.RelativeHumidity.u8, &data[4], 4);
+                    break;
+                }
 
-    converter.u8[0] = data[4];
-    converter.u8[1] = data[5];
-    converter.u8[2] = data[6];
-    converter.u8[3] = data[7];
+                default:
+                {
+                    break;
+                }
+            }
 
-    if (iib_address == 1) update_iib_structure_is(data_id, converter.f);
-    if (iib_address == 2) update_iib_structure_cd(data_id, converter.f);
-}
-
-static void update_iib_structure_is(uint8_t data_id, float data_val)
-{
-    uint8_t id;
-    id = data_id;
-
-    convert_to_bytes_t converter;
-
-    switch(id) {
-        case 0:
-            converter.f = data_val;
-            IIB_ITLK_REG_IS.u32 = converter.u32;
-            set_hard_interlock(0, IIB_Itlk);
             break;
-        case 1:
-            // TODO: Handle alarm message
-            break;
-        case 2:
-            iib_input_stage.Iin.f = data_val;
-            break;
+        }
 
-        case 3:
-            iib_input_stage.VdcLink.f = data_val;
-            break;
+        /// Data from FAC Cmd
+        case IIB_CMD_ADDRESS:
+        {
+            switch(data_id)
+            {
+                case 0:
+                {
+                    memcpy(iib_fac_cmd.Vout.u8, &data[4], 4);
+                    break;
+                }
+                case 1:
+                {
+                    memcpy(iib_fac_cmd.VcapBank.u8, &data[4], 4);
+                    break;
+                }
+                case 2:
+                {
+                    memcpy(iib_fac_cmd.TempRectInductor.u8, &data[4], 4);
+                    break;
+                }
+                case 3:
+                {
+                    memcpy(iib_fac_cmd.TempRectHeatSink.u8, &data[4], 4);
+                    break;
+                }
+                case 4:
+                {
+                    memcpy(iib_fac_cmd.ExternalBoardsVoltage.u8, &data[4], 4);
+                    break;
+                }
+                case 5:
+                {
+                    memcpy(iib_fac_cmd.AuxiliaryBoardCurrent.u8, &data[4], 4);
+                    break;
+                }
+                case 6:
+                {
+                    memcpy(iib_fac_cmd.IDBBoardCurrent.u8, &data[4], 4);
+                    break;
+                }
+                case 7:
+                {
+                    memcpy(iib_fac_cmd.GroundLeakage.u8, &data[4], 4);
+                    break;
+                }
+                case 8:
+                {
+                    memcpy(iib_fac_cmd.BoardTemperature.u8, &data[4], 4);
+                    break;
+                }
+                case 9:
+                {
+                    memcpy(iib_fac_cmd.RelativeHumidity.u8, &data[4], 4);
+                    break;
+                }
 
-        case 4:
-            iib_input_stage.TempL.f = data_val;
-            break;
+                default:
+                {
+                    break;
+                }
+            }
 
-        case 5:
-            iib_input_stage.TempHeatsink.f = data_val;
             break;
+        }
 
         default:
+        {
             break;
+        }
     }
 }
 
-static void update_iib_structure_cd(uint8_t data_id, float data_val)
+static void handle_can_interlock(uint8_t *data)
 {
-    uint8_t id;
-    id = data_id;
+    uint8_t iib_address;
+    uint8_t data_id;
 
-    convert_to_bytes_t converter;
+    iib_address = data[0];
+    data_id    = data[1];
 
-    switch(id) {
-        case 0:
-            converter.f = data_val;
-            IIB_ITLK_REG_CD.u32 = converter.u32;
-            set_hard_interlock(1, IIB_Itlk);
-            break;
-        case 1:
-            // TODO: Handle alarm data
-            break;
-        case 2:
-            iib_command_drawer.Vout.f = data_val;
-            break;
+    switch(iib_address)
+    {
+        /// Interlocks from FAC IS
+        case IIB_IS_ADDRESS:
+        {
+            switch(data_id)
+            {
+               case 0:
+               {
+                   if(g_can_reset_flag[0])
+                   {
+                       memcpy(iib_fac_is.InterlocksRegister.u8, &data[4], 4);
+                       set_hard_interlock(0, IIB_IS_Itlk);
+                   }
+                   break;
+               }
 
-        case 3:
-            iib_command_drawer.VcapBank.f = data_val;
-            break;
+               case 1:
+               {
+                   g_can_reset_flag[0] = 1;
+                   iib_fac_is.InterlocksRegister.u32 = 0;
+                   break;
+               }
 
-        case 4:
-            iib_command_drawer.TempL.f = data_val;
-            break;
+               default:
+               {
+                   break;
+               }
+            }
+        }
 
-        case 5:
-            iib_command_drawer.TempHeatSink.f = data_val;
-            break;
+        /// Interlocks from FAC Cmd
+        case IIB_CMD_ADDRESS:
+        {
+            switch(data_id)
+            {
+               case 0:
+               {
+                   if(g_can_reset_flag[1])
+                   {
+                       memcpy(iib_fac_cmd.InterlocksRegister.u8, &data[4], 4);
+                       set_hard_interlock(0, IIB_Cmd_Itlk);
+                   }
+                   break;
+               }
 
-        case 6:
-            iib_command_drawer.GroundLeakage.f = data_val;
-            break;
+               case 1:
+               {
+                   g_can_reset_flag[1] = 1;
+                   iib_fac_cmd.InterlocksRegister.u32 = 0;
+                   break;
+               }
+
+               default:
+               {
+                   break;
+               }
+            }
+        }
 
         default:
+        {
             break;
+        }
+    }
+}
+
+static void handle_can_alarm(uint8_t *data)
+{
+    uint8_t iib_address;
+    uint8_t data_id;
+
+    iib_address = data[0];
+    data_id    = data[1];
+
+    switch(iib_address)
+    {
+        /// Alarms from FAC IS
+        case IIB_IS_ADDRESS:
+        {
+            switch(data_id)
+            {
+               case 0:
+               {
+                   memcpy(iib_fac_is.AlarmsRegister.u8, &data[4], 4);
+                   break;
+               }
+
+               case 1:
+               {
+                   iib_fac_is.AlarmsRegister.u32 = 0;
+                   break;
+               }
+
+               default:
+               {
+                   break;
+               }
+            }
+        }
+
+        /// Alarms from FAC Cmd
+        case IIB_CMD_ADDRESS:
+        {
+            switch(data_id)
+            {
+               case 0:
+               {
+                   memcpy(iib_fac_cmd.AlarmsRegister.u8, &data[4], 4);
+                   break;
+               }
+
+               case 1:
+               {
+                   iib_fac_cmd.AlarmsRegister.u32 = 0;
+                   break;
+               }
+
+               default:
+               {
+                   break;
+               }
+            }
+        }
+
+        default:
+        {
+            break;
+        }
     }
 }
