@@ -47,9 +47,9 @@
 #define I_LOAD_2            g_controller_ctom.net_signals[1]
 #define V_CAPBANK           g_controller_ctom.net_signals[2]
 
-#define I_LOAD_MEAN         g_controller_ctom.net_signals[4]
-#define I_LOAD_ERROR        g_controller_ctom.net_signals[5]
-#define I_LOAD_DIFF         g_controller_ctom.net_signals[10]
+#define I_LOAD_MEAN         g_controller_ctom.net_signals[3]
+#define I_LOAD_ERROR        g_controller_ctom.net_signals[4]
+#define I_LOAD_DIFF         g_controller_ctom.net_signals[9]
 
 #define DUTY_CYCLE          g_controller_ctom.output_signals[0]
 

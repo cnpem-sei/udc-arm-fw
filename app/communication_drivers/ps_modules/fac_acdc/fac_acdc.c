@@ -252,42 +252,42 @@ static void handle_can_data(uint8_t *data)
             {
                 case 0:
                 {
-                    memcpy(iib_fac_cmd.Vout.u8, &data[4], 4);
+                    memcpy(iib_fac_cmd.VcapBank.u8, &data[4], 4);
                     break;
                 }
                 case 1:
                 {
-                    memcpy(iib_fac_cmd.VcapBank.u8, &data[4], 4);
+                    memcpy(iib_fac_cmd.Vout.u8, &data[4], 4);
                     break;
                 }
                 case 2:
                 {
-                    memcpy(iib_fac_cmd.TempRectInductor.u8, &data[4], 4);
+                    memcpy(iib_fac_cmd.ExternalBoardsVoltage.u8, &data[4], 4);
                     break;
                 }
                 case 3:
                 {
-                    memcpy(iib_fac_cmd.TempRectHeatSink.u8, &data[4], 4);
+                    memcpy(iib_fac_cmd.AuxiliaryBoardCurrent.u8, &data[4], 4);
                     break;
                 }
                 case 4:
                 {
-                    memcpy(iib_fac_cmd.ExternalBoardsVoltage.u8, &data[4], 4);
+                    memcpy(iib_fac_cmd.IDBBoardCurrent.u8, &data[4], 4);
                     break;
                 }
                 case 5:
                 {
-                    memcpy(iib_fac_cmd.AuxiliaryBoardCurrent.u8, &data[4], 4);
+                    memcpy(iib_fac_cmd.GroundLeakage.u8, &data[4], 4);
                     break;
                 }
                 case 6:
                 {
-                    memcpy(iib_fac_cmd.IDBBoardCurrent.u8, &data[4], 4);
+                    memcpy(iib_fac_cmd.TempRectInductor.u8, &data[4], 4);
                     break;
                 }
                 case 7:
                 {
-                    memcpy(iib_fac_cmd.GroundLeakage.u8, &data[4], 4);
+                    memcpy(iib_fac_cmd.TempRectHeatSink.u8, &data[4], 4);
                     break;
                 }
                 case 8:
