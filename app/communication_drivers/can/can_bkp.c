@@ -58,7 +58,7 @@ volatile bool g_bRXFlag3 = 0;
 
 volatile bool g_bErrFlag = 0;
 
-volatile uint8_t g_can_reset_flag[NUM_MAX_IIB_BOARDS] = {1};
+volatile uint8_t g_can_reset_flag[NUM_MAX_IIB_BOARDS];
 
 tCANMsgObject tx_message_reset_udc;
 
@@ -235,6 +235,13 @@ void can_int_handler(void)
 
 void init_can_bkp(void)
 {
+    uint8_t i;
+
+    for(i = 0; i < NUM_MAX_IIB_BOARDS; i++)
+    {
+        g_can_reset_flag[i] = 1;
+    }
+
     // Initialize the CAN controller
     CANInit(CAN0_BASE);
 
@@ -315,6 +322,17 @@ void send_reset_iib_message(uint8_t iib_address)
     tx_message_reset_udc.pucMsgData = message_reset_udc;
 
     CANMessageSet(CAN0_BASE, MESSAGE_RESET_UDC_OBJ_ID, &tx_message_reset_udc, MSG_OBJ_TYPE_TX);
+
+    message_itlk_iib[0] = iib_address;
+    message_itlk_iib[1] = 1;
+
+    g_iib_module_can_interlock.handle_can_interlock_message(message_itlk_iib);
+
+    message_alarm_iib[0] = iib_address;
+    message_alarm_iib[1] = 1;
+
+    g_iib_module_can_alarm.handle_can_alarm_message(message_alarm_iib);
+
 }
 
 void get_data_from_iib(void)
