@@ -146,9 +146,6 @@ static void bsmp_init_server(void)
 
     create_bsmp_var(36, 0, 4, false, V_LOAD.u8);
 
-    create_bsmp_var(37, 0, 4, false, V_OUT_MOD_1.u8);
-    create_bsmp_var(38, 0, 4, false, V_OUT_MOD_2.u8);
-
     create_bsmp_var(39, 0, 4, false, V_CAPBANK_MOD_1.u8);
     create_bsmp_var(40, 0, 4, false, V_CAPBANK_MOD_2.u8);
 

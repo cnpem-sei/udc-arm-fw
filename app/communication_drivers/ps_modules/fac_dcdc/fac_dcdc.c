@@ -59,7 +59,6 @@
 typedef enum
 {
     Load_Overcurrent,
-    Load_Overvoltage,
     CapBank_Overvoltage,
     CapBank_Undervoltage,
     IIB_Itlk,

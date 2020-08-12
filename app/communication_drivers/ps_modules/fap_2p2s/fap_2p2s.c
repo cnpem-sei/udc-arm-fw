@@ -31,6 +31,7 @@
 #include "communication_drivers/ipc/ipc_lib.h"
 #include "communication_drivers/adcp/adcp.h"
 #include "communication_drivers/bsmp/bsmp_lib.h"
+#include "communication_drivers/can/can_bkp.h"
 #include "communication_drivers/control/control.h"
 #include "communication_drivers/control/wfmref/wfmref.h"
 #include "communication_drivers/event_manager/event_manager.h"
@@ -145,16 +146,19 @@ typedef enum
     Load_Feedback_1_Fault,
     Load_Feedback_2_Fault,
     Arms_High_Difference,
-    IGBTs_Current_High_Difference
+    IGBTs_Current_High_Difference,
+    Complementary_PS_Itlk,
 } soft_interlocks_t;
 
 static volatile iib_fap_module_t iib_fap_2p2s[4];
 volatile hard_interlocks_t hard_interlocks;
 
 static void init_iib();
+
 static void handle_can_data(uint8_t *data);
-static void update_iib_structure(iib_fap_module_t *module, uint8_t data_id,
-                                                               float data_val);
+static void handle_can_interlock(uint8_t *data);
+static void handle_can_alarm(uint8_t *data);
+
 /**
 * @brief Initialize ADCP Channels.
 *
@@ -353,110 +357,152 @@ static void init_iib()
     iib_fap_2p2s[3].CanAddress = 4;
 
     init_iib_module_can_data(&g_iib_module_can_data, &handle_can_data);
+    init_iib_module_can_interlock(&g_iib_module_can_interlock, &handle_can_interlock);
+    init_iib_module_can_alarm(&g_iib_module_can_alarm, &handle_can_alarm);
 }
 
 static void handle_can_data(uint8_t *data)
 {
-    uint8_t iib_address;
-    uint8_t data_id;
+    uint8_t module;
 
-    convert_to_bytes_t converter;
+    module = data[0] - 1;
 
-    iib_address     = data[0];
-    data_id         = data[1];
-
-    converter.u8[0] = data[4];
-    converter.u8[1] = data[5];
-    converter.u8[2] = data[6];
-    converter.u8[3] = data[7];
-
-    update_iib_structure(&iib_fap_2p2s[iib_address - 1], data_id, converter.f);
-}
-
-static void update_iib_structure(iib_fap_module_t *module, uint8_t data_id,
-                                                        float data_val)
-{
-    uint8_t id = data_id;
-    convert_to_bytes_t converter;
-
-    switch (id)
+    switch(data[1])
     {
         case 0:
-            converter.f = data_val;
-
-            if (module->CanAddress == 1) {
-                IIB_ITLK_REG_MOD_1.u32 = converter.u32;
-                set_hard_interlock(0, IIB_Mod_1_Itlk);
-            }
-
-            if (module->CanAddress == 2) {
-                IIB_ITLK_REG_MOD_2.u32 = converter.u32;
-                set_hard_interlock(0, IIB_Mod_2_Itlk);
-            }
-
-            if (module->CanAddress == 3) {
-                IIB_ITLK_REG_MOD_3.u32 = converter.u32;
-                set_hard_interlock(0, IIB_Mod_3_Itlk);
-            }
-
-            if (module->CanAddress == 4) {
-                IIB_ITLK_REG_MOD_4.u32 = converter.u32;
-                set_hard_interlock(0, IIB_Mod_4_Itlk);
-            }
-
+        {
+            memcpy(iib_fap_2p2s[module].Vin.u8, &data[4], 4);
+            memcpy( (&V_DCLINK_MOD_1.f + module) , &data[4], 4);
             break;
-
+        }
         case 1:
-            // TODO: Handle alarm message
+        {
+            memcpy(iib_fap_2p2s[module].Vout.u8, &data[4], 4);
             break;
+        }
         case 2:
-            module->Vin.f = data_val;
-
-            /// Copy to shared memory for C28 access
-            *(&V_DCLINK_MOD_1.f + module->CanAddress - 1) = data_val;
+        {
+            memcpy(iib_fap_2p2s[module].IoutA1.u8, &data[4], 4);
             break;
-
+        }
         case 3:
-            module->Vout.f = data_val;
+        {
+            memcpy(iib_fap_2p2s[module].IoutA2.u8, &data[4], 4);
             break;
-
+        }
         case 4:
-            module->IoutA1.f = data_val;
+        {
+            memcpy(iib_fap_2p2s[module].TempIGBT1.u8, &data[4], 4);
             break;
-
+        }
         case 5:
-            module->IoutA2.f = data_val;
+        {
+            memcpy(iib_fap_2p2s[module].TempIGBT2.u8, &data[4], 4);
             break;
-
+        }
         case 6:
-            module->TempIGBT1.f = data_val;
+        {
+            memcpy(iib_fap_2p2s[module].DriverVoltage.u8, &data[4], 4);
             break;
-
+        }
         case 7:
-            module->TempIGBT2.f = data_val;
+        {
+            memcpy(iib_fap_2p2s[module].Driver1Current.u8, &data[4], 4);
             break;
-
+        }
         case 8:
-            module->DriverVoltage.f = data_val;
+        {
+            memcpy(iib_fap_2p2s[module].Driver2Current.u8, &data[4], 4);
             break;
-
+        }
         case 9:
-            module->Driver1Current.f = data_val;
+        {
+            memcpy(iib_fap_2p2s[module].TempL.u8, &data[4], 4);
             break;
-
+        }
         case 10:
-            module->Driver2Current.f = data_val;
+        {
+            memcpy(iib_fap_2p2s[module].TempHeatSink.u8, &data[4], 4);
             break;
-
+        }
         case 11:
-            module->TempL.f = data_val;
+        {
+            memcpy(iib_fap_2p2s[module].GroundLeakage.u8, &data[4], 4);
             break;
-
+        }
         case 12:
-            module->TempHeatSink.f = data_val;
+        {
+            memcpy(iib_fap_2p2s[module].BoardTemperature.u8, &data[4], 4);
             break;
+        }
+        case 13:
+        {
+            memcpy(iib_fap_2p2s[module].RelativeHumidity.u8, &data[4], 4);
+            break;
+        }
 
         default:
+        {
             break;
+        }
+    }
+}
+
+static void handle_can_interlock(uint8_t *data)
+{
+    uint8_t module;
+
+    module = data[0] - 1;
+
+    switch (data[1])
+    {
+        case 0:
+        {
+            if(g_can_reset_flag[module])
+            {
+                memcpy(iib_fap_2p2s[module].InterlocksRegister.u8, &data[4], 4);
+                set_hard_interlock(0, IIB_Mod_1_Itlk + module);
+            }
+            break;
+        }
+
+        case 1:
+        {
+            g_can_reset_flag[module] = 1;
+            iib_fap_2p2s[module].InterlocksRegister.u32 = 0;
+            break;
+        }
+
+        default:
+        {
+            break;
+        }
+    }
+}
+
+static void handle_can_alarm(uint8_t *data)
+{
+    uint8_t module;
+
+    module = data[0] - 1;
+
+    switch(data[1])
+    {
+       case 0:
+       {
+           memcpy(iib_fap_2p2s[module].AlarmsRegister.u8, &data[4], 4);
+           break;
+       }
+
+       case 1:
+       {
+           iib_fap_2p2s[module].AlarmsRegister.u32 = 0;
+           break;
+       }
+
+       default:
+       {
+           break;
+       }
     }
 }
