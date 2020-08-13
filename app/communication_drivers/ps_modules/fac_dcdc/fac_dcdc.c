@@ -130,10 +130,11 @@ static void bsmp_init_server(void)
     create_bsmp_var(45, 0, 4, false, iib_fac_os.DriverVoltage.u8);
     create_bsmp_var(46, 0, 4, false, iib_fac_os.Driver1Current.u8);
     create_bsmp_var(47, 0, 4, false, iib_fac_os.Driver2Current.u8);
-    create_bsmp_var(48, 0, 4, false, iib_fac_os.BoardTemperature.u8);
-    create_bsmp_var(49, 0, 4, false, iib_fac_os.RelativeHumidity.u8);
-    create_bsmp_var(50, 0, 4, false, iib_fac_os.InterlocksRegister.u8);
-    create_bsmp_var(51, 0, 4, false, iib_fac_os.AlarmsRegister.u8);
+    create_bsmp_var(48, 0, 4, false, iib_fac_os.GroundLeakage.u8);
+    create_bsmp_var(49, 0, 4, false, iib_fac_os.BoardTemperature.u8);
+    create_bsmp_var(50, 0, 4, false, iib_fac_os.RelativeHumidity.u8);
+    create_bsmp_var(51, 0, 4, false, iib_fac_os.InterlocksRegister.u8);
+    create_bsmp_var(52, 0, 4, false, iib_fac_os.AlarmsRegister.u8);
 }
 
 /**
@@ -215,25 +216,29 @@ static void handle_can_data(uint8_t *data)
         }
         case 8:
         {
-            memcpy(iib_fac_os.TempL.u8, &data[4], 4);
+            memcpy(iib_fac_os.GroundLeakage.u8, &data[4], 4);
             break;
         }
         case 9:
         {
-            memcpy(iib_fac_os.TempHeatSink.u8, &data[4], 4);
+            memcpy(iib_fac_os.TempL.u8, &data[4], 4);
             break;
         }
         case 10:
         {
-            memcpy(iib_fac_os.BoardTemperature.u8, &data[4], 4);
+            memcpy(iib_fac_os.TempHeatSink.u8, &data[4], 4);
             break;
         }
         case 11:
         {
+            memcpy(iib_fac_os.BoardTemperature.u8, &data[4], 4);
+            break;
+        }
+        case 12:
+        {
             memcpy(iib_fac_os.RelativeHumidity.u8, &data[4], 4);
             break;
         }
-
         default:
         {
             break;

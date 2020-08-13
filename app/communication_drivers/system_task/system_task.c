@@ -206,8 +206,11 @@ void TaskCheck(void)
             case FAP_2P2S:
             {
                 send_reset_iib_message(1);
+                SysCtlDelay(1000);
                 send_reset_iib_message(2);
+                SysCtlDelay(1000);
                 send_reset_iib_message(3);
+                SysCtlDelay(1000);
                 send_reset_iib_message(4);
                 break;
             }
@@ -215,13 +218,25 @@ void TaskCheck(void)
             case FAC_2P4S_DCDC:
             {
                 send_reset_iib_message(1);
+                SysCtlDelay(1000);
                 send_reset_iib_message(2);
+                SysCtlDelay(1000);
                 send_reset_iib_message(3);
+                SysCtlDelay(1000);
                 send_reset_iib_message(4);
+                SysCtlDelay(1000);
                 send_reset_iib_message(5);
+                SysCtlDelay(1000);
                 send_reset_iib_message(6);
+                SysCtlDelay(1000);
                 send_reset_iib_message(7);
+                SysCtlDelay(1000);
                 send_reset_iib_message(8);
+                break;
+            }
+
+            default:
+            {
                 break;
             }
         }
