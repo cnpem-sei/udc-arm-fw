@@ -196,6 +196,7 @@ void TaskCheck(void)
             case FAC_2S_DCDC:
             {
                 send_reset_iib_message(1);
+                SysCtlDelay(1000);
                 send_reset_iib_message(2);
                 break;
             }
