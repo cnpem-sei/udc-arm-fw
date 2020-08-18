@@ -335,10 +335,10 @@ void fap_4p_system_config()
     bsmp_init_server();
     init_iib();
 
-    init_wfmref(&WFMREF[0], WFMREF[0].wfmref_selected.u16, WFMREF[0].sync_mode.enu,
-                ISR_CONTROL_FREQ.f,
-                TIMESLICER_FREQ[TIMESLICER_WFMREF].f,
-                WFMREF[0].gain.f, WFMREF[0].offset.f, &g_wfmref_data.data[0][0].f,
+    init_wfmref(&WFMREF[0], WFMREF_SELECTED_PARAM[0].u16,
+                WFMREF_SYNC_MODE_PARAM[0].u16, ISR_CONTROL_FREQ.f,
+                WFMREF_FREQUENCY_PARAM[0].f, WFMREF_GAIN_PARAM[0].f,
+                WFMREF_OFFSET_PARAM[0].f, &g_wfmref_data.data[0][0].f,
                 SIZE_WFMREF, &g_ipc_ctom.ps_module[0].ps_reference.f);
 
     init_scope(&g_ipc_mtoc.scope[0], ISR_CONTROL_FREQ.f,

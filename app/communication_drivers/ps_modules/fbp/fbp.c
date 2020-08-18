@@ -239,12 +239,6 @@ void fbp_system_config()
 
     for(i = 0; i < NUM_MAX_PS_MODULES; i++)
     {
-        /*init_wfmref(&WFMREF[i], WFMREF[0].wfmref_selected.u16,
-                    WFMREF[0].sync_mode.enu,ISR_CONTROL_FREQ.f,
-                    TIMESLICER_FREQ[TIMESLICER_WFMREF].f,
-                    WFMREF[0].gain.f, WFMREF[0].offset.f, &g_wfmref_data.data_fbp[i][0][0].f,
-                    SIZE_WFMREF_FBP, &g_ipc_ctom.ps_module[i].ps_reference.f);*/
-
         init_wfmref(&WFMREF[i], WFMREF_SELECTED_PARAM[i].u16,
                     WFMREF_SYNC_MODE_PARAM[i].u16, ISR_CONTROL_FREQ.f,
                     WFMREF_FREQUENCY_PARAM[i].f,
