@@ -23,4 +23,4 @@
 
 volatile firmwares_version_t firmwares_version;
 
-const char * udc_arm_version = "V0.41u2020-08-18";
+const char * udc_arm_version = "V0.41u2020-08-19";
