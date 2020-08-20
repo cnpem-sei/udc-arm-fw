@@ -212,7 +212,7 @@ static void update_iib_structure_cd(uint8_t data_id, float data_val)
         case 0:
             converter.f = data_val;
             IIB_ITLK_REG_CD.u32 = converter.u32;
-            set_hard_interlock(1, IIB_Itlk);
+            set_hard_interlock(0, IIB_Itlk);
             break;
         case 1:
             // TODO: Handle alarm data

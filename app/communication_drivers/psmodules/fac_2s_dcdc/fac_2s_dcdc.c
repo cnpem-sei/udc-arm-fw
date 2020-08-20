@@ -225,11 +225,11 @@ static void update_iib_structure(iib_output_stage_t *module, uint8_t data_id,
             converter.f = data_val;
             if (module->CanAddress == 1) {
                 IIB_ITLK_REG_1.u32 = converter.u32;
-                set_hard_interlock(module->CanAddress - 1, IIB_1_Itlk);
+                set_hard_interlock(0, IIB_1_Itlk);
             }
             if (module->CanAddress == 2) {
                 IIB_ITLK_REG_2.u32 = converter.u32;
-                set_hard_interlock(module->CanAddress - 1, IIB_2_Itlk);
+                set_hard_interlock(0, IIB_2_Itlk);
             }
             break;
         case 1:
