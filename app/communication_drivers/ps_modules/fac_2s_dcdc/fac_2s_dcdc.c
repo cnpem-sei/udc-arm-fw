@@ -30,6 +30,7 @@
 #include "communication_drivers/ipc/ipc_lib.h"
 #include "communication_drivers/adcp/adcp.h"
 #include "communication_drivers/bsmp/bsmp_lib.h"
+#include "communication_drivers/can/can_bkp.h"
 #include "communication_drivers/control/control.h"
 #include "communication_drivers/control/wfmref/wfmref.h"
 #include "communication_drivers/event_manager/event_manager.h"
@@ -44,26 +45,26 @@
 #define V_CAPBANK_MOD_1                 g_controller_ctom.net_signals[2]    // HRADC2
 #define V_CAPBANK_MOD_2                 g_controller_ctom.net_signals[3]    // HRADC3
 
-#define I_LOAD_REFERENCE_WFMREF         g_controller_ctom.net_signals[4]
+#define I_LOAD_MEAN                     g_controller_ctom.net_signals[4]
+#define I_LOAD_ERROR                    g_controller_ctom.net_signals[5]
 
-#define I_LOAD_MEAN                     g_controller_ctom.net_signals[5]
-#define I_LOAD_ERROR                    g_controller_ctom.net_signals[6]
+#define DUTY_I_LOAD_PI                  g_controller_ctom.net_signals[6]
+#define DUTY_REF_FF                     g_controller_ctom.net_signals[7]
+#define DUTY_MEAN                       g_controller_ctom.net_signals[8]
 
-#define DUTY_I_LOAD_PI                  g_controller_ctom.net_signals[7]
-#define DUTY_REFERENCE_FF               g_controller_ctom.net_signals[8]
-#define DUTY_MEAN                       g_controller_ctom.net_signals[9]
+#define V_OUT_DIFF                      g_controller_ctom.net_signals[9]
+#define DUTY_DIFF                       g_controller_ctom.net_signals[10]
 
-#define V_OUT_DIFF                      g_controller_ctom.net_signals[10]
-#define DUTY_DIFF                       g_controller_ctom.net_signals[11]
+#define V_CAPBANK_MOD_1_FILTERED        g_controller_ctom.net_signals[11]
+#define V_CAPBANK_MOD_2_FILTERED        g_controller_ctom.net_signals[12]
 
-#define V_CAPBANK_MOD_1_FILTERED        g_controller_ctom.net_signals[12]
-#define V_CAPBANK_MOD_2_FILTERED        g_controller_ctom.net_signals[13]
+#define IN_FF_V_CAPBANK_MOD_1           g_controller_ctom.net_signals[13]
+#define IN_FF_V_CAPBANK_MOD_2           g_controller_ctom.net_signals[14]
 
-#define IN_FF_V_CAPBANK_MOD_1           g_controller_ctom.net_signals[14]
-#define IN_FF_V_CAPBANK_MOD_2           g_controller_ctom.net_signals[15]
+#define I_LOAD_DIFF                     g_controller_ctom.net_signals[15]
+#define V_LOAD                          g_controller_ctom.net_signals[16]
 
-#define I_LOAD_DIFF                     g_controller_ctom.net_signals[16]
-#define V_LOAD                          g_controller_ctom.net_signals[17]
+#define WFMREF_IDX                      g_controller_ctom.net_signals[30]
 
 #define DUTY_CYCLE_MOD_1                g_controller_ctom.output_signals[0]
 #define DUTY_CYCLE_MOD_2                g_controller_ctom.output_signals[1]
@@ -71,9 +72,6 @@
 /// ARM Net Signals
 #define V_OUT_MOD_1                     g_controller_mtoc.net_signals[0]
 #define V_OUT_MOD_2                     g_controller_mtoc.net_signals[1]
-
-#define IIB_ITLK_REG_1                  g_controller_mtoc.net_signals[2]
-#define IIB_ITLK_REG_2                  g_controller_mtoc.net_signals[3]
 
 /**
  * Interlocks defines
@@ -88,8 +86,8 @@ typedef enum
     Module_2_CapBank_Undervoltage,
     Module_1_Output_Overvoltage,
     Module_2_Output_Overvoltage,
-    IIB_1_Itlk,
-    IIB_2_Itlk,
+    IIB_Mod_1_Itlk,
+    IIB_Mod_2_Itlk,
     External_Interlock,
     Rack_Interlock
 } hard_interlocks_t;
@@ -100,15 +98,17 @@ typedef enum
     DCCT_2_Fault,
     DCCT_High_Difference,
     Load_Feedback_1_Fault,
-    Load_Feedback_2_Fault
+    Load_Feedback_2_Fault,
+    Modules_Output_High_Difference
 } soft_interlocks_t;
 
-volatile iib_fac_os_t fac_2s_dcdc_os[2];
+volatile iib_fac_os_t iib_fac_2s_dcdc[2];
 
-static void init_iib();
+static void init_iib_modules();
+
 static void handle_can_data(uint8_t *data);
-static void update_iib_structure(iib_fac_os_t *module, uint8_t data_id,
-                                                               float data_val);
+static void handle_can_interlock(uint8_t *data);
+static void handle_can_alarm(uint8_t *data);
 
 /**
 * @brief Initialize ADCP Channels.
@@ -146,27 +146,43 @@ static void bsmp_init_server(void)
 
     create_bsmp_var(36, 0, 4, false, V_LOAD.u8);
 
-    create_bsmp_var(39, 0, 4, false, V_CAPBANK_MOD_1.u8);
-    create_bsmp_var(40, 0, 4, false, V_CAPBANK_MOD_2.u8);
+    create_bsmp_var(37, 0, 4, false, V_CAPBANK_MOD_1.u8);
+    create_bsmp_var(38, 0, 4, false, V_CAPBANK_MOD_2.u8);
 
-    create_bsmp_var(41, 0, 4, false, DUTY_CYCLE_MOD_1.u8);
-    create_bsmp_var(42, 0, 4, false, DUTY_CYCLE_MOD_2.u8);
-    create_bsmp_var(43, 0, 4, false, DUTY_DIFF.u8);
+    create_bsmp_var(39, 0, 4, false, DUTY_CYCLE_MOD_1.u8);
+    create_bsmp_var(40, 0, 4, false, DUTY_CYCLE_MOD_2.u8);
+    create_bsmp_var(41, 0, 4, false, DUTY_DIFF.u8);
 
-    create_bsmp_var(44, 0, 4, false, fac_2s_dcdc_os[0].Iin.u8);
-    create_bsmp_var(45, 0, 4, false, fac_2s_dcdc_os[0].Iout.u8);
-    create_bsmp_var(46, 0, 4, false, fac_2s_dcdc_os[0].VdcLink.u8);
-    create_bsmp_var(47, 0, 4, false, fac_2s_dcdc_os[0].TempL.u8);
-    create_bsmp_var(48, 0, 4, false, fac_2s_dcdc_os[0].TempHeatSink.u8);
+    create_bsmp_var(42, 0, 4, false, iib_fac_2s_dcdc[0].VdcLink.u8);
+    create_bsmp_var(43, 0, 4, false, iib_fac_2s_dcdc[0].Iin.u8);
+    create_bsmp_var(44, 0, 4, false, iib_fac_2s_dcdc[0].Iout.u8);
+    create_bsmp_var(45, 0, 4, false, iib_fac_2s_dcdc[0].TempIGBT1.u8);
+    create_bsmp_var(46, 0, 4, false, iib_fac_2s_dcdc[0].TempIGBT2.u8);
+    create_bsmp_var(47, 0, 4, false, iib_fac_2s_dcdc[0].TempL.u8);
+    create_bsmp_var(48, 0, 4, false, iib_fac_2s_dcdc[0].TempHeatSink.u8);
+    create_bsmp_var(49, 0, 4, false, iib_fac_2s_dcdc[0].DriverVoltage.u8);
+    create_bsmp_var(50, 0, 4, false, iib_fac_2s_dcdc[0].Driver1Current.u8);
+    create_bsmp_var(51, 0, 4, false, iib_fac_2s_dcdc[0].Driver2Current.u8);
+    create_bsmp_var(52, 0, 4, false, iib_fac_2s_dcdc[0].BoardTemperature.u8);
+    create_bsmp_var(53, 0, 4, false, iib_fac_2s_dcdc[0].RelativeHumidity.u8);
+    create_bsmp_var(54, 0, 4, false, iib_fac_2s_dcdc[0].InterlocksRegister.u8);
+    create_bsmp_var(55, 0, 4, false, iib_fac_2s_dcdc[0].AlarmsRegister.u8);
 
-    create_bsmp_var(51, 0, 4, false, fac_2s_dcdc_os[1].Iin.u8);
-    create_bsmp_var(52, 0, 4, false, fac_2s_dcdc_os[1].Iout.u8);
-    create_bsmp_var(53, 0, 4, false, fac_2s_dcdc_os[1].VdcLink.u8);
-    create_bsmp_var(54, 0, 4, false, fac_2s_dcdc_os[1].TempL.u8);
-    create_bsmp_var(55, 0, 4, false, fac_2s_dcdc_os[1].TempHeatSink.u8);
+    create_bsmp_var(56, 0, 4, false, iib_fac_2s_dcdc[1].VdcLink.u8);
+    create_bsmp_var(57, 0, 4, false, iib_fac_2s_dcdc[1].Iin.u8);
+    create_bsmp_var(58, 0, 4, false, iib_fac_2s_dcdc[1].Iout.u8);
+    create_bsmp_var(59, 0, 4, false, iib_fac_2s_dcdc[1].TempIGBT1.u8);
+    create_bsmp_var(60, 0, 4, false, iib_fac_2s_dcdc[1].TempIGBT2.u8);
+    create_bsmp_var(61, 0, 4, false, iib_fac_2s_dcdc[1].TempL.u8);
+    create_bsmp_var(62, 0, 4, false, iib_fac_2s_dcdc[1].TempHeatSink.u8);
+    create_bsmp_var(63, 0, 4, false, iib_fac_2s_dcdc[1].DriverVoltage.u8);
+    create_bsmp_var(64, 0, 4, false, iib_fac_2s_dcdc[1].Driver1Current.u8);
+    create_bsmp_var(65, 0, 4, false, iib_fac_2s_dcdc[1].Driver2Current.u8);
+    create_bsmp_var(66, 0, 4, false, iib_fac_2s_dcdc[1].BoardTemperature.u8);
+    create_bsmp_var(67, 0, 4, false, iib_fac_2s_dcdc[1].RelativeHumidity.u8);
+    create_bsmp_var(68, 0, 4, false, iib_fac_2s_dcdc[1].InterlocksRegister.u8);
+    create_bsmp_var(69, 0, 4, false, iib_fac_2s_dcdc[1].AlarmsRegister.u8);
 
-    create_bsmp_var(58, 0, 4, false, IIB_ITLK_REG_1.u8);
-    create_bsmp_var(59, 0, 4, false, IIB_ITLK_REG_2.u8);
 }
 
 /**
@@ -179,7 +195,7 @@ void fac_2s_dcdc_system_config()
 {
     adcp_channel_config();
     bsmp_init_server();
-    init_iib();
+    init_iib_modules();
 
     init_wfmref(&WFMREF[0], WFMREF_SELECTED_PARAM[0].u16,
                 WFMREF_SYNC_MODE_PARAM[0].u16, ISR_CONTROL_FREQ.f,
@@ -193,86 +209,151 @@ void fac_2s_dcdc_system_config()
                (void *) 0);
 }
 
-static void init_iib()
+static void init_iib_modules()
 {
-    fac_2s_dcdc_os[0].CanAddress = 1;
-    fac_2s_dcdc_os[1].CanAddress = 2;
+    iib_fac_2s_dcdc[0].CanAddress = 1;
+    iib_fac_2s_dcdc[1].CanAddress = 2;
 
     init_iib_module_can_data(&g_iib_module_can_data, &handle_can_data);
+    init_iib_module_can_interlock(&g_iib_module_can_interlock, &handle_can_interlock);
+    init_iib_module_can_alarm(&g_iib_module_can_alarm, &handle_can_alarm);
 }
 
 static void handle_can_data(uint8_t *data)
 {
-    uint8_t iib_address;
-    uint8_t data_id;
+    uint8_t module;
 
-    convert_to_bytes_t converter;
+    module = data[0] - 1;
 
-    iib_address     = data[0];
-    data_id         = data[1];
-
-    converter.u8[0] = data[4];
-    converter.u8[1] = data[5];
-    converter.u8[2] = data[6];
-    converter.u8[3] = data[7];
-
-    update_iib_structure(&fac_2s_dcdc_os[iib_address-1], data_id, converter.f);
-}
-
-static void update_iib_structure(iib_fac_os_t *module, uint8_t data_id,
-                                                               float data_val)
-{
-    uint8_t id;
-    id = data_id;
-
-    convert_to_bytes_t converter;
-
-    switch (id) {
+    switch(data[1])
+    {
         case 0:
-            converter.f = data_val;
-            if (module->CanAddress == 1) {
-                IIB_ITLK_REG_1.u32 = converter.u32;
-                set_hard_interlock(module->CanAddress - 1, IIB_1_Itlk);
-            }
-            if (module->CanAddress == 2) {
-                IIB_ITLK_REG_2.u32 = converter.u32;
-                set_hard_interlock(module->CanAddress - 1, IIB_2_Itlk);
-            }
+        {
+            memcpy(iib_fac_2s_dcdc[module].VdcLink.u8, &data[4], 4);
             break;
+        }
         case 1:
-            //TODO: Handle alarm message
+        {
+            memcpy(iib_fac_2s_dcdc[module].Iin.u8, &data[4], 4);
             break;
+        }
         case 2:
-            module->Iin.f = data_val;
+        {
+            memcpy(iib_fac_2s_dcdc[module].Iout.u8, &data[4], 4);
             break;
-
+        }
         case 3:
-            module->Iout.f = data_val;
+        {
+            memcpy(iib_fac_2s_dcdc[module].TempIGBT1.u8, &data[4], 4);
             break;
-
+        }
         case 4:
-            module->VdcLink.f = data_val;
+        {
+            memcpy(iib_fac_2s_dcdc[module].TempIGBT2.u8, &data[4], 4);
             break;
-
+        }
         case 5:
-            //module->TempIGBT1.f = data_val;
+        {
+            memcpy(iib_fac_2s_dcdc[module].DriverVoltage.u8, &data[4], 4);
             break;
-
+        }
         case 6:
-            //module->TempIGBT2.f = data_val;
+        {
+            memcpy(iib_fac_2s_dcdc[module].Driver1Current.u8, &data[4], 4);
             break;
-
+        }
         case 7:
-            module->TempL.f = data_val;
+        {
+            memcpy(iib_fac_2s_dcdc[module].Driver2Current.u8, &data[4], 4);
             break;
-
+        }
         case 8:
-            module->TempHeatSink.f = data_val;
+        {
+            memcpy(iib_fac_2s_dcdc[module].GroundLeakage.u8, &data[4], 4);
             break;
-
+        }
+        case 9:
+        {
+            memcpy(iib_fac_2s_dcdc[module].TempL.u8, &data[4], 4);
+            break;
+        }
+        case 10:
+        {
+            memcpy(iib_fac_2s_dcdc[module].TempHeatSink.u8, &data[4], 4);
+            break;
+        }
+        case 11:
+        {
+            memcpy(iib_fac_2s_dcdc[module].BoardTemperature.u8, &data[4], 4);
+            break;
+        }
+        case 12:
+        {
+            memcpy(iib_fac_2s_dcdc[module].RelativeHumidity.u8, &data[4], 4);
+            break;
+        }
         default:
+        {
             break;
+        }
     }
 }
 
+static void handle_can_interlock(uint8_t *data)
+{
+    uint8_t module;
 
+    module = data[0] - 1;
+
+    switch(data[1])
+    {
+       case 0:
+       {
+           if(g_can_reset_flag[module])
+           {
+               memcpy(iib_fac_2s_dcdc[module].InterlocksRegister.u8, &data[4], 4);
+               set_hard_interlock(0, IIB_Mod_1_Itlk + module);
+           }
+           break;
+       }
+
+       case 1:
+       {
+           g_can_reset_flag[module] = 1;
+           iib_fac_2s_dcdc[module].InterlocksRegister.u32 = 0;
+           break;
+       }
+
+       default:
+       {
+           break;
+       }
+    }
+}
+
+static void handle_can_alarm(uint8_t *data)
+{
+    uint8_t module;
+
+    module = data[0] - 1;
+
+    switch(data[1])
+    {
+       case 0:
+       {
+           memcpy(iib_fac_2s_dcdc[module].AlarmsRegister.u8, &data[4], 4);
+           break;
+       }
+
+       case 1:
+       {
+           iib_fac_2s_dcdc[module].AlarmsRegister.u32 = 0;
+           break;
+       }
+
+       default:
+       {
+           break;
+       }
+    }
+}
