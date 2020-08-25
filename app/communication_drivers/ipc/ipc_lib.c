@@ -31,6 +31,7 @@
 #include "driverlib/interrupt.h"
 #include "driverlib/ipc.h"
 
+#include "communication_drivers/bsmp/bsmp_lib.h"
 #include "communication_drivers/i2c_onboard/eeprom.h"
 #include "communication_drivers/i2c_onboard/exio.h"
 
@@ -38,6 +39,8 @@
 
 #define M3_CTOMMSGRAM_START         0x2007F000
 #define C28_CTOMMSGRAM_START        0x0003F800
+
+#define TIMEOUT_DSP_IPC_ACK         30
 
 //#pragma DATA_SECTION(g_wfmref,"SHARERAMS23")
 //volatile u_float_t g_wfmref[SIZE_WFMREF];
@@ -74,30 +77,23 @@ void init_ipc(void)
     for (uiloop = 0; uiloop < NUM_MAX_PS_MODULES; uiloop++)
     {
         g_ipc_mtoc.ps_module[uiloop].ps_status.all = 0;
+
+        g_ipc_mtoc.ps_module[uiloop].ps_status.bit.interface = get_param(Command_Interface,0);
         g_ipc_mtoc.ps_module[uiloop].ps_status.bit.model = get_param(PS_Model,0);
+        g_ipc_mtoc.ps_module[uiloop].ps_status.bit.openloop = get_param(Control_Loop_State,0);
+
         g_ipc_mtoc.ps_module[uiloop].ps_setpoint.f = 0.0;
         g_ipc_mtoc.ps_module[uiloop].ps_reference.f = 0.0;
         g_ipc_mtoc.ps_module[uiloop].ps_soft_interlock.u32 = 0;
         g_ipc_mtoc.ps_module[uiloop].ps_hard_interlock.u32 = 0;
 
-        //init_buffer(&g_ipc_mtoc.buf_samples[uiloop], &(g_buf_samples_mtoc[0].f),
-        //            SIZE_BUF_SAMPLES_MTOC);
+        g_ipc_mtoc.siggen[uiloop].enable.u16 = 0;
     }
 
     for (uiloop = 0; uiloop < (uint8_t) get_param(Num_PS_Modules,0); uiloop++)
     {
         g_ipc_mtoc.ps_module[uiloop].ps_status.bit.active = 1;
     }
-
-    /**
-     * Initialize SigGen
-     */
-    g_ipc_mtoc.siggen.enable.u16 = 0;
-
-    /**
-     * Initilize WfmRef
-     */
-    //init_buffer( &(WFMREF.wfmref_data), &(g_wfmref[0].f), SIZE_WFMREF);
 
     /// Convert WfmRef pointers to DSP memory mapping
     //WFMREF.wfmref_data.p_buf_idx.f =

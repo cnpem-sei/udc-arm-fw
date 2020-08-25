@@ -44,18 +44,20 @@ void init_wfmref(wfmref_t *p_wfmref, uint16_t wfmref_selected,
         init_buffer(&p_wfmref->wfmref_data[i], p_start + i * size, size);
 
         /// Convert WfmRef pointers to C28 memory mapping
-        p_wfmref->wfmref_data[i].p_buf_start.f =
-                (float *) ipc_mtoc_translate((uint32_t) p_wfmref->wfmref_data[i].p_buf_start.f);
+        p_wfmref->wfmref_data[i].p_buf_start.p_f =
+                (float *) ipc_mtoc_translate((uint32_t) p_wfmref->wfmref_data[i].p_buf_start.p_f);
 
-        p_wfmref->wfmref_data[i].p_buf_idx.f =
-                        (float *) ipc_mtoc_translate((uint32_t) (p_wfmref->wfmref_data[i].p_buf_end.f + 1));
+        p_wfmref->wfmref_data[i].p_buf_idx.p_f =
+                        (float *) ipc_mtoc_translate((uint32_t) (p_wfmref->wfmref_data[i].p_buf_end.p_f + 1));
 
-        p_wfmref->wfmref_data[i].p_buf_end.f =
-                (float *) ipc_mtoc_translate((uint32_t) p_wfmref->wfmref_data[i].p_buf_end.f);
+        p_wfmref->wfmref_data[i].p_buf_end.p_f =
+                (float *) ipc_mtoc_translate((uint32_t) p_wfmref->wfmref_data[i].p_buf_end.p_f);
     }
 
     p_wfmref->lerp.counter = 0;
     p_wfmref->lerp.max_count = (uint16_t) roundf(freq_lerp / freq_wfmref);
+    p_wfmref->lerp.freq_lerp = freq_lerp;
+    p_wfmref->lerp.freq_base.f = freq_wfmref;
     p_wfmref->lerp.inv_decimation = freq_wfmref / freq_lerp;
     p_wfmref->lerp.out = 0.0;
 }

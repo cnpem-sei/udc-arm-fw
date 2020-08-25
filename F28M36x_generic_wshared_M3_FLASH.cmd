@@ -60,7 +60,8 @@ MEMORY
     BOOT_RSVD (RX)  : origin = 0x20004000, length = 0x0FF8
     C2 (RWX)        : origin = 0x200051B0, length = 0x0E50
     C3 (RWX)        : origin = 0x20006000, length = 0x2000
-    S0 (RWX)        : origin = 0x20008000, length = 0x2000
+    S0_0 (RWX)        : origin = 0x20008000, length = 0x1000
+    S0_1 (RWX)        : origin = 0x20009000, length = 0x1000
     S1_0 (RWX)        : origin = 0x2000A000, length = 0x1000
     S1_1 (RWX)        : origin = 0x2000B000, length = 0x1000
     //S2 (RWX)        : origin = 0x2000C000, length = 0x2000
@@ -142,7 +143,8 @@ SECTIONS
                            crc_table(AppCrc, algorithm=CRC32_PRIME),
                            PAGE = 0, ALIGN(8)
  
-    SHARERAMS0		: > S0     // g_controller_mtoc
+    SHARERAMS0_0    : > S0_0   // g_controller_mtoc
+    SHARERAMS0_1    : > S0_1   // g_param_bank
     SHARERAMS1_0  	: > S1_0   // g_controller_ctom
     SHARERAMS1_1  	: > S1_1   // HRADCs_Info
     //SHARERAMS2  	: > S2

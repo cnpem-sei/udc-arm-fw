@@ -188,7 +188,7 @@ void rs485_bkp_process_data(void)
 		//GPIOPinWrite(DEBUG_BASE, DEBUG_PIN, ON);
 
 		// Library will process the packet
-		//BSMPprocess(&recv_packet, &send_packet);
+		//BSMPprocess(&recv_packet, &send_packet, Remote);
 
 		//GPIOPinWrite(DEBUG_BASE, DEBUG_PIN, OFF);
 

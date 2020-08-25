@@ -34,10 +34,16 @@
 #include "communication_drivers/adcp/adcp.h"
 #include "communication_drivers/system_task/system_task.h"
 #include "communication_drivers/i2c_onboard/exio.h"
+#include "communication_drivers/ipc/ipc_lib.h"
 #include "board_drivers/hardware_def.h"
 
-uint16_t time = 0x00;
-uint8_t  iib_sample = 0x00;
+#define MAX_COUNT_COMMAND_INTERFACE     60000   // 60000 ms = 1 min
+#define MAX_COUNT_LOCK_UDC             300000   // 300000 ms = 5 min
+
+uint16_t    time = 0x00;
+uint8_t     iib_sample = 0x00;
+uint32_t    counter_command_interface = 0;
+uint32_t    counter_lock_udc = 0;
 
 /**
  * @brief Interrupt Service Routine for global timer
@@ -47,6 +53,7 @@ void isr_global_timer(void)
 {
 	time++;
 	iib_sample++;
+
 	// Apaga a interrup��o do timer 0 A
 	TimerIntClear(TIMER0_BASE, TIMER_TIMA_TIMEOUT);
 
@@ -70,6 +77,41 @@ void isr_global_timer(void)
 		    TaskSetNew(LED_STATUS);
 			#endif
 	}
+
+	if( g_ipc_ctom.ps_module[0].ps_status.bit.interface == Local ||
+        g_ipc_ctom.ps_module[1].ps_status.bit.interface == Local ||
+        g_ipc_ctom.ps_module[2].ps_status.bit.interface == Local ||
+        g_ipc_ctom.ps_module[3].ps_status.bit.interface == Local )
+	{
+	    counter_command_interface++;
+	    if(counter_command_interface >= MAX_COUNT_COMMAND_INTERFACE)
+        {
+            counter_command_interface = 0;
+            TaskSetNew(RESET_COMMAND_INTERFACE);
+        }
+	}
+	else
+	{
+	    counter_command_interface = 0;
+	}
+
+
+    if( g_ipc_ctom.ps_module[0].ps_status.bit.unlocked == UNLOCKED ||
+        g_ipc_ctom.ps_module[1].ps_status.bit.unlocked == UNLOCKED ||
+        g_ipc_ctom.ps_module[2].ps_status.bit.unlocked == UNLOCKED ||
+        g_ipc_ctom.ps_module[3].ps_status.bit.unlocked == UNLOCKED )
+    {
+        counter_lock_udc++;
+        if(counter_lock_udc >= MAX_COUNT_LOCK_UDC)
+        {
+            counter_lock_udc = 0;
+            TaskSetNew(LOCK_UDC);
+        }
+    }
+    else
+    {
+        counter_lock_udc = 0;
+    }
 
 }
 

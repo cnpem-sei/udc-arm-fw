@@ -21,7 +21,7 @@
 #ifndef IHM_H_
 #define IHM_H_
 
-extern void init_display(void);
-extern void display_process_data(void);
-extern uint8_t loc_rem_update(void);
+extern void ihm_init(void);
+extern void ihm_process_data(void);
+//extern uint8_t loc_rem_update(void);
 #endif /* IHM_H_ */

@@ -267,34 +267,43 @@ void rs485_process_data(void)
 
 	recv_packet.len = recv_buffer.index - SERIAL_HEADER - SERIAL_CSUM;
 
-
-    if ((recv_buffer.data[0] == SERIAL_CH_0_ADDRESS) ||
-        (recv_buffer.data[0] == BCAST_ADDRESS))
+    if (recv_buffer.data[0] == SERIAL_CH_0_ADDRESS)
     {
         g_current_ps_id = 0;
         g_ipc_mtoc.msg_id = 0;
-        BSMPprocess(&recv_packet, &send_packet, 0);
+        BSMPprocess(&recv_packet, &send_packet, 0, Remote);
     }
 
     else if (recv_buffer.data[0] == SERIAL_CH_1_ADDRESS)
 	{
         g_current_ps_id = 1;
         g_ipc_mtoc.msg_id = 1;
-	    BSMPprocess(&recv_packet, &send_packet, 1);
+	    BSMPprocess(&recv_packet, &send_packet, 1, Remote);
 	}
 
 	else if (recv_buffer.data[0] == SERIAL_CH_2_ADDRESS)
     {
         g_current_ps_id = 2;
         g_ipc_mtoc.msg_id = 2;
-        BSMPprocess(&recv_packet, &send_packet, 2);
+        BSMPprocess(&recv_packet, &send_packet, 2, Remote);
     }
 
 	else if (recv_buffer.data[0] == SERIAL_CH_3_ADDRESS)
     {
         g_current_ps_id = 3;
         g_ipc_mtoc.msg_id = 3;
-        BSMPprocess(&recv_packet, &send_packet, 3);
+        BSMPprocess(&recv_packet, &send_packet, 3, Remote);
+    }
+
+	else if(recv_buffer.data[0] == BCAST_ADDRESS)
+    {
+        uint8_t idx;
+        for(idx = 0; idx < 4; idx++)
+        {
+            g_current_ps_id = idx;
+            g_ipc_mtoc.msg_id = idx;
+            BSMPprocess(&recv_packet, &send_packet, idx, Remote);
+        }
     }
 
 	//GPIOPinWrite(DEBUG_BASE, DEBUG_PIN, OFF);
@@ -379,7 +388,10 @@ void config_rs485(uint32_t BaudRate)
 	{
 	    BaudRate = BAUDRATE_DEFAULT;
 	    set_param(RS485_Baudrate, 0, BaudRate);
-	    save_param_eeprom(RS485_Baudrate, 0);
+	    /**
+	     * TODO: check if this commented line affects something else
+	     */
+	    //save_param_eeprom(RS485_Baudrate, 0);
 	}
 
 	// Save current configuration of baudrate

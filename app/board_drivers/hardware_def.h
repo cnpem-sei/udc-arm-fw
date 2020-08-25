@@ -21,11 +21,21 @@
 
 #include <stdint.h>
 
-//#define HARDWARE_VERSION	0x20
-#define HARDWARE_VERSION	0x21
-
 #ifndef HARDWARE_DEF_H_
 #define HARDWARE_DEF_H_
+
+
+//#define HARDWARE_VERSION  0x20
+#define HARDWARE_VERSION    0x21
+
+/**
+ * Select DRS boards version
+ */
+#define UDC_V2_0    0
+#define UDC_V2_1    1
+
+#define HRADC_v2_0  0
+#define HRADC_v2_1  1
 
 /******************************************************************************
  * GPIO for the operation LED

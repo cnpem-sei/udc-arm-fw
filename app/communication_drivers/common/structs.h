@@ -39,14 +39,23 @@ typedef union
 typedef union
 {
     uint8_t     u8[4];
+    uint32_t    u32;
     float       f;
 } u_float_t;
 
 typedef union
 {
     uint8_t     u8[4];
-    float       *f;
+    uint32_t    u32;
+    float       *p_f;
 } u_p_float_t;
+
+typedef union
+{
+    uint8_t     u8[4];
+    uint32_t    u32;
+    void        *p;
+} u_pointer_t;
 
 typedef enum
 {

@@ -21,17 +21,19 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+#include "communication_drivers/adcp/adcp.h"
+#include "communication_drivers/bsmp/bsmp_lib.h"
+#include "communication_drivers/can/can_bkp.h"
+#include "communication_drivers/i2c_onboard/eeprom.h"
+#include "communication_drivers/i2c_onboard/exio.h"
 #include "communication_drivers/i2c_onboard/rtc.h"
 #include "communication_drivers/i2c_offboard_isolated/temp_low_power_module.h"
-#include "communication_drivers/signals_onboard/signals_onboard.h"
+#include "communication_drivers/ihm/ihm.h"
+#include "communication_drivers/ipc/ipc_lib.h"
+#include "communication_drivers/parameters/ps_parameters.h"
 #include "communication_drivers/rs485_bkp/rs485_bkp.h"
 #include "communication_drivers/rs485/rs485.h"
-#include "communication_drivers/ihm/ihm.h"
-#include "communication_drivers/can/can_bkp.h"
-#include "communication_drivers/ipc/ipc_lib.h"
-#include "communication_drivers/i2c_onboard/eeprom.h"
-#include "communication_drivers/adcp/adcp.h"
-#include "communication_drivers/i2c_onboard/exio.h"
+#include "communication_drivers/signals_onboard/signals_onboard.h"
 
 #include "system_task.h"
 
@@ -40,7 +42,7 @@ volatile uint8_t LedCtrl = 0;
 volatile bool READ_RTC = 0;
 volatile bool READ_IIB = 0;
 volatile bool ITLK_ALARM_RESET = 0;
-volatile bool PROCESS_DISP_MESS = 0;
+volatile bool PROCESS_IHM_MESS = 0;
 volatile bool PROCESS_ETH_MESS = 0;
 volatile bool PROCESS_CAN_MESS = 0;
 volatile bool PROCESS_RS485_MESS = 0;
@@ -48,6 +50,8 @@ volatile bool PROCESS_POWER_TEMP_SAMPLE = 0;
 volatile bool LED_STATUS_REQUEST = 0;
 volatile bool SAMPLE_ADCP_REQUEST = 0;
 volatile bool ADCP_SAMPLE_AVAILABLE_REQUEST = 0;
+volatile bool RESET_COMMAND_INTERFACE_REQUEST = 0;
+volatile bool LOCK_UDC_REQUEST = 0;
 
 void
 TaskSetNew(uint8_t TaskNum)
@@ -66,8 +70,8 @@ TaskSetNew(uint8_t TaskNum)
 		ITLK_ALARM_RESET = 1;
 		break;
 
-	case PROCESS_DISPLAY_MESSAGE:
-		PROCESS_DISP_MESS = 1;
+	case PROCESS_IHM_MESSAGE:
+		PROCESS_IHM_MESS = 1;
 		break;
 
 	case PROCESS_ETHERNET_MESSAGE:
@@ -98,6 +102,14 @@ TaskSetNew(uint8_t TaskNum)
 	    ADCP_SAMPLE_AVAILABLE_REQUEST = 1;
 	    break;
 
+	case RESET_COMMAND_INTERFACE:
+	    RESET_COMMAND_INTERFACE_REQUEST = 1;
+	    break;
+
+	case LOCK_UDC:
+	    LOCK_UDC_REQUEST = 1;
+	    break;
+
 	default:
 		break;
 
@@ -119,7 +131,7 @@ void TaskCheck(void)
     else if(PROCESS_CAN_MESS)
     {
       PROCESS_CAN_MESS = 0;
-      //can_check();
+      can_check();
     }
 
 	else if(SAMPLE_ADCP_REQUEST)
@@ -143,11 +155,11 @@ void TaskCheck(void)
     /**********************************************
      * TODO: Display process data
      * *******************************************/
-	//else if(PROCESS_DISP_MESS)
-	//{
-	//	PROCESS_DISP_MESS = 0;
-	//	display_process_data();
-	//}
+	else if(PROCESS_IHM_MESS)
+	{
+		PROCESS_IHM_MESS = 0;
+		ihm_process_data();
+	}
 
 	else if(READ_RTC)
 	{
@@ -165,12 +177,71 @@ void TaskCheck(void)
     /**********************************************
      * TODO: Reset interlocks
      * *******************************************/
-	//else if(ITLK_ALARM_RESET)
-	//{
-	//	ITLK_ALARM_RESET = 0;
-    //
-	//	interlock_alarm_reset();
-	//}
+	else if(ITLK_ALARM_RESET)
+	{
+		ITLK_ALARM_RESET = 0;
+
+		//interlock_alarm_reset();
+		switch(g_ipc_ctom.ps_module[0].ps_status.bit.model)
+        {
+            case FAC_DCDC:
+            case FAC_DCDC_EMA:
+            case FAP:
+            {
+                send_reset_iib_message(1);
+                break;
+            }
+
+            case FAC_ACDC:
+            case FAC_2S_DCDC:
+            {
+                send_reset_iib_message(1);
+                SysCtlDelay(1000);
+                send_reset_iib_message(2);
+                break;
+            }
+
+            case FAC_2S_ACDC:
+            case FAC_2P4S_ACDC:
+            case FAP_4P:
+            case FAP_2P2S:
+            {
+                send_reset_iib_message(1);
+                SysCtlDelay(1000);
+                send_reset_iib_message(2);
+                SysCtlDelay(1000);
+                send_reset_iib_message(3);
+                SysCtlDelay(1000);
+                send_reset_iib_message(4);
+                break;
+            }
+
+            case FAC_2P4S_DCDC:
+            {
+                send_reset_iib_message(1);
+                SysCtlDelay(1000);
+                send_reset_iib_message(2);
+                SysCtlDelay(1000);
+                send_reset_iib_message(3);
+                SysCtlDelay(1000);
+                send_reset_iib_message(4);
+                SysCtlDelay(1000);
+                send_reset_iib_message(5);
+                SysCtlDelay(1000);
+                send_reset_iib_message(6);
+                SysCtlDelay(1000);
+                send_reset_iib_message(7);
+                SysCtlDelay(1000);
+                send_reset_iib_message(8);
+                break;
+            }
+
+            default:
+            {
+                break;
+            }
+        }
+	}
 
 	else if(PROCESS_POWER_TEMP_SAMPLE)
 	{
@@ -217,4 +288,38 @@ void TaskCheck(void)
         }
 	}
 
+	else if(RESET_COMMAND_INTERFACE_REQUEST)
+	{
+	    RESET_COMMAND_INTERFACE_REQUEST = 0;
+
+        u_uint16_t interface;
+        uint8_t i, dummy = 0;
+        interface.u16 = 0x0000;
+
+	    g_ipc_mtoc.ps_module[0].ps_status.bit.interface = Remote;
+	    g_ipc_mtoc.ps_module[1].ps_status.bit.interface = Remote;
+	    g_ipc_mtoc.ps_module[2].ps_status.bit.interface = Remote;
+	    g_ipc_mtoc.ps_module[3].ps_status.bit.interface = Remote;
+
+        for(i = 0; i < NUM_PS_MODULES; i++)
+        {
+            RUN_BSMP_FUNC(i, 6, &interface.u8, &dummy);
+        }
+	}
+
+	else if(LOCK_UDC_REQUEST)
+	{
+	    LOCK_UDC_REQUEST = 0;
+
+	    u_uint16_t password;
+	    uint8_t i, dummy = 0;
+	    password.u16 = PASSWORD;
+
+	    for(i = 0; i < NUM_PS_MODULES; i++)
+	    {
+            RUN_BSMP_FUNC(i, 9, &password.u8, &dummy);
+	    }
+
+	    //bsmp[0].funcs.list[11]->func_p(&password.u8, &dummy);
+	}
 }

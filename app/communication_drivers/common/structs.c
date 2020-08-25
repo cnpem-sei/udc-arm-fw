@@ -31,8 +31,8 @@
  */
 void init_buffer(buf_t *p_buf, volatile float *p_buf_start, uint16_t size)
 {
-    p_buf->p_buf_start.f = p_buf_start;
-    p_buf->p_buf_end.f = p_buf_start + size - 1;
+    p_buf->p_buf_start.p_f = p_buf_start;
+    p_buf->p_buf_end.p_f = p_buf_start + size - 1;
     //reset_buffer(p_buf);
 }
 
@@ -46,9 +46,9 @@ void reset_buffer(buf_t *p_buf)
     p_buf->status = Disabled;
     p_buf->p_buf_idx = p_buf->p_buf_start;
 
-    while(p_buf->p_buf_idx.f < p_buf->p_buf_end.f)
+    while(p_buf->p_buf_idx.p_f < p_buf->p_buf_end.p_f)
     {
-        *(p_buf->p_buf_idx.f++) = 0.0;
+        *(p_buf->p_buf_idx.p_f++) = 0.0;
     }
 
     p_buf->p_buf_idx = p_buf->p_buf_start;
@@ -93,7 +93,7 @@ void postmortem_buffer(buf_t *p_buf)
 uint16_t size_buffer(buf_t *p_buf)
 {
     uint16_t size;
-    size = p_buf->p_buf_start.f - p_buf->p_buf_end.f;
+    size = p_buf->p_buf_start.p_f - p_buf->p_buf_end.p_f;
     return size;
 }
 
@@ -106,7 +106,7 @@ uint16_t size_buffer(buf_t *p_buf)
 uint16_t idx_buffer(buf_t *p_buf)
 {
     uint16_t idx;
-    idx = p_buf->p_buf_idx.f - p_buf->p_buf_start.f;
+    idx = p_buf->p_buf_idx.p_f - p_buf->p_buf_start.p_f;
     return idx;
 }
 
@@ -121,23 +121,23 @@ uint16_t idx_buffer(buf_t *p_buf)
  */
 uint16_t insert_buffer(buf_t *p_buf, float data)
 {
-    if( (p_buf->p_buf_idx.f >= p_buf->p_buf_start.f) &&
-        (p_buf->p_buf_idx.f <= p_buf->p_buf_end.f) )
+    if( (p_buf->p_buf_idx.p_f >= p_buf->p_buf_start.p_f) &&
+        (p_buf->p_buf_idx.p_f <= p_buf->p_buf_end.p_f) )
     {
         if(p_buf->status == Buffering)
         {
-            *(p_buf->p_buf_idx.f) = data;
+            *(p_buf->p_buf_idx.p_f) = data;
 
-            if(p_buf->p_buf_idx.f++ == p_buf->p_buf_end.f)
+            if(p_buf->p_buf_idx.p_f++ == p_buf->p_buf_end.p_f)
             {
                 p_buf->p_buf_idx = p_buf->p_buf_start;
             }
         }
         else if(p_buf->status == Postmortem)
         {
-            if(p_buf->p_buf_idx.f < p_buf->p_buf_end.f)
+            if(p_buf->p_buf_idx.p_f < p_buf->p_buf_end.p_f)
             {
-                *(p_buf->p_buf_idx.f++) = data;
+                *(p_buf->p_buf_idx.p_f++) = data;
             }
             else
             {
@@ -175,9 +175,9 @@ uint16_t test_buffer_limits(buf_t *p_buf, float value, float tol)
 
     p_buf->p_buf_idx = p_buf->p_buf_start;
 
-    while(p_buf->p_buf_idx.f <= p_buf->p_buf_end.f)
+    while(p_buf->p_buf_idx.p_f <= p_buf->p_buf_end.p_f)
     {
-        samp = *(p_buf->p_buf_idx.f++);
+        samp = *(p_buf->p_buf_idx.p_f++);
 
         if( (samp < value - tol) || (samp > value + tol) )
         {

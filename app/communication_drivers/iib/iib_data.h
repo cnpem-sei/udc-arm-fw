@@ -41,14 +41,14 @@ typedef volatile struct
         volatile uint32_t   u32;
         volatile uint8_t    u8[4];
         volatile float      f;
-    } iib_itlk_lim[NUM_MAX_IIB_SIGNALS];
+    } iib_itlk[NUM_MAX_IIB_SIGNALS];
 
     union
     {
         volatile uint32_t   u32;
         volatile uint8_t    u8[4];
         volatile float      f;
-    } iib_alm_lim[NUM_MAX_IIB_SIGNALS];
+    } iib_alarm[NUM_MAX_IIB_SIGNALS];
 
 } iib_framwork_t;
 
@@ -62,7 +62,22 @@ typedef volatile struct {
     union {
         float       f;
         uint8_t     u8[4];
-    } VdcLink;
+    } Vin;
+
+    union {
+        float       f;
+        uint8_t     u8[4];
+    } DriverVoltage;
+
+    union {
+        float       f;
+        uint8_t     u8[4];
+    } DriverCurrent;
+
+    union {
+        float       f;
+        uint8_t     u8[4];
+    } TempIGBT;
 
     union {
         float       f;
@@ -77,16 +92,28 @@ typedef volatile struct {
     union {
         float       f;
         uint8_t     u8[4];
-    } Driver1Error;
+    } BoardTemperature;
 
     union {
         float       f;
         uint8_t     u8[4];
-    } Driver2Error;
+    } RelativeHumidity;
+
+    union {
+        float       f;
+        uint8_t     u8[4];
+        uint32_t    u32;
+    } InterlocksRegister;
+
+    union {
+        float       f;
+        uint8_t     u8[4];
+        uint32_t    u32;
+    } AlarmsRegister;
 
     uint8_t CanAddress;
 
-} iib_input_stage_t;
+} iib_fac_is_t;
 
 typedef volatile struct {
 
@@ -104,6 +131,21 @@ typedef volatile struct {
         float       f;
         uint8_t     u8[4];
     } VdcLink;
+
+    union {
+        float       f;
+        uint8_t     u8[4];
+    } DriverVoltage;
+
+    union {
+        float       f;
+        uint8_t     u8[4];
+    } Driver1Current;
+
+    union {
+        float       f;
+        uint8_t     u8[4];
+    } Driver2Current;
 
     union {
         float       f;
@@ -128,28 +170,45 @@ typedef volatile struct {
     union {
         float       f;
         uint8_t     u8[4];
-    } Driver1Error;
+    } GroundLeakage;
 
     union {
         float       f;
         uint8_t     u8[4];
-    } Driver2Error;
+    } BoardTemperature;
+
+    union {
+        float       f;
+        uint8_t     u8[4];
+    } RelativeHumidity;
+
+    union {
+        float       f;
+        uint8_t     u8[4];
+        uint32_t    u32;
+    } InterlocksRegister;
+
+    union {
+        float       f;
+        uint8_t     u8[4];
+        uint32_t    u32;
+    } AlarmsRegister;
 
     uint8_t CanAddress;
 
-} iib_output_stage_t;
+} iib_fac_os_t;
 
 typedef volatile struct {
 
     union {
         float       f;
         uint8_t     u8[4];
-    } TempHeatSink;
+    } TempRectHeatSink;
 
     union {
         float       f;
         uint8_t     u8[4];
-    } TempL;
+    } TempRectInductor;
 
     union {
         float       f;
@@ -164,11 +223,48 @@ typedef volatile struct {
     union {
         float       f;
         uint8_t     u8[4];
+    } ExternalBoardsVoltage;
+
+    union {
+        float       f;
+        uint8_t     u8[4];
+    } AuxiliaryBoardCurrent;
+
+    union {
+        float       f;
+        uint8_t     u8[4];
+    } IDBBoardCurrent;
+
+    union {
+        float       f;
+        uint8_t     u8[4];
     } GroundLeakage;
+
+    union {
+        float       f;
+        uint8_t     u8[4];
+    } BoardTemperature;
+
+    union {
+        float       f;
+        uint8_t     u8[4];
+    } RelativeHumidity;
+
+    union {
+        float       f;
+        uint8_t     u8[4];
+        uint32_t    u32;
+    } InterlocksRegister;
+
+    union {
+        float       f;
+        uint8_t     u8[4];
+        uint32_t    u32;
+    } AlarmsRegister;
 
     uint8_t CanAddress;
 
-} iib_command_drawer_t;
+} iib_fac_cmd_t;
 
 typedef volatile struct {
 
@@ -276,17 +372,17 @@ typedef volatile struct {
     union {
         float       f;
         uint8_t     u8[4];
-    } DriveVoltage;
+    } DriverVoltage;
 
     union {
         float       f;
         uint8_t     u8[4];
-    } Drive1Current;
+    } Driver1Current;
 
     union {
         float       f;
         uint8_t     u8[4];
-    } Drive2Current;
+    } Driver2Current;
 
     union {
         float       f;
@@ -301,16 +397,6 @@ typedef volatile struct {
     union {
         float       f;
         uint8_t     u8[4];
-    } Driver1Error;
-
-    union {
-        float       f;
-        uint8_t     u8[4];
-    } Driver2Error;
-
-    union {
-        float       f;
-        uint8_t     u8[4];
     } TempL;
 
     union {
@@ -321,27 +407,29 @@ typedef volatile struct {
     union {
         float       f;
         uint8_t     u8[4];
-    } Relay;
-
-    union {
-        float       f;
-        uint8_t     u8[4];
-    } LeakageCurrent;
-
-    union {
-        float       f;
-        uint8_t     u8[4];
-    } Rack;
-
-    union {
-        float       f;
-        uint8_t     u8[4];
-    } ExternalItlk;
-
-    union {
-        float       f;
-        uint8_t     u8[4];
     } GroundLeakage;
+
+    union {
+        float       f;
+        uint8_t     u8[4];
+    } BoardTemperature;
+
+    union {
+        float       f;
+        uint8_t     u8[4];
+    } RelativeHumidity;
+
+    union {
+        float       f;
+        uint8_t     u8[4];
+        uint32_t    u32;
+    } InterlocksRegister;
+
+    union {
+        float       f;
+        uint8_t     u8[4];
+        uint32_t    u32;
+    } AlarmsRegister;
 
     uint8_t CanAddress;
 
@@ -351,6 +439,6 @@ typedef union {
     float       f;
     uint8_t     u8[4];
     uint32_t    u32;
-} float_to_bytes_t;
+} convert_to_bytes_t;
 
 #endif /* IIB_DATA_H_ */
