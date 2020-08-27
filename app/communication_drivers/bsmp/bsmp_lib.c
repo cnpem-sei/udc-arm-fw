@@ -2544,7 +2544,7 @@ void BSMPprocess(struct bsmp_raw_packet *recv_packet,
         (bsmp_cmd_type == BSMP_READ_COMMANDS ) ||
         (bsmp_cmd_type == BSMP_QUERY_COMMANDS ) ||
         (bsmp_cmd_type == BSMP_BLOCK_COMMANDS) ||
-        ((bsmp_cmd_type == BSMP_FUNC_EXECUTE) && (recv_packet->data[3] == 30)) ||
+        ((bsmp_cmd_type == BSMP_FUNC_EXECUTE) && (recv_packet->data[3] == 32)) ||
         ((bsmp_cmd_type == BSMP_FUNC_EXECUTE) && (recv_packet->data[3] == 6)) )
     {
         bsmp_process_packet(&bsmp[server], recv_packet, send_packet);
