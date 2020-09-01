@@ -54,17 +54,35 @@
 #define MOD_B_ID                    0x1
 
 /// DSP Net Signals
-#define V_CAPBANK_MOD_A             g_controller_ctom.net_signals[0]  // HRADC0
-#define IOUT_RECT_MOD_A             g_controller_ctom.net_signals[1]  // HRADC1
-#define V_CAPBANK_MOD_B             g_controller_ctom.net_signals[2]  // HRADC2
-#define IOUT_RECT_MOD_B             g_controller_ctom.net_signals[3]  // HRADC3
+#define V_CAPBANK_MOD_A                     g_controller_ctom.net_signals[0]  // HRADC0
+#define IOUT_RECT_MOD_A                     g_controller_ctom.net_signals[1]  // HRADC1
+#define V_CAPBANK_MOD_B                     g_controller_ctom.net_signals[2]  // HRADC2
+#define IOUT_RECT_MOD_B                     g_controller_ctom.net_signals[3]  // HRADC3
 
-#define DUTY_CYCLE_MOD_A            g_controller_ctom.output_signals[0]
-#define DUTY_CYCLE_MOD_B            g_controller_ctom.output_signals[1]
+#define V_CAPBANK_FILTERED_2HZ_MOD_A        g_controller_ctom.net_signals[4]
+#define V_CAPBANK_FILTERED_2Hz_4HZ_MOD_A    g_controller_ctom.net_signals[5]
+#define V_CAPBANK_ERROR_MOD_A               g_controller_ctom.net_signals[6]
+
+#define I_OUT_RECT_REF_MOD_A                g_controller_ctom.net_signals[7]
+#define I_OUT_RECT_ERROR_MOD_A              g_controller_ctom.net_signals[8]
+#define I_OUT_RECT_RESS_2HZ_MOD_A           g_controller_ctom.net_signals[9]
+#define I_OUT_RECT_RESS_2HZ_4HZ_MOD_A       g_controller_ctom.net_signals[10]
+
+#define V_CAPBANK_FILTERED_2HZ_MOD_B        g_controller_ctom.net_signals[11]
+#define V_CAPBANK_FILTERED_2Hz_4HZ_MOD_B    g_controller_ctom.net_signals[12]
+#define V_CAPBANK_ERROR_MOD_B               g_controller_ctom.net_signals[13]
+
+#define I_OUT_RECT_REF_MOD_B                g_controller_ctom.net_signals[14]
+#define I_OUT_RECT_ERROR_MOD_B              g_controller_ctom.net_signals[15]
+#define I_OUT_RECT_RESS_2HZ_MOD_B           g_controller_ctom.net_signals[16]
+#define I_OUT_RECT_RESS_2HZ_4HZ_MOD_B       g_controller_ctom.net_signals[17]
+
+#define DUTY_CYCLE_MOD_A                    g_controller_ctom.output_signals[0]
+#define DUTY_CYCLE_MOD_B                    g_controller_ctom.output_signals[1]
 
 /// ARM Net Signals
-#define VOUT_RECT_MOD_A             g_controller_mtoc.net_signals[0]
-#define VOUT_RECT_MOD_B             g_controller_mtoc.net_signals[1]
+#define V_OUT_RECT_MOD_A                     g_controller_mtoc.net_signals[0]
+#define V_OUT_RECT_MOD_B                     g_controller_mtoc.net_signals[1]
 
 /**
  * Interlocks defines
@@ -140,7 +158,7 @@ static void bsmp_init_server(void)
     create_bsmp_var(44, MOD_A_ID, 4, false, fac_2s_acdc_is[MOD_A_ID].RelativeHumidity.u8);
     create_bsmp_var(45, MOD_A_ID, 4, false, fac_2s_acdc_is[MOD_A_ID].InterlocksRegister.u8);
     create_bsmp_var(46, MOD_A_ID, 4, false, fac_2s_acdc_is[MOD_A_ID].AlarmsRegister.u8);
-                        MOD_A_ID
+
     create_bsmp_var(47, MOD_A_ID, 4, false, fac_2s_acdc_cmd[MOD_A_ID].Vout.u8);
     create_bsmp_var(48, MOD_A_ID, 4, false, fac_2s_acdc_cmd[MOD_A_ID].VcapBank.u8);
     create_bsmp_var(49, MOD_A_ID, 4, false, fac_2s_acdc_cmd[MOD_A_ID].TempRectInductor.u8);
@@ -257,7 +275,7 @@ static void handle_can_data(uint8_t *data)
                 case 0:
                 {
                     memcpy(fac_2s_acdc_is[module].Vin.u8, &data[4], 4);
-                    memcpy( (&VOUT_RECT_MOD_A.f + module) , &data[4], 4);
+                    memcpy( (&V_OUT_RECT_MOD_A.f + module) , &data[4], 4);
                     break;
                 }
                 case 1:
