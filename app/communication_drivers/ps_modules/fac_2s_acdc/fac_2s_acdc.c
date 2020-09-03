@@ -28,6 +28,9 @@
 #include "inc/hw_ipc.h"
 #include "inc/hw_types.h"
 
+#include "driverlib/gpio.h"
+
+#include "board_drivers/hardware_def.h"
 #include "communication_drivers/ipc/ipc_lib.h"
 #include "communication_drivers/adcp/adcp.h"
 #include "communication_drivers/bsmp/bsmp_lib.h"
@@ -55,9 +58,9 @@
 
 /// DSP Net Signals
 #define V_CAPBANK_MOD_A                     g_controller_ctom.net_signals[0]  // HRADC0
-#define IOUT_RECT_MOD_A                     g_controller_ctom.net_signals[1]  // HRADC1
+#define I_OUT_RECT_MOD_A                    g_controller_ctom.net_signals[1]  // HRADC1
 #define V_CAPBANK_MOD_B                     g_controller_ctom.net_signals[2]  // HRADC2
-#define IOUT_RECT_MOD_B                     g_controller_ctom.net_signals[3]  // HRADC3
+#define I_OUT_RECT_MOD_B                    g_controller_ctom.net_signals[3]  // HRADC3
 
 #define V_CAPBANK_FILTERED_2HZ_MOD_A        g_controller_ctom.net_signals[4]
 #define V_CAPBANK_FILTERED_2Hz_4HZ_MOD_A    g_controller_ctom.net_signals[5]
@@ -95,10 +98,8 @@ typedef enum
     Rectifier_Overcurrent,
     Welded_Contactor_Fault,
     Opened_Contactor_Fault,
-    IIB_IS_Itlk_Mod_A,
-    IIB_IS_Itlk_Mod_B,
-    IIB_Cmd_Itlk_Mod_A,
-    IIB_Cmd_Itlk_Mod_B
+    IIB_IS_Itlk,
+    IIB_Cmd_Itlk
 } hard_interlocks_t;
 
 volatile iib_fac_is_t fac_2s_acdc_is[2];
@@ -143,7 +144,7 @@ static void bsmp_init_server(void)
     create_bsmp_var(32, MOD_A_ID, 4, false, g_ipc_ctom.ps_module[MOD_A_ID].ps_hard_interlock.u8);
 
     create_bsmp_var(33, MOD_A_ID, 4, false, V_CAPBANK_MOD_A.u8);
-    create_bsmp_var(34, MOD_A_ID, 4, false, IOUT_RECT_MOD_A.u8);
+    create_bsmp_var(34, MOD_A_ID, 4, false, I_OUT_RECT_MOD_A.u8);
 
     create_bsmp_var(35, MOD_A_ID, 4, false, DUTY_CYCLE_MOD_A.u8);
 
@@ -188,7 +189,7 @@ static void bsmp_init_server(void)
     create_bsmp_var(32, MOD_B_ID, 4, false, g_ipc_ctom.ps_module[MOD_B_ID].ps_hard_interlock.u8);
 
     create_bsmp_var(33, MOD_B_ID, 4, false, V_CAPBANK_MOD_B.u8);
-    create_bsmp_var(34, MOD_B_ID, 4, false, IOUT_RECT_MOD_B.u8);
+    create_bsmp_var(34, MOD_B_ID, 4, false, I_OUT_RECT_MOD_B.u8);
 
     create_bsmp_var(35, MOD_B_ID, 4, false, DUTY_CYCLE_MOD_B.u8);
 
@@ -257,9 +258,9 @@ static void init_iib_modules()
 
 static void handle_can_data(uint8_t *data)
 {
-    uint8_t iib_address;
-    uint8_t data_id;
-    uint8_t module;
+    static uint8_t iib_address;
+    static uint8_t data_id;
+    static uint8_t module;
 
     iib_address = data[0];
     data_id     = data[1];
@@ -401,13 +402,15 @@ static void handle_can_data(uint8_t *data)
 
 static void handle_can_interlock(uint8_t *data)
 {
-    uint8_t iib_address;
-    uint8_t data_id;
-    uint8_t module;
+    static uint8_t iib_address;
+    static uint8_t data_id;
+    static uint8_t module;
 
     iib_address = data[0];
     data_id     = data[1];
     module      = (data[0] - 1) % 2;
+
+    GPIOPinWrite(DEBUG_BASE, DEBUG_PIN, OFF);
 
     switch(iib_address)
     {
@@ -421,7 +424,7 @@ static void handle_can_interlock(uint8_t *data)
                    if(g_can_reset_flag[iib_address-1])
                    {
                        memcpy(fac_2s_acdc_is[module].InterlocksRegister.u8, &data[4], 4);
-                       set_hard_interlock(0, IIB_IS_Itlk_Mod_A + module);
+                       set_hard_interlock(module, IIB_IS_Itlk);
                    }
                    break;
                }
@@ -450,7 +453,7 @@ static void handle_can_interlock(uint8_t *data)
                    if(g_can_reset_flag[iib_address-1])
                    {
                        memcpy(fac_2s_acdc_cmd[module].InterlocksRegister.u8, &data[4], 4);
-                       set_hard_interlock(0, IIB_Cmd_Itlk_Mod_A + module);
+                       set_hard_interlock(module, IIB_Cmd_Itlk);
                    }
                    break;
                }
@@ -478,9 +481,9 @@ static void handle_can_interlock(uint8_t *data)
 
 static void handle_can_alarm(uint8_t *data)
 {
-    uint8_t iib_address;
-    uint8_t data_id;
-    uint8_t module;
+    static uint8_t iib_address;
+    static uint8_t data_id;
+    static uint8_t module;
 
     iib_address = data[0];
     data_id     = data[1];

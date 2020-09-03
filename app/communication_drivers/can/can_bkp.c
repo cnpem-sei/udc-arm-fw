@@ -147,6 +147,8 @@ void can_int_handler(void)
 
         CANIntClear(CAN0_BASE, MESSAGE_ITLK_IIB_OBJ_ID);
 
+        GPIOPinWrite(DEBUG_BASE, DEBUG_PIN, ON);
+
         g_bRXFlag2 = 1;
 
         // Indicate new message object 2 that needs to be processed
@@ -348,6 +350,7 @@ void get_interlock_from_iib(void)
 {
     rx_message_itlk_iib.pucMsgData = message_itlk_iib;
 
+    //GPIOPinWrite(DEBUG_BASE, DEBUG_PIN, OFF);
     CANMessageGet(CAN0_BASE, MESSAGE_ITLK_IIB_OBJ_ID, &rx_message_itlk_iib, 0);
 
     g_iib_module_can_interlock.handle_can_interlock_message(message_itlk_iib);

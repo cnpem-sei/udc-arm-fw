@@ -233,7 +233,7 @@ int main(void) {
      *  estimated based on measurements of initialization time.
      */
     SysCtlDelay(150000);
-    GPIOPinWrite(DEBUG_BASE, DEBUG_PIN, ON);
+    //GPIOPinWrite(DEBUG_BASE, DEBUG_PIN, ON);
     get_firmwares_version();
 
     /// Enable processor interrupts.
