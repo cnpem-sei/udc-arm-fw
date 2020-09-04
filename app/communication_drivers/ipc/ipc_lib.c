@@ -134,7 +134,7 @@ void send_ipc_msg(uint16_t msg_id, uint32_t msg)
 {
     if(HWREG(MTOCIPC_BASE + IPC_O_MTOCIPCFLG) == 0x00000000)
     {
-        g_ipc_mtoc.msg_id = msg_id;
+        MSG_ID_MTOC = msg_id;
         HWREG(MTOCIPC_BASE + IPC_O_MTOCIPCSET) = msg;
     }
 }
@@ -150,7 +150,7 @@ void send_ipc_msg(uint16_t msg_id, uint32_t msg)
  */
 void send_ipc_lowpriority_msg(uint16_t msg_id, ipc_mtoc_lowpriority_msg_t msg)
 {
-    g_ipc_mtoc.msg_id = msg_id;
+    MSG_ID_MTOC = msg_id;
     HWREG(MTOCIPC_BASE + IPC_O_MTOCIPCSET) |= low_priority_msg_to_reg(msg);
 }
 

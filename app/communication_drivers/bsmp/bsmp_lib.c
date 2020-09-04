@@ -444,10 +444,10 @@ uint8_t bsmp_set_command_interface(uint8_t *input, uint8_t *output)
     }
     else
     {
-        g_ipc_mtoc.ps_module[MSG_ID_MTOC].ps_status.bit.interface =
+        g_ipc_mtoc.ps_module[g_current_ps_id].ps_status.bit.interface =
                 (ps_interface_t)(input[1] << 8) | input[0];
 
-        send_ipc_lowpriority_msg(MSG_ID_MTOC, Set_Command_Interface);
+        send_ipc_lowpriority_msg(g_current_ps_id, Set_Command_Interface);
         while ((HWREG(MTOCIPC_BASE + IPC_O_MTOCIPCFLG) &
                 low_priority_msg_to_reg(Set_Command_Interface)) &&
                 (ulTimeout<TIMEOUT_DSP_IPC_ACK)){
@@ -2577,7 +2577,7 @@ void BSMPprocess(struct bsmp_raw_packet *recv_packet,
      * conditions is fulfilled
      */
     //if( (command_interface == get_param(Command_Interface,0)) ||
-    if( (command_interface == g_ipc_ctom.ps_module[MSG_ID_MTOC].ps_status.bit.interface ) ||
+    if( (command_interface == g_ipc_ctom.ps_module[g_current_ps_id].ps_status.bit.interface ) ||
         (bsmp_cmd_type == BSMP_READ_COMMANDS ) ||
         (bsmp_cmd_type == BSMP_QUERY_COMMANDS ) ||
         (bsmp_cmd_type == BSMP_BLOCK_COMMANDS) ||

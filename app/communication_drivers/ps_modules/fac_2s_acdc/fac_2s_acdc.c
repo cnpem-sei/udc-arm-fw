@@ -381,6 +381,7 @@ static void handle_can_data(uint8_t *data)
                 }
                 case 9:
                 {
+                    memcpy(fac_2s_acdc_cmd[module].RelativeHumidity.u8, &data[4], 4);
                     break;
                 }
 

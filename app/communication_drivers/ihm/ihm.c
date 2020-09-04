@@ -43,13 +43,9 @@
 #include "communication_drivers/rs485/rs485.h"
 #include "communication_drivers/i2c_onboard/rtc.h"
 #include "communication_drivers/i2c_offboard_isolated/temp_low_power_module.h"
-//#include "communication_drivers/shared_memory/ctrl_law.h"
-//#include "communication_drivers/shared_memory/main_var.h"
 #include "communication_drivers/ethernet/ethernet_uip.h"
-//#include "communication_drivers/shared_memory/main_var.h"
 #include "communication_drivers/can/can_bkp.h"
 #include "communication_drivers/system_task/system_task.h"
-#include "communication_drivers/ipc/ipc_lib.h"
 #include "communication_drivers/parameters/ps_parameters.h"
 
 #include "ihm.h"
@@ -125,10 +121,6 @@ void isr_ihm(void)
     // Receive Interrupt Mask
     if(UART_INT_RX == ulStatus || UART_INT_RT == ulStatus)
     {
-
-        //GPIO1 turn on
-        //GPIOPinWrite(GPIO_PORTP_BASE, GPIO_PIN_7, ON);
-
         for(time_out = 0; time_out < 50; time_out++)
         {
             // Loop while there are characters in the receive FIFO.
@@ -150,7 +142,6 @@ void isr_ihm(void)
         if(recv_buffer.index > sCarga +4)
         {
             TaskSetNew(PROCESS_IHM_MESSAGE);
-            //rs485_process_data();
             MessageOverflow = 0;
         }
 
@@ -163,18 +154,7 @@ void isr_ihm(void)
 
             MessageOverflow = 0;
         }
-    //#endif
     }
-
-    // Transmit Interrupt Mask
-    //else if(UART_INT_TX == ulStatus) // TX interrupt
-    //{
-    //    while(UARTBusy(RS485_RD_BASE));
-
-        // Put IC in the reception mode
-    //    GPIOPinWrite(RS485_RD_BASE, RS485_RD_PIN, OFF);
-
-    //}
 }
 
 void ihm_tx_handler(void)
@@ -188,8 +168,6 @@ void ihm_tx_handler(void)
     // Send packet
 
     // Put IC in the transmition mode
-    //GPIOPinWrite(RS485_RD_BASE, RS485_RD_PIN, ON);
-
     for(i = 0; i < send_packet.len + SERIAL_HEADER; ++i)
     {
         // Wait until have space in the TX buffer
@@ -222,8 +200,6 @@ void ihm_process_data(void)
             && recv_buffer.data[0] != SERIAL_CH_0_ADDRESS)
         goto exit;
 
-    //GPIOPinWrite(EEPROM_WP_BASE, EEPROM_WP_PIN, ON);
-
     recv_packet.len = recv_buffer.index - SERIAL_HEADER - SERIAL_CSUM;
 
 
@@ -232,37 +208,30 @@ void ihm_process_data(void)
     if (recv_buffer.data[0] == SERIAL_CH_0_ADDRESS)
     {
         g_current_ps_id = 0;
-        g_ipc_mtoc.msg_id = 0;
         BSMPprocess(&recv_packet, &send_packet, 0, Local);
     }
 
     else if (recv_buffer.data[0] == SERIAL_CH_1_ADDRESS)
     {
         g_current_ps_id = 1;
-        g_ipc_mtoc.msg_id = 1;
         BSMPprocess(&recv_packet, &send_packet, 1, Local);
     }
 
     else if (recv_buffer.data[0] == SERIAL_CH_2_ADDRESS)
     {
         g_current_ps_id = 2;
-        g_ipc_mtoc.msg_id = 2;
         BSMPprocess(&recv_packet, &send_packet, 2, Local);
     }
 
     else if (recv_buffer.data[0] == SERIAL_CH_3_ADDRESS)
     {
         g_current_ps_id = 3;
-        g_ipc_mtoc.msg_id = 3;
         BSMPprocess(&recv_packet, &send_packet, 3, Local);
     }
 
-    //GPIOPinWrite(DEBUG_BASE, DEBUG_PIN, OFF);
-
-    //rs485_bkp_tx_handler();
     //if (recv_buffer.data[0] != BCAST_ADDRESS)
     //{
-        ihm_tx_handler();
+    ihm_tx_handler();
     //}
 
     exit:
@@ -270,7 +239,6 @@ void ihm_process_data(void)
     recv_buffer.csum  = 0;
     send_buffer.index = 0;
     send_buffer.csum  = 0;
-
 }
 
 
