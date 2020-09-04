@@ -31,6 +31,7 @@
 #include "communication_drivers/ipc/ipc_lib.h"
 #include "communication_drivers/adcp/adcp.h"
 #include "communication_drivers/bsmp/bsmp_lib.h"
+#include "communication_drivers/can/can_bkp.h"
 #include "communication_drivers/control/control.h"
 #include "communication_drivers/control/wfmref/wfmref.h"
 #include "communication_drivers/event_manager/event_manager.h"
@@ -39,51 +40,41 @@
 #include "communication_drivers/ps_modules/fac_2p4s_dcdc/fac_2p4s_dcdc.h"
 #include "communication_drivers/ps_modules/ps_modules.h"
 
-#define I_LOAD_1            g_controller_ctom.net_signals[0]
-#define I_LOAD_2            g_controller_ctom.net_signals[1]
-#define I_ARM_1             g_controller_ctom.net_signals[2]
-#define I_ARM_2             g_controller_ctom.net_signals[3]
+/**
+ * BSMP servers defines
+ */
+#define BSMP_SERVER_MOD_1_2     0
+#define BSMP_SERVER_MOD_3_4     1
+#define BSMP_SERVER_MOD_5_6     2
+#define BSMP_SERVER_MOD_7_8     3
 
-#define I_LOAD_MEAN         g_controller_ctom.net_signals[5]
-#define I_LOAD_ERROR        g_controller_ctom.net_signals[6]
-#define DUTY_MEAN           g_controller_ctom.net_signals[7]
+/**
+ * Controller defines
+ */
+/// DSP Net Signals
+#define I_LOAD_1                        g_controller_ctom.net_signals[0]  // HRADC0
+#define I_LOAD_2                        g_controller_ctom.net_signals[1]  // HRADC1
+#define I_ARM_1                         g_controller_ctom.net_signals[2]  // HRADC2
+#define I_ARM_2                         g_controller_ctom.net_signals[3]  // HRADC3
 
-#define I_ARMS_DIFF         g_controller_ctom.net_signals[8]
-#define DUTY_DIFF           g_controller_ctom.net_signals[9]
+#define I_LOAD_MEAN                     g_controller_ctom.net_signals[4]
+#define I_LOAD_ERROR                    g_controller_ctom.net_signals[5]
+#define DUTY_I_LOAD_PI                  g_controller_ctom.net_signals[6]
 
-#define I_LOAD_DIFF         g_controller_ctom.net_signals[10]
+#define I_ARMS_DIFF                     g_controller_ctom.net_signals[7]
+#define DUTY_DIFF                       g_controller_ctom.net_signals[8]
 
-#define V_LOAD              g_controller_mtoc.net_signals[0]
+#define I_LOAD_DIFF                     g_controller_ctom.net_signals[9]
 
-#define V_CAPBANK_MOD_1     g_controller_mtoc.net_signals[1]
-#define V_CAPBANK_MOD_2     g_controller_mtoc.net_signals[2]
-#define V_CAPBANK_MOD_3     g_controller_mtoc.net_signals[3]
-#define V_CAPBANK_MOD_4     g_controller_mtoc.net_signals[4]
-#define V_CAPBANK_MOD_5     g_controller_mtoc.net_signals[5]
-#define V_CAPBANK_MOD_6     g_controller_mtoc.net_signals[6]
-#define V_CAPBANK_MOD_7     g_controller_mtoc.net_signals[7]
-#define V_CAPBANK_MOD_8     g_controller_mtoc.net_signals[8]
+#define DUTY_REF_FF                     g_controller_ctom.net_signals[10]
 
-#define V_OUT_MOD_1         g_controller_mtoc.net_signals[9]
-#define V_OUT_MOD_2         g_controller_mtoc.net_signals[10]
-#define V_OUT_MOD_3         g_controller_mtoc.net_signals[11]
-#define V_OUT_MOD_4         g_controller_mtoc.net_signals[12]
-#define V_OUT_MOD_5         g_controller_mtoc.net_signals[13]
-#define V_OUT_MOD_6         g_controller_mtoc.net_signals[14]
-#define V_OUT_MOD_7         g_controller_mtoc.net_signals[15]
-#define V_OUT_MOD_8         g_controller_mtoc.net_signals[16]
+#define V_CAPBANK_ARM_1_FILTERED        g_controller_ctom.net_signals[11]
+#define V_CAPBANK_ARM_2_FILTERED        g_controller_ctom.net_signals[12]
 
-#define IIB_ITLK_REG_1      g_controller_mtoc.net_signals[17]
-#define IIB_ITLK_REG_2      g_controller_mtoc.net_signals[18]
-#define IIB_ITLK_REG_3      g_controller_mtoc.net_signals[19]
-#define IIB_ITLK_REG_4      g_controller_mtoc.net_signals[20]
-#define IIB_ITLK_REG_5      g_controller_mtoc.net_signals[21]
-#define IIB_ITLK_REG_6      g_controller_mtoc.net_signals[22]
-#define IIB_ITLK_REG_7      g_controller_mtoc.net_signals[23]
-#define IIB_ITLK_REG_8      g_controller_mtoc.net_signals[24]
+#define IN_FF_V_CAPBANK_ARM_1           g_controller_ctom.net_signals[13]
+#define IN_FF_V_CAPBANK_ARM_2           g_controller_ctom.net_signals[14]
 
-//#define TEMP_INDUCTORS      g_controller_mtoc.net_signals[10]
-//#define TEMP_IGBT           g_controller_mtoc.net_signals[11]
+#define WFMREF_IDX                      g_controller_ctom.net_signals[31]
 
 #define DUTY_CYCLE_MOD_1    g_controller_ctom.output_signals[0]
 #define DUTY_CYCLE_MOD_2    g_controller_ctom.output_signals[1]
@@ -94,13 +85,22 @@
 #define DUTY_CYCLE_MOD_7    g_controller_ctom.output_signals[6]
 #define DUTY_CYCLE_MOD_8    g_controller_ctom.output_signals[7]
 
+/// ARM Net Signals
+#define V_CAPBANK_MOD_1     g_controller_mtoc.net_signals[0]
+#define V_CAPBANK_MOD_2     g_controller_mtoc.net_signals[1]
+#define V_CAPBANK_MOD_3     g_controller_mtoc.net_signals[2]
+#define V_CAPBANK_MOD_4     g_controller_mtoc.net_signals[3]
+#define V_CAPBANK_MOD_5     g_controller_mtoc.net_signals[4]
+#define V_CAPBANK_MOD_6     g_controller_mtoc.net_signals[5]
+#define V_CAPBANK_MOD_7     g_controller_mtoc.net_signals[6]
+#define V_CAPBANK_MOD_8     g_controller_mtoc.net_signals[7]
+
 /**
  * Interlocks defines
  */
 typedef enum
 {
     Load_Overcurrent,
-    Load_Overvoltage,
     Module_1_CapBank_Overvoltage,
     Module_2_CapBank_Overvoltage,
     Module_3_CapBank_Overvoltage,
@@ -117,30 +117,36 @@ typedef enum
     Module_6_CapBank_Undervoltage,
     Module_7_CapBank_Undervoltage,
     Module_8_CapBank_Undervoltage,
-    Module_1_Output_Overvoltage,
-    Module_2_Output_Overvoltage,
-    Module_3_Output_Overvoltage,
-    Module_4_Output_Overvoltage,
-    Module_5_Output_Overvoltage,
-    Module_6_Output_Overvoltage,
-    Module_7_Output_Overvoltage,
-    Module_8_Output_Overvoltage,
-    IIB_1_Itlk,
-    IIB_2_Itlk,
-    IIB_3_Itlk,
-    IIB_4_Itlk,
-    IIB_5_Itlk,
-    IIB_6_Itlk,
-    IIB_7_Itlk,
-    IIB_8_Itlk
+    IIB_Mod_1_Itlk,
+    IIB_Mod_2_Itlk,
+    IIB_Mod_3_Itlk,
+    IIB_Mod_4_Itlk,
+    IIB_Mod_5_Itlk,
+    IIB_Mod_6_Itlk,
+    IIB_Mod_7_Itlk,
+    IIB_Mod_8_Itlk
 } hard_interlocks_t;
 
-volatile iib_fac_os_t fac_os[8];
+typedef enum
+{
+    DCCT_1_Fault,
+    DCCT_2_Fault,
+    DCCT_High_Difference,
+    Load_Feedback_1_Fault,
+    Load_Feedback_2_Fault,
+    ARM_1_Overcurrent,
+    ARM_2_Overcurrent,
+    Arms_High_Difference,
+    Complementary_PS_Itlk
+} soft_interlocks_t;
 
-static void init_iib();
+volatile iib_fac_os_t iib_fac_2p4s_dcdc[8];
+
+static void init_iib_modules();
+
 static void handle_can_data(uint8_t *data);
-static void update_iib_structure(iib_fac_os_t *module, uint8_t data_id,
-                                                               float data_val);
+static void handle_can_interlock(uint8_t *data);
+static void handle_can_alarm(uint8_t *data);
 
 /**
 * @brief Initialize ADCP Channels.
@@ -200,101 +206,83 @@ static void adcp_channel_config(void)
 */
 static void bsmp_init_server(void)
 {
-    create_bsmp_var(31, 0, 4, false, g_ipc_ctom.ps_module[0].ps_soft_interlock.u8);
-    create_bsmp_var(32, 0, 4, false, g_ipc_ctom.ps_module[0].ps_hard_interlock.u8);
+    uint8_t server, var_id;
 
-    create_bsmp_var(33, 0, 4, false, I_LOAD_MEAN.u8);
-    create_bsmp_var(34, 0, 4, false, I_LOAD_1.u8);
-    create_bsmp_var(35, 0, 4, false, I_LOAD_2.u8);
+    // First BSMP server already initialized
+    bsmp_init(BSMP_SERVER_MOD_3_4);
+    bsmp_init(BSMP_SERVER_MOD_5_6);
+    bsmp_init(BSMP_SERVER_MOD_7_8);
 
-    create_bsmp_var(36, 0, 4, false, I_ARM_1.u8);
-    create_bsmp_var(37, 0, 4, false, I_ARM_2.u8);
+    for(server = 0; server < 4; server++)
+    {
+        /// Mirror common variables from first server all others
+        if(server > 0)
+        {
+            for(var_id = 0; var_id < 31; var_id++)
+            {
+                modify_bsmp_var(var_id, server,
+                                bsmp[BSMP_SERVER_MOD_1_2].vars.list[var_id]->data);
+            }
+        }
 
-    create_bsmp_var(38, 0, 4, false, V_LOAD.u8);
+        create_bsmp_var(31, server, 4, false, g_ipc_ctom.ps_module[0].ps_soft_interlock.u8);
+        create_bsmp_var(32, server, 4, false, g_ipc_ctom.ps_module[0].ps_hard_interlock.u8);
 
-    create_bsmp_var(39, 0, 4, false, V_CAPBANK_MOD_1.u8);
-    create_bsmp_var(40, 0, 4, false, V_CAPBANK_MOD_2.u8);
-    create_bsmp_var(41, 0, 4, false, V_CAPBANK_MOD_3.u8);
-    create_bsmp_var(42, 0, 4, false, V_CAPBANK_MOD_4.u8);
-    create_bsmp_var(43, 0, 4, false, V_CAPBANK_MOD_5.u8);
-    create_bsmp_var(44, 0, 4, false, V_CAPBANK_MOD_6.u8);
-    create_bsmp_var(45, 0, 4, false, V_CAPBANK_MOD_7.u8);
-    create_bsmp_var(46, 0, 4, false, V_CAPBANK_MOD_8.u8);
+        create_bsmp_var(33, server, 4, false, I_LOAD_MEAN.u8);
+        create_bsmp_var(34, server, 4, false, I_LOAD_1.u8);
+        create_bsmp_var(35, server, 4, false, I_LOAD_2.u8);
 
-    create_bsmp_var(47, 0, 4, false, V_OUT_MOD_1.u8);
-    create_bsmp_var(48, 0, 4, false, V_OUT_MOD_2.u8);
-    create_bsmp_var(49, 0, 4, false, V_OUT_MOD_3.u8);
-    create_bsmp_var(50, 0, 4, false, V_OUT_MOD_4.u8);
-    create_bsmp_var(51, 0, 4, false, V_OUT_MOD_5.u8);
-    create_bsmp_var(52, 0, 4, false, V_OUT_MOD_6.u8);
-    create_bsmp_var(53, 0, 4, false, V_OUT_MOD_7.u8);
-    create_bsmp_var(54, 0, 4, false, V_OUT_MOD_8.u8);
+        create_bsmp_var(36, server, 4, false, I_ARM_1.u8);
+        create_bsmp_var(37, server, 4, false, I_ARM_2.u8);
 
-    create_bsmp_var(55, 0, 4, false, DUTY_CYCLE_MOD_1.u8);
-    create_bsmp_var(56, 0, 4, false, DUTY_CYCLE_MOD_2.u8);
-    create_bsmp_var(57, 0, 4, false, DUTY_CYCLE_MOD_3.u8);
-    create_bsmp_var(58, 0, 4, false, DUTY_CYCLE_MOD_4.u8);
-    create_bsmp_var(59, 0, 4, false, DUTY_CYCLE_MOD_5.u8);
-    create_bsmp_var(60, 0, 4, false, DUTY_CYCLE_MOD_6.u8);
-    create_bsmp_var(61, 0, 4, false, DUTY_CYCLE_MOD_7.u8);
-    create_bsmp_var(62, 0, 4, false, DUTY_CYCLE_MOD_8.u8);
+        create_bsmp_var(38, server, 4, false, V_CAPBANK_MOD_1.u8);
+        create_bsmp_var(39, server, 4, false, V_CAPBANK_MOD_2.u8);
+        create_bsmp_var(40, server, 4, false, V_CAPBANK_MOD_3.u8);
+        create_bsmp_var(41, server, 4, false, V_CAPBANK_MOD_4.u8);
+        create_bsmp_var(42, server, 4, false, V_CAPBANK_MOD_5.u8);
+        create_bsmp_var(43, server, 4, false, V_CAPBANK_MOD_6.u8);
+        create_bsmp_var(44, server, 4, false, V_CAPBANK_MOD_7.u8);
+        create_bsmp_var(45, server, 4, false, V_CAPBANK_MOD_8.u8);
 
-    create_bsmp_var(63, 0, 4, false, fac_os[0].Iin.u8);
-    create_bsmp_var(64, 0, 4, false, fac_os[0].Iout.u8);
-    create_bsmp_var(65, 0, 4, false, fac_os[0].VdcLink.u8);
-    create_bsmp_var(66, 0, 4, false, fac_os[0].TempL.u8);
-    create_bsmp_var(67, 0, 4, false, fac_os[0].TempHeatSink.u8);
+        create_bsmp_var(46, server, 4, false, DUTY_CYCLE_MOD_1.u8);
+        create_bsmp_var(47, server, 4, false, DUTY_CYCLE_MOD_2.u8);
+        create_bsmp_var(48, server, 4, false, DUTY_CYCLE_MOD_3.u8);
+        create_bsmp_var(49, server, 4, false, DUTY_CYCLE_MOD_4.u8);
+        create_bsmp_var(50, server, 4, false, DUTY_CYCLE_MOD_5.u8);
+        create_bsmp_var(51, server, 4, false, DUTY_CYCLE_MOD_6.u8);
+        create_bsmp_var(52, server, 4, false, DUTY_CYCLE_MOD_7.u8);
+        create_bsmp_var(53, server, 4, false, DUTY_CYCLE_MOD_8.u8);
 
-    create_bsmp_var(70, 0, 4, false, fac_os[1].Iin.u8);
-    create_bsmp_var(71, 0, 4, false, fac_os[1].Iout.u8);
-    create_bsmp_var(72, 0, 4, false, fac_os[1].VdcLink.u8);
-    create_bsmp_var(73, 0, 4, false, fac_os[1].TempL.u8);
-    create_bsmp_var(74, 0, 4, false, fac_os[1].TempHeatSink.u8);
+        create_bsmp_var(54, server, 4, false, iib_fac_2p4s_dcdc[server*2].VdcLink.u8);
+        create_bsmp_var(55, server, 4, false, iib_fac_2p4s_dcdc[server*2].Iin.u8);
+        create_bsmp_var(56, server, 4, false, iib_fac_2p4s_dcdc[server*2].Iout.u8);
+        create_bsmp_var(57, server, 4, false, iib_fac_2p4s_dcdc[server*2].TempIGBT1.u8);
+        create_bsmp_var(58, server, 4, false, iib_fac_2p4s_dcdc[server*2].TempIGBT2.u8);
+        create_bsmp_var(59, server, 4, false, iib_fac_2p4s_dcdc[server*2].TempL.u8);
+        create_bsmp_var(60, server, 4, false, iib_fac_2p4s_dcdc[server*2].TempHeatSink.u8);
+        create_bsmp_var(61, server, 4, false, iib_fac_2p4s_dcdc[server*2].DriverVoltage.u8);
+        create_bsmp_var(62, server, 4, false, iib_fac_2p4s_dcdc[server*2].Driver1Current.u8);
+        create_bsmp_var(63, server, 4, false, iib_fac_2p4s_dcdc[server*2].Driver2Current.u8);
+        create_bsmp_var(64, server, 4, false, iib_fac_2p4s_dcdc[server*2].BoardTemperature.u8);
+        create_bsmp_var(65, server, 4, false, iib_fac_2p4s_dcdc[server*2].RelativeHumidity.u8);
+        create_bsmp_var(66, server, 4, false, iib_fac_2p4s_dcdc[server*2].InterlocksRegister.u8);
+        create_bsmp_var(67, server, 4, false, iib_fac_2p4s_dcdc[server*2].AlarmsRegister.u8);
 
-    create_bsmp_var(77, 0, 4, false, fac_os[2].Iin.u8);
-    create_bsmp_var(78, 0, 4, false, fac_os[2].Iout.u8);
-    create_bsmp_var(79, 0, 4, false, fac_os[2].VdcLink.u8);
-    create_bsmp_var(80, 0, 4, false, fac_os[2].TempL.u8);
-    create_bsmp_var(81, 0, 4, false, fac_os[2].TempHeatSink.u8);
-
-    create_bsmp_var(84, 0, 4, false, fac_os[3].Iin.u8);
-    create_bsmp_var(85, 0, 4, false, fac_os[3].Iout.u8);
-    create_bsmp_var(86, 0, 4, false, fac_os[3].VdcLink.u8);
-    create_bsmp_var(87, 0, 4, false, fac_os[3].TempL.u8);
-    create_bsmp_var(88, 0, 4, false, fac_os[3].TempHeatSink.u8);
-
-    create_bsmp_var(91, 0, 4, false, fac_os[4].Iin.u8);
-    create_bsmp_var(92, 0, 4, false, fac_os[4].Iout.u8);
-    create_bsmp_var(93, 0, 4, false, fac_os[4].VdcLink.u8);
-    create_bsmp_var(94, 0, 4, false, fac_os[4].TempL.u8);
-    create_bsmp_var(95, 0, 4, false, fac_os[4].TempHeatSink.u8);
-
-    create_bsmp_var(98, 0, 4, false, fac_os[5].Iin.u8);
-    create_bsmp_var(99, 0, 4, false, fac_os[5].Iout.u8);
-    create_bsmp_var(100, 0, 4, false, fac_os[5].VdcLink.u8);
-    create_bsmp_var(101, 0, 4, false, fac_os[5].TempL.u8);
-    create_bsmp_var(102, 0, 4, false, fac_os[5].TempHeatSink.u8);
-
-    create_bsmp_var(105, 0, 4, false, fac_os[6].Iin.u8);
-    create_bsmp_var(106, 0, 4, false, fac_os[6].Iout.u8);
-    create_bsmp_var(107, 0, 4, false, fac_os[6].VdcLink.u8);
-    create_bsmp_var(108, 0, 4, false, fac_os[6].TempL.u8);
-    create_bsmp_var(109, 0, 4, false, fac_os[6].TempHeatSink.u8);
-
-    create_bsmp_var(112, 0, 4, false, fac_os[7].Iin.u8);
-    create_bsmp_var(113, 0, 4, false, fac_os[7].Iout.u8);
-    create_bsmp_var(114, 0, 4, false, fac_os[7].VdcLink.u8);
-    create_bsmp_var(115, 0, 4, false, fac_os[7].TempL.u8);
-    create_bsmp_var(116, 0, 4, false, fac_os[7].TempHeatSink.u8);
-
-    create_bsmp_var(119, 0, 4, false, IIB_ITLK_REG_1.u8);
-    create_bsmp_var(120, 0, 4, false, IIB_ITLK_REG_2.u8);
-    create_bsmp_var(121, 0, 4, false, IIB_ITLK_REG_3.u8);
-    create_bsmp_var(122, 0, 4, false, IIB_ITLK_REG_4.u8);
-    create_bsmp_var(123, 0, 4, false, IIB_ITLK_REG_5.u8);
-    create_bsmp_var(124, 0, 4, false, IIB_ITLK_REG_6.u8);
-    create_bsmp_var(125, 0, 4, false, IIB_ITLK_REG_7.u8);
-    create_bsmp_var(126, 0, 4, false, IIB_ITLK_REG_8.u8);
+        create_bsmp_var(68, server, 4, false, iib_fac_2p4s_dcdc[server*2+1].VdcLink.u8);
+        create_bsmp_var(69, server, 4, false, iib_fac_2p4s_dcdc[server*2+1].Iin.u8);
+        create_bsmp_var(70, server, 4, false, iib_fac_2p4s_dcdc[server*2+1].Iout.u8);
+        create_bsmp_var(71, server, 4, false, iib_fac_2p4s_dcdc[server*2+1].TempIGBT1.u8);
+        create_bsmp_var(72, server, 4, false, iib_fac_2p4s_dcdc[server*2+1].TempIGBT2.u8);
+        create_bsmp_var(73, server, 4, false, iib_fac_2p4s_dcdc[server*2+1].TempL.u8);
+        create_bsmp_var(74, server, 4, false, iib_fac_2p4s_dcdc[server*2+1].TempHeatSink.u8);
+        create_bsmp_var(75, server, 4, false, iib_fac_2p4s_dcdc[server*2+1].DriverVoltage.u8);
+        create_bsmp_var(76, server, 4, false, iib_fac_2p4s_dcdc[server*2+1].Driver1Current.u8);
+        create_bsmp_var(77, server, 4, false, iib_fac_2p4s_dcdc[server*2+1].Driver2Current.u8);
+        create_bsmp_var(78, server, 4, false, iib_fac_2p4s_dcdc[server*2+1].BoardTemperature.u8);
+        create_bsmp_var(79, server, 4, false, iib_fac_2p4s_dcdc[server*2+1].RelativeHumidity.u8);
+        create_bsmp_var(80, server, 4, false, iib_fac_2p4s_dcdc[server*2+1].InterlocksRegister.u8);
+        create_bsmp_var(81, server, 4, false, iib_fac_2p4s_dcdc[server*2+1].AlarmsRegister.u8);
+    }
 }
 
 /**
@@ -307,7 +295,7 @@ void fac_2p4s_dcdc_system_config()
 {
     adcp_channel_config();
     bsmp_init_server();
-    init_iib();
+    init_iib_modules();
 
     init_wfmref(&WFMREF[0], WFMREF_SELECTED_PARAM[0].u16,
                 WFMREF_SYNC_MODE_PARAM[0].u16, ISR_CONTROL_FREQ.f,
@@ -320,116 +308,155 @@ void fac_2p4s_dcdc_system_config()
                SIZE_BUF_SAMPLES_CTOM, SCOPE_SOURCE_PARAM[0].p_f,
                (void *) 0);
 }
-
-static void init_iib()
+static void init_iib_modules()
 {
-    fac_os[0].CanAddress = 1;
-    fac_os[1].CanAddress = 2;
-    fac_os[2].CanAddress = 3;
-    fac_os[3].CanAddress = 4;
-    fac_os[4].CanAddress = 5;
-    fac_os[5].CanAddress = 6;
-    fac_os[6].CanAddress = 7;
-    fac_os[7].CanAddress = 8;
+    uint8_t i;
+
+    for(i = 0; i < 8; i++)
+    {
+        iib_fac_2p4s_dcdc[i].CanAddress = i+1;
+    }
 
     init_iib_module_can_data(&g_iib_module_can_data, &handle_can_data);
+    init_iib_module_can_interlock(&g_iib_module_can_interlock, &handle_can_interlock);
+    init_iib_module_can_alarm(&g_iib_module_can_alarm, &handle_can_alarm);
 }
 
 static void handle_can_data(uint8_t *data)
 {
-    uint8_t iib_address;
-    uint8_t data_id;
+    uint8_t module;
 
-    convert_to_bytes_t converter;
+    module = data[0] - 1;
 
-    iib_address     = data[0];
-    data_id         = data[1];
-
-    converter.u8[0] = data[4];
-    converter.u8[1] = data[5];
-    converter.u8[2] = data[6];
-    converter.u8[3] = data[7];
-
-    update_iib_structure(&fac_os[iib_address-1], data_id, converter.f);
+    switch(data[1])
+    {
+        case 0:
+        {
+            memcpy(iib_fac_2p4s_dcdc[module].VdcLink.u8, &data[4], 4);
+            break;
+        }
+        case 1:
+        {
+            memcpy(iib_fac_2p4s_dcdc[module].Iin.u8, &data[4], 4);
+            break;
+        }
+        case 2:
+        {
+            memcpy(iib_fac_2p4s_dcdc[module].Iout.u8, &data[4], 4);
+            break;
+        }
+        case 3:
+        {
+            memcpy(iib_fac_2p4s_dcdc[module].TempIGBT1.u8, &data[4], 4);
+            break;
+        }
+        case 4:
+        {
+            memcpy(iib_fac_2p4s_dcdc[module].TempIGBT2.u8, &data[4], 4);
+            break;
+        }
+        case 5:
+        {
+            memcpy(iib_fac_2p4s_dcdc[module].DriverVoltage.u8, &data[4], 4);
+            break;
+        }
+        case 6:
+        {
+            memcpy(iib_fac_2p4s_dcdc[module].Driver1Current.u8, &data[4], 4);
+            break;
+        }
+        case 7:
+        {
+            memcpy(iib_fac_2p4s_dcdc[module].Driver2Current.u8, &data[4], 4);
+            break;
+        }
+        case 8:
+        {
+            memcpy(iib_fac_2p4s_dcdc[module].GroundLeakage.u8, &data[4], 4);
+            break;
+        }
+        case 9:
+        {
+            memcpy(iib_fac_2p4s_dcdc[module].TempL.u8, &data[4], 4);
+            break;
+        }
+        case 10:
+        {
+            memcpy(iib_fac_2p4s_dcdc[module].TempHeatSink.u8, &data[4], 4);
+            break;
+        }
+        case 11:
+        {
+            memcpy(iib_fac_2p4s_dcdc[module].BoardTemperature.u8, &data[4], 4);
+            break;
+        }
+        case 12:
+        {
+            memcpy(iib_fac_2p4s_dcdc[module].RelativeHumidity.u8, &data[4], 4);
+            break;
+        }
+        default:
+        {
+            break;
+        }
+    }
 }
 
-static void update_iib_structure(iib_fac_os_t *module, uint8_t data_id,
-                                                               float data_val)
+static void handle_can_interlock(uint8_t *data)
 {
-    uint8_t id;
-    id = data_id;
+    uint8_t module;
 
-    convert_to_bytes_t converter;
+    module = data[0] - 1;
 
-    switch (id) {
-        case 0:
-            converter.f = data_val;
-            if (module->CanAddress == 1) {
-                IIB_ITLK_REG_1.u32 = converter.u32;
-                set_hard_interlock(0, IIB_1_Itlk);
-            }
-            if (module->CanAddress == 2) {
-                IIB_ITLK_REG_2.u32 = converter.u32;
-                set_hard_interlock(0, IIB_2_Itlk);
-            }
-            if (module->CanAddress == 3) {
-                IIB_ITLK_REG_3.u32 = converter.u32;
-                set_hard_interlock(0, IIB_3_Itlk);
-            }
-            if (module->CanAddress == 4) {
-                IIB_ITLK_REG_4.u32 = converter.u32;
-                set_hard_interlock(0, IIB_4_Itlk);
-            }
-            if (module->CanAddress == 5) {
-                IIB_ITLK_REG_5.u32 = converter.u32;
-                set_hard_interlock(0, IIB_5_Itlk);
-            }
-            if (module->CanAddress == 6) {
-                IIB_ITLK_REG_6.u32 = converter.u32;
-                set_hard_interlock(0, IIB_6_Itlk);
-            }
-            if (module->CanAddress == 7) {
-                IIB_ITLK_REG_7.u32 = converter.u32;
-                set_hard_interlock(0, IIB_7_Itlk);
-            }
-            if (module->CanAddress == 8) {
-                IIB_ITLK_REG_8.u32 = converter.u32;
-                set_hard_interlock(0, IIB_8_Itlk);
-            }
+    switch(data[1])
+    {
+       case 0:
+       {
+           if(g_can_reset_flag[module])
+           {
+               memcpy(iib_fac_2p4s_dcdc[module].InterlocksRegister.u8, &data[4], 4);
+               set_hard_interlock(0, IIB_Mod_1_Itlk + module);
+           }
+           break;
+       }
 
-            break;
-        case 1:
-            //TODO: Handle alarm message
-            break;
-        case 2:
-            module->Iin.f = data_val;
-            break;
+       case 1:
+       {
+           g_can_reset_flag[module] = 1;
+           iib_fac_2p4s_dcdc[module].InterlocksRegister.u32 = 0;
+           break;
+       }
 
-        case 3:
-            module->Iout.f = data_val;
-            break;
+       default:
+       {
+           break;
+       }
+    }
+}
 
-        case 4:
-            module->VdcLink.f = data_val;
-            break;
+static void handle_can_alarm(uint8_t *data)
+{
+    uint8_t module;
 
-        case 5:
-            //module->TempIGBT1.f = data_val;
-            break;
+    module = data[0] - 1;
 
-        case 6:
-            //module->TempIGBT2.f = data_val;
-            break;
+    switch(data[1])
+    {
+       case 0:
+       {
+           memcpy(iib_fac_2p4s_dcdc[module].AlarmsRegister.u8, &data[4], 4);
+           break;
+       }
 
-        case 7:
-            module->TempL.f = data_val;
-            break;
+       case 1:
+       {
+           iib_fac_2p4s_dcdc[module].AlarmsRegister.u32 = 0;
+           break;
+       }
 
-        case 8:
-            module->TempHeatSink.f = data_val;
-            break;
-
-        default:
-            break;
+       default:
+       {
+           break;
+       }
     }
 }

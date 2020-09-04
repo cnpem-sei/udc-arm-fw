@@ -43,7 +43,7 @@
 #include "communication_drivers/ps_modules/ps_modules.h"
 
 /**
- * IIB Defines
+ * IIB defines
  */
 #define IIB_IS_ADDRESS_MOD_A      1
 #define IIB_IS_ADDRESS_MOD_B      2

@@ -28,9 +28,13 @@
 #include "inc/hw_ipc.h"
 #include "inc/hw_types.h"
 
+#include "driverlib/gpio.h"
+#include "board_drivers/hardware_def.h"
+
 #include "communication_drivers/ipc/ipc_lib.h"
 #include "communication_drivers/adcp/adcp.h"
 #include "communication_drivers/bsmp/bsmp_lib.h"
+#include "communication_drivers/can/can_bkp.h"
 #include "communication_drivers/control/control.h"
 #include "communication_drivers/event_manager/event_manager.h"
 #include "communication_drivers/iib/iib_data.h"
@@ -39,37 +43,49 @@
 #include "communication_drivers/ps_modules/ps_modules.h"
 
 /**
- * Defines for module A variables
+ * IIB Defines
  */
-#define MOD_A_ID                    0x0
-
-#define V_CAPBANK_MOD_A             g_controller_ctom.net_signals[0]  // HRADC0
-#define IOUT_RECT_MOD_A             g_controller_ctom.net_signals[1]  // HRADC1
-
-#define VOUT_RECT_MOD_A             g_controller_mtoc.net_signals[0]
-#define TEMP_HEATSINK_MOD_A         g_controller_mtoc.net_signals[1]
-#define TEMP_INDUCTORS_MOD_A        g_controller_mtoc.net_signals[2]
-
-#define DUTY_CYCLE_MOD_A            g_controller_ctom.output_signals[0]
+#define IIB_IS_ADDRESS_MOD_A      1
+#define IIB_IS_ADDRESS_MOD_B      2
+#define IIB_CMD_ADDRESS_MOD_A     3
+#define IIB_CMD_ADDRESS_MOD_B     4
 
 /**
- * Defines for module B variables
+ * Controller defines
  */
+#define MOD_A_ID                    0x0
 #define MOD_B_ID                    0x1
 
-#define V_CAPBANK_MOD_B             g_controller_ctom.net_signals[2]  // HRADC2
-#define IOUT_RECT_MOD_B             g_controller_ctom.net_signals[3]  // HRADC3
+/// DSP Net Signals
+#define V_CAPBANK_MOD_A                     g_controller_ctom.net_signals[0]  // HRADC0
+#define I_OUT_RECT_MOD_A                    g_controller_ctom.net_signals[1]  // HRADC1
+#define V_CAPBANK_MOD_B                     g_controller_ctom.net_signals[2]  // HRADC2
+#define I_OUT_RECT_MOD_B                    g_controller_ctom.net_signals[3]  // HRADC3
 
-#define VOUT_RECT_MOD_B             g_controller_mtoc.net_signals[3]
-#define TEMP_HEATSINK_MOD_B         g_controller_mtoc.net_signals[4]
-#define TEMP_INDUCTORS_MOD_B        g_controller_mtoc.net_signals[5]
+#define V_CAPBANK_FILTERED_2HZ_MOD_A        g_controller_ctom.net_signals[4]
+#define V_CAPBANK_FILTERED_2Hz_4HZ_MOD_A    g_controller_ctom.net_signals[5]
+#define V_CAPBANK_ERROR_MOD_A               g_controller_ctom.net_signals[6]
 
-#define IIB_ITLK_REG_FAC_IS_1       g_controller_mtoc.net_signals[6]
-#define IIB_ITLK_REG_FAC_IS_2       g_controller_mtoc.net_signals[7]
-#define IIB_ITLK_REG_FAC_CMD_1      g_controller_mtoc.net_signals[8]
-#define IIB_ITLK_REG_FAC_CMD_2      g_controller_mtoc.net_signals[9]
+#define I_OUT_RECT_REF_MOD_A                g_controller_ctom.net_signals[7]
+#define I_OUT_RECT_ERROR_MOD_A              g_controller_ctom.net_signals[8]
+#define I_OUT_RECT_RESS_2HZ_MOD_A           g_controller_ctom.net_signals[9]
+#define I_OUT_RECT_RESS_2HZ_4HZ_MOD_A       g_controller_ctom.net_signals[10]
 
-#define DUTY_CYCLE_MOD_B            g_controller_ctom.output_signals[1]
+#define V_CAPBANK_FILTERED_2HZ_MOD_B        g_controller_ctom.net_signals[11]
+#define V_CAPBANK_FILTERED_2Hz_4HZ_MOD_B    g_controller_ctom.net_signals[12]
+#define V_CAPBANK_ERROR_MOD_B               g_controller_ctom.net_signals[13]
+
+#define I_OUT_RECT_REF_MOD_B                g_controller_ctom.net_signals[14]
+#define I_OUT_RECT_ERROR_MOD_B              g_controller_ctom.net_signals[15]
+#define I_OUT_RECT_RESS_2HZ_MOD_B           g_controller_ctom.net_signals[16]
+#define I_OUT_RECT_RESS_2HZ_4HZ_MOD_B       g_controller_ctom.net_signals[17]
+
+#define DUTY_CYCLE_MOD_A                    g_controller_ctom.output_signals[0]
+#define DUTY_CYCLE_MOD_B                    g_controller_ctom.output_signals[1]
+
+/// ARM Net Signals
+#define V_OUT_RECT_MOD_A                     g_controller_mtoc.net_signals[0]
+#define V_OUT_RECT_MOD_B                     g_controller_mtoc.net_signals[1]
 
 /**
  * Interlocks defines
@@ -82,20 +98,18 @@ typedef enum
     Rectifier_Overcurrent,
     Welded_Contactor_Fault,
     Opened_Contactor_Fault,
-    IGBT_Driver_Fault,
-    IIB_1_Itlk,
-    IIB_2_Itlk,
-    IIB_3_Itlk,
-    IIB_4_Itlk
+    IIB_IS_Itlk,
+    IIB_Cmd_Itlk
 } hard_interlocks_t;
 
-static volatile iib_fac_is_t fac_is[2];
-static volatile iib_fac_cmd_t fac_cmd[2];
+volatile iib_fac_is_t fac_2p4s_acdc_is[2];
+volatile iib_fac_cmd_t fac_2p4s_acdc_cmd[2];
 
-static void init_iib();
+static void init_iib_modules();
+
 static void handle_can_data(uint8_t *data);
-static void update_iib_structure_fac_is(uint8_t iib_id, uint8_t data_id, float data_val);
-static void update_iib_structure_fac_cmd(uint8_t iib_id, uint8_t data_id, float data_val);
+static void handle_can_interlock(uint8_t *data);
+static void handle_can_alarm(uint8_t *data);
 
 /**
 * @brief Initialize ADCP Channels.
@@ -128,12 +142,36 @@ static void bsmp_init_server(void)
      */
     create_bsmp_var(31, MOD_A_ID, 4, false, g_ipc_ctom.ps_module[MOD_A_ID].ps_soft_interlock.u8);
     create_bsmp_var(32, MOD_A_ID, 4, false, g_ipc_ctom.ps_module[MOD_A_ID].ps_hard_interlock.u8);
+
     create_bsmp_var(33, MOD_A_ID, 4, false, V_CAPBANK_MOD_A.u8);
-    create_bsmp_var(34, MOD_A_ID, 4, false, VOUT_RECT_MOD_A.u8);
-    create_bsmp_var(35, MOD_A_ID, 4, false, IOUT_RECT_MOD_A.u8);
-    create_bsmp_var(36, MOD_A_ID, 4, false, TEMP_HEATSINK_MOD_A.u8);
-    create_bsmp_var(37, MOD_A_ID, 4, false, TEMP_INDUCTORS_MOD_A.u8);
-    create_bsmp_var(38, MOD_A_ID, 4, false, DUTY_CYCLE_MOD_A.u8);
+    create_bsmp_var(34, MOD_A_ID, 4, false, I_OUT_RECT_MOD_A.u8);
+
+    create_bsmp_var(35, MOD_A_ID, 4, false, DUTY_CYCLE_MOD_A.u8);
+
+    create_bsmp_var(36, MOD_A_ID, 4, false, fac_2p4s_acdc_is[MOD_A_ID].Iin.u8);
+    create_bsmp_var(37, MOD_A_ID, 4, false, fac_2p4s_acdc_is[MOD_A_ID].Vin.u8);
+    create_bsmp_var(38, MOD_A_ID, 4, false, fac_2p4s_acdc_is[MOD_A_ID].TempIGBT.u8);
+    create_bsmp_var(39, MOD_A_ID, 4, false, fac_2p4s_acdc_is[MOD_A_ID].DriverVoltage.u8);
+    create_bsmp_var(40, MOD_A_ID, 4, false, fac_2p4s_acdc_is[MOD_A_ID].DriverCurrent.u8);
+    create_bsmp_var(41, MOD_A_ID, 4, false, fac_2p4s_acdc_is[MOD_A_ID].TempL.u8);
+    create_bsmp_var(42, MOD_A_ID, 4, false, fac_2p4s_acdc_is[MOD_A_ID].TempHeatsink.u8);
+    create_bsmp_var(43, MOD_A_ID, 4, false, fac_2p4s_acdc_is[MOD_A_ID].BoardTemperature.u8);
+    create_bsmp_var(44, MOD_A_ID, 4, false, fac_2p4s_acdc_is[MOD_A_ID].RelativeHumidity.u8);
+    create_bsmp_var(45, MOD_A_ID, 4, false, fac_2p4s_acdc_is[MOD_A_ID].InterlocksRegister.u8);
+    create_bsmp_var(46, MOD_A_ID, 4, false, fac_2p4s_acdc_is[MOD_A_ID].AlarmsRegister.u8);
+
+    create_bsmp_var(47, MOD_A_ID, 4, false, fac_2p4s_acdc_cmd[MOD_A_ID].Vout.u8);
+    create_bsmp_var(48, MOD_A_ID, 4, false, fac_2p4s_acdc_cmd[MOD_A_ID].VcapBank.u8);
+    create_bsmp_var(49, MOD_A_ID, 4, false, fac_2p4s_acdc_cmd[MOD_A_ID].TempRectInductor.u8);
+    create_bsmp_var(50, MOD_A_ID, 4, false, fac_2p4s_acdc_cmd[MOD_A_ID].TempRectHeatSink.u8);
+    create_bsmp_var(51, MOD_A_ID, 4, false, fac_2p4s_acdc_cmd[MOD_A_ID].ExternalBoardsVoltage.u8);
+    create_bsmp_var(52, MOD_A_ID, 4, false, fac_2p4s_acdc_cmd[MOD_A_ID].AuxiliaryBoardCurrent.u8);
+    create_bsmp_var(53, MOD_A_ID, 4, false, fac_2p4s_acdc_cmd[MOD_A_ID].IDBBoardCurrent.u8);
+    create_bsmp_var(54, MOD_A_ID, 4, false, fac_2p4s_acdc_cmd[MOD_A_ID].GroundLeakage.u8);
+    create_bsmp_var(55, MOD_A_ID, 4, false, fac_2p4s_acdc_cmd[MOD_A_ID].BoardTemperature.u8);
+    create_bsmp_var(56, MOD_A_ID, 4, false, fac_2p4s_acdc_cmd[MOD_A_ID].RelativeHumidity.u8);
+    create_bsmp_var(57, MOD_A_ID, 4, false, fac_2p4s_acdc_cmd[MOD_A_ID].InterlocksRegister.u8);
+    create_bsmp_var(58, MOD_A_ID, 4, false, fac_2p4s_acdc_cmd[MOD_A_ID].AlarmsRegister.u8);
 
     /**
      * Create module B specific variables
@@ -149,39 +187,36 @@ static void bsmp_init_server(void)
 
     create_bsmp_var(31, MOD_B_ID, 4, false, g_ipc_ctom.ps_module[MOD_B_ID].ps_soft_interlock.u8);
     create_bsmp_var(32, MOD_B_ID, 4, false, g_ipc_ctom.ps_module[MOD_B_ID].ps_hard_interlock.u8);
+
     create_bsmp_var(33, MOD_B_ID, 4, false, V_CAPBANK_MOD_B.u8);
-    create_bsmp_var(34, MOD_B_ID, 4, false, VOUT_RECT_MOD_B.u8);
-    create_bsmp_var(35, MOD_B_ID, 4, false, IOUT_RECT_MOD_B.u8);
-    create_bsmp_var(36, MOD_B_ID, 4, false, TEMP_HEATSINK_MOD_B.u8);
-    create_bsmp_var(37, MOD_B_ID, 4, false, TEMP_INDUCTORS_MOD_B.u8);
-    create_bsmp_var(38, MOD_B_ID, 4, false, DUTY_CYCLE_MOD_B.u8);
+    create_bsmp_var(34, MOD_B_ID, 4, false, I_OUT_RECT_MOD_B.u8);
 
-    create_bsmp_var(39, MOD_A_ID, 4, false, fac_is[MOD_A_ID].Iin.u8);
-    create_bsmp_var(40, MOD_A_ID, 4, false, fac_is[MOD_A_ID].Vin.u8);
-    create_bsmp_var(41, MOD_A_ID, 4, false, fac_is[MOD_A_ID].TempL.u8);
-    create_bsmp_var(42, MOD_A_ID, 4, false, fac_is[MOD_A_ID].TempHeatsink.u8);
+    create_bsmp_var(35, MOD_B_ID, 4, false, DUTY_CYCLE_MOD_B.u8);
 
-    create_bsmp_var(39, MOD_B_ID, 4, false, fac_is[MOD_B_ID].Iin.u8);
-    create_bsmp_var(40, MOD_B_ID, 4, false, fac_is[MOD_B_ID].Vin.u8);
-    create_bsmp_var(41, MOD_B_ID, 4, false, fac_is[MOD_B_ID].TempL.u8);
-    create_bsmp_var(42, MOD_B_ID, 4, false, fac_is[MOD_B_ID].TempHeatsink.u8);
+    create_bsmp_var(36, MOD_B_ID, 4, false, fac_2p4s_acdc_is[MOD_B_ID].Iin.u8);
+    create_bsmp_var(37, MOD_B_ID, 4, false, fac_2p4s_acdc_is[MOD_B_ID].Vin.u8);
+    create_bsmp_var(38, MOD_B_ID, 4, false, fac_2p4s_acdc_is[MOD_B_ID].TempIGBT.u8);
+    create_bsmp_var(39, MOD_B_ID, 4, false, fac_2p4s_acdc_is[MOD_B_ID].DriverVoltage.u8);
+    create_bsmp_var(40, MOD_B_ID, 4, false, fac_2p4s_acdc_is[MOD_B_ID].DriverCurrent.u8);
+    create_bsmp_var(41, MOD_B_ID, 4, false, fac_2p4s_acdc_is[MOD_B_ID].TempL.u8);
+    create_bsmp_var(42, MOD_B_ID, 4, false, fac_2p4s_acdc_is[MOD_B_ID].TempHeatsink.u8);
+    create_bsmp_var(43, MOD_B_ID, 4, false, fac_2p4s_acdc_is[MOD_B_ID].BoardTemperature.u8);
+    create_bsmp_var(44, MOD_B_ID, 4, false, fac_2p4s_acdc_is[MOD_B_ID].RelativeHumidity.u8);
+    create_bsmp_var(45, MOD_B_ID, 4, false, fac_2p4s_acdc_is[MOD_B_ID].InterlocksRegister.u8);
+    create_bsmp_var(46, MOD_B_ID, 4, false, fac_2p4s_acdc_is[MOD_B_ID].AlarmsRegister.u8);
 
-    create_bsmp_var(43, MOD_A_ID, 4, false, fac_cmd[MOD_A_ID].Vout.u8);
-    create_bsmp_var(44, MOD_A_ID, 4, false, fac_cmd[MOD_A_ID].VcapBank.u8);
-    create_bsmp_var(45, MOD_A_ID, 4, false, fac_cmd[MOD_A_ID].TempRectInductor.u8);
-    create_bsmp_var(46, MOD_A_ID, 4, false, fac_cmd[MOD_A_ID].TempRectHeatSink.u8);
-    create_bsmp_var(47, MOD_A_ID, 4, false, fac_cmd[MOD_A_ID].GroundLeakage.u8);
-
-    create_bsmp_var(43, MOD_B_ID, 4, false, fac_cmd[MOD_B_ID].Vout.u8);
-    create_bsmp_var(44, MOD_B_ID, 4, false, fac_cmd[MOD_B_ID].VcapBank.u8);
-    create_bsmp_var(45, MOD_B_ID, 4, false, fac_cmd[MOD_B_ID].TempRectInductor.u8);
-    create_bsmp_var(46, MOD_B_ID, 4, false, fac_cmd[MOD_B_ID].TempRectHeatSink.u8);
-    create_bsmp_var(47, MOD_B_ID, 4, false, fac_cmd[MOD_B_ID].GroundLeakage.u8);
-
-    create_bsmp_var(48, MOD_A_ID, 4, false, IIB_ITLK_REG_FAC_IS_1.u8);
-    create_bsmp_var(49, MOD_B_ID, 4, false, IIB_ITLK_REG_FAC_IS_2.u8);
-    create_bsmp_var(48, MOD_A_ID, 4, false, IIB_ITLK_REG_FAC_CMD_1.u8);
-    create_bsmp_var(49, MOD_B_ID, 4, false, IIB_ITLK_REG_FAC_CMD_2.u8);
+    create_bsmp_var(47, MOD_B_ID, 4, false, fac_2p4s_acdc_cmd[MOD_B_ID].Vout.u8);
+    create_bsmp_var(48, MOD_B_ID, 4, false, fac_2p4s_acdc_cmd[MOD_B_ID].VcapBank.u8);
+    create_bsmp_var(49, MOD_B_ID, 4, false, fac_2p4s_acdc_cmd[MOD_B_ID].TempRectInductor.u8);
+    create_bsmp_var(50, MOD_B_ID, 4, false, fac_2p4s_acdc_cmd[MOD_B_ID].TempRectHeatSink.u8);
+    create_bsmp_var(51, MOD_B_ID, 4, false, fac_2p4s_acdc_cmd[MOD_B_ID].ExternalBoardsVoltage.u8);
+    create_bsmp_var(52, MOD_B_ID, 4, false, fac_2p4s_acdc_cmd[MOD_B_ID].AuxiliaryBoardCurrent.u8);
+    create_bsmp_var(53, MOD_B_ID, 4, false, fac_2p4s_acdc_cmd[MOD_B_ID].IDBBoardCurrent.u8);
+    create_bsmp_var(54, MOD_B_ID, 4, false, fac_2p4s_acdc_cmd[MOD_B_ID].GroundLeakage.u8);
+    create_bsmp_var(55, MOD_B_ID, 4, false, fac_2p4s_acdc_cmd[MOD_B_ID].BoardTemperature.u8);
+    create_bsmp_var(56, MOD_B_ID, 4, false, fac_2p4s_acdc_cmd[MOD_B_ID].RelativeHumidity.u8);
+    create_bsmp_var(57, MOD_B_ID, 4, false, fac_2p4s_acdc_cmd[MOD_B_ID].InterlocksRegister.u8);
+    create_bsmp_var(58, MOD_B_ID, 4, false, fac_2p4s_acdc_cmd[MOD_B_ID].AlarmsRegister.u8);
 }
 
 /**
@@ -195,146 +230,317 @@ void fac_2p4s_acdc_system_config()
 {
     adcp_channel_config();
     bsmp_init_server();
-    init_iib();
+    init_iib_modules();
 
-    init_scope(&g_ipc_mtoc.scope[0], ISR_CONTROL_FREQ.f,
-               SCOPE_FREQ_SAMPLING_PARAM[0].f, &(g_buf_samples_ctom[0].f),
-               SIZE_BUF_SAMPLES_CTOM/2, SCOPE_SOURCE_PARAM[0].p_f,
+    init_scope(&g_ipc_mtoc.scope[MOD_A_ID], ISR_CONTROL_FREQ.f,
+               SCOPE_FREQ_SAMPLING_PARAM[MOD_A_ID].f, &(g_buf_samples_ctom[0].f),
+               SIZE_BUF_SAMPLES_CTOM/2, SCOPE_SOURCE_PARAM[MOD_A_ID].p_f,
                (void *) 0);
 
-    init_scope(&g_ipc_mtoc.scope[1], ISR_CONTROL_FREQ.f,
-               SCOPE_FREQ_SAMPLING_PARAM[1].f,
+    init_scope(&g_ipc_mtoc.scope[MOD_B_ID], ISR_CONTROL_FREQ.f,
+               SCOPE_FREQ_SAMPLING_PARAM[MOD_B_ID].f,
                &(g_buf_samples_ctom[SIZE_BUF_SAMPLES_CTOM/2].f),
-               SIZE_BUF_SAMPLES_CTOM/2, SCOPE_SOURCE_PARAM[1].p_f,
+               SIZE_BUF_SAMPLES_CTOM/2, SCOPE_SOURCE_PARAM[MOD_B_ID].p_f,
                (void *) 0);
 }
 
-static void init_iib()
+static void init_iib_modules()
 {
-    fac_is[0].CanAddress = 1;
-    fac_is[1].CanAddress = 2;
-    fac_cmd[0].CanAddress = 3;
-    fac_cmd[1].CanAddress = 4;
+    fac_2p4s_acdc_is[MOD_A_ID].CanAddress = IIB_IS_ADDRESS_MOD_A;
+    fac_2p4s_acdc_is[MOD_B_ID].CanAddress = IIB_IS_ADDRESS_MOD_B;
+    fac_2p4s_acdc_cmd[MOD_A_ID].CanAddress = IIB_CMD_ADDRESS_MOD_A;
+    fac_2p4s_acdc_cmd[MOD_B_ID].CanAddress = IIB_CMD_ADDRESS_MOD_B;
 
     init_iib_module_can_data(&g_iib_module_can_data, &handle_can_data);
+    init_iib_module_can_interlock(&g_iib_module_can_interlock, &handle_can_interlock);
+    init_iib_module_can_alarm(&g_iib_module_can_alarm, &handle_can_alarm);
 }
 
 static void handle_can_data(uint8_t *data)
 {
-    uint8_t iib_address;
-    uint8_t data_id;
+    static uint8_t iib_address;
+    static uint8_t data_id;
+    static uint8_t module;
 
-    convert_to_bytes_t converter;
+    iib_address = data[0];
+    data_id     = data[1];
+    module      = (data[0] - 1) % 2;
 
-    iib_address     = data[0];
-    data_id         = data[1];
+    switch(iib_address)
+    {
+        case IIB_IS_ADDRESS_MOD_A:
+        case IIB_IS_ADDRESS_MOD_B:
+        {
+            switch(data_id)
+            {
+                case 0:
+                {
+                    memcpy(fac_2p4s_acdc_is[module].Vin.u8, &data[4], 4);
+                    memcpy( (&V_OUT_RECT_MOD_A.f + module) , &data[4], 4);
+                    break;
+                }
+                case 1:
+                {
+                    memcpy(fac_2p4s_acdc_is[module].Iin.u8, &data[4], 4);
+                    break;
+                }
+                case 2:
+                {
+                    memcpy(fac_2p4s_acdc_is[module].TempIGBT.u8, &data[4], 4);
+                    break;
+                }
+                case 3:
+                {
+                    memcpy(fac_2p4s_acdc_is[module].DriverVoltage.u8, &data[4], 4);
+                    break;
+                }
+                case 4:
+                {
+                    memcpy(fac_2p4s_acdc_is[module].DriverCurrent.u8, &data[4], 4);
+                    break;
+                }
+                case 5:
+                {
+                    memcpy(fac_2p4s_acdc_is[module].TempL.u8, &data[4], 4);
+                    break;
+                }
+                case 6:
+                {
+                    memcpy(fac_2p4s_acdc_is[module].TempHeatsink.u8, &data[4], 4);
+                    break;
+                }
+                case 7:
+                {
+                    memcpy(fac_2p4s_acdc_is[module].BoardTemperature.u8, &data[4], 4);
+                    break;
+                }
+                case 8:
+                {
+                    memcpy(fac_2p4s_acdc_is[module].RelativeHumidity.u8, &data[4], 4);
+                    break;
+                }
 
-    converter.u8[0] = data[4];
-    converter.u8[1] = data[5];
-    converter.u8[2] = data[6];
-    converter.u8[3] = data[7];
+                default:
+                {
+                    break;
+                }
+            }
 
-    if ((iib_address == 1) || (iib_address == 2)) {
-        update_iib_structure_fac_is(iib_address - 1, data_id, converter.f);
-    }
+            break;
+        }
 
-    if ((iib_address == 3) || (iib_address == 4)) {
-        update_iib_structure_fac_cmd(iib_address - 1, data_id, converter.f);
+        case IIB_CMD_ADDRESS_MOD_A:
+        case IIB_CMD_ADDRESS_MOD_B:
+        {
+            switch(data_id)
+            {
+                case 0:
+                {
+                    memcpy(fac_2p4s_acdc_cmd[module].VcapBank.u8, &data[4], 4);
+                    break;
+                }
+                case 1:
+                {
+                    memcpy(fac_2p4s_acdc_cmd[module].Vout.u8, &data[4], 4);
+                    break;
+                }
+                case 2:
+                {
+                    memcpy(fac_2p4s_acdc_cmd[module].ExternalBoardsVoltage.u8, &data[4], 4);
+                    break;
+                }
+                case 3:
+                {
+                    memcpy(fac_2p4s_acdc_cmd[module].AuxiliaryBoardCurrent.u8, &data[4], 4);
+                    break;
+                }
+                case 4:
+                {
+                    memcpy(fac_2p4s_acdc_cmd[module].IDBBoardCurrent.u8, &data[4], 4);
+                    break;
+                }
+                case 5:
+                {
+                    memcpy(fac_2p4s_acdc_cmd[module].GroundLeakage.u8, &data[4], 4);
+                    break;
+                }
+                case 6:
+                {
+                    memcpy(fac_2p4s_acdc_cmd[module].TempRectInductor.u8, &data[4], 4);
+                    break;
+                }
+                case 7:
+                {
+                    memcpy(fac_2p4s_acdc_cmd[module].TempRectHeatSink.u8, &data[4], 4);
+                    break;
+                }
+                case 8:
+                {
+                    memcpy(fac_2p4s_acdc_cmd[module].BoardTemperature.u8, &data[4], 4);
+                    break;
+                }
+                case 9:
+                {
+                    memcpy(fac_2p4s_acdc_cmd[module].RelativeHumidity.u8, &data[4], 4);
+                    break;
+                }
+
+                default:
+                {
+                    break;
+                }
+            }
+
+            break;
+        }
+
+        default:
+        {
+            break;
+        }
     }
 }
 
-static void update_iib_structure_fac_is(uint8_t iib_id, uint8_t data_id, float data_val)
+static void handle_can_interlock(uint8_t *data)
 {
-    uint8_t cmd_id;
-    cmd_id = data_id;
+    static uint8_t iib_address;
+    static uint8_t data_id;
+    static uint8_t module;
 
-    convert_to_bytes_t converter;
+    iib_address = data[0];
+    data_id     = data[1];
+    module      = (data[0] - 1) % 2;
 
-    switch(cmd_id) {
-        case 0:
-            converter.f = data_val;
-            if (iib_id == 0) {
-                IIB_ITLK_REG_FAC_IS_1.u32 = converter.u32;
-                set_hard_interlock(0, IIB_1_Itlk);
+    switch(iib_address)
+    {
+        case IIB_IS_ADDRESS_MOD_A:
+        case IIB_IS_ADDRESS_MOD_B:
+        {
+            switch(data_id)
+            {
+               case 0:
+               {
+                   if(g_can_reset_flag[iib_address-1])
+                   {
+                       memcpy(fac_2p4s_acdc_is[module].InterlocksRegister.u8, &data[4], 4);
+                       set_hard_interlock(module, IIB_IS_Itlk);
+                   }
+                   break;
+               }
+
+               case 1:
+               {
+                   g_can_reset_flag[iib_address-1] = 1;
+                   fac_2p4s_acdc_is[module].InterlocksRegister.u32 = 0;
+                   break;
+               }
+
+               default:
+               {
+                   break;
+               }
             }
-            if (iib_id == 1) {
-                IIB_ITLK_REG_FAC_IS_2.u32 = converter.u32;
-                set_hard_interlock(1, IIB_2_Itlk);
+        }
+
+        case IIB_CMD_ADDRESS_MOD_A:
+        case IIB_CMD_ADDRESS_MOD_B:
+        {
+            switch(data_id)
+            {
+               case 0:
+               {
+                   if(g_can_reset_flag[iib_address-1])
+                   {
+                       memcpy(fac_2p4s_acdc_cmd[module].InterlocksRegister.u8, &data[4], 4);
+                       set_hard_interlock(module, IIB_Cmd_Itlk);
+                   }
+                   break;
+               }
+
+               case 1:
+               {
+                   g_can_reset_flag[iib_address-1] = 1;
+                   fac_2p4s_acdc_cmd[module].InterlocksRegister.u32 = 0;
+                   break;
+               }
+
+               default:
+               {
+                   break;
+               }
             }
-
-            break;
-        case 1:
-            // TODO: Handle alarm message
-            break;
-        case 2:
-            fac_is[iib_id].Iin.f = data_val;
-            break;
-
-        case 3:
-            fac_is[iib_id].Vin.f = data_val;
-            break;
-
-        case 4:
-            fac_is[iib_id].TempL.f = data_val;
-            break;
-
-        case 5:
-            fac_is[iib_id].TempHeatsink.f = data_val;
-            break;
+        }
 
         default:
+        {
             break;
+        }
     }
 }
 
-static void update_iib_structure_fac_cmd(uint8_t iib_id, uint8_t data_id, float data_val)
+static void handle_can_alarm(uint8_t *data)
 {
-    uint8_t cmd_id;
-    uint8_t mod_idx;
-    cmd_id = data_id;
+    static uint8_t iib_address;
+    static uint8_t data_id;
+    static uint8_t module;
 
-    convert_to_bytes_t converter;
+    iib_address = data[0];
+    data_id     = data[1];
+    module      = (data[0] - 1) % 2;
 
-    if (iib_id == 2) mod_idx = 0;
-    if (iib_id == 3) mod_idx = 1;
+    switch(iib_address)
+    {
+    case IIB_IS_ADDRESS_MOD_A:
+    case IIB_IS_ADDRESS_MOD_B:
+        {
+            switch(data_id)
+            {
+               case 0:
+               {
+                   memcpy(fac_2p4s_acdc_is[module].AlarmsRegister.u8, &data[4], 4);
+                   break;
+               }
 
-    switch(cmd_id) {
-        case 0:
-            converter.f = data_val;
-            if (iib_id == 2) {
-                IIB_ITLK_REG_FAC_CMD_1.u32 = converter.u32;
-                set_hard_interlock(0, IIB_3_Itlk);
+               case 1:
+               {
+                   fac_2p4s_acdc_is[module].AlarmsRegister.u32 = 0;
+                   break;
+               }
+
+               default:
+               {
+                   break;
+               }
             }
-            if (iib_id == 3) {
-                IIB_ITLK_REG_FAC_CMD_2.u32 = converter.u32;
-                set_hard_interlock(1, IIB_4_Itlk);
+        }
+
+        case IIB_CMD_ADDRESS_MOD_A:
+        case IIB_CMD_ADDRESS_MOD_B:
+        {
+            switch(data_id)
+            {
+               case 0:
+               {
+                   memcpy(fac_2p4s_acdc_cmd[module].AlarmsRegister.u8, &data[4], 4);
+                   break;
+               }
+
+               case 1:
+               {
+                   fac_2p4s_acdc_cmd[module].AlarmsRegister.u32 = 0;
+                   break;
+               }
+
+               default:
+               {
+                   break;
+               }
             }
-
-            break;
-        case 1:
-            // TODO: Handle alarm data
-            break;
-        case 2:
-            fac_cmd[mod_idx].Vout.f = data_val;
-            break;
-
-        case 3:
-            fac_cmd[mod_idx].VcapBank.f = data_val;
-            break;
-
-        case 4:
-            fac_cmd[mod_idx].TempRectInductor.f = data_val;
-            break;
-
-        case 5:
-            fac_cmd[mod_idx].TempRectHeatSink.f = data_val;
-            break;
-
-        case 6:
-            fac_cmd[mod_idx].GroundLeakage.f = data_val;
-            break;
+        }
 
         default:
+        {
             break;
+        }
     }
 }
