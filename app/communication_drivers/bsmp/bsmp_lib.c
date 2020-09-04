@@ -333,6 +333,43 @@ uint8_t bsmp_reset_interlocks(uint8_t *input, uint8_t *output)
     g_ipc_mtoc.ps_module[g_current_ps_id].ps_hard_interlock.u32 = 0;
     g_ipc_mtoc.ps_module[g_current_ps_id].ps_soft_interlock.u32 = 0;
 
+    switch(g_ipc_ctom.ps_module[0].ps_status.bit.model)
+    {
+        case FAC_2S_ACDC:
+        case FAC_2P4S_ACDC:
+        {
+            g_ipc_mtoc.ps_module[0].ps_hard_interlock.u32 = 0;
+            g_ipc_mtoc.ps_module[0].ps_soft_interlock.u32 = 0;
+
+            g_ipc_mtoc.ps_module[1].ps_hard_interlock.u32 = 0;
+            g_ipc_mtoc.ps_module[1].ps_soft_interlock.u32 = 0;
+
+            break;
+        }
+
+        case FAC_2P4S_DCDC:
+        {
+            g_ipc_mtoc.ps_module[0].ps_hard_interlock.u32 = 0;
+            g_ipc_mtoc.ps_module[0].ps_soft_interlock.u32 = 0;
+
+            g_ipc_mtoc.ps_module[1].ps_hard_interlock.u32 = 0;
+            g_ipc_mtoc.ps_module[1].ps_soft_interlock.u32 = 0;
+
+            g_ipc_mtoc.ps_module[2].ps_hard_interlock.u32 = 0;
+            g_ipc_mtoc.ps_module[2].ps_soft_interlock.u32 = 0;
+
+            g_ipc_mtoc.ps_module[3].ps_hard_interlock.u32 = 0;
+            g_ipc_mtoc.ps_module[3].ps_soft_interlock.u32 = 0;
+
+            break;
+        }
+
+        default:
+        {
+            break;
+        }
+    }
+
     ulTimeout=0;
 
     if(ipc_mtoc_busy(low_priority_msg_to_reg(Reset_Interlocks)))

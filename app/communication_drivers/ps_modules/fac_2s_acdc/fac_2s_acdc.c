@@ -29,8 +29,8 @@
 #include "inc/hw_types.h"
 
 #include "driverlib/gpio.h"
-
 #include "board_drivers/hardware_def.h"
+
 #include "communication_drivers/ipc/ipc_lib.h"
 #include "communication_drivers/adcp/adcp.h"
 #include "communication_drivers/bsmp/bsmp_lib.h"
@@ -409,8 +409,6 @@ static void handle_can_interlock(uint8_t *data)
     iib_address = data[0];
     data_id     = data[1];
     module      = (data[0] - 1) % 2;
-
-    GPIOPinWrite(DEBUG_BASE, DEBUG_PIN, OFF);
 
     switch(iib_address)
     {

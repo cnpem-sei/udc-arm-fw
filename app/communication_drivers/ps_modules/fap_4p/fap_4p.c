@@ -155,7 +155,6 @@ typedef enum
 } soft_interlocks_t;
 
 static volatile iib_fap_module_t iib_fap_4p[4];
-volatile hard_interlocks_t hard_interlocks;
 
 static void init_iib();
 
