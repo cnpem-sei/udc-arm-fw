@@ -133,7 +133,7 @@ static void bsmp_init_server(void)
 
     /// Both modules share these variables
     modify_bsmp_var(0, MOD_B_ID, g_ipc_ctom.ps_module[0].ps_status.u8);
-    modify_bsmp_var(1, MOD_B_ID, g_ipc_ctom.ps_module[0].ps_setpoint.u8);
+    modify_bsmp_var(1, MOD_B_ID, g_ipc_mtoc.ps_module[0].ps_setpoint.u8);
     modify_bsmp_var(2, MOD_B_ID, g_ipc_ctom.ps_module[0].ps_reference.u8);
 
     create_bsmp_var(31, MOD_B_ID, 4, false, g_ipc_ctom.ps_module[MOD_B_ID].ps_soft_interlock.u8);
