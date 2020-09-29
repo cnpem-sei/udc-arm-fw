@@ -53,7 +53,7 @@
 void init_system(void)
 {
     /**
-     * Enable I2C interface for the following onboard componentes (therefore,
+     * Enable I2C interface for the following onboard components (therefore,
      * it must be initialized before them):
      *
      *      - Board temperature sensor
@@ -110,13 +110,11 @@ void init_system(void)
 
 	init_parameters_bank();
 
-	//load_param_bank();
-
 	init_ipc();
 
 	init_control_framework(&g_controller_mtoc);
 
-	load_dsp_modules_eeprom(Onboard_EEPROM);
+	//load_dsp_modules_eeprom(Onboard_EEPROM);
 
 	flash_mem_init();
 

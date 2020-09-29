@@ -228,16 +228,6 @@ static void init_param_bank_info(void)
 
     init_param(Min_Ref_OpenLoop, is_float, 4, &MIN_REF_OL[0].u8[0]);
 
-    /*init_param(Max_SlewRate_SlowRef, is_float, 1, &MAX_SLEWRATE_SLOWREF.u8[0]);
-
-    init_param(Max_SlewRate_SigGen_Amp, is_float, 1,
-               &MAX_SLEWRATE_SIGGEN_AMP.u8[0]);
-
-    init_param(Max_SlewRate_SigGen_Offset, is_float, 1,
-               &MAX_SLEWRATE_SIGGEN_OFFSET.u8[0]);
-
-    init_param(Max_SlewRate_WfmRef, is_float, 1, &MAX_SLEWRATE_WFMREF.u8[0]);*/
-
     /**
      * PWM parameters
      */
@@ -279,7 +269,6 @@ static void init_param_bank_info(void)
     init_param(HRADC_Offset_Transducer, is_float, NUM_MAX_HRADC,
                &TRANSDUCER_OFFSET[0].u8[0]);
 
-
     /**
      * SigGen parameters
      */
@@ -296,7 +285,6 @@ static void init_param_bank_info(void)
     init_param(SigGen_Aux_Param, is_float, NUM_SIGGEN_AUX_PARAM,
                 &SIGGEN_AUX_PARAM[0].u8[0]);
 
-
     /**
      * WfmRef parameters
      */
@@ -309,7 +297,6 @@ static void init_param_bank_info(void)
     init_param(WfmRef_Gain, is_float, 4, &WFMREF_GAIN_PARAM[0].u8[0]);
 
     init_param(WfmRef_Offset, is_float, 4, &WFMREF_OFFSET_PARAM[0].u8[0]);
-
 
     /**
      * Analog variables parameters
@@ -531,9 +518,6 @@ static void load_param_bank_default(void)
     {
         set_param(PS_Name, n, (float) default_ps_name[n]);
     }
-    /*set_param(PS_Name, 0, 'A');
-    set_param(PS_Name, 1, 'B');
-    set_param(PS_Name, 2, 'C');*/
 
     set_param(PS_Model, 0, Uninitialized);
     set_param(Num_PS_Modules, 0, 1);
@@ -881,7 +865,7 @@ void init_parameters_bank(void)
 
     if(check_param_bank(Offboard_EEPROM))
     {
-        //load_dsp_modules_eeprom(Offboard_EEPROM);
+        load_dsp_modules_eeprom(Offboard_EEPROM);
         return;
     }
 
@@ -892,7 +876,7 @@ void init_parameters_bank(void)
             load_param_bank_onboard_eeprom();
             if(check_param_bank(Onboard_EEPROM))
             {
-                //load_dsp_modules_eeprom(Onboard_EEPROM);
+                load_dsp_modules_eeprom(Onboard_EEPROM);
                 return;
             }
         }

@@ -2050,10 +2050,12 @@ uint8_t bsmp_load_dsp_coeffs_eeprom(uint8_t *input, uint8_t *output)
             {
                 g_ipc_mtoc.dsp_module.dsp_class = (dsp_class_t) dsp_class.u16;
                 g_ipc_mtoc.dsp_module.id = id.u16;
+
                 send_ipc_lowpriority_msg(0, Set_DSP_Coeffs);
-                while ((HWREG(MTOCIPC_BASE + IPC_O_MTOCIPCFLG) &
-                low_priority_msg_to_reg(Set_DSP_Coeffs)) &&
-                (ulTimeout<TIMEOUT_DSP_IPC_ACK))
+
+                while ( (HWREG(MTOCIPC_BASE + IPC_O_MTOCIPCFLG) &
+                        low_priority_msg_to_reg(Set_DSP_Coeffs)) &&
+                        (ulTimeout<TIMEOUT_DSP_IPC_ACK) )
                 {
                     ulTimeout++;
                 }
