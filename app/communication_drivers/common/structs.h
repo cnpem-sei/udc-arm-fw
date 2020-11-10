@@ -70,6 +70,7 @@ typedef struct
     buf_status_t    status;
     u_p_float_t     p_buf_start;
     u_p_float_t     p_buf_end;
+    u_p_float_t     p_buf_stop;
     u_p_float_t     p_buf_idx;
 } buf_t;
 

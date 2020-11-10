@@ -40,6 +40,7 @@ struct scope_t
     buf_t           buffer;
     timeslicer_t    timeslicer;
     u_float_t       duration;
+    u_float_t       trig_delay;
     u_p_float_t     p_source;
     void            (*p_run_scope)(scope_t *p_scp);
 };
