@@ -189,7 +189,7 @@ int main(void) {
 
         case FAC_DCDC_EMA:
         {
-            //fac_dcdc_ema_system_config();
+            fac_dcdc_ema_system_config();
             break;
         }
 
