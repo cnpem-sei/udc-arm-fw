@@ -158,9 +158,7 @@ static volatile iib_fap_module_t iib_fap_4p[4];
 
 static void init_iib();
 
-static void handle_can_data(uint8_t *data);
-static void handle_can_interlock(uint8_t *data);
-static void handle_can_alarm(uint8_t *data);
+static void handle_can_data(uint8_t *data, unsigned long id);
 
 /**
 * @brief Initialize ADCP Channels.
@@ -354,152 +352,139 @@ static void init_iib()
     iib_fap_4p[3].CanAddress = 4;
 
     init_iib_module_can_data(&g_iib_module_can_data, &handle_can_data);
-    init_iib_module_can_interlock(&g_iib_module_can_interlock, &handle_can_interlock);
-    init_iib_module_can_alarm(&g_iib_module_can_alarm, &handle_can_alarm);
 }
 
-static void handle_can_data(uint8_t *data)
+static void handle_can_data(uint8_t *data, unsigned long id)
 {
     uint8_t module;
 
-    module = data[0] - 1;
+    unsigned long can_module = id;
+    unsigned long id_var = 0;
 
-    switch(data[1])
+    switch(can_module)
+    {
+    	case 10:
+    	case 11:
+    	case 12:
+    	case 13:
+    	case 14:
+    	case 15:
+    	case 16:
+    	case 17:
+    	{
+    		module = 0;
+    		id_var = (id - 10);
+    		break;
+    	}
+    	case 20:
+    	case 21:
+    	case 22:
+    	case 23:
+    	case 24:
+    	case 25:
+    	case 26:
+    	case 27:
+    	{
+    		module = 1;
+    		id_var = (id - 20);
+    		break;
+    	}
+    	case 30:
+    	case 31:
+    	case 32:
+    	case 33:
+    	case 34:
+    	case 35:
+    	case 36:
+    	case 37:
+    	{
+    		module = 2;
+    		id_var = (id - 30);
+    		break;
+    	}
+    	case 40:
+    	case 41:
+    	case 42:
+    	case 43:
+    	case 44:
+    	case 45:
+    	case 46:
+    	case 47:
+    	{
+    		module = 3;
+    		id_var = (id - 40);
+    		break;
+    	}
+
+    	default:
+    	{
+    		break;
+    	}
+    }
+
+    switch(id_var)
     {
         case 0:
         {
-            memcpy(iib_fap_4p[module].Vin.u8, &data[4], 4);
-            memcpy( (&V_DCLINK_MOD_1.f + module) , &data[4], 4);
+            memcpy(iib_fap_4p[module].Vin.u8, &data[0], 4);
+            memcpy( (&V_DCLINK_MOD_1.f + module) , &data[0], 4);
+            memcpy(iib_fap_4p[module].Vout.u8, &data[4], 4);
             break;
         }
         case 1:
         {
-            memcpy(iib_fap_4p[module].Vout.u8, &data[4], 4);
+        	memcpy(iib_fap_4p[module].IoutA1.u8, &data[0], 4);
+        	memcpy(iib_fap_4p[module].IoutA2.u8, &data[4], 4);
             break;
         }
         case 2:
         {
-            memcpy(iib_fap_4p[module].IoutA1.u8, &data[4], 4);
+        	memcpy(iib_fap_4p[module].DriverVoltage.u8, &data[0], 4);
+        	memcpy(iib_fap_4p[module].GroundLeakage.u8, &data[4], 4);
             break;
         }
         case 3:
         {
-            memcpy(iib_fap_4p[module].IoutA2.u8, &data[4], 4);
+        	memcpy(iib_fap_4p[module].Driver1Current.u8, &data[0], 4);
+        	memcpy(iib_fap_4p[module].Driver2Current.u8, &data[4], 4);
             break;
         }
         case 4:
         {
-            memcpy(iib_fap_4p[module].TempIGBT1.u8, &data[4], 4);
+            memcpy(iib_fap_4p[module].TempIGBT1.u8, &data[0], 4);
+            memcpy(iib_fap_4p[module].TempIGBT2.u8, &data[4], 4);
             break;
         }
         case 5:
         {
-            memcpy(iib_fap_4p[module].TempIGBT2.u8, &data[4], 4);
+        	memcpy(iib_fap_4p[module].TempL.u8, &data[0], 4);
+        	memcpy(iib_fap_4p[module].TempHeatSink.u8, &data[4], 4);
             break;
         }
         case 6:
         {
-            memcpy(iib_fap_4p[module].DriverVoltage.u8, &data[4], 4);
+        	memcpy(iib_fap_4p[module].BoardTemperature.u8, &data[0], 4);
+        	memcpy(iib_fap_4p[module].RelativeHumidity.u8, &data[4], 4);
             break;
         }
         case 7:
         {
-            memcpy(iib_fap_4p[module].Driver1Current.u8, &data[4], 4);
-            break;
-        }
-        case 8:
-        {
-            memcpy(iib_fap_4p[module].Driver2Current.u8, &data[4], 4);
-            break;
-        }
-        case 9:
-        {
-            memcpy(iib_fap_4p[module].TempL.u8, &data[4], 4);
-            break;
-        }
-        case 10:
-        {
-            memcpy(iib_fap_4p[module].TempHeatSink.u8, &data[4], 4);
-            break;
-        }
-        case 11:
-        {
-            memcpy(iib_fap_4p[module].GroundLeakage.u8, &data[4], 4);
-            break;
-        }
-        case 12:
-        {
-            memcpy(iib_fap_4p[module].BoardTemperature.u8, &data[4], 4);
-            break;
-        }
-        case 13:
-        {
-            memcpy(iib_fap_4p[module].RelativeHumidity.u8, &data[4], 4);
-            break;
-        }
+        	memcpy(iib_fap_4p[module].InterlocksRegister.u8, &data[0], 4);
+        	memcpy(iib_fap_4p[module].AlarmsRegister.u8, &data[4], 4);
 
+        	if(iib_fap_4p[module].InterlocksRegister.u32 > 0)
+        	{
+        		set_hard_interlock(0, IIB_Mod_1_Itlk + module);
+        	}
+        	else
+        	{
+        		iib_fap_4p[module].InterlocksRegister.u32 = 0;
+        	}
+        	break;
+        }
         default:
         {
             break;
         }
-    }
-}
-
-static void handle_can_interlock(uint8_t *data)
-{
-    uint8_t module;
-
-    module = data[0] - 1;
-
-    switch (data[1])
-    {
-        case 0:
-        {
-            if(g_can_reset_flag[module])
-            {
-                memcpy(iib_fap_4p[module].InterlocksRegister.u8, &data[4], 4);
-                set_hard_interlock(0, IIB_Mod_1_Itlk + module);
-            }
-            break;
-        }
-
-        case 1:
-        {
-            g_can_reset_flag[module] = 1;
-            iib_fap_4p[module].InterlocksRegister.u32 = 0;
-            break;
-        }
-
-        default:
-        {
-            break;
-        }
-    }
-}
-
-static void handle_can_alarm(uint8_t *data)
-{
-    uint8_t module;
-
-    module = data[0] - 1;
-
-    switch(data[1])
-    {
-       case 0:
-       {
-           memcpy(iib_fap_4p[module].AlarmsRegister.u8, &data[4], 4);
-           break;
-       }
-
-       case 1:
-       {
-           iib_fap_4p[module].AlarmsRegister.u32 = 0;
-           break;
-       }
-
-       default:
-       {
-           break;
-       }
     }
 }

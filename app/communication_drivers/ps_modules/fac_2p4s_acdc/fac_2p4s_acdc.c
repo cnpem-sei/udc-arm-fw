@@ -107,9 +107,7 @@ volatile iib_fac_cmd_t fac_2p4s_acdc_cmd[2];
 
 static void init_iib_modules();
 
-static void handle_can_data(uint8_t *data);
-static void handle_can_interlock(uint8_t *data);
-static void handle_can_alarm(uint8_t *data);
+static void handle_can_data(uint8_t *data, unsigned long id);
 
 /**
 * @brief Initialize ADCP Channels.
@@ -252,139 +250,120 @@ static void init_iib_modules()
     fac_2p4s_acdc_cmd[MOD_B_ID].CanAddress = IIB_CMD_ADDRESS_MOD_B;
 
     init_iib_module_can_data(&g_iib_module_can_data, &handle_can_data);
-    init_iib_module_can_interlock(&g_iib_module_can_interlock, &handle_can_interlock);
-    init_iib_module_can_alarm(&g_iib_module_can_alarm, &handle_can_alarm);
 }
 
-static void handle_can_data(uint8_t *data)
+static void handle_can_data(uint8_t *data, unsigned long id)
 {
-    static uint8_t iib_address;
-    static uint8_t data_id;
-    static uint8_t module;
+	uint8_t module;
 
-    iib_address = data[0];
-    data_id     = data[1];
-    module      = (data[0] - 1) % 2;
+	unsigned long can_module = id;
+	unsigned long id_var = 0;
 
-    switch(iib_address)
+	switch(can_module)
+	{
+		case 10:
+		case 11:
+		case 12:
+		case 13:
+		case 14:
+		case 15:
+		{
+			module = IIB_IS_ADDRESS_MOD_A;
+			id_var = (id - 10);
+			break;
+		}
+		case 20:
+		case 21:
+		case 22:
+		case 23:
+		case 24:
+		case 25:
+		{
+			module = IIB_IS_ADDRESS_MOD_B;
+			id_var = (id - 20);
+			break;
+		}
+		case 30:
+		case 31:
+		case 32:
+		case 33:
+		case 34:
+		case 35:
+		{
+			module = IIB_CMD_ADDRESS_MOD_A;
+			id_var = (id - 30);
+			break;
+		}
+		case 40:
+		case 41:
+		case 42:
+		case 43:
+		case 44:
+		case 45:
+		{
+			module = IIB_CMD_ADDRESS_MOD_B;
+			id_var = (id - 40);
+			break;
+		}
+
+		default:
+		{
+			break;
+		}
+	}
+
+    switch(module)
     {
         case IIB_IS_ADDRESS_MOD_A:
         case IIB_IS_ADDRESS_MOD_B:
         {
-            switch(data_id)
+            switch(id_var)
             {
                 case 0:
                 {
-                    memcpy(fac_2p4s_acdc_is[module].Vin.u8, &data[4], 4);
-                    memcpy( (&V_OUT_RECT_MOD_A.f + module) , &data[4], 4);
-                    break;
-                }
-                case 1:
-                {
-                    memcpy(fac_2p4s_acdc_is[module].Iin.u8, &data[4], 4);
-                    break;
-                }
-                case 2:
-                {
-                    memcpy(fac_2p4s_acdc_is[module].TempIGBT.u8, &data[4], 4);
-                    break;
-                }
-                case 3:
-                {
+                    memcpy(fac_2p4s_acdc_is[module].Vin.u8, &data[0], 4);
+                    memcpy( (&V_OUT_RECT_MOD_A.f + module) , &data[0], 4);
                     memcpy(fac_2p4s_acdc_is[module].DriverVoltage.u8, &data[4], 4);
                     break;
                 }
-                case 4:
-                {
-                    memcpy(fac_2p4s_acdc_is[module].DriverCurrent.u8, &data[4], 4);
-                    break;
-                }
-                case 5:
-                {
-                    memcpy(fac_2p4s_acdc_is[module].TempL.u8, &data[4], 4);
-                    break;
-                }
-                case 6:
-                {
-                    memcpy(fac_2p4s_acdc_is[module].TempHeatsink.u8, &data[4], 4);
-                    break;
-                }
-                case 7:
-                {
-                    memcpy(fac_2p4s_acdc_is[module].BoardTemperature.u8, &data[4], 4);
-                    break;
-                }
-                case 8:
-                {
-                    memcpy(fac_2p4s_acdc_is[module].RelativeHumidity.u8, &data[4], 4);
-                    break;
-                }
-
-                default:
-                {
-                    break;
-                }
-            }
-
-            break;
-        }
-
-        case IIB_CMD_ADDRESS_MOD_A:
-        case IIB_CMD_ADDRESS_MOD_B:
-        {
-            switch(data_id)
-            {
-                case 0:
-                {
-                    memcpy(fac_2p4s_acdc_cmd[module].VcapBank.u8, &data[4], 4);
-                    break;
-                }
                 case 1:
                 {
-                    memcpy(fac_2p4s_acdc_cmd[module].Vout.u8, &data[4], 4);
+                    memcpy(fac_2p4s_acdc_is[module].Iin.u8, &data[0], 4);
+                    memcpy(fac_2p4s_acdc_is[module].DriverCurrent.u8, &data[4], 4);
                     break;
                 }
                 case 2:
                 {
-                    memcpy(fac_2p4s_acdc_cmd[module].ExternalBoardsVoltage.u8, &data[4], 4);
+                    memcpy(fac_2p4s_acdc_is[module].TempIGBT.u8, &data[0], 4);
                     break;
                 }
                 case 3:
                 {
-                    memcpy(fac_2p4s_acdc_cmd[module].AuxiliaryBoardCurrent.u8, &data[4], 4);
+                	memcpy(fac_2p4s_acdc_is[module].TempL.u8, &data[0], 4);
+                	memcpy(fac_2p4s_acdc_is[module].TempHeatsink.u8, &data[4], 4);
                     break;
                 }
                 case 4:
                 {
-                    memcpy(fac_2p4s_acdc_cmd[module].IDBBoardCurrent.u8, &data[4], 4);
+                	memcpy(fac_2p4s_acdc_is[module].BoardTemperature.u8, &data[0], 4);
+                	memcpy(fac_2p4s_acdc_is[module].RelativeHumidity.u8, &data[4], 4);
                     break;
                 }
                 case 5:
                 {
-                    memcpy(fac_2p4s_acdc_cmd[module].GroundLeakage.u8, &data[4], 4);
-                    break;
-                }
-                case 6:
-                {
-                    memcpy(fac_2p4s_acdc_cmd[module].TempRectInductor.u8, &data[4], 4);
-                    break;
-                }
-                case 7:
-                {
-                    memcpy(fac_2p4s_acdc_cmd[module].TempRectHeatSink.u8, &data[4], 4);
-                    break;
-                }
-                case 8:
-                {
-                    memcpy(fac_2p4s_acdc_cmd[module].BoardTemperature.u8, &data[4], 4);
-                    break;
-                }
-                case 9:
-                {
-                    memcpy(fac_2p4s_acdc_cmd[module].RelativeHumidity.u8, &data[4], 4);
-                    break;
-                }
+                	memcpy(fac_2p4s_acdc_is[module].InterlocksRegister.u8, &data[0], 4);
+                	memcpy(fac_2p4s_acdc_is[module].AlarmsRegister.u8, &data[4], 4);
 
+                	if(fac_2p4s_acdc_is[module].InterlocksRegister.u32 > 0)
+                	{
+                		set_hard_interlock(module, IIB_IS_Itlk);
+                	}
+                	else
+                	{
+                		fac_2p4s_acdc_is[module].InterlocksRegister.u32 = 0;
+                	}
+                    break;
+                }
                 default:
                 {
                     break;
@@ -394,150 +373,64 @@ static void handle_can_data(uint8_t *data)
             break;
         }
 
-        default:
-        {
-            break;
-        }
-    }
-}
-
-static void handle_can_interlock(uint8_t *data)
-{
-    static uint8_t iib_address;
-    static uint8_t data_id;
-    static uint8_t module;
-
-    iib_address = data[0];
-    data_id     = data[1];
-    module      = (data[0] - 1) % 2;
-
-    switch(iib_address)
-    {
-        case IIB_IS_ADDRESS_MOD_A:
-        case IIB_IS_ADDRESS_MOD_B:
-        {
-            switch(data_id)
-            {
-               case 0:
-               {
-                   if(g_can_reset_flag[iib_address-1])
-                   {
-                       memcpy(fac_2p4s_acdc_is[module].InterlocksRegister.u8, &data[4], 4);
-                       set_hard_interlock(module, IIB_IS_Itlk);
-                   }
-                   break;
-               }
-
-               case 1:
-               {
-                   g_can_reset_flag[iib_address-1] = 1;
-                   fac_2p4s_acdc_is[module].InterlocksRegister.u32 = 0;
-                   break;
-               }
-
-               default:
-               {
-                   break;
-               }
-            }
-        }
-
         case IIB_CMD_ADDRESS_MOD_A:
         case IIB_CMD_ADDRESS_MOD_B:
         {
-            switch(data_id)
+            switch(id_var)
             {
-               case 0:
-               {
-                   if(g_can_reset_flag[iib_address-1])
-                   {
-                       memcpy(fac_2p4s_acdc_cmd[module].InterlocksRegister.u8, &data[4], 4);
-                       set_hard_interlock(module, IIB_Cmd_Itlk);
-                   }
-                   break;
-               }
+                case 0:
+                {
+                    memcpy(fac_2p4s_acdc_cmd[module].VcapBank.u8, &data[0], 4);
+                    memcpy(fac_2p4s_acdc_cmd[module].Vout.u8, &data[4], 4);
+                    break;
+                }
+                case 1:
+                {
+                	memcpy(fac_2p4s_acdc_cmd[module].AuxiliaryBoardCurrent.u8, &data[0], 4);
+                	memcpy(fac_2p4s_acdc_cmd[module].IDBBoardCurrent.u8, &data[4], 4);
+                    break;
+                }
+                case 2:
+                {
+                    memcpy(fac_2p4s_acdc_cmd[module].ExternalBoardsVoltage.u8, &data[0], 4);
+                    memcpy(fac_2p4s_acdc_cmd[module].GroundLeakage.u8, &data[4], 4);
+                    break;
+                }
+                case 3:
+                {
+                	memcpy(fac_2p4s_acdc_cmd[module].TempRectInductor.u8, &data[0], 4);
+                	memcpy(fac_2p4s_acdc_cmd[module].TempRectHeatSink.u8, &data[4], 4);
+                    break;
+                }
+                case 4:
+                {
+                	memcpy(fac_2p4s_acdc_cmd[module].BoardTemperature.u8, &data[0], 4);
+                	memcpy(fac_2p4s_acdc_cmd[module].RelativeHumidity.u8, &data[4], 4);
+                    break;
+                }
+                case 5:
+                {
+                	memcpy(fac_2p4s_acdc_cmd[module].InterlocksRegister.u8, &data[0], 4);
+                	memcpy(fac_2p4s_acdc_cmd[module].AlarmsRegister.u8, &data[4], 4);
 
-               case 1:
-               {
-                   g_can_reset_flag[iib_address-1] = 1;
-                   fac_2p4s_acdc_cmd[module].InterlocksRegister.u32 = 0;
-                   break;
-               }
-
-               default:
-               {
-                   break;
-               }
+                	if(fac_2p4s_acdc_cmd[module].InterlocksRegister.u32 > 0)
+                	{
+                		set_hard_interlock(module, IIB_Cmd_Itlk);
+                	}
+                	else
+                	{
+                		fac_2p4s_acdc_cmd[module].InterlocksRegister.u32 = 0;
+                	}
+                    break;
+                }
+                default:
+                {
+                    break;
+                }
             }
-        }
 
-        default:
-        {
             break;
         }
-    }
-}
-
-static void handle_can_alarm(uint8_t *data)
-{
-    static uint8_t iib_address;
-    static uint8_t data_id;
-    static uint8_t module;
-
-    iib_address = data[0];
-    data_id     = data[1];
-    module      = (data[0] - 1) % 2;
-
-    switch(iib_address)
-    {
-    case IIB_IS_ADDRESS_MOD_A:
-    case IIB_IS_ADDRESS_MOD_B:
-        {
-            switch(data_id)
-            {
-               case 0:
-               {
-                   memcpy(fac_2p4s_acdc_is[module].AlarmsRegister.u8, &data[4], 4);
-                   break;
-               }
-
-               case 1:
-               {
-                   fac_2p4s_acdc_is[module].AlarmsRegister.u32 = 0;
-                   break;
-               }
-
-               default:
-               {
-                   break;
-               }
-            }
-        }
-
-        case IIB_CMD_ADDRESS_MOD_A:
-        case IIB_CMD_ADDRESS_MOD_B:
-        {
-            switch(data_id)
-            {
-               case 0:
-               {
-                   memcpy(fac_2p4s_acdc_cmd[module].AlarmsRegister.u8, &data[4], 4);
-                   break;
-               }
-
-               case 1:
-               {
-                   fac_2p4s_acdc_cmd[module].AlarmsRegister.u32 = 0;
-                   break;
-               }
-
-               default:
-               {
-                   break;
-               }
-            }
-        }
-
         default:
         {
             break;

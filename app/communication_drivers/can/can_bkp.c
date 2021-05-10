@@ -14,9 +14,9 @@
  *
  * Module to process data in CAN BUS for backplane.
  *
- * @author allef.silva
+ * @author rogerio.marcondeli
  *
- * @date 23/10/2018
+ * @date 30/04/2021
  *
  */
 
@@ -47,42 +47,33 @@
 
 //*****************************************************************************
 //
-// A flag to indicate that some reception error occurred.
+// A flag to indicate that some reception occurred.
 //
 //*****************************************************************************
+
 volatile bool g_bRXFlag1 = 0;
 
-volatile bool g_bRXFlag2 = 0;
+//*****************************************************************************
+//
+// A global to keep track of the error flags that have been thrown so they may
+// be processed. This is necessary because reading the error register clears
+// the flags, so it is necessary to save them somewhere for processing.
+//
+//*****************************************************************************
 
-volatile bool g_bRXFlag3 = 0;
+volatile uint32_t g_ui32ErrFlag = 0;
 
-volatile bool g_bErrFlag = 0;
+//*****************************************************************************
 
-volatile uint8_t g_can_reset_flag[NUM_MAX_IIB_BOARDS];
+volatile unsigned long id = 0;
 
-tCANMsgObject tx_message_reset_udc;
+tCANMsgObject tx_message_reset;
 
-tCANMsgObject tx_message_param_udc;
+tCANMsgObject rx_message_data;
 
-tCANMsgObject rx_message_data_iib;
+uint8_t message_reset[MESSAGE_RESET_LEN];
 
-tCANMsgObject rx_message_itlk_iib;
-
-tCANMsgObject rx_message_alarm_iib;
-
-tCANMsgObject rx_message_param_iib;
-
-uint8_t message_reset_udc[MESSAGE_RESET_UDC_LEN];
-
-uint8_t message_param_udc[MESSAGE_PARAM_UDC_LEN];
-
-uint8_t message_data_iib[MESSAGE_DATA_IIB_LEN];
-
-uint8_t message_itlk_iib[MESSAGE_ITLK_IIB_LEN];
-
-uint8_t message_alarm_iib[MESSAGE_ALARM_IIB_LEN];
-
-uint8_t message_param_iib[MESSAGE_PARAM_IIB_LEN];
+uint8_t message_data[MESSAGE_DATA_LEN];
 
 //*****************************************************************************
 // This function is the interrupt handler for the CAN peripheral.  It checks
@@ -113,116 +104,65 @@ void can_int_handler(void)
         ui32Status = CANStatusGet(CAN0_BASE, CAN_STS_CONTROL);
 
         //
-        // Set a flag to indicate some errors may have occurred.
+        // Add ERROR flags to list of current errors. To be handled
+        // later, because it would take too much time here in the
+        // interrupt.
         //
-        g_bErrFlag = 1;
+
+        g_ui32ErrFlag |= ui32Status;
     }
 
     // Check if the cause is message object 1, which what we are using for
     // receiving messages.
-    else if(ui32Status == MESSAGE_DATA_IIB_OBJ_ID)
+    else if(ui32Status == MESSAGE_DATA_OBJ)
     {
         // Getting to this point means that the RX interrupt occurred on
         // message object 1, and the message RX is complete.
         // Clear the message object interrupt.
 
-        CANIntClear(CAN0_BASE, MESSAGE_DATA_IIB_OBJ_ID);
+    	CANIntClear(CAN0_BASE, MESSAGE_DATA_OBJ);
+
+    	CANMessageGet(CAN0_BASE, MESSAGE_DATA_OBJ, &rx_message_data, 0);
+
+        id = rx_message_data.ulMsgID;
+
+        rx_message_data.pucMsgData = message_data;
 
         g_bRXFlag1 = 1;
 
         // Indicate new message object 1 that needs to be processed
         TaskSetNew(PROCESS_CAN_MESSAGE);
 
-        // Since the message was sent, clear any error flags.
-        g_bErrFlag = 0;
+        //
+        // Since a message was received, clear any error flags.
+        // This is done because before the message is received it triggers
+        // a Status Interrupt for RX complete. by clearing the flag here we
+        // prevent unnecessary error handling from happeneing
+        //
+
+        g_ui32ErrFlag = 0;
     }
 
     // Check if the cause is message object 2, which what we are using for
-    // receiving messages.
-    else if(ui32Status == MESSAGE_ITLK_IIB_OBJ_ID)
-    {
-        // Getting to this point means that the RX interrupt occurred on
-        // message object 2, and the message RX is complete.
-        // Clear the message object interrupt.
-
-        CANIntClear(CAN0_BASE, MESSAGE_ITLK_IIB_OBJ_ID);
-
-        GPIOPinWrite(DEBUG_BASE, DEBUG_PIN, ON);
-
-        g_bRXFlag2 = 1;
-
-        // Indicate new message object 2 that needs to be processed
-        TaskSetNew(PROCESS_CAN_MESSAGE);
-
-        // Since the message was sent, clear any error flags.
-        g_bErrFlag = 0;
-    }
-
-    // Check if the cause is message object 3, which what we are using for
-    // receiving messages.
-    else if(ui32Status == MESSAGE_ALARM_IIB_OBJ_ID)
-    {
-        // Getting to this point means that the RX interrupt occurred on
-        // message object 3, and the message RX is complete.
-        // Clear the message object interrupt.
-
-        CANIntClear(CAN0_BASE, MESSAGE_ALARM_IIB_OBJ_ID);
-
-        g_bRXFlag3 = 1;
-
-        // Indicate new message object 3 that needs to be processed
-        TaskSetNew(PROCESS_CAN_MESSAGE);
-
-        // Since the message was sent, clear any error flags.
-        g_bErrFlag = 0;
-    }
-
-    // Check if the cause is message object 4, which what we are using for
-    // receiving messages.
-    else if(ui32Status == MESSAGE_PARAM_IIB_OBJ_ID)
-    {
-        // Getting to this point means that the RX interrupt occurred on
-        // message object 4, and the message RX is complete.
-        // Clear the message object interrupt.
-
-        CANIntClear(CAN0_BASE, MESSAGE_PARAM_IIB_OBJ_ID);
-
-        /* Rx object 4. Nothing to do for now. */
-
-        // Since the message was sent, clear any error flags.
-        g_bErrFlag = 0;
-    }
-
-    // Check if the cause is message object 5, which what we are using for
     // sending messages.
-    else if(ui32Status == MESSAGE_RESET_UDC_OBJ_ID)
+    else if(ui32Status == MESSAGE_RESET_OBJ)
     {
         // Getting to this point means that the TX interrupt occurred on
-        // message object 5, and the message TX is complete.
+        // message object 2, and the message TX is complete.
         // Clear the message object interrupt.
 
-        CANIntClear(CAN0_BASE, MESSAGE_RESET_UDC_OBJ_ID);
+        CANIntClear(CAN0_BASE, MESSAGE_RESET_OBJ);
 
-        /* Tx object 5. Nothing to do for now. */
+        /* Tx object 2. Nothing to do for now. */
 
-        // Since the message was sent, clear any error flags.
-        g_bErrFlag = 0;
-    }
+        //
+        // Since a message was transmitted, clear any error flags.
+        // This is done because before the message is transmitted it triggers
+        // a Status Interrupt for TX complete. by clearing the flag here we
+        // prevent unnecessary error handling from happeneing
+        //
 
-    // Check if the cause is message object 6, which what we are using for
-    // sending messages.
-    else if(ui32Status == MESSAGE_PARAM_UDC_OBJ_ID)
-    {
-        // Getting to this point means that the TX interrupt occurred on
-        // message object 6, and the message TX is complete.
-        // Clear the message object interrupt.
-
-        CANIntClear(CAN0_BASE, MESSAGE_PARAM_UDC_OBJ_ID);
-
-        /* Tx object 6. Nothing to do for now. */
-
-        // Since the message was sent, clear any error flags.
-        g_bErrFlag = 0;
+        g_ui32ErrFlag = 0;
     }
 
     // Otherwise, something unexpected caused the interrupt.
@@ -237,13 +177,6 @@ void can_int_handler(void)
 
 void init_can_bkp(void)
 {
-    uint8_t i;
-
-    for(i = 0; i < NUM_MAX_IIB_BOARDS; i++)
-    {
-        g_can_reset_flag[i] = 1;
-    }
-
     // Initialize the CAN controller
     CANInit(CAN0_BASE);
 
@@ -264,105 +197,244 @@ void init_can_bkp(void)
     CANIntRegister(CAN0_BASE, 0, &can_int_handler);
 
     // Disable auto-retry if no ACK-bit is received by the CAN controller.
-    CANRetrySet(CAN0_BASE, 0);
+    CANRetrySet(CAN0_BASE, 1);
 
     // Enable the CAN for operation.
     CANEnable(CAN0_BASE);
 
     //message object 1
-    rx_message_data_iib.ulMsgID           = MESSAGE_DATA_IIB_ID;
-    rx_message_data_iib.ulMsgIDMask       = 0xfffff;
-    rx_message_data_iib.ulFlags           = (MSG_OBJ_RX_INT_ENABLE | MSG_OBJ_USE_ID_FILTER | MSG_OBJ_FIFO);
-    rx_message_data_iib.ulMsgLen          = MESSAGE_DATA_IIB_LEN;
+    rx_message_data.ulMsgID           = 0x09;
+    rx_message_data.ulMsgIDMask       = 0x80;
+    rx_message_data.ulFlags           = (MSG_OBJ_RX_INT_ENABLE | MSG_OBJ_USE_ID_FILTER | MSG_OBJ_FIFO);
+    rx_message_data.ulMsgLen          = MESSAGE_DATA_LEN;
 
-    CANMessageSet(CAN0_BASE, MESSAGE_DATA_IIB_OBJ_ID, &rx_message_data_iib, MSG_OBJ_TYPE_RX);
+    CANMessageSet(CAN0_BASE, MESSAGE_DATA_OBJ, &rx_message_data, MSG_OBJ_TYPE_RX);
 
     //message object 2
-    rx_message_itlk_iib.ulMsgID           = MESSAGE_ITLK_IIB_ID;
-    rx_message_itlk_iib.ulMsgIDMask       = 0xfffff;
-    rx_message_itlk_iib.ulFlags           = (MSG_OBJ_RX_INT_ENABLE | MSG_OBJ_USE_ID_FILTER | MSG_OBJ_FIFO);
-    rx_message_itlk_iib.ulMsgLen          = MESSAGE_ITLK_IIB_LEN;
+    tx_message_reset.ulMsgID          = MESSAGE_RESET_ID;
+    tx_message_reset.ulMsgIDMask      = 0;
+    tx_message_reset.ulFlags          = (MSG_OBJ_TX_INT_ENABLE | MSG_OBJ_FIFO);
+    tx_message_reset.ulMsgLen         = MESSAGE_RESET_LEN;
+}
 
-    CANMessageSet(CAN0_BASE, MESSAGE_ITLK_IIB_OBJ_ID, &rx_message_itlk_iib, MSG_OBJ_TYPE_RX);
+//*****************************************************************************
+//
+// Can ERROR handling. When a message is received if there is an erro it is
+// saved to g_ui32ErrFlag, the Error Flag Set. Below the flags are checked
+// and cleared. It is left up to the user to add handling fuctionality if so
+// desiered.
+//
+// For more information on the error flags please see the CAN section of the
+// microcontroller datasheet.
+//
+// NOTE: you may experience errors during setup when only one board is powered
+// on. This is caused by one board sending signals and there not being another
+// board there to acknoledge it. Dont worry about these errors, they can be
+// disregarded.
+//
+//*****************************************************************************
 
-    //message object 3
-    rx_message_alarm_iib.ulMsgID          = MESSAGE_ALARM_IIB_ID;
-    rx_message_alarm_iib.ulMsgIDMask      = 0xfffff;
-    rx_message_alarm_iib.ulFlags          = (MSG_OBJ_RX_INT_ENABLE | MSG_OBJ_USE_ID_FILTER | MSG_OBJ_FIFO);
-    rx_message_alarm_iib.ulMsgLen         = MESSAGE_ALARM_IIB_LEN;
+void can_error_handler(void)
+{
+	// CAN controller has entered a Bus Off state.
+	if(g_ui32ErrFlag & CAN_STATUS_BUS_OFF)
+	{
+		// Handle Error Condition here
 
-    CANMessageSet(CAN0_BASE, MESSAGE_ALARM_IIB_OBJ_ID, &rx_message_alarm_iib, MSG_OBJ_TYPE_RX);
+		// Enable the CAN for operation.
+		CANEnable(CAN0_BASE);
 
-    //message object 4
-    rx_message_param_iib.ulMsgID          = MESSAGE_PARAM_IIB_ID;
-    rx_message_param_iib.ulMsgIDMask      = 0xfffff;
-    rx_message_param_iib.ulFlags          = (MSG_OBJ_RX_INT_ENABLE | MSG_OBJ_USE_ID_FILTER | MSG_OBJ_FIFO);
-    rx_message_param_iib.ulMsgLen         = MESSAGE_PARAM_IIB_LEN;
+		// Clear CAN_STATUS_BUS_OFF Flag
+		g_ui32ErrFlag &= ~(CAN_STATUS_BUS_OFF);
+	}
 
-    CANMessageSet(CAN0_BASE, MESSAGE_PARAM_IIB_OBJ_ID, &rx_message_param_iib, MSG_OBJ_TYPE_RX);
+//*****************************************************************************
 
-    //message object 5
-    tx_message_reset_udc.ulMsgID          = MESSAGE_RESET_UDC_ID;
-    tx_message_reset_udc.ulMsgIDMask      = 0;
-    tx_message_reset_udc.ulFlags          = (MSG_OBJ_TX_INT_ENABLE | MSG_OBJ_FIFO);
-    tx_message_reset_udc.ulMsgLen         = MESSAGE_RESET_UDC_LEN;
+	// CAN controller error level has reached warning level.
+	if(g_ui32ErrFlag & CAN_STATUS_EWARN)
+	{
+		// Handle Error Condition here
 
-    //message object 6
-    tx_message_param_udc.ulMsgID         = MESSAGE_PARAM_UDC_ID;
-    tx_message_param_udc.ulMsgIDMask     = 0;
-    tx_message_param_udc.ulFlags         = (MSG_OBJ_TX_INT_ENABLE | MSG_OBJ_FIFO);
-    tx_message_param_udc.ulMsgLen        = MESSAGE_PARAM_UDC_LEN;
+		// Clear CAN_STATUS_EWARN Flag
+		g_ui32ErrFlag &= ~(CAN_STATUS_EWARN);
+	}
 
+//*****************************************************************************
+
+	// CAN controller error level has reached error passive level.
+	if(g_ui32ErrFlag & CAN_STATUS_EPASS)
+	{
+		// Handle Error Condition here
+
+		// Clear CAN_STATUS_EPASS Flag
+		g_ui32ErrFlag &= ~(CAN_STATUS_EPASS);
+	}
+
+//*****************************************************************************
+
+	// A message was received successfully since the last read of this status.
+	if(g_ui32ErrFlag & CAN_STATUS_RXOK)
+	{
+		// Handle Error Condition here
+
+		// Clear CAN_STATUS_RXOK Flag
+		g_ui32ErrFlag &= ~(CAN_STATUS_RXOK);
+	}
+
+//*****************************************************************************
+
+	// A message was transmitted successfully since the last read of this status.
+	if(g_ui32ErrFlag & CAN_STATUS_TXOK)
+	{
+		// Handle Error Condition here
+
+		// Clear CAN_STATUS_TXOK Flag
+		g_ui32ErrFlag &= ~(CAN_STATUS_TXOK);
+	}
+
+//*****************************************************************************
+
+	// This is the mask for the last error code field.
+	if(g_ui32ErrFlag & CAN_STATUS_LEC_MSK)
+	{
+		// Handle Error Condition here
+
+		// Clear CAN_STATUS_LEC_MSK Flag
+		g_ui32ErrFlag &= ~(CAN_STATUS_LEC_MSK);
+	}
+
+//*****************************************************************************
+
+	// There was no error.
+	if(g_ui32ErrFlag & CAN_STATUS_LEC_NONE)
+	{
+		// Handle Error Condition here
+
+		// Clear CAN_STATUS_LEC_NONE Flag
+		g_ui32ErrFlag &= ~(CAN_STATUS_LEC_NONE);
+	}
+
+//*****************************************************************************
+
+	// A bit stuffing error has occurred.
+	if(g_ui32ErrFlag & CAN_STATUS_LEC_STUFF)
+	{
+		// Handle Error Condition here
+
+		// Clear CAN_STATUS_LEC_STUFF Flag
+		g_ui32ErrFlag &= ~(CAN_STATUS_LEC_STUFF);
+	}
+
+//*****************************************************************************
+
+	// A formatting error has occurred.
+	if(g_ui32ErrFlag & CAN_STATUS_LEC_FORM)
+	{
+		// Handle Error Condition here
+
+		// Clear CAN_STATUS_LEC_FORM Flag
+		g_ui32ErrFlag &= ~(CAN_STATUS_LEC_FORM);
+	}
+
+//*****************************************************************************
+
+	// An acknowledge error has occurred.
+	if(g_ui32ErrFlag & CAN_STATUS_LEC_ACK)
+	{
+		// Handle Error Condition here
+
+		// Clear CAN_STATUS_LEC_ACK Flag
+		g_ui32ErrFlag &= ~(CAN_STATUS_LEC_ACK);
+	}
+
+//*****************************************************************************
+
+	// The bus remained a bit level of 1 for longer than is allowed.
+	if(g_ui32ErrFlag & CAN_STATUS_LEC_BIT1)
+	{
+		// Handle Error Condition here
+
+		// Clear CAN_STATUS_LEC_BIT1 Flag
+		g_ui32ErrFlag &= ~(CAN_STATUS_LEC_BIT1);
+	}
+
+//*****************************************************************************
+
+	// The bus remained a bit level of 0 for longer than is allowed.
+	if(g_ui32ErrFlag & CAN_STATUS_LEC_BIT0)
+	{
+		// Handle Error Condition here
+
+		// Clear CAN_STATUS_LEC_BIT0 Flag
+		g_ui32ErrFlag &= ~(CAN_STATUS_LEC_BIT0);
+	}
+
+//*****************************************************************************
+
+	// A CRC error has occurred.
+	if(g_ui32ErrFlag & CAN_STATUS_LEC_CRC)
+	{
+		// Handle Error Condition here
+
+		// Clear CAN_STATUS_LEC_CRC Flag
+		g_ui32ErrFlag &= ~(CAN_STATUS_LEC_CRC);
+	}
+
+//*****************************************************************************
+
+	// CAN controller is in local power down mode.
+	if(g_ui32ErrFlag & CAN_STATUS_PDA)
+	{
+		// Handle Error Condition here
+
+		// Clear CAN_STATUS_PDA Flag
+		g_ui32ErrFlag &= ~(CAN_STATUS_PDA);
+	}
+
+//*****************************************************************************
+
+	// CAN controller has initiated a system wakeup.
+	if(g_ui32ErrFlag & CAN_STATUS_WAKE_UP)
+	{
+		// Handle Error Condition here
+
+		// Clear CAN_STATUS_WAKE_UP Flag
+		g_ui32ErrFlag &= ~(CAN_STATUS_WAKE_UP);
+	}
+
+//*****************************************************************************
+
+	// CAN controller has detected a parity error.
+	if(g_ui32ErrFlag & CAN_STATUS_PERR)
+	{
+		// Handle Error Condition here
+
+		// Clear CAN_STATUS_PERR Flag
+		g_ui32ErrFlag &= ~(CAN_STATUS_PERR);
+	}
+
+//*****************************************************************************
+
+	// If there are any bits still set in g_ui32ErrFlag then something unhandled
+    // has happened. Print the value of g_ui32ErrFlag.
+    if(g_ui32ErrFlag !=0)
+	{
+
+    }
 }
 
 void send_reset_iib_message(uint8_t iib_address)
 {
-    g_can_reset_flag[iib_address-1] = 0;
+	message_reset[0] = iib_address;
 
-    message_reset_udc[0] = iib_address;
+    tx_message_reset.pucMsgData = message_reset;
 
-    tx_message_reset_udc.pucMsgData = message_reset_udc;
-
-    CANMessageSet(CAN0_BASE, MESSAGE_RESET_UDC_OBJ_ID, &tx_message_reset_udc, MSG_OBJ_TYPE_TX);
-
-    message_itlk_iib[0] = iib_address;
-    message_itlk_iib[1] = 1;
-
-    g_iib_module_can_interlock.handle_can_interlock_message(message_itlk_iib);
-
-    message_alarm_iib[0] = iib_address;
-    message_alarm_iib[1] = 1;
-
-    g_iib_module_can_alarm.handle_can_alarm_message(message_alarm_iib);
-
+    CANMessageSet(CAN0_BASE, MESSAGE_RESET_OBJ, &tx_message_reset, MSG_OBJ_TYPE_TX);
 }
 
 void get_data_from_iib(void)
 {
-    rx_message_data_iib.pucMsgData = message_data_iib;
-
-    CANMessageGet(CAN0_BASE, MESSAGE_DATA_IIB_OBJ_ID, &rx_message_data_iib, 0);
-
-    g_iib_module_can_data.handle_can_data_message(message_data_iib);
-}
-
-void get_interlock_from_iib(void)
-{
-    rx_message_itlk_iib.pucMsgData = message_itlk_iib;
-
-    //GPIOPinWrite(DEBUG_BASE, DEBUG_PIN, OFF);
-    CANMessageGet(CAN0_BASE, MESSAGE_ITLK_IIB_OBJ_ID, &rx_message_itlk_iib, 0);
-
-    g_iib_module_can_interlock.handle_can_interlock_message(message_itlk_iib);
-}
-
-void get_alarm_from_iib(void)
-{
-    rx_message_alarm_iib.pucMsgData = message_alarm_iib;
-
-    CANMessageGet(CAN0_BASE, MESSAGE_ALARM_IIB_OBJ_ID, &rx_message_alarm_iib, 0);
-
-    g_iib_module_can_alarm.handle_can_alarm_message(message_alarm_iib);
+	g_iib_module_can_data.handle_can_data_message(message_data, id);
 }
 
 void can_check(void)
@@ -371,18 +443,6 @@ void can_check(void)
     {
         get_data_from_iib();
         g_bRXFlag1 = 0;
-    }
-
-    if(g_bRXFlag2)
-    {
-        get_interlock_from_iib();
-        g_bRXFlag2 = 0;
-    }
-
-    if(g_bRXFlag3)
-    {
-        get_alarm_from_iib();
-        g_bRXFlag3 = 0;
     }
 }
 

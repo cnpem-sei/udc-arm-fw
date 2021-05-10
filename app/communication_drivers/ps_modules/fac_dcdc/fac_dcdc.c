@@ -79,9 +79,7 @@ volatile iib_fac_os_t iib_fac_os;
 
 static void init_iib_modules();
 
-static void handle_can_data(uint8_t *data);
-static void handle_can_interlock(uint8_t *data);
-static void handle_can_alarm(uint8_t *data);
+static void handle_can_data(uint8_t *data, unsigned long id);
 
 /**
 * @brief Initialize ADCP Channels.
@@ -166,133 +164,71 @@ static void init_iib_modules()
     iib_fac_os.CanAddress = 1;
 
     init_iib_module_can_data(&g_iib_module_can_data, &handle_can_data);
-    init_iib_module_can_interlock(&g_iib_module_can_interlock, &handle_can_interlock);
-    init_iib_module_can_alarm(&g_iib_module_can_alarm, &handle_can_alarm);
 }
 
-static void handle_can_data(uint8_t *data)
+static void handle_can_data(uint8_t *data, unsigned long id)
 {
-    switch(data[1])
+    switch(id)
     {
-        case 0:
-        {
-            memcpy(iib_fac_os.VdcLink.u8, &data[4], 4);
-            break;
-        }
-        case 1:
-        {
-            memcpy(iib_fac_os.Iin.u8, &data[4], 4);
-            break;
-        }
-        case 2:
-        {
-            memcpy(iib_fac_os.Iout.u8, &data[4], 4);
-            break;
-        }
-        case 3:
-        {
-            memcpy(iib_fac_os.TempIGBT1.u8, &data[4], 4);
-            break;
-        }
-        case 4:
-        {
-            memcpy(iib_fac_os.TempIGBT2.u8, &data[4], 4);
-            break;
-        }
-        case 5:
-        {
-            memcpy(iib_fac_os.DriverVoltage.u8, &data[4], 4);
-            break;
-        }
-        case 6:
-        {
-            memcpy(iib_fac_os.Driver1Current.u8, &data[4], 4);
-            break;
-        }
-        case 7:
-        {
-            memcpy(iib_fac_os.Driver2Current.u8, &data[4], 4);
-            break;
-        }
-        case 8:
-        {
-            memcpy(iib_fac_os.GroundLeakage.u8, &data[4], 4);
-            break;
-        }
-        case 9:
-        {
-            memcpy(iib_fac_os.TempL.u8, &data[4], 4);
-            break;
-        }
         case 10:
         {
-            memcpy(iib_fac_os.TempHeatSink.u8, &data[4], 4);
+            memcpy(iib_fac_os.VdcLink.u8, &data[0], 4);
+            memcpy(iib_fac_os.DriverVoltage.u8, &data[4], 4);
             break;
         }
         case 11:
         {
-            memcpy(iib_fac_os.BoardTemperature.u8, &data[4], 4);
+            memcpy(iib_fac_os.Iin.u8, &data[0], 4);
+            memcpy(iib_fac_os.Iout.u8, &data[4], 4);
             break;
         }
         case 12:
         {
-            memcpy(iib_fac_os.RelativeHumidity.u8, &data[4], 4);
+        	memcpy(iib_fac_os.Driver1Current.u8, &data[0], 4);
+        	memcpy(iib_fac_os.Driver2Current.u8, &data[4], 4);
             break;
+        }
+        case 13:
+        {
+            memcpy(iib_fac_os.TempIGBT1.u8, &data[0], 4);
+            memcpy(iib_fac_os.TempIGBT2.u8, &data[4], 4);
+            break;
+        }
+        case 14:
+        {
+        	memcpy(iib_fac_os.TempL.u8, &data[0], 4);
+        	memcpy(iib_fac_os.TempHeatSink.u8, &data[4], 4);
+            break;
+        }
+        case 15:
+        {
+        	memcpy(iib_fac_os.BoardTemperature.u8, &data[0], 4);
+        	memcpy(iib_fac_os.RelativeHumidity.u8, &data[4], 4);
+            break;
+        }
+        case 16:
+        {
+        	memcpy(iib_fac_os.GroundLeakage.u8, &data[0], 4);
+            break;
+        }
+        case 17:
+        {
+        	memcpy(iib_fac_os.InterlocksRegister.u8, &data[0], 4);
+        	memcpy(iib_fac_os.AlarmsRegister.u8, &data[4], 4);
+
+        	if(iib_fac_os.InterlocksRegister.u32 > 0)
+        	{
+        		set_hard_interlock(0, IIB_Itlk);
+        	}
+        	else
+        	{
+        		iib_fac_os.InterlocksRegister.u32 = 0;
+        	}
+        	break;
         }
         default:
         {
             break;
         }
-    }
-}
-
-static void handle_can_interlock(uint8_t *data)
-{
-    switch(data[1])
-    {
-       case 0:
-       {
-           if(g_can_reset_flag[0])
-           {
-               memcpy(iib_fac_os.InterlocksRegister.u8, &data[4], 4);
-               set_hard_interlock(0, IIB_Itlk);
-           }
-           break;
-       }
-
-       case 1:
-       {
-           g_can_reset_flag[0] = 1;
-           iib_fac_os.InterlocksRegister.u32 = 0;
-           break;
-       }
-
-       default:
-       {
-           break;
-       }
-    }
-}
-
-static void handle_can_alarm(uint8_t *data)
-{
-    switch(data[1])
-    {
-       case 0:
-       {
-           memcpy(iib_fac_os.AlarmsRegister.u8, &data[4], 4);
-           break;
-       }
-
-       case 1:
-       {
-           iib_fac_os.AlarmsRegister.u32 = 0;
-           break;
-       }
-
-       default:
-       {
-           break;
-       }
     }
 }

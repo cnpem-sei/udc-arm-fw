@@ -14,8 +14,8 @@
  * 
  * Detailed description
  *
- * @author allef.silva
- * @date 25 de out de 2018
+ * @author rogerio.marcondeli
+ * @date 30 de abr de 2021
  *
  */
 
@@ -23,32 +23,9 @@
 
 iib_module_t g_iib_module_can_data;
 
-iib_module_t g_iib_module_can_interlock;
-
-iib_module_t g_iib_module_can_alarm;
-
-
 void init_iib_module_can_data(iib_module_t *iib_module_can_data,
-                              void (*handle_can_data_message) (uint8_t*))
+							  void (*handle_can_data_message) (uint8_t*, unsigned long))
 {
-    iib_module_can_data->handle_can_data_message                = handle_can_data_message;
+	iib_module_can_data->handle_can_data_message                = handle_can_data_message;
 }
-
-
-void init_iib_module_can_interlock(iib_module_t *iib_module_can_interlock,
-                                   void (*handle_can_interlock_message) (uint8_t*))
-{
-    iib_module_can_interlock->handle_can_interlock_message      = handle_can_interlock_message;
-}
-
-
-void init_iib_module_can_alarm(iib_module_t *iib_module_can_alarm,
-                               void (*handle_can_alarm_message) (uint8_t*))
-{
-    iib_module_can_alarm->handle_can_alarm_message              = handle_can_alarm_message;
-}
-
-
-
-
 
