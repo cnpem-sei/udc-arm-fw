@@ -255,6 +255,7 @@ static void init_iib_modules()
 static void handle_can_data(uint8_t *data, unsigned long id)
 {
 	uint8_t module;
+	uint8_t add_module;
 
 	unsigned long can_module = id;
 	unsigned long id_var = 0;
@@ -268,7 +269,8 @@ static void handle_can_data(uint8_t *data, unsigned long id)
 		case 14:
 		case 15:
 		{
-			module = IIB_IS_ADDRESS_MOD_A;
+			add_module = IIB_IS_ADDRESS_MOD_A;
+			module = 0;
 			id_var = (id - 10);
 			break;
 		}
@@ -279,7 +281,8 @@ static void handle_can_data(uint8_t *data, unsigned long id)
 		case 24:
 		case 25:
 		{
-			module = IIB_IS_ADDRESS_MOD_B;
+			add_module = IIB_IS_ADDRESS_MOD_B;
+			module = 1;
 			id_var = (id - 20);
 			break;
 		}
@@ -290,7 +293,8 @@ static void handle_can_data(uint8_t *data, unsigned long id)
 		case 34:
 		case 35:
 		{
-			module = IIB_CMD_ADDRESS_MOD_A;
+			add_module = IIB_CMD_ADDRESS_MOD_A;
+			module = 0;
 			id_var = (id - 30);
 			break;
 		}
@@ -301,7 +305,8 @@ static void handle_can_data(uint8_t *data, unsigned long id)
 		case 44:
 		case 45:
 		{
-			module = IIB_CMD_ADDRESS_MOD_B;
+			add_module = IIB_CMD_ADDRESS_MOD_B;
+			module = 1;
 			id_var = (id - 40);
 			break;
 		}
@@ -312,7 +317,7 @@ static void handle_can_data(uint8_t *data, unsigned long id)
 		}
 	}
 
-	switch(module)
+	switch(add_module)
     {
         case IIB_IS_ADDRESS_MOD_A:
         case IIB_IS_ADDRESS_MOD_B:
