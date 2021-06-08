@@ -9,18 +9,20 @@
  *****************************************************************************/
 
 /**
- * @file version.c
- * @brief Firmware version module
- * 
- * This module contains information about current build version of UDC ARM core.
+ * @file fap.h
+ * @brief FAP module
+ *
+ * Module for control of FAP power supplies. It implements the controller for
+ * load current.
  *
  * @author gabriel.brunheira
- * @date 08/02/2018
+ * @date 09/08/2018
  *
  */
 
-#include "version.h"
+#ifndef PS_AYRTON_H_
+#define PS_AYRTON_H_
 
-volatile firmwares_version_t firmwares_version;
+void ps_ayrton_system_config(void);
 
-const char * udc_arm_version = "V0.42a2021-06-07";
+#endif /* PS_AYRTON_H_ */

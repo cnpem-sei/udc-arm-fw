@@ -77,6 +77,7 @@
 #include "communication_drivers/ps_modules/fap_4p/fap_4p.h"
 #include "communication_drivers/ps_modules/fbp/fbp.h"
 #include "communication_drivers/ps_modules/fbp_dclink/fbp_dclink.h"
+#include "communication_drivers/ps_modules/ps_ayrton/ps_ayrton.h"
 
 extern unsigned long RamfuncsLoadStart;
 extern unsigned long RamfuncsRunStart;
@@ -214,6 +215,12 @@ int main(void) {
         case FAC_2P_DCDC_IMAS:
         {
             fac_2p_dcdc_imas_system_config();
+            break;
+        }
+
+        case PS_AYRTON:
+        {
+            ps_ayrton_system_config();
             break;
         }
 
