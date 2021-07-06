@@ -71,9 +71,9 @@ tCANMsgObject tx_message_reset;
 
 tCANMsgObject rx_message_data;
 
-uint8_t message_reset[MESSAGE_RESET_LEN];
+volatile uint8_t message_reset[MESSAGE_RESET_LEN];
 
-uint8_t message_data[MESSAGE_DATA_LEN];
+volatile uint8_t message_data[MESSAGE_DATA_LEN];
 
 //*****************************************************************************
 // This function is the interrupt handler for the CAN peripheral.  It checks
