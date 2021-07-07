@@ -66,6 +66,23 @@
 
 #define V_LOAD                  g_controller_mtoc.net_signals[2]
 
+#define IIB_V_IN_GLITCH             g_controller_mtoc.net_signals[12]
+#define IIB_V_OUT_GLITCH            g_controller_mtoc.net_signals[13]
+#define IIB_I_IGBT_1_GLITCH         g_controller_mtoc.net_signals[14]
+#define IIB_I_IGBT_2_GLITCH         g_controller_mtoc.net_signals[15]
+#define IIB_TEMP_IGBT_1_GLITCH      g_controller_mtoc.net_signals[16]
+#define IIB_TEMP_IGBT_2_GLITCH      g_controller_mtoc.net_signals[17]
+#define IIB_V_DRIVER_GLITCH         g_controller_mtoc.net_signals[18]
+#define IIB_I_DRIVER_1_GLITCH       g_controller_mtoc.net_signals[19]
+#define IIB_I_DRIVER_2_GLITCH       g_controller_mtoc.net_signals[20]
+#define IIB_TEMP_L_GLITCH           g_controller_mtoc.net_signals[21]
+#define IIB_TEMP_HEATSINK_GLITCH    g_controller_mtoc.net_signals[22]
+#define IIB_I_LEAKAGE_GLITCH        g_controller_mtoc.net_signals[23]
+#define IIB_TEMP_BOARD_GLITCH       g_controller_mtoc.net_signals[24]
+#define IIB_RH_BOARD_GLITCH         g_controller_mtoc.net_signals[25]
+#define IIB_ITLK_GLITCH             g_controller_mtoc.net_signals[26]
+#define IIB_ALARM_GLITCH            g_controller_mtoc.net_signals[27]
+
 /**
  * Interlocks defines
  */
@@ -205,42 +222,133 @@ static void handle_can_data(uint8_t *data, unsigned long id)
             memcpy(iib_fap.Vin.u8, &data[0], 4);
             memcpy(iib_fap.Vout.u8, &data[4], 4);
             V_LOAD.f = iib_fap.Vout.f;
+
+            if( (iib_fap.Vin.f < -20.0) ||
+                (iib_fap.Vin.f > 150.0) )
+            {
+                IIB_V_IN_GLITCH.f = iib_fap.Vin.f;
+            }
+
+            if( (iib_fap.Vout.f < -20.0) ||
+                (iib_fap.Vout.f > 150.0) )
+            {
+                IIB_V_OUT_GLITCH.f = iib_fap.Vout.f;
+            }
+
             break;
         }
         case 11:
         {
             memcpy(iib_fap.IoutA1.u8, &data[0], 4);
             memcpy(iib_fap.IoutA2.u8, &data[4], 4);
+
+            if( (iib_fap.IoutA1.f < -20.0) ||
+                (iib_fap.IoutA1.f > 350.0) )
+            {
+                IIB_I_IGBT_1_GLITCH.f = iib_fap.IoutA1.f;
+            }
+
+            if( (iib_fap.IoutA2.f < -20.0) ||
+                (iib_fap.IoutA2.f > 350.0) )
+            {
+                IIB_I_IGBT_2_GLITCH.f = iib_fap.IoutA2.f;
+            }
+
             break;
         }
         case 12:
         {
         	memcpy(iib_fap.DriverVoltage.u8, &data[0], 4);
         	memcpy(iib_fap.GroundLeakage.u8, &data[4], 4);
+
+        	if( (iib_fap.DriverVoltage.f < -20.0) ||
+                (iib_fap.DriverVoltage.f > 50.0) )
+            {
+                IIB_V_DRIVER_GLITCH.f = iib_fap.DriverVoltage.f;
+            }
+
+            if( (iib_fap.GroundLeakage.f < -20.0) ||
+                (iib_fap.GroundLeakage.f > 50.0) )
+            {
+                IIB_I_LEAKAGE_GLITCH.f = iib_fap.GroundLeakage.f;
+            }
+
             break;
         }
         case 13:
         {
         	memcpy(iib_fap.Driver1Current.u8, &data[0], 4);
         	memcpy(iib_fap.Driver2Current.u8, &data[4], 4);
+
+        	if( (iib_fap.Driver1Current.f < -50.0) ||
+                (iib_fap.Driver1Current.f > 50.0) )
+            {
+                IIB_I_DRIVER_1_GLITCH.f = iib_fap.Driver1Current.f;
+            }
+
+            if( (iib_fap.Driver2Current.f < -50.0) ||
+                (iib_fap.Driver2Current.f > 50.0) )
+            {
+                IIB_I_DRIVER_2_GLITCH.f = iib_fap.Driver2Current.f;
+            }
+
             break;
         }
         case 14:
         {
             memcpy(iib_fap.TempIGBT1.u8, &data[0], 4);
             memcpy(iib_fap.TempIGBT2.u8, &data[4], 4);
+
+            if( (iib_fap.TempIGBT1.f < -50.0) ||
+                (iib_fap.TempIGBT1.f > 150.0) )
+            {
+                IIB_TEMP_IGBT_1_GLITCH.f = iib_fap.TempIGBT1.f;
+            }
+
+            if( (iib_fap.TempIGBT2.f < -50.0) ||
+                (iib_fap.TempIGBT2.f > 150.0) )
+            {
+                IIB_TEMP_IGBT_1_GLITCH.f = iib_fap.TempIGBT2.f;
+            }
+
             break;
         }
         case 15:
         {
         	memcpy(iib_fap.TempL.u8, &data[0], 4);
         	memcpy(iib_fap.TempHeatSink.u8, &data[4], 4);
+
+        	if( (iib_fap.TempL.f < -10.0) ||
+                (iib_fap.TempL.f > 100.0) )
+            {
+                IIB_TEMP_L_GLITCH.f = iib_fap.TempL.f;
+            }
+
+            if( (iib_fap.TempHeatSink.f < -10.0) ||
+                (iib_fap.TempHeatSink.f > 100.0) )
+            {
+                IIB_TEMP_HEATSINK_GLITCH.f = iib_fap.TempHeatSink.f;
+            }
+
             break;
         }
         case 16:
         {
         	memcpy(iib_fap.BoardTemperature.u8, &data[0], 4);
         	memcpy(iib_fap.RelativeHumidity.u8, &data[4], 4);
+
+        	if( (iib_fap.BoardTemperature.f < -10.0) ||
+                (iib_fap.BoardTemperature.f > 150.0) )
+            {
+                IIB_TEMP_BOARD_GLITCH.f = iib_fap.BoardTemperature.f;
+            }
+
+            if( (iib_fap.RelativeHumidity.f < -10.0) ||
+                (iib_fap.RelativeHumidity.f > 100.0) )
+            {
+                IIB_RH_BOARD_GLITCH.f = iib_fap.RelativeHumidity.f;
+            }
+
             break;
         }
         case 17:
@@ -248,7 +356,12 @@ static void handle_can_data(uint8_t *data, unsigned long id)
         	memcpy(iib_fap.InterlocksRegister.u8, &data[0], 4);
         	memcpy(iib_fap.AlarmsRegister.u8, &data[4], 4);
 
-        	if(iib_fap.InterlocksRegister.u32 > 0)
+        	if(iib_fap.InterlocksRegister.u32 > 0x000FFFFF)
+            {
+                IIB_ITLK_GLITCH.u32 = iib_fap.InterlocksRegister.u32;
+            }
+
+            else if(iib_fap.InterlocksRegister.u32 > 0)
         	{
         		set_hard_interlock(0, IIB_Itlk);
         	}
@@ -256,6 +369,12 @@ static void handle_can_data(uint8_t *data, unsigned long id)
         	{
         		iib_fap.InterlocksRegister.u32 = 0;
         	}
+
+        	if(iib_fap.AlarmsRegister.u32 > 0x00003FFF)
+            {
+                IIB_ALARM_GLITCH.u32 = iib_fap.AlarmsRegister.u32;
+            }
+
         	break;
         }
         default:
