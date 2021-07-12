@@ -24,13 +24,13 @@
 
 #include <stdint.h>
 
-typedef struct {
-	void (*handle_can_data_message) (uint8_t*, unsigned long);
+typedef volatile struct {
+	void (*handle_can_data_message) (volatile uint8_t*, volatile unsigned long);
 } iib_module_t;
 
-extern iib_module_t g_iib_module_can_data;
+extern volatile iib_module_t g_iib_module_can_data;
 
-extern void init_iib_module_can_data(iib_module_t *iib_module_can_data,
-                                     void (*handle_can_data_message) (uint8_t*, unsigned long));
+extern void init_iib_module_can_data(volatile iib_module_t *iib_module_can_data,
+                                     void (*handle_can_data_message) (volatile uint8_t*, volatile unsigned long));
 
 #endif /* IIB_MODULE_H_ */

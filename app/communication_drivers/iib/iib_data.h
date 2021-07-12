@@ -350,88 +350,88 @@ typedef volatile struct {
 typedef volatile struct {
 
     union {
-        float       f;
-        uint8_t     u8[4];
+    	volatile float       f;
+    	volatile uint8_t     u8[4];
     } Vin;
 
     union {
-        float       f;
-        uint8_t     u8[4];
+    	volatile float       f;
+    	volatile uint8_t     u8[4];
     } Vout;
 
     union {
-        float       f;
-        uint8_t     u8[4];
+    	volatile float       f;
+    	volatile uint8_t     u8[4];
     } IoutA1;
 
     union {
-        float       f;
-        uint8_t     u8[4];
+    	volatile float       f;
+    	volatile uint8_t     u8[4];
     } IoutA2;
 
     union {
-        float       f;
-        uint8_t     u8[4];
+    	volatile float       f;
+        volatile uint8_t     u8[4];
     } DriverVoltage;
 
     union {
-        float       f;
-        uint8_t     u8[4];
+    	volatile float       f;
+    	volatile uint8_t     u8[4];
     } Driver1Current;
 
     union {
-        float       f;
-        uint8_t     u8[4];
+    	volatile float       f;
+    	volatile uint8_t     u8[4];
     } Driver2Current;
 
     union {
-        float       f;
-        uint8_t     u8[4];
+    	volatile float       f;
+    	volatile uint8_t     u8[4];
     } TempIGBT1;
 
     union {
-        float       f;
-        uint8_t     u8[4];
+    	volatile float       f;
+    	volatile uint8_t     u8[4];
     } TempIGBT2;
 
     union {
-        float       f;
-        uint8_t     u8[4];
+    	volatile float       f;
+    	volatile uint8_t     u8[4];
     } TempL;
 
     union {
-        float       f;
-        uint8_t     u8[4];
+    	volatile float       f;
+    	volatile uint8_t     u8[4];
     } TempHeatSink;
 
     union {
-        float       f;
-        uint8_t     u8[4];
+    	volatile float       f;
+    	volatile uint8_t     u8[4];
     } GroundLeakage;
 
     union {
-        float       f;
-        uint8_t     u8[4];
+    	volatile float       f;
+    	volatile uint8_t     u8[4];
     } BoardTemperature;
 
     union {
-        float       f;
-        uint8_t     u8[4];
+    	volatile float       f;
+    	volatile uint8_t     u8[4];
     } RelativeHumidity;
 
     union {
-        float       f;
-        uint8_t     u8[4];
-        uint32_t    u32;
+    	volatile float       f;
+    	volatile uint8_t     u8[4];
+    	volatile uint32_t    u32;
     } InterlocksRegister;
 
     union {
-        float       f;
-        uint8_t     u8[4];
-        uint32_t    u32;
+    	volatile float       f;
+    	volatile uint8_t     u8[4];
+    	volatile uint32_t    u32;
     } AlarmsRegister;
 
-    uint8_t CanAddress;
+    volatile uint8_t CanAddress;
 
 } iib_fap_module_t;
 

@@ -21,10 +21,10 @@
 
 #include "iib_module.h"
 
-iib_module_t g_iib_module_can_data;
+volatile iib_module_t g_iib_module_can_data;
 
-void init_iib_module_can_data(iib_module_t *iib_module_can_data,
-							  void (*handle_can_data_message) (uint8_t*, unsigned long))
+void init_iib_module_can_data(volatile iib_module_t *iib_module_can_data,
+							  void (*handle_can_data_message) (volatile uint8_t*, volatile unsigned long))
 {
 	iib_module_can_data->handle_can_data_message                = handle_can_data_message;
 }

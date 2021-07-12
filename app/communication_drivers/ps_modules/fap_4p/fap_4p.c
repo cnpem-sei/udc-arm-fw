@@ -170,7 +170,7 @@ static volatile iib_fap_module_t iib_fap_4p[4];
 
 static void init_iib();
 
-static void handle_can_data(uint8_t *data, unsigned long id);
+static void handle_can_data(volatile uint8_t *data, volatile unsigned long id);
 
 /**
 * @brief Initialize ADCP Channels.
@@ -366,12 +366,12 @@ static void init_iib()
     init_iib_module_can_data(&g_iib_module_can_data, &handle_can_data);
 }
 
-static void handle_can_data(uint8_t *data, unsigned long id)
+static void handle_can_data(volatile uint8_t *data, volatile unsigned long id)
 {
-    uint8_t module;
+    volatile uint8_t module;
 
-    unsigned long can_module = id;
-    unsigned long id_var = 0;
+    volatile unsigned long can_module = id;
+    volatile unsigned long id_var = 0;
 
     switch(can_module)
     {

@@ -126,7 +126,7 @@ void can_int_handler(void)
 
         id = rx_message_data.ulMsgID;
 
-        rx_message_data.pucMsgData = message_data;
+        rx_message_data.pucMsgData = (uint8_t*)message_data;
 
         g_bRXFlag1 = 1;
 
@@ -427,7 +427,7 @@ void send_reset_iib_message(uint8_t iib_address)
 {
 	message_reset[0] = iib_address;
 
-    tx_message_reset.pucMsgData = message_reset;
+    tx_message_reset.pucMsgData = (uint8_t*)message_reset;
 
     CANMessageSet(CAN0_BASE, MESSAGE_RESET_OBJ, &tx_message_reset, MSG_OBJ_TYPE_TX);
 }
