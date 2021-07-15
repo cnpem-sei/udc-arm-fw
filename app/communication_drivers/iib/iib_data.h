@@ -420,13 +420,11 @@ typedef volatile struct {
     } RelativeHumidity;
 
     union {
-    	volatile float       f;
     	volatile uint8_t     u8[4];
     	volatile uint32_t    u32;
     } InterlocksRegister;
 
     union {
-    	volatile float       f;
     	volatile uint8_t     u8[4];
     	volatile uint32_t    u32;
     } AlarmsRegister;

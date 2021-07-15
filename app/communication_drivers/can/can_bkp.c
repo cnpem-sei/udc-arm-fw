@@ -71,9 +71,9 @@ tCANMsgObject tx_message_reset;
 
 tCANMsgObject rx_message_data;
 
-volatile uint8_t message_reset[MESSAGE_RESET_LEN];
+volatile uint8_t message_reset[MESSAGE_RESET_LEN] = {0};
 
-volatile uint8_t message_data[MESSAGE_DATA_LEN];
+volatile uint8_t message_data[MESSAGE_DATA_LEN] = {0};
 
 //*****************************************************************************
 // This function is the interrupt handler for the CAN peripheral.  It checks
@@ -439,10 +439,16 @@ void get_data_from_iib(void)
 
 void can_check(void)
 {
-    if(g_bRXFlag1)
-    {
-        get_data_from_iib();
-        g_bRXFlag1 = 0;
-    }
+	// Error Handling
+	if(g_ui32ErrFlag != 0)
+	{
+		can_error_handler();
+	}
+
+	if(g_bRXFlag1)
+	{
+		get_data_from_iib();
+		g_bRXFlag1 = 0;
+	}
 }
 
