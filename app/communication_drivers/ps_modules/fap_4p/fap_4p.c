@@ -22,6 +22,7 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#include <string.h>
 
 #include "inc/hw_memmap.h"
 #include "inc/hw_ipc.h"
@@ -93,7 +94,7 @@
 #define V_DCLINK_MOD_3          g_controller_mtoc.net_signals[10]   // IIB 3
 #define V_DCLINK_MOD_4          g_controller_mtoc.net_signals[11]   // IIB 4
 
-#define IIB_V_IN_GLITCH             g_controller_mtoc.net_signals[12] // 0x0000C018
+#define IIB_V_IN_GLITCH             g_controller_mtoc.net_signals[12] // 0x0000C018 // Acesso pelo C28 Debug
 #define IIB_V_OUT_GLITCH            g_controller_mtoc.net_signals[13] // 0x0000C01A
 #define IIB_I_IGBT_1_GLITCH         g_controller_mtoc.net_signals[14] // 0x0000C01C
 #define IIB_I_IGBT_2_GLITCH         g_controller_mtoc.net_signals[15] // 0x0000C01E
@@ -438,9 +439,9 @@ static void handle_can_data(volatile uint8_t *data, volatile unsigned long id)
     {
         case 0:
         {
-            memcpy(iib_fap_4p[module].Vin.u8, &data[0], 4);
-            memcpy( (&V_DCLINK_MOD_1.f + module) , &data[0], 4);
-            memcpy(iib_fap_4p[module].Vout.u8, &data[4], 4);
+            memcpy((void *)iib_fap_4p[module].Vin.u8, (const void *)&data[0], (size_t)4);
+            memcpy((void *)(&V_DCLINK_MOD_1.f + module), (const void *)&data[0], (size_t)4);
+            memcpy((void *)iib_fap_4p[module].Vout.u8, (const void *)&data[4], (size_t)4);
 
             if( (iib_fap_4p[module].Vin.f < -20.0) ||
                 (iib_fap_4p[module].Vin.f > 150.0) )
@@ -458,8 +459,8 @@ static void handle_can_data(volatile uint8_t *data, volatile unsigned long id)
         }
         case 1:
         {
-        	memcpy(iib_fap_4p[module].IoutA1.u8, &data[0], 4);
-        	memcpy(iib_fap_4p[module].IoutA2.u8, &data[4], 4);
+        	memcpy((void *)iib_fap_4p[module].IoutA1.u8, (const void *)&data[0], (size_t)4);
+        	memcpy((void *)iib_fap_4p[module].IoutA2.u8, (const void *)&data[4], (size_t)4);
 
             if( (iib_fap_4p[module].IoutA1.f < -20.0) ||
                 (iib_fap_4p[module].IoutA1.f > 200.0) )
@@ -477,8 +478,8 @@ static void handle_can_data(volatile uint8_t *data, volatile unsigned long id)
         }
         case 2:
         {
-        	memcpy(iib_fap_4p[module].DriverVoltage.u8, &data[0], 4);
-        	memcpy(iib_fap_4p[module].GroundLeakage.u8, &data[4], 4);
+        	memcpy((void *)iib_fap_4p[module].DriverVoltage.u8, (const void *)&data[0], (size_t)4);
+        	memcpy((void *)iib_fap_4p[module].GroundLeakage.u8, (const void *)&data[4], (size_t)4);
 
         	if( (iib_fap_4p[module].DriverVoltage.f < -20.0) ||
                 (iib_fap_4p[module].DriverVoltage.f > 50.0) )
@@ -496,8 +497,8 @@ static void handle_can_data(volatile uint8_t *data, volatile unsigned long id)
         }
         case 3:
         {
-        	memcpy(iib_fap_4p[module].Driver1Current.u8, &data[0], 4);
-        	memcpy(iib_fap_4p[module].Driver2Current.u8, &data[4], 4);
+        	memcpy((void *)iib_fap_4p[module].Driver1Current.u8, (const void *)&data[0], (size_t)4);
+        	memcpy((void *)iib_fap_4p[module].Driver2Current.u8, (const void *)&data[4], (size_t)4);
 
             if( (iib_fap_4p[module].Driver1Current.f < -50.0) ||
                 (iib_fap_4p[module].Driver1Current.f > 50.0) )
@@ -515,8 +516,8 @@ static void handle_can_data(volatile uint8_t *data, volatile unsigned long id)
         }
         case 4:
         {
-            memcpy(iib_fap_4p[module].TempIGBT1.u8, &data[0], 4);
-            memcpy(iib_fap_4p[module].TempIGBT2.u8, &data[4], 4);
+            memcpy((void *)iib_fap_4p[module].TempIGBT1.u8, (const void *)&data[0], (size_t)4);
+            memcpy((void *)iib_fap_4p[module].TempIGBT2.u8, (const void *)&data[4], (size_t)4);
 
             if( (iib_fap_4p[module].TempIGBT1.f < -50.0) ||
                 (iib_fap_4p[module].TempIGBT1.f > 150.0) )
@@ -534,8 +535,8 @@ static void handle_can_data(volatile uint8_t *data, volatile unsigned long id)
         }
         case 5:
         {
-        	memcpy(iib_fap_4p[module].TempL.u8, &data[0], 4);
-        	memcpy(iib_fap_4p[module].TempHeatSink.u8, &data[4], 4);
+        	memcpy((void *)iib_fap_4p[module].TempL.u8, (const void *)&data[0], (size_t)4);
+        	memcpy((void *)iib_fap_4p[module].TempHeatSink.u8, (const void *)&data[4], (size_t)4);
 
             if( (iib_fap_4p[module].TempL.f < -10.0) ||
                 (iib_fap_4p[module].TempL.f > 100.0) )
@@ -553,8 +554,8 @@ static void handle_can_data(volatile uint8_t *data, volatile unsigned long id)
         }
         case 6:
         {
-        	memcpy(iib_fap_4p[module].BoardTemperature.u8, &data[0], 4);
-        	memcpy(iib_fap_4p[module].RelativeHumidity.u8, &data[4], 4);
+        	memcpy((void *)iib_fap_4p[module].BoardTemperature.u8, (const void *)&data[0], (size_t)4);
+        	memcpy((void *)iib_fap_4p[module].RelativeHumidity.u8, (const void *)&data[4], (size_t)4);
 
             if( (iib_fap_4p[module].BoardTemperature.f < -10.0) ||
                 (iib_fap_4p[module].BoardTemperature.f > 150.0) )
@@ -572,8 +573,8 @@ static void handle_can_data(volatile uint8_t *data, volatile unsigned long id)
         }
         case 7:
         {
-        	memcpy(iib_fap_4p[module].InterlocksRegister.u8, &data[0], 4);
-        	memcpy(iib_fap_4p[module].AlarmsRegister.u8, &data[4], 4);
+        	memcpy((void *)iib_fap_4p[module].InterlocksRegister.u8, (const void *)&data[0], (size_t)4);
+        	memcpy((void *)iib_fap_4p[module].AlarmsRegister.u8, (const void *)&data[4], (size_t)4);
 
 
             if(iib_fap_4p[module].InterlocksRegister.u32 > 0x000FFFFF)
