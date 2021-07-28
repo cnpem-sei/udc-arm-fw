@@ -63,6 +63,18 @@ const static uint32_t lut_bit_position[32] =
  * interlock has already been set. If not, inform C28 which module and interlock
  * and send interrupt request.
  *
+ * It's important to guarantee that ARM uses the interlock register
+ * (MtoC ps_hard_interlock) as the enumerate argument 'itlk' from
+ * set_hard_interlock(), which indicates the most current activated interlock.
+ *
+ * In older version, it was used just like the C28 interlock registers, and in
+ * this case, C28 would need to log2() this register to find out which bit
+ * (or event) was activated for debouncing logic.
+ *
+ * Thus, in order to maintain efficient communication and simplify debouncing
+ * logic, both ARM interlocks registers must be used differently from C28
+ * interlock registers.
+ *
  * @param id of event manager specific of a power supply/module
  * @param itlk specified hard interlock
  */
@@ -70,7 +82,7 @@ void set_hard_interlock(uint16_t id, uint32_t itlk)
 {
     if(!(g_ipc_ctom.ps_module[id].ps_hard_interlock.u32 & lut_bit_position[itlk]))
     {
-        g_ipc_mtoc.ps_module[id].ps_hard_interlock.u32 |= lut_bit_position[itlk];
+        g_ipc_mtoc.ps_module[id].ps_hard_interlock.u32 = itlk;
         send_ipc_msg(id, HARD_INTERLOCK);
     }
 }
@@ -80,6 +92,18 @@ void set_hard_interlock(uint16_t id, uint32_t itlk)
  * interlock has already been set. If not, inform C28 which module and interlock
  * and send interrupt request.
  *
+ * It's important to guarantee that ARM uses the interlock register
+ * (MtoC ps_soft_interlock) as the enumerate argument 'itlk' from
+ * set_soft_interlock(), which indicates the most current activated interlock.
+ *
+ * In older version, it was used just like the C28 interlock registers, and in
+ * this case, C28 would need to log2() this register to find out which bit
+ * (or event) was activated for debouncing logic.
+ *
+ * Thus, in order to maintain efficient communication and simplify debouncing
+ * logic, both ARM interlocks registers must be used differently from C28
+ * interlock registers.
+ *
  * @param id id of event manager specific of a power supply/module
  * @param itlk specified soft interlock
  */
@@ -87,7 +111,7 @@ void set_soft_interlock(uint16_t id, uint32_t itlk)
 {
     if(!(g_ipc_ctom.ps_module[id].ps_soft_interlock.u32 & lut_bit_position[itlk]))
     {
-        g_ipc_mtoc.ps_module[id].ps_soft_interlock.u32 |= lut_bit_position[itlk];
+        g_ipc_mtoc.ps_module[id].ps_soft_interlock.u32 = itlk;
         send_ipc_msg(id, SOFT_INTERLOCK);
     }
 }
