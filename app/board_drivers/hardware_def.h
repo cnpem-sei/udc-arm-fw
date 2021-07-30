@@ -21,6 +21,8 @@
 
 #include <stdint.h>
 
+#include "inc/hw_memmap.h"
+
 #ifndef HARDWARE_DEF_H_
 #define HARDWARE_DEF_H_
 
@@ -36,6 +38,12 @@
 
 #define HRADC_v2_0  0
 #define HRADC_v2_1  1
+
+/**
+ * Core selector for some initialization
+ */
+#define M3_MASTER   0
+#define C28_MASTER  1
 
 /******************************************************************************
  * GPIO for the operation LED
@@ -72,8 +80,20 @@
 /******************************************************************************
  * GPIO for the debug pin CON9 GPIO0
  *****************************************************************************/
-#define DEBUG_BASE         GPIO_PORTG_BASE
-#define DEBUG_PIN          GPIO_PIN_6
+#define DEBUG_GPIO0_CORE    GPIO_PIN_M_CORE_SELECT // GPIO_PIN_C_CORE_SELECT
+#define DEBUG_GPIO1_CORE    GPIO_PIN_M_CORE_SELECT // GPIO_PIN_C_CORE_SELECT
+
+#define DEBUG_GPIO0_BASE    GPIO_PORTG_BASE
+#define DEBUG_GPIO0_PIN     GPIO_PIN_6
+
+#define DEBUG_GPIO1_BASE    GPIO_PORTP_BASE
+#define DEBUG_GPIO1_PIN     GPIO_PIN_7
+
+#define SET_DEBUG_GPIO0     GPIOPinWrite(DEBUG_GPIO0_BASE, DEBUG_GPIO0_PIN, ON);
+#define CLEAR_DEBUG_GPIO0   GPIOPinWrite(DEBUG_GPIO0_BASE, DEBUG_GPIO0_PIN, OFF);
+
+#define SET_DEBUG_GPIO1     GPIOPinWrite(DEBUG_GPIO1_BASE, DEBUG_GPIO1_PIN, ON);
+#define CLEAR_DEBUG_GPIO1   GPIOPinWrite(DEBUG_GPIO1_BASE, DEBUG_GPIO1_PIN, OFF);
 
 /******************************************************************************
  * Macros for onboard I2C

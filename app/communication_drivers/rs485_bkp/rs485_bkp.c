@@ -157,8 +157,6 @@ void rs485_bkp_process_data(void)
 	if(NewData)
 	{
 
-		//GPIOPinWrite(DEBUG_BASE, DEBUG_PIN, ON);
-
 		// Received less than HEADER + CSUM bytes
 		if(recv_buffer.index < (SERIAL_HEADER + SERIAL_CSUM))
 			goto exit;
@@ -185,12 +183,8 @@ void rs485_bkp_process_data(void)
 
 		//recv_packet.len = recv_buffer.index - SERIAL_HEADER - SERIAL_CSUM;
 
-		//GPIOPinWrite(DEBUG_BASE, DEBUG_PIN, ON);
-
 		// Library will process the packet
 		//BSMPprocess(&recv_packet, &send_packet, Remote);
-
-		//GPIOPinWrite(DEBUG_BASE, DEBUG_PIN, OFF);
 
 		//rs485_bkp_tx_handler();
 
@@ -202,7 +196,6 @@ void rs485_bkp_process_data(void)
 
 		// Clear new data flag
 		NewData = 0;
-		//GPIOPinWrite(DEBUG_BASE, DEBUG_PIN, OFF);
 	}
 
 }

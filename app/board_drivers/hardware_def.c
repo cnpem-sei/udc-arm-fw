@@ -335,10 +335,13 @@ static void port_control_setup(void)
     GPIOPinWrite(RS485_RD_BASE, RS485_RD_PIN, OFF);
 
     /**********************************************************************
-     * Debug pin setup
+     * Debug pins setup
      *********************************************************************/
-    GPIOPinTypeGPIOOutput(DEBUG_BASE, DEBUG_PIN);
-    GPIOPinWrite(DEBUG_BASE, DEBUG_PIN, OFF);
+    GPIOPinTypeGPIOOutput(DEBUG_GPIO0_BASE, DEBUG_GPIO0_PIN);
+    CLEAR_DEBUG_GPIO0;
+
+    GPIOPinTypeGPIOOutput(DEBUG_GPIO1_BASE, DEBUG_GPIO1_PIN);
+    CLEAR_DEBUG_GPIO1;
 
     /**********************************************************************
      * Backplane RS-485 setup
@@ -351,12 +354,6 @@ static void port_control_setup(void)
      *********************************************************************/
     GPIOPinTypeGPIOOutput(EEPROM_WP_BASE, EEPROM_WP_PIN); //WP EEPROM
     GPIOPinWrite(EEPROM_WP_BASE, EEPROM_WP_PIN, ON); // Enable Write ptrotection in to the EEPROM
-
-    /**********************************************************************
-     * GPIO P7 setup
-     *********************************************************************/
-    GPIOPinTypeGPIOOutput(GPIO_PORTP_BASE, GPIO_PIN_7);
-    GPIOPinWrite(GPIO_PORTP_BASE, GPIO_PIN_7, OFF);
 
     /**********************************************************************
      * ARM interrupt setup
@@ -547,6 +544,15 @@ static void pin_core_setup(void)
                                                                                    //GPIO133 - PS5 � utilizado para o STATUS_ADC1 (C28)
                                                                                    //GPIO134 - PS6 � utilizado para o STATUS_ADC2 (C28)
                                                                                    //GPIO135 - PS7 � utilizado para o STATUS_ADC3 (C28)
+
+        // Set debug pins core
+        GPIOPinConfigureCoreSelect(DEBUG_GPIO0_BASE,
+                                   DEBUG_GPIO0_PIN,
+                                   DEBUG_GPIO0_CORE);
+
+        GPIOPinConfigureCoreSelect(DEBUG_GPIO1_BASE,
+                                   DEBUG_GPIO1_PIN,
+                                   DEBUG_GPIO1_CORE);
     }
 
     else if(HARDWARE_VERSION == 0x21)
@@ -733,6 +739,15 @@ static void pin_core_setup(void)
                                                                                    //GPIO133 - PS5 � utilizado para o STATUS_ADC1 (C28)
                                                                                    //GPIO134 - PS6 � utilizado para o SOUND_CUSTOM (C28)
                                                                                    //GPIO135 - PS7 � utilizado para o STATUS_ADC3 (C28)
+
+        // Set debug pins core
+        GPIOPinConfigureCoreSelect(DEBUG_GPIO0_BASE,
+                                   DEBUG_GPIO0_PIN,
+                                   DEBUG_GPIO0_CORE);
+
+        GPIOPinConfigureCoreSelect(DEBUG_GPIO1_BASE,
+                                   DEBUG_GPIO1_PIN,
+                                   DEBUG_GPIO1_CORE);
     }
 
 }

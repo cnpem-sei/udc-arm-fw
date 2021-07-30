@@ -126,10 +126,6 @@ void isr_rs485(void)
 	// Receive Interrupt Mask
 	if(UART_INT_RX == ulStatus || UART_INT_RT == ulStatus)
 	{
-
-	    //GPIO1 turn on
-	    //GPIOPinWrite(GPIO_PORTP_BASE, GPIO_PIN_7, ON);
-
 	    // Low baud-rate
 	    if(baudrate < 1000000)
 	    {
@@ -299,8 +295,6 @@ void rs485_process_data(void)
             BSMPprocess(&recv_packet, &send_packet, idx, Remote);
         }
     }
-
-	//GPIOPinWrite(DEBUG_BASE, DEBUG_PIN, OFF);
 
 	//rs485_bkp_tx_handler();
     if (recv_buffer.data[0] != BCAST_ADDRESS)

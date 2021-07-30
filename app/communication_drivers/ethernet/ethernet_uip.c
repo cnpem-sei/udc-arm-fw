@@ -599,8 +599,6 @@ static long ethernet_packet_put_dma(unsigned long ulBase, unsigned char *pucBuf,
 {
     unsigned long ulTemp;
 
-    //GPIOPinWrite(DEBUG_BASE, DEBUG_PIN, ON);
-
     // If the buffer is not aligned on an odd half-word then it cannot use DMA.
     // This is because the two packet length bytes are written in front of the
     // packet, and the packet data must have two bytes that can be pulled off
@@ -642,8 +640,6 @@ static long ethernet_packet_put_dma(unsigned long ulBase, unsigned char *pucBuf,
           EthernetSpaceAvail(ETH_BASE))
     {
     }
-
-    //GPIOPinWrite(DEBUG_BASE, DEBUG_PIN, OFF);
 
     // Take back off the byte that we addeded above.
     return(lBufLen - 1);

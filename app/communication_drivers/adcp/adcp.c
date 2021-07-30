@@ -132,19 +132,11 @@ void adcp_get_samples(void)
     //uint16_t readVal;
     uint8_t count = 0;
 
-    // GPIO1 turn on
-    //GPIOPinWrite(GPIO_PORTP_BASE, GPIO_PIN_7, ON);
-
     while(count < counter_sampl)
     {
-        //GPIOPinWrite(GPIO_PORTP_BASE, GPIO_PIN_7, ON);
         adc_channel(ADCP_RxTable[count]);
         count++;
-        //GPIOPinWrite(GPIO_PORTP_BASE, GPIO_PIN_7, OFF);
     }
-
-    // GPIO1 turn on
-    //GPIOPinWrite(GPIO_PORTP_BASE, GPIO_PIN_7, OFF);
 }
 
 //*****************************************************************************
@@ -155,8 +147,6 @@ void isr_adcp(void)
     unsigned long ulStatus;
 	uint8_t count = 0;
 
-	//GPIOPinWrite(DEBUG_BASE, DEBUG_PIN, ON);
-
 	// Read the interrupt status of the SSI0
     ulStatus = SSIIntStatus(ADCP_SPI_BASE, true);
 
@@ -166,8 +156,6 @@ void isr_adcp(void)
 	// We received a "FIFO RX SSI0 half full" interrupt
 	if (ulStatus & SSI_RXFF)
 	{
-	    //GPIOPinWrite(GPIO_PORTP_BASE, GPIO_PIN_7, ON);
-	    //GPIOPinWrite(DEBUG_BASE, DEBUG_PIN, OFF);
         while(SSIDataGetNonBlocking(ADCP_SPI_BASE, &ADCP_RxTable[count]) &&
               count++ < 9)
         {
@@ -178,19 +166,13 @@ void isr_adcp(void)
 
 	    // Set task data available
 	    TaskSetNew(ADCP_SAMPLE_AVAILABLE);
-	    //GPIOPinWrite(DEBUG_BASE, DEBUG_PIN, ON);
-	    //GPIOPinWrite(GPIO_PORTP_BASE, GPIO_PIN_7, OFF);
 	}
 	else
 	{
-	    GPIOPinWrite(GPIO_PORTP_BASE, GPIO_PIN_7, ON);
-	    GPIOPinWrite(GPIO_PORTP_BASE, GPIO_PIN_7, OFF);
 	}
 
 	// Clear any pending status
 	SSIIntClear(ADCP_SPI_BASE, ulStatus);
-
-	//GPIOPinWrite(DEBUG_BASE, DEBUG_PIN, OFF);
 }
 
 void adcp_clean_rx_buffer(void)

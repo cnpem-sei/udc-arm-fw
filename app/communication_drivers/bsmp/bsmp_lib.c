@@ -1487,8 +1487,6 @@ uint8_t bsmp_set_slowref_fbp_readback_mon(uint8_t *input, uint8_t *output)
         g_ipc_mtoc.ps_module[3].ps_setpoint.u32 = (input[15]<< 24) |
                 (input[14] << 16) | (input[13] << 8) | input[12];
 
-        GPIOPinWrite(DEBUG_BASE, DEBUG_PIN, ON);
-
         send_ipc_lowpriority_msg(0, Set_SlowRef_All_PS);
 
         while ((HWREG(MTOCIPC_BASE + IPC_O_MTOCIPCFLG) &
@@ -1497,8 +1495,6 @@ uint8_t bsmp_set_slowref_fbp_readback_mon(uint8_t *input, uint8_t *output)
         {
             ulTimeout++;
         }
-
-        GPIOPinWrite(DEBUG_BASE, DEBUG_PIN, OFF);
 
         if(ulTimeout==TIMEOUT_DSP_IPC_ACK)
         {
@@ -1601,8 +1597,6 @@ uint8_t bsmp_set_slowref_fbp_readback_ref(uint8_t *input, uint8_t *output)
         g_ipc_mtoc.ps_module[3].ps_setpoint.u32 = (input[15]<< 24) |
                 (input[14] << 16) | (input[13] << 8) | input[12];
 
-        GPIOPinWrite(DEBUG_BASE, DEBUG_PIN, ON);
-
         send_ipc_lowpriority_msg(0, Set_SlowRef_All_PS);
 
         while ((HWREG(MTOCIPC_BASE + IPC_O_MTOCIPCFLG) &
@@ -1611,8 +1605,6 @@ uint8_t bsmp_set_slowref_fbp_readback_ref(uint8_t *input, uint8_t *output)
         {
             ulTimeout++;
         }
-
-        GPIOPinWrite(DEBUG_BASE, DEBUG_PIN, OFF);
 
         if(ulTimeout==TIMEOUT_DSP_IPC_ACK)
         {
