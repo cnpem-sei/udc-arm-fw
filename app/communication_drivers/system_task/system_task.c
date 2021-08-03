@@ -21,6 +21,8 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+#include "board_drivers/hardware_def.h"
+
 #include "communication_drivers/adcp/adcp.h"
 #include "communication_drivers/bsmp/bsmp_lib.h"
 #include "communication_drivers/can/can_bkp.h"
@@ -131,7 +133,9 @@ void TaskCheck(void)
     else if(PROCESS_CAN_MESS)
     {
       PROCESS_CAN_MESS = 0;
+      SET_DEBUG_GPIO1;
       can_check();
+      CLEAR_DEBUG_GPIO1;
     }
 
 	else if(SAMPLE_ADCP_REQUEST)

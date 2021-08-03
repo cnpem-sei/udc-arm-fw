@@ -116,6 +116,8 @@ void can_int_handler(void)
     // receiving messages.
     else if(ui32Status == MESSAGE_DATA_OBJ)
     {
+        SET_DEBUG_GPIO0;
+
         // Getting to this point means that the RX interrupt occurred on
         // message object 1, and the message RX is complete.
         // Clear the message object interrupt.
@@ -132,6 +134,7 @@ void can_int_handler(void)
 
         // Indicate new message object 1 that needs to be processed
         TaskSetNew(PROCESS_CAN_MESSAGE);
+        CLEAR_DEBUG_GPIO0;
 
         //
         // Since a message was received, clear any error flags.

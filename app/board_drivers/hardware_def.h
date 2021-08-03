@@ -21,7 +21,10 @@
 
 #include <stdint.h>
 
+#include "inc/hw_types.h"
 #include "inc/hw_memmap.h"
+
+#include "driverlib/gpio.h"
 
 #ifndef HARDWARE_DEF_H_
 #define HARDWARE_DEF_H_
