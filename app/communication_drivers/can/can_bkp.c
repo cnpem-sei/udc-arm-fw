@@ -94,6 +94,7 @@ void can_int_handler(void)
     //
     if(ui32Status == CAN_INT_INT0ID_STATUS)
     {
+        SET_DEBUG_GPIO1;
         //
         // Read the controller status.  This will return a field of status
         // error bits that can indicate various errors.  Error processing
@@ -110,6 +111,8 @@ void can_int_handler(void)
         //
 
         g_ui32ErrFlag |= ui32Status;
+
+        TaskSetNew(PROCESS_CAN_MESSAGE);
     }
 
     // Check if the cause is message object 1, which what we are using for
@@ -130,10 +133,13 @@ void can_int_handler(void)
 
         rx_message_data.pucMsgData = (uint8_t*)message_data;
 
-        g_bRXFlag1 = 1;
+        g_iib_module_can_data.handle_can_data_message(message_data, id);
+
+        /*g_bRXFlag1 = 1;*/
 
         // Indicate new message object 1 that needs to be processed
-        TaskSetNew(PROCESS_CAN_MESSAGE);
+        //TaskSetNew(PROCESS_CAN_MESSAGE);
+
         CLEAR_DEBUG_GPIO0;
 
         //
@@ -446,6 +452,7 @@ void can_check(void)
 	if(g_ui32ErrFlag != 0)
 	{
 		can_error_handler();
+		CLEAR_DEBUG_GPIO1;
 	}
 
 	if(g_bRXFlag1)

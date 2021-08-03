@@ -133,9 +133,9 @@ void TaskCheck(void)
     else if(PROCESS_CAN_MESS)
     {
       PROCESS_CAN_MESS = 0;
-      SET_DEBUG_GPIO1;
+      //SET_DEBUG_GPIO1;
       can_check();
-      CLEAR_DEBUG_GPIO1;
+      //CLEAR_DEBUG_GPIO1;
     }
 
 	else if(SAMPLE_ADCP_REQUEST)
