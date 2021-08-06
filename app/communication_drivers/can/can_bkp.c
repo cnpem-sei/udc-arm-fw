@@ -94,7 +94,7 @@ void can_int_handler(void)
     //
     if(ui32Status == CAN_INT_INT0ID_STATUS)
     {
-        SET_DEBUG_GPIO1;
+        //SET_DEBUG_GPIO1;
         //
         // Read the controller status.  This will return a field of status
         // error bits that can indicate various errors.  Error processing
@@ -119,7 +119,7 @@ void can_int_handler(void)
     // receiving messages.
     else if(ui32Status == MESSAGE_DATA_OBJ)
     {
-        SET_DEBUG_GPIO0;
+        //SET_DEBUG_GPIO0;
 
         // Getting to this point means that the RX interrupt occurred on
         // message object 1, and the message RX is complete.
@@ -140,7 +140,7 @@ void can_int_handler(void)
         // Indicate new message object 1 that needs to be processed
         //TaskSetNew(PROCESS_CAN_MESSAGE);
 
-        CLEAR_DEBUG_GPIO0;
+        //CLEAR_DEBUG_GPIO0;
 
         //
         // Since a message was received, clear any error flags.
@@ -452,7 +452,7 @@ void can_check(void)
 	if(g_ui32ErrFlag != 0)
 	{
 		can_error_handler();
-		CLEAR_DEBUG_GPIO1;
+		//CLEAR_DEBUG_GPIO1;
 	}
 
 	if(g_bRXFlag1)

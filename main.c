@@ -115,6 +115,8 @@ int main(void) {
 	// in the c28 linker file.
 	RAMMReqSharedMemAccess((S1_ACCESS | S6_ACCESS | S7_ACCESS), C28_MASTER);
 
+	IntMasterDisable();
+
 	init_system();
 
 	/// Enable C28 boot
@@ -232,7 +234,8 @@ int main(void) {
     get_firmwares_version();
 
     /// Enable processor interrupts.
-    IntMasterEnable();
+
+	IntMasterEnable();
 
     for (;;)
     {

@@ -528,7 +528,7 @@ static void handle_can_data(volatile uint8_t *data, volatile unsigned long id)
             if( (iib_fap_4p[module].TempIGBT2.f < -50.0) ||
                 (iib_fap_4p[module].TempIGBT2.f > 150.0) )
             {
-                IIB_TEMP_IGBT_1_GLITCH.f = iib_fap_4p[module].TempIGBT2.f;
+                IIB_TEMP_IGBT_2_GLITCH.f = iib_fap_4p[module].TempIGBT2.f;
             }
 
             break;
