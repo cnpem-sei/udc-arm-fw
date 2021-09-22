@@ -88,13 +88,13 @@
 #define V_OUT_RECT_MOD_A                    g_controller_mtoc.net_signals[0]
 #define V_OUT_RECT_MOD_B                    g_controller_mtoc.net_signals[1]
 
-#define IIB_IS_I_IN_GLITCH             		g_controller_mtoc.net_signals[5]  // 0x0000C0 // Acesso pelo C28 Debug verificar valores faltantes
-#define IIB_IS_V_IN_GLITCH             		g_controller_mtoc.net_signals[6]  // 0x0000C0
-#define IIB_IS_TEMP_IGBT_GLITCH        		g_controller_mtoc.net_signals[7]  // 0x0000C0
-#define IIB_IS_V_DRIVER_GLITCH         		g_controller_mtoc.net_signals[8]  // 0x0000C0
-#define IIB_IS_I_DRIVER_GLITCH         		g_controller_mtoc.net_signals[9]  // 0x0000C0
-#define IIB_IS_TEMP_L_GLITCH           		g_controller_mtoc.net_signals[10] // 0x0000C0
-#define IIB_IS_TEMP_HEATSINK_GLITCH    		g_controller_mtoc.net_signals[11] // 0x0000C0
+#define IIB_IS_I_IN_GLITCH             		g_controller_mtoc.net_signals[5]  // 0x0000C00A // Acesso pelo C28 Debug
+#define IIB_IS_V_IN_GLITCH             		g_controller_mtoc.net_signals[6]  // 0x0000C00C
+#define IIB_IS_TEMP_IGBT_GLITCH        		g_controller_mtoc.net_signals[7]  // 0x0000C00E
+#define IIB_IS_V_DRIVER_GLITCH         		g_controller_mtoc.net_signals[8]  // 0x0000C010
+#define IIB_IS_I_DRIVER_GLITCH         		g_controller_mtoc.net_signals[9]  // 0x0000C012
+#define IIB_IS_TEMP_L_GLITCH           		g_controller_mtoc.net_signals[10] // 0x0000C014
+#define IIB_IS_TEMP_HEATSINK_GLITCH    		g_controller_mtoc.net_signals[11] // 0x0000C016
 #define IIB_IS_TEMP_BOARD_GLITCH       		g_controller_mtoc.net_signals[12] // 0x0000C018
 #define IIB_IS_RH_BOARD_GLITCH         		g_controller_mtoc.net_signals[13] // 0x0000C01A
 #define IIB_IS_ITLK_GLITCH             		g_controller_mtoc.net_signals[14] // 0x0000C01C
