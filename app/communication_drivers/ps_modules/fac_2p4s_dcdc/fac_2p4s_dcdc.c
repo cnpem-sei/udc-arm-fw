@@ -588,7 +588,7 @@ static void handle_can_data(volatile uint8_t *data, volatile unsigned long id)
         	memcpy((void *)iib_fac_2p4s_dcdc[module].InterlocksRegister.u8, (const void *)&data[0], (size_t)4);
         	memcpy((void *)iib_fac_2p4s_dcdc[module].AlarmsRegister.u8, (const void *)&data[4], (size_t)4);
 
-        	if(iib_fac_2p4s_dcdc[module].InterlocksRegister.u32 > 0x000FFFFF)
+        	if(iib_fac_2p4s_dcdc[module].InterlocksRegister.u32 > 0x0007FFFF)
         	{
         		IIB_ITLK_GLITCH.u32 = iib_fac_2p4s_dcdc[module].InterlocksRegister.u32;
         	}
@@ -603,7 +603,7 @@ static void handle_can_data(volatile uint8_t *data, volatile unsigned long id)
         		iib_fac_2p4s_dcdc[module].InterlocksRegister.u32 = 0;
         	}
 
-        	if(iib_fac_2p4s_dcdc[module].AlarmsRegister.u32 > 0x00003FFF)
+        	if(iib_fac_2p4s_dcdc[module].AlarmsRegister.u32 > 0x00001FFF)
         	{
         		IIB_ALARM_GLITCH.u32 = iib_fac_2p4s_dcdc[module].AlarmsRegister.u32;
         	}

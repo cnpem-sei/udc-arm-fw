@@ -23,6 +23,7 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#include <string.h>
 
 #include "inc/hw_memmap.h"
 #include "inc/hw_ipc.h"
@@ -84,8 +85,33 @@
 #define DUTY_CYCLE_MOD_B                    g_controller_ctom.output_signals[1]
 
 /// ARM Net Signals
-#define V_OUT_RECT_MOD_A                     g_controller_mtoc.net_signals[0]
-#define V_OUT_RECT_MOD_B                     g_controller_mtoc.net_signals[1]
+#define V_OUT_RECT_MOD_A                    g_controller_mtoc.net_signals[0]
+#define V_OUT_RECT_MOD_B                    g_controller_mtoc.net_signals[1]
+
+#define IIB_IS_I_IN_GLITCH             		g_controller_mtoc.net_signals[5]  // 0x0000C0 // Acesso pelo C28 Debug verificar valores faltantes
+#define IIB_IS_V_IN_GLITCH             		g_controller_mtoc.net_signals[6]  // 0x0000C0
+#define IIB_IS_TEMP_IGBT_GLITCH        		g_controller_mtoc.net_signals[7]  // 0x0000C0
+#define IIB_IS_V_DRIVER_GLITCH         		g_controller_mtoc.net_signals[8]  // 0x0000C0
+#define IIB_IS_I_DRIVER_GLITCH         		g_controller_mtoc.net_signals[9]  // 0x0000C0
+#define IIB_IS_TEMP_L_GLITCH           		g_controller_mtoc.net_signals[10] // 0x0000C0
+#define IIB_IS_TEMP_HEATSINK_GLITCH    		g_controller_mtoc.net_signals[11] // 0x0000C0
+#define IIB_IS_TEMP_BOARD_GLITCH       		g_controller_mtoc.net_signals[12] // 0x0000C018
+#define IIB_IS_RH_BOARD_GLITCH         		g_controller_mtoc.net_signals[13] // 0x0000C01A
+#define IIB_IS_ITLK_GLITCH             		g_controller_mtoc.net_signals[14] // 0x0000C01C
+#define IIB_IS_ALARM_GLITCH                 g_controller_mtoc.net_signals[15] // 0x0000C01E
+
+#define IIB_CMD_V_OUT_GLITCH           		g_controller_mtoc.net_signals[16] // 0x0000C020
+#define IIB_CMD_V_CAP_BANK_GLITCH      		g_controller_mtoc.net_signals[17] // 0x0000C022
+#define IIB_CMD_TEMP_RECT_INDUCTOR_GLITCH   g_controller_mtoc.net_signals[18] // 0x0000C024
+#define IIB_CMD_TEMP_RECT_HEATSINK_GLITCH	g_controller_mtoc.net_signals[19] // 0x0000C026
+#define IIB_CMD_V_EXTERNAL_BOARDS_GLITCH	g_controller_mtoc.net_signals[20] // 0x0000C028
+#define IIB_CMD_I_AUXILIARY_BOARD_GLITCH	g_controller_mtoc.net_signals[21] // 0x0000C02A
+#define IIB_CMD_I_IDB_BOARD_GLITCH	        g_controller_mtoc.net_signals[22] // 0x0000C02C
+#define IIB_CMD_I_LEAKAGE_GLITCH            g_controller_mtoc.net_signals[23] // 0x0000C02E
+#define IIB_CMD_TEMP_BOARD_GLITCH       	g_controller_mtoc.net_signals[24] // 0x0000C030
+#define IIB_CMD_RH_BOARD_GLITCH         	g_controller_mtoc.net_signals[25] // 0x0000C032
+#define IIB_CMD_ITLK_GLITCH             	g_controller_mtoc.net_signals[26] // 0x0000C034
+#define IIB_CMD_ALARM_GLITCH                g_controller_mtoc.net_signals[27] // 0x0000C036
 
 /**
  * Interlocks defines
@@ -102,12 +128,12 @@ typedef enum
     IIB_Cmd_Itlk
 } hard_interlocks_t;
 
-volatile iib_fac_is_t fac_2s_acdc_is[2];
-volatile iib_fac_cmd_t fac_2s_acdc_cmd[2];
+static volatile iib_fac_is_t fac_2s_acdc_is[2];
+static volatile iib_fac_cmd_t fac_2s_acdc_cmd[2];
 
 static void init_iib_modules();
 
-static void handle_can_data(uint8_t *data, unsigned long id);
+static void handle_can_data(volatile uint8_t *data, volatile unsigned long id);
 
 /**
 * @brief Initialize ADCP Channels.
@@ -252,13 +278,13 @@ static void init_iib_modules()
     init_iib_module_can_data(&g_iib_module_can_data, &handle_can_data);
 }
 
-static void handle_can_data(uint8_t *data, unsigned long id)
+static void handle_can_data(volatile uint8_t *data, volatile unsigned long id)
 {
-	uint8_t module;
-	uint8_t add_module;
+	volatile uint8_t module;
+	volatile uint8_t add_module;
 
-	unsigned long can_module = id;
-	unsigned long id_var = 0;
+	volatile unsigned long can_module = id;
+	volatile unsigned long id_var = 0;
 
 	switch(can_module)
 	{
@@ -326,47 +352,118 @@ static void handle_can_data(uint8_t *data, unsigned long id)
             {
                 case 0:
                 {
-                    memcpy(fac_2s_acdc_is[module].Vin.u8, &data[0], 4);
-                    memcpy( (&V_OUT_RECT_MOD_A.f + module) , &data[0], 4);
-                    memcpy(fac_2s_acdc_is[module].DriverVoltage.u8, &data[4], 4);
+                    memcpy((void *)fac_2s_acdc_is[module].Vin.u8, (const void *)&data[0], (size_t)4);
+                    memcpy((void *)(&V_OUT_RECT_MOD_A.f + module), (const void *)&data[0], (size_t)4);
+                    memcpy((void *)fac_2s_acdc_is[module].DriverVoltage.u8, (const void *)&data[4], (size_t)4);
+
+                    if( (fac_2s_acdc_is[module].Vin.f < -20.0) ||
+                    	(fac_2s_acdc_is[module].Vin.f > 700.0) )
+                    {
+                    	IIB_IS_V_IN_GLITCH.f = fac_2s_acdc_is[module].Vin.f;
+                    }
+
+                    if( (fac_2s_acdc_is[module].DriverVoltage.f < -20.0) ||
+                    	(fac_2s_acdc_is[module].DriverVoltage.f > 50.0) )
+                    {
+                    	IIB_IS_V_DRIVER_GLITCH.f = fac_2s_acdc_is[module].DriverVoltage.f;
+                    }
+
                     break;
                 }
                 case 1:
                 {
-                    memcpy(fac_2s_acdc_is[module].Iin.u8, &data[0], 4);
-                    memcpy(fac_2s_acdc_is[module].DriverCurrent.u8, &data[4], 4);
+                    memcpy((void *)fac_2s_acdc_is[module].Iin.u8, (const void *)&data[0], (size_t)4);
+                    memcpy((void *)fac_2s_acdc_is[module].DriverCurrent.u8, (const void *)&data[4], (size_t)4);
+
+                    if( (fac_2s_acdc_is[module].Iin.f < -20.0) ||
+                    	(fac_2s_acdc_is[module].Iin.f > 240.0) )
+                    {
+                    	IIB_IS_I_IN_GLITCH.f = fac_2s_acdc_is[module].Iin.f;
+                    }
+
+                    if( (fac_2s_acdc_is[module].DriverCurrent.f < -50.0) ||
+                    	(fac_2s_acdc_is[module].DriverCurrent.f > 50.0) )
+                    {
+                    	IIB_IS_I_DRIVER_GLITCH.f = fac_2s_acdc_is[module].DriverCurrent.f;
+                    }
+
                     break;
                 }
                 case 2:
                 {
-                    memcpy(fac_2s_acdc_is[module].TempIGBT.u8, &data[0], 4);
+                    memcpy((void *)fac_2s_acdc_is[module].TempIGBT.u8, (const void *)&data[0], (size_t)4);
+
+                    if( (fac_2s_acdc_is[module].TempIGBT.f < -50.0) ||
+                    	(fac_2s_acdc_is[module].TempIGBT.f > 150.0) )
+                    {
+                    	IIB_IS_TEMP_IGBT_GLITCH.f = fac_2s_acdc_is[module].TempIGBT.f;
+                    }
+
                     break;
                 }
                 case 3:
                 {
-                	memcpy(fac_2s_acdc_is[module].TempL.u8, &data[0], 4);
-                	memcpy(fac_2s_acdc_is[module].TempHeatsink.u8, &data[4], 4);
+                	memcpy((void *)fac_2s_acdc_is[module].TempL.u8, (const void *)&data[0], (size_t)4);
+                	memcpy((void *)fac_2s_acdc_is[module].TempHeatsink.u8, (const void *)&data[4], (size_t)4);
+
+                    if( (fac_2s_acdc_is[module].TempL.f < -10.0) ||
+                    	(fac_2s_acdc_is[module].TempL.f > 100.0) )
+                    {
+                    	IIB_IS_TEMP_L_GLITCH.f = fac_2s_acdc_is[module].TempL.f;
+                    }
+
+                    if( (fac_2s_acdc_is[module].TempHeatsink.f < -10.0) ||
+                    	(fac_2s_acdc_is[module].TempHeatsink.f > 100.0) )
+                    {
+                    	IIB_IS_TEMP_HEATSINK_GLITCH.f = fac_2s_acdc_is[module].TempHeatsink.f;
+                    }
+
                     break;
                 }
                 case 4:
                 {
-                	memcpy(fac_2s_acdc_is[module].BoardTemperature.u8, &data[0], 4);
-                	memcpy(fac_2s_acdc_is[module].RelativeHumidity.u8, &data[4], 4);
+                	memcpy((void *)fac_2s_acdc_is[module].BoardTemperature.u8, (const void *)&data[0], (size_t)4);
+                	memcpy((void *)fac_2s_acdc_is[module].RelativeHumidity.u8, (const void *)&data[4], (size_t)4);
+
+                    if( (fac_2s_acdc_is[module].BoardTemperature.f < -10.0) ||
+                    	(fac_2s_acdc_is[module].BoardTemperature.f > 150.0) )
+                    {
+                    	IIB_IS_TEMP_BOARD_GLITCH.f = fac_2s_acdc_is[module].BoardTemperature.f;
+                    }
+
+                    if( (fac_2s_acdc_is[module].RelativeHumidity.f < -10.0) ||
+                    	(fac_2s_acdc_is[module].RelativeHumidity.f > 100.0) )
+                    {
+                    	IIB_IS_RH_BOARD_GLITCH.f = fac_2s_acdc_is[module].RelativeHumidity.f;
+                    }
+
                     break;
                 }
                 case 5:
                 {
-                	memcpy(fac_2s_acdc_is[module].InterlocksRegister.u8, &data[0], 4);
-                	memcpy(fac_2s_acdc_is[module].AlarmsRegister.u8, &data[4], 4);
+                	memcpy((void *)fac_2s_acdc_is[module].InterlocksRegister.u8, (const void *)&data[0], (size_t)4);
+                	memcpy((void *)fac_2s_acdc_is[module].AlarmsRegister.u8, (const void *)&data[4], (size_t)4);
 
-                	if(fac_2s_acdc_is[module].InterlocksRegister.u32 > 0)
+                	if(fac_2s_acdc_is[module].InterlocksRegister.u32 > 0x00000FFF)
+                	{
+                		IIB_IS_ITLK_GLITCH.u32 = fac_2s_acdc_is[module].InterlocksRegister.u32;
+                	}
+
+                	else if(fac_2s_acdc_is[module].InterlocksRegister.u32 > 0)
                 	{
                 		set_hard_interlock(module, IIB_IS_Itlk);
                 	}
+
                 	else
                 	{
                 		fac_2s_acdc_is[module].InterlocksRegister.u32 = 0;
                 	}
+
+                	if(fac_2s_acdc_is[module].AlarmsRegister.u32 > 0x000001FF)
+                	{
+                		IIB_IS_ALARM_GLITCH.u32 = fac_2s_acdc_is[module].AlarmsRegister.u32;
+                	}
+
                     break;
                 }
                 default:
@@ -385,47 +482,124 @@ static void handle_can_data(uint8_t *data, unsigned long id)
             {
                 case 0:
                 {
-                    memcpy(fac_2s_acdc_cmd[module].VcapBank.u8, &data[0], 4);
-                    memcpy(fac_2s_acdc_cmd[module].Vout.u8, &data[4], 4);
+                    memcpy((void *)fac_2s_acdc_cmd[module].VcapBank.u8, (const void *)&data[0], (size_t)4);
+                    memcpy((void *)fac_2s_acdc_cmd[module].Vout.u8, (const void *)&data[4], (size_t)4);
+
+                    if( (fac_2s_acdc_cmd[module].VcapBank.f < -20.0) ||
+                    	(fac_2s_acdc_cmd[module].VcapBank.f > 500.0) )
+                    {
+                    	IIB_CMD_V_CAP_BANK_GLITCH.f = fac_2s_acdc_cmd[module].VcapBank.f;
+                    }
+
+                    if( (fac_2s_acdc_cmd[module].Vout.f < -20.0) ||
+                    	(fac_2s_acdc_cmd[module].Vout.f > 400.0) )
+                    {
+                    	IIB_CMD_V_OUT_GLITCH.f = fac_2s_acdc_cmd[module].Vout.f;
+                    }
+
                     break;
                 }
                 case 1:
                 {
-                	memcpy(fac_2s_acdc_cmd[module].AuxiliaryBoardCurrent.u8, &data[0], 4);
-                	memcpy(fac_2s_acdc_cmd[module].IDBBoardCurrent.u8, &data[4], 4);
+                	memcpy((void *)fac_2s_acdc_cmd[module].AuxiliaryBoardCurrent.u8, (const void *)&data[0], (size_t)4);
+                	memcpy((void *)fac_2s_acdc_cmd[module].IDBBoardCurrent.u8, (const void *)&data[4], (size_t)4);
+
+                    if( (fac_2s_acdc_cmd[module].AuxiliaryBoardCurrent.f < -50.0) ||
+                    	(fac_2s_acdc_cmd[module].AuxiliaryBoardCurrent.f > 50.0) )
+                    {
+                    	IIB_CMD_I_AUXILIARY_BOARD_GLITCH.f = fac_2s_acdc_cmd[module].AuxiliaryBoardCurrent.f;
+                    }
+
+                    if( (fac_2s_acdc_cmd[module].IDBBoardCurrent.f < -50.0) ||
+                    	(fac_2s_acdc_cmd[module].IDBBoardCurrent.f > 50.0) )
+                    {
+                    	IIB_CMD_I_IDB_BOARD_GLITCH.f = fac_2s_acdc_cmd[module].IDBBoardCurrent.f;
+                    }
+
                     break;
                 }
                 case 2:
                 {
-                    memcpy(fac_2s_acdc_cmd[module].ExternalBoardsVoltage.u8, &data[0], 4);
-                    memcpy(fac_2s_acdc_cmd[module].GroundLeakage.u8, &data[4], 4);
+                    memcpy((void *)fac_2s_acdc_cmd[module].ExternalBoardsVoltage.u8, (const void *)&data[0], (size_t)4);
+                    memcpy((void *)fac_2s_acdc_cmd[module].GroundLeakage.u8, (const void *)&data[4], (size_t)4);
+
+                    if( (fac_2s_acdc_cmd[module].ExternalBoardsVoltage.f < -20.0) ||
+                    	(fac_2s_acdc_cmd[module].ExternalBoardsVoltage.f > 50.0) )
+                    {
+                    	IIB_CMD_V_EXTERNAL_BOARDS_GLITCH.f = fac_2s_acdc_cmd[module].ExternalBoardsVoltage.f;
+                    }
+
+                    if( (fac_2s_acdc_cmd[module].GroundLeakage.f < -20.0) ||
+                    	(fac_2s_acdc_cmd[module].GroundLeakage.f > 50.0) )
+                    {
+                    	IIB_CMD_I_LEAKAGE_GLITCH.f = fac_2s_acdc_cmd[module].GroundLeakage.f;
+                    }
+
                     break;
                 }
                 case 3:
                 {
-                	memcpy(fac_2s_acdc_cmd[module].TempRectInductor.u8, &data[0], 4);
-                	memcpy(fac_2s_acdc_cmd[module].TempRectHeatSink.u8, &data[4], 4);
+                	memcpy((void *)fac_2s_acdc_cmd[module].TempRectInductor.u8, (const void *)&data[0], (size_t)4);
+                	memcpy((void *)fac_2s_acdc_cmd[module].TempRectHeatSink.u8, (const void *)&data[4], (size_t)4);
+
+                    if( (fac_2s_acdc_cmd[module].TempRectInductor.f < -10.0) ||
+                    	(fac_2s_acdc_cmd[module].TempRectInductor.f > 100.0) )
+                    {
+                    	IIB_CMD_TEMP_RECT_INDUCTOR_GLITCH.f = fac_2s_acdc_cmd[module].TempRectInductor.f;
+                    }
+
+                    if( (fac_2s_acdc_cmd[module].TempRectHeatSink.f < -10.0) ||
+                    	(fac_2s_acdc_cmd[module].TempRectHeatSink.f > 100.0) )
+                    {
+                    	IIB_CMD_TEMP_RECT_HEATSINK_GLITCH.f = fac_2s_acdc_cmd[module].TempRectHeatSink.f;
+                    }
+
                     break;
                 }
                 case 4:
                 {
-                	memcpy(fac_2s_acdc_cmd[module].BoardTemperature.u8, &data[0], 4);
-                	memcpy(fac_2s_acdc_cmd[module].RelativeHumidity.u8, &data[4], 4);
+                	memcpy((void *)fac_2s_acdc_cmd[module].BoardTemperature.u8, (const void *)&data[0], (size_t)4);
+                	memcpy((void *)fac_2s_acdc_cmd[module].RelativeHumidity.u8, (const void *)&data[4], (size_t)4);
+
+                    if( (fac_2s_acdc_cmd[module].BoardTemperature.f < -10.0) ||
+                    	(fac_2s_acdc_cmd[module].BoardTemperature.f > 150.0) )
+                    {
+                    	IIB_CMD_TEMP_BOARD_GLITCH .f = fac_2s_acdc_cmd[module].BoardTemperature.f;
+                    }
+
+                    if( (fac_2s_acdc_cmd[module].RelativeHumidity.f < -10.0) ||
+                    	(fac_2s_acdc_cmd[module].RelativeHumidity.f > 100.0) )
+                    {
+                    	IIB_CMD_RH_BOARD_GLITCH.f = fac_2s_acdc_cmd[module].RelativeHumidity.f;
+                    }
+
                     break;
                 }
                 case 5:
                 {
-                	memcpy(fac_2s_acdc_cmd[module].InterlocksRegister.u8, &data[0], 4);
-                	memcpy(fac_2s_acdc_cmd[module].AlarmsRegister.u8, &data[4], 4);
+                	memcpy((void *)fac_2s_acdc_cmd[module].InterlocksRegister.u8, (const void *)&data[0], (size_t)4);
+                	memcpy((void *)fac_2s_acdc_cmd[module].AlarmsRegister.u8, (const void *)&data[4], (size_t)4);
 
-                	if(fac_2s_acdc_cmd[module].InterlocksRegister.u32 > 0)
+                	if(fac_2s_acdc_cmd[module].InterlocksRegister.u32 > 0x00003FFF)
+                	{
+                		IIB_CMD_ITLK_GLITCH.u32 = fac_2s_acdc_cmd[module].InterlocksRegister.u32;
+                	}
+
+                	else if(fac_2s_acdc_cmd[module].InterlocksRegister.u32 > 0)
                 	{
                 		set_hard_interlock(module, IIB_Cmd_Itlk);
                 	}
+
                 	else
                 	{
                 		fac_2s_acdc_cmd[module].InterlocksRegister.u32 = 0;
                 	}
+
+                	if(fac_2s_acdc_cmd[module].AlarmsRegister.u32 > 0x000003FF)
+                	{
+                		IIB_CMD_ALARM_GLITCH.u32 = fac_2s_acdc_cmd[module].AlarmsRegister.u32;
+                	}
+
                     break;
                 }
                 default:
