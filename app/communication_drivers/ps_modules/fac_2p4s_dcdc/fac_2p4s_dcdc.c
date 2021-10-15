@@ -96,22 +96,6 @@
 #define V_CAPBANK_MOD_7     g_controller_mtoc.net_signals[6]
 #define V_CAPBANK_MOD_8     g_controller_mtoc.net_signals[7]
 
-#define IIB_VDC_LINK_GLITCH         g_controller_mtoc.net_signals[12] // 0x0000C018 // Acesso pelo C28 Debug
-#define IIB_I_IN_GLITCH             g_controller_mtoc.net_signals[13] // 0x0000C01A
-#define IIB_I_OUT_GLITCH            g_controller_mtoc.net_signals[14] // 0x0000C01C
-#define IIB_TEMP_IGBT_1_GLITCH      g_controller_mtoc.net_signals[15] // 0x0000C01E
-#define IIB_TEMP_IGBT_2_GLITCH      g_controller_mtoc.net_signals[16] // 0x0000C020
-#define IIB_TEMP_L_GLITCH           g_controller_mtoc.net_signals[17] // 0x0000C022
-#define IIB_TEMP_HEATSINK_GLITCH    g_controller_mtoc.net_signals[18] // 0x0000C024
-#define IIB_V_DRIVER_GLITCH         g_controller_mtoc.net_signals[19] // 0x0000C026
-#define IIB_I_DRIVER_1_GLITCH       g_controller_mtoc.net_signals[20] // 0x0000C028
-#define IIB_I_DRIVER_2_GLITCH       g_controller_mtoc.net_signals[21] // 0x0000C02A
-#define IIB_I_LEAKAGE_GLITCH        g_controller_mtoc.net_signals[22] // 0x0000C02C
-#define IIB_TEMP_BOARD_GLITCH       g_controller_mtoc.net_signals[23] // 0x0000C02E
-#define IIB_RH_BOARD_GLITCH         g_controller_mtoc.net_signals[24] // 0x0000C030
-#define IIB_ITLK_GLITCH             g_controller_mtoc.net_signals[25] // 0x0000C032
-#define IIB_ALARM_GLITCH            g_controller_mtoc.net_signals[26] // 0x0000C034
-
 /**
  * Interlocks defines
  */
@@ -462,36 +446,12 @@ static void handle_can_data(volatile uint8_t *data, volatile unsigned long id)
             memcpy((void *)iib_fac_2p4s_dcdc[module].VdcLink.u8, (const void *)&data[0], (size_t)4);
             memcpy((void *)iib_fac_2p4s_dcdc[module].DriverVoltage.u8, (const void *)&data[4], (size_t)4);
 
-            if( (iib_fac_2p4s_dcdc[module].VdcLink.f < -20.0) ||
-            	(iib_fac_2p4s_dcdc[module].VdcLink.f > 400.0) )
-            {
-            	IIB_VDC_LINK_GLITCH.f = iib_fac_2p4s_dcdc[module].VdcLink.f;
-            }
-
-            if( (iib_fac_2p4s_dcdc[module].DriverVoltage.f < -20.0) ||
-            	(iib_fac_2p4s_dcdc[module].DriverVoltage.f > 50.0) )
-            {
-            	IIB_V_DRIVER_GLITCH.f = iib_fac_2p4s_dcdc[module].DriverVoltage.f;
-            }
-
             break;
         }
         case 1:
         {
             memcpy((void *)iib_fac_2p4s_dcdc[module].Iin.u8, (const void *)&data[0], (size_t)4);
             memcpy((void *)iib_fac_2p4s_dcdc[module].Iout.u8, (const void *)&data[4], (size_t)4);
-
-            if( (iib_fac_2p4s_dcdc[module].Iin.f < -20.0) ||
-            	(iib_fac_2p4s_dcdc[module].Iin.f > 550.0) )
-            {
-            	IIB_I_IN_GLITCH.f = iib_fac_2p4s_dcdc[module].Iin.f;
-            }
-
-            if( (iib_fac_2p4s_dcdc[module].Iout.f < -20.0) ||
-            	(iib_fac_2p4s_dcdc[module].Iout.f > 700.0) )
-            {
-            	IIB_I_OUT_GLITCH.f = iib_fac_2p4s_dcdc[module].Iout.f;
-            }
 
             break;
         }
@@ -500,36 +460,12 @@ static void handle_can_data(volatile uint8_t *data, volatile unsigned long id)
         	memcpy((void *)iib_fac_2p4s_dcdc[module].Driver1Current.u8, (const void *)&data[0], (size_t)4);
         	memcpy((void *)iib_fac_2p4s_dcdc[module].Driver2Current.u8, (const void *)&data[4], (size_t)4);
 
-        	if( (iib_fac_2p4s_dcdc[module].Driver1Current.f < -50.0) ||
-        		(iib_fac_2p4s_dcdc[module].Driver1Current.f > 50.0) )
-        	{
-        		IIB_I_DRIVER_1_GLITCH.f = iib_fac_2p4s_dcdc[module].Driver1Current.f;
-        	}
-
-        	if( (iib_fac_2p4s_dcdc[module].Driver2Current.f < -50.0) ||
-        		(iib_fac_2p4s_dcdc[module].Driver2Current.f > 50.0) )
-        	{
-        		IIB_I_DRIVER_2_GLITCH.f = iib_fac_2p4s_dcdc[module].Driver2Current.f;
-        	}
-
             break;
         }
         case 3:
         {
             memcpy((void *)iib_fac_2p4s_dcdc[module].TempIGBT1.u8, (const void *)&data[0], (size_t)4);
             memcpy((void *)iib_fac_2p4s_dcdc[module].TempIGBT2.u8, (const void *)&data[4], (size_t)4);
-
-            if( (iib_fac_2p4s_dcdc[module].TempIGBT1.f < -50.0) ||
-            	(iib_fac_2p4s_dcdc[module].TempIGBT1.f > 150.0) )
-            {
-            	IIB_TEMP_IGBT_1_GLITCH.f = iib_fac_2p4s_dcdc[module].TempIGBT1.f;
-            }
-
-            if( (iib_fac_2p4s_dcdc[module].TempIGBT2.f < -50.0) ||
-            	(iib_fac_2p4s_dcdc[module].TempIGBT2.f > 150.0) )
-            {
-            	IIB_TEMP_IGBT_2_GLITCH.f = iib_fac_2p4s_dcdc[module].TempIGBT2.f;
-            }
 
             break;
         }
@@ -538,18 +474,6 @@ static void handle_can_data(volatile uint8_t *data, volatile unsigned long id)
         	memcpy((void *)iib_fac_2p4s_dcdc[module].TempL.u8, (const void *)&data[0], (size_t)4);
         	memcpy((void *)iib_fac_2p4s_dcdc[module].TempHeatSink.u8, (const void *)&data[4], (size_t)4);
 
-        	if( (iib_fac_2p4s_dcdc[module].TempL.f < -10.0) ||
-        		(iib_fac_2p4s_dcdc[module].TempL.f > 100.0) )
-        	{
-        		IIB_TEMP_L_GLITCH.f = iib_fac_2p4s_dcdc[module].TempL.f;
-        	}
-
-        	if( (iib_fac_2p4s_dcdc[module].TempHeatSink.f < -10.0) ||
-        		(iib_fac_2p4s_dcdc[module].TempHeatSink.f > 100.0) )
-        	{
-        		IIB_TEMP_HEATSINK_GLITCH.f = iib_fac_2p4s_dcdc[module].TempHeatSink.f;
-        	}
-
             break;
         }
         case 5:
@@ -557,29 +481,11 @@ static void handle_can_data(volatile uint8_t *data, volatile unsigned long id)
         	memcpy((void *)iib_fac_2p4s_dcdc[module].BoardTemperature.u8, (const void *)&data[0], (size_t)4);
         	memcpy((void *)iib_fac_2p4s_dcdc[module].RelativeHumidity.u8, (const void *)&data[4], (size_t)4);
 
-        	if( (iib_fac_2p4s_dcdc[module].BoardTemperature.f < -10.0) ||
-        		(iib_fac_2p4s_dcdc[module].BoardTemperature.f > 150.0) )
-        	{
-        		IIB_TEMP_BOARD_GLITCH.f = iib_fac_2p4s_dcdc[module].BoardTemperature.f;
-        	}
-
-        	if( (iib_fac_2p4s_dcdc[module].RelativeHumidity.f < -10.0) ||
-        		(iib_fac_2p4s_dcdc[module].RelativeHumidity.f > 100.0) )
-        	{
-        		IIB_RH_BOARD_GLITCH.f = iib_fac_2p4s_dcdc[module].RelativeHumidity.f;
-        	}
-
             break;
         }
         case 6:
         {
         	memcpy((void *)iib_fac_2p4s_dcdc[module].GroundLeakage.u8, (const void *)&data[0], (size_t)4);
-
-        	if( (iib_fac_2p4s_dcdc[module].GroundLeakage.f < -20.0) ||
-        		(iib_fac_2p4s_dcdc[module].GroundLeakage.f > 50.0) )
-        	{
-        		IIB_I_LEAKAGE_GLITCH.f = iib_fac_2p4s_dcdc[module].GroundLeakage.f;
-        	}
 
             break;
         }
@@ -588,12 +494,7 @@ static void handle_can_data(volatile uint8_t *data, volatile unsigned long id)
         	memcpy((void *)iib_fac_2p4s_dcdc[module].InterlocksRegister.u8, (const void *)&data[0], (size_t)4);
         	memcpy((void *)iib_fac_2p4s_dcdc[module].AlarmsRegister.u8, (const void *)&data[4], (size_t)4);
 
-        	if(iib_fac_2p4s_dcdc[module].InterlocksRegister.u32 > 0x0007FFFF)
-        	{
-        		IIB_ITLK_GLITCH.u32 = iib_fac_2p4s_dcdc[module].InterlocksRegister.u32;
-        	}
-
-        	else if(iib_fac_2p4s_dcdc[module].InterlocksRegister.u32 > 0)
+        	if(iib_fac_2p4s_dcdc[module].InterlocksRegister.u32 > 0)
         	{
         		set_hard_interlock(0, IIB_Mod_1_Itlk + module);
         	}
@@ -601,11 +502,6 @@ static void handle_can_data(volatile uint8_t *data, volatile unsigned long id)
         	else
         	{
         		iib_fac_2p4s_dcdc[module].InterlocksRegister.u32 = 0;
-        	}
-
-        	if(iib_fac_2p4s_dcdc[module].AlarmsRegister.u32 > 0x00001FFF)
-        	{
-        		IIB_ALARM_GLITCH.u32 = iib_fac_2p4s_dcdc[module].AlarmsRegister.u32;
         	}
 
             break;

@@ -23,6 +23,7 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#include <string.h>
 
 #include "inc/hw_memmap.h"
 #include "inc/hw_ipc.h"
@@ -102,12 +103,12 @@ typedef enum
     IIB_Cmd_Itlk
 } hard_interlocks_t;
 
-volatile iib_fac_is_t fac_2p4s_acdc_is[2];
-volatile iib_fac_cmd_t fac_2p4s_acdc_cmd[2];
+static volatile iib_fac_is_t fac_2p4s_acdc_is[2];
+static volatile iib_fac_cmd_t fac_2p4s_acdc_cmd[2];
 
 static void init_iib_modules();
 
-static void handle_can_data(uint8_t *data, unsigned long id);
+static void handle_can_data(volatile uint8_t *data, volatile unsigned long id);
 
 /**
 * @brief Initialize ADCP Channels.
@@ -252,13 +253,13 @@ static void init_iib_modules()
     init_iib_module_can_data(&g_iib_module_can_data, &handle_can_data);
 }
 
-static void handle_can_data(uint8_t *data, unsigned long id)
+static void handle_can_data(volatile uint8_t *data, volatile unsigned long id)
 {
-	uint8_t module;
-	uint8_t add_module;
+	volatile uint8_t module;
+	volatile uint8_t add_module;
 
-	unsigned long can_module = id;
-	unsigned long id_var = 0;
+	volatile unsigned long can_module = id;
+	volatile unsigned long id_var = 0;
 
 	switch(can_module)
 	{
@@ -326,48 +327,55 @@ static void handle_can_data(uint8_t *data, unsigned long id)
             {
                 case 0:
                 {
-                    memcpy(fac_2p4s_acdc_is[module].Vin.u8, &data[0], 4);
-                    memcpy( (&V_OUT_RECT_MOD_A.f + module) , &data[0], 4);
-                    memcpy(fac_2p4s_acdc_is[module].DriverVoltage.u8, &data[4], 4);
+                    memcpy((void *)fac_2p4s_acdc_is[module].Vin.u8, (const void *)&data[0], (size_t)4);
+                    memcpy((void *)(&V_OUT_RECT_MOD_A.f + module), (const void *)&data[0], (size_t)4);
+                    memcpy((void *)fac_2p4s_acdc_is[module].DriverVoltage.u8, (const void *)&data[4], (size_t)4);
+
                     break;
                 }
                 case 1:
                 {
-                    memcpy(fac_2p4s_acdc_is[module].Iin.u8, &data[0], 4);
-                    memcpy(fac_2p4s_acdc_is[module].DriverCurrent.u8, &data[4], 4);
+                    memcpy((void *)fac_2p4s_acdc_is[module].Iin.u8, (const void *)&data[0], (size_t)4);
+                    memcpy((void *)fac_2p4s_acdc_is[module].DriverCurrent.u8, (const void *)&data[4], (size_t)4);
+
                     break;
                 }
                 case 2:
                 {
-                    memcpy(fac_2p4s_acdc_is[module].TempIGBT.u8, &data[0], 4);
+                    memcpy((void *)fac_2p4s_acdc_is[module].TempIGBT.u8, (const void *)&data[0], (size_t)4);
+
                     break;
                 }
                 case 3:
                 {
-                	memcpy(fac_2p4s_acdc_is[module].TempL.u8, &data[0], 4);
-                	memcpy(fac_2p4s_acdc_is[module].TempHeatsink.u8, &data[4], 4);
-                    break;
+                	memcpy((void *)fac_2p4s_acdc_is[module].TempL.u8, (const void *)&data[0], (size_t)4);
+                	memcpy((void *)fac_2p4s_acdc_is[module].TempHeatsink.u8, (const void *)&data[4], (size_t)4);
+
+                	break;
                 }
                 case 4:
                 {
-                	memcpy(fac_2p4s_acdc_is[module].BoardTemperature.u8, &data[0], 4);
-                	memcpy(fac_2p4s_acdc_is[module].RelativeHumidity.u8, &data[4], 4);
-                    break;
+                	memcpy((void *)fac_2p4s_acdc_is[module].BoardTemperature.u8, (const void *)&data[0], (size_t)4);
+                	memcpy((void *)fac_2p4s_acdc_is[module].RelativeHumidity.u8, (const void *)&data[4], (size_t)4);
+
+                	break;
                 }
                 case 5:
                 {
-                	memcpy(fac_2p4s_acdc_is[module].InterlocksRegister.u8, &data[0], 4);
-                	memcpy(fac_2p4s_acdc_is[module].AlarmsRegister.u8, &data[4], 4);
+                	memcpy((void *)fac_2p4s_acdc_is[module].InterlocksRegister.u8, (const void *)&data[0], (size_t)4);
+                	memcpy((void *)fac_2p4s_acdc_is[module].AlarmsRegister.u8, (const void *)&data[4], (size_t)4);
 
                 	if(fac_2p4s_acdc_is[module].InterlocksRegister.u32 > 0)
                 	{
                 		set_hard_interlock(module, IIB_IS_Itlk);
                 	}
+
                 	else
                 	{
                 		fac_2p4s_acdc_is[module].InterlocksRegister.u32 = 0;
                 	}
-                    break;
+
+                	break;
                 }
                 default:
                 {
@@ -385,48 +393,55 @@ static void handle_can_data(uint8_t *data, unsigned long id)
             {
                 case 0:
                 {
-                    memcpy(fac_2p4s_acdc_cmd[module].VcapBank.u8, &data[0], 4);
-                    memcpy(fac_2p4s_acdc_cmd[module].Vout.u8, &data[4], 4);
+                    memcpy((void *)fac_2p4s_acdc_cmd[module].VcapBank.u8, (const void *)&data[0], (size_t)4);
+                    memcpy((void *)fac_2p4s_acdc_cmd[module].Vout.u8, (const void *)&data[4], (size_t)4);
+
                     break;
                 }
                 case 1:
                 {
-                	memcpy(fac_2p4s_acdc_cmd[module].AuxiliaryBoardCurrent.u8, &data[0], 4);
-                	memcpy(fac_2p4s_acdc_cmd[module].IDBBoardCurrent.u8, &data[4], 4);
-                    break;
+                	memcpy((void *)fac_2p4s_acdc_cmd[module].AuxiliaryBoardCurrent.u8, (const void *)&data[0], (size_t)4);
+                	memcpy((void *)fac_2p4s_acdc_cmd[module].IDBBoardCurrent.u8, (const void *)&data[4], (size_t)4);
+
+                	break;
                 }
                 case 2:
                 {
-                    memcpy(fac_2p4s_acdc_cmd[module].ExternalBoardsVoltage.u8, &data[0], 4);
-                    memcpy(fac_2p4s_acdc_cmd[module].GroundLeakage.u8, &data[4], 4);
+                    memcpy((void *)fac_2p4s_acdc_cmd[module].ExternalBoardsVoltage.u8, (const void *)&data[0], (size_t)4);
+                    memcpy((void *)fac_2p4s_acdc_cmd[module].GroundLeakage.u8, (const void *)&data[4], (size_t)4);
+
                     break;
                 }
                 case 3:
                 {
-                	memcpy(fac_2p4s_acdc_cmd[module].TempRectInductor.u8, &data[0], 4);
-                	memcpy(fac_2p4s_acdc_cmd[module].TempRectHeatSink.u8, &data[4], 4);
-                    break;
+                	memcpy((void *)fac_2p4s_acdc_cmd[module].TempRectInductor.u8, (const void *)&data[0], (size_t)4);
+                	memcpy((void *)fac_2p4s_acdc_cmd[module].TempRectHeatSink.u8, (const void *)&data[4], (size_t)4);
+
+                	break;
                 }
                 case 4:
                 {
-                	memcpy(fac_2p4s_acdc_cmd[module].BoardTemperature.u8, &data[0], 4);
-                	memcpy(fac_2p4s_acdc_cmd[module].RelativeHumidity.u8, &data[4], 4);
-                    break;
+                	memcpy((void *)fac_2p4s_acdc_cmd[module].BoardTemperature.u8, (const void *)&data[0], (size_t)4);
+                	memcpy((void *)fac_2p4s_acdc_cmd[module].RelativeHumidity.u8, (const void *)&data[4], (size_t)4);
+
+                	break;
                 }
                 case 5:
                 {
-                	memcpy(fac_2p4s_acdc_cmd[module].InterlocksRegister.u8, &data[0], 4);
-                	memcpy(fac_2p4s_acdc_cmd[module].AlarmsRegister.u8, &data[4], 4);
+                	memcpy((void *)fac_2p4s_acdc_cmd[module].InterlocksRegister.u8, (const void *)&data[0], (size_t)4);
+                	memcpy((void *)fac_2p4s_acdc_cmd[module].AlarmsRegister.u8, (const void *)&data[4], (size_t)4);
 
                 	if(fac_2p4s_acdc_cmd[module].InterlocksRegister.u32 > 0)
                 	{
                 		set_hard_interlock(module, IIB_Cmd_Itlk);
                 	}
+
                 	else
                 	{
                 		fac_2p4s_acdc_cmd[module].InterlocksRegister.u32 = 0;
                 	}
-                    break;
+
+                	break;
                 }
                 default:
                 {

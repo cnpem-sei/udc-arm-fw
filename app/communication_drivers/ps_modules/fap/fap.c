@@ -67,23 +67,6 @@
 
 #define V_LOAD                  g_controller_mtoc.net_signals[2]
 
-#define IIB_V_IN_GLITCH             g_controller_mtoc.net_signals[12] // 0x0000C018 // Acesso pelo C28 Debug
-#define IIB_V_OUT_GLITCH            g_controller_mtoc.net_signals[13] // 0x0000C01A
-#define IIB_I_IGBT_1_GLITCH         g_controller_mtoc.net_signals[14] // 0x0000C01C
-#define IIB_I_IGBT_2_GLITCH         g_controller_mtoc.net_signals[15] // 0x0000C01E
-#define IIB_TEMP_IGBT_1_GLITCH      g_controller_mtoc.net_signals[16] // 0x0000C020
-#define IIB_TEMP_IGBT_2_GLITCH      g_controller_mtoc.net_signals[17] // 0x0000C022
-#define IIB_V_DRIVER_GLITCH         g_controller_mtoc.net_signals[18] // 0x0000C024
-#define IIB_I_DRIVER_1_GLITCH       g_controller_mtoc.net_signals[19] // 0x0000C026
-#define IIB_I_DRIVER_2_GLITCH       g_controller_mtoc.net_signals[20] // 0x0000C028
-#define IIB_TEMP_L_GLITCH           g_controller_mtoc.net_signals[21] // 0x0000C02A
-#define IIB_TEMP_HEATSINK_GLITCH    g_controller_mtoc.net_signals[22] // 0x0000C02C
-#define IIB_I_LEAKAGE_GLITCH        g_controller_mtoc.net_signals[23] // 0x0000C02E
-#define IIB_TEMP_BOARD_GLITCH       g_controller_mtoc.net_signals[24] // 0x0000C030
-#define IIB_RH_BOARD_GLITCH         g_controller_mtoc.net_signals[25] // 0x0000C032
-#define IIB_ITLK_GLITCH             g_controller_mtoc.net_signals[26] // 0x0000C034
-#define IIB_ALARM_GLITCH            g_controller_mtoc.net_signals[27] // 0x0000C036
-
 /**
  * Interlocks defines
  */
@@ -224,36 +207,12 @@ static void handle_can_data(volatile uint8_t *data, volatile unsigned long id)
             memcpy((void *)iib_fap.Vout.u8, (const void *)&data[4], (size_t)4);
             V_LOAD.f = iib_fap.Vout.f;
 
-            if( (iib_fap.Vin.f < -20.0) ||
-                (iib_fap.Vin.f > 150.0) )
-            {
-                IIB_V_IN_GLITCH.f = iib_fap.Vin.f;
-            }
-
-            if( (iib_fap.Vout.f < -20.0) ||
-                (iib_fap.Vout.f > 150.0) )
-            {
-                IIB_V_OUT_GLITCH.f = iib_fap.Vout.f;
-            }
-
             break;
         }
         case 11:
         {
             memcpy((void *)iib_fap.IoutA1.u8, (const void *)&data[0], (size_t)4);
             memcpy((void *)iib_fap.IoutA2.u8, (const void *)&data[4], (size_t)4);
-
-            if( (iib_fap.IoutA1.f < -20.0) ||
-                (iib_fap.IoutA1.f > 350.0) )
-            {
-                IIB_I_IGBT_1_GLITCH.f = iib_fap.IoutA1.f;
-            }
-
-            if( (iib_fap.IoutA2.f < -20.0) ||
-                (iib_fap.IoutA2.f > 350.0) )
-            {
-                IIB_I_IGBT_2_GLITCH.f = iib_fap.IoutA2.f;
-            }
 
             break;
         }
@@ -262,36 +221,12 @@ static void handle_can_data(volatile uint8_t *data, volatile unsigned long id)
         	memcpy((void *)iib_fap.DriverVoltage.u8, (const void *)&data[0], (size_t)4);
         	memcpy((void *)iib_fap.GroundLeakage.u8, (const void *)&data[4], (size_t)4);
 
-        	if( (iib_fap.DriverVoltage.f < -20.0) ||
-                (iib_fap.DriverVoltage.f > 50.0) )
-            {
-                IIB_V_DRIVER_GLITCH.f = iib_fap.DriverVoltage.f;
-            }
-
-            if( (iib_fap.GroundLeakage.f < -20.0) ||
-                (iib_fap.GroundLeakage.f > 50.0) )
-            {
-                IIB_I_LEAKAGE_GLITCH.f = iib_fap.GroundLeakage.f;
-            }
-
             break;
         }
         case 13:
         {
         	memcpy((void *)iib_fap.Driver1Current.u8, (const void *)&data[0], (size_t)4);
         	memcpy((void *)iib_fap.Driver2Current.u8, (const void *)&data[4], (size_t)4);
-
-        	if( (iib_fap.Driver1Current.f < -50.0) ||
-                (iib_fap.Driver1Current.f > 50.0) )
-            {
-                IIB_I_DRIVER_1_GLITCH.f = iib_fap.Driver1Current.f;
-            }
-
-            if( (iib_fap.Driver2Current.f < -50.0) ||
-                (iib_fap.Driver2Current.f > 50.0) )
-            {
-                IIB_I_DRIVER_2_GLITCH.f = iib_fap.Driver2Current.f;
-            }
 
             break;
         }
@@ -300,36 +235,12 @@ static void handle_can_data(volatile uint8_t *data, volatile unsigned long id)
             memcpy((void *)iib_fap.TempIGBT1.u8, (const void *)&data[0], (size_t)4);
             memcpy((void *)iib_fap.TempIGBT2.u8, (const void *)&data[4], (size_t)4);
 
-            if( (iib_fap.TempIGBT1.f < -50.0) ||
-                (iib_fap.TempIGBT1.f > 150.0) )
-            {
-                IIB_TEMP_IGBT_1_GLITCH.f = iib_fap.TempIGBT1.f;
-            }
-
-            if( (iib_fap.TempIGBT2.f < -50.0) ||
-                (iib_fap.TempIGBT2.f > 150.0) )
-            {
-                IIB_TEMP_IGBT_1_GLITCH.f = iib_fap.TempIGBT2.f;
-            }
-
             break;
         }
         case 15:
         {
         	memcpy((void *)iib_fap.TempL.u8, (const void *)&data[0], (size_t)4);
         	memcpy((void *)iib_fap.TempHeatSink.u8, (const void *)&data[4], (size_t)4);
-
-        	if( (iib_fap.TempL.f < -10.0) ||
-                (iib_fap.TempL.f > 100.0) )
-            {
-                IIB_TEMP_L_GLITCH.f = iib_fap.TempL.f;
-            }
-
-            if( (iib_fap.TempHeatSink.f < -10.0) ||
-                (iib_fap.TempHeatSink.f > 100.0) )
-            {
-                IIB_TEMP_HEATSINK_GLITCH.f = iib_fap.TempHeatSink.f;
-            }
 
             break;
         }
@@ -338,18 +249,6 @@ static void handle_can_data(volatile uint8_t *data, volatile unsigned long id)
         	memcpy((void *)iib_fap.BoardTemperature.u8, (const void *)&data[0], (size_t)4);
         	memcpy((void *)iib_fap.RelativeHumidity.u8, (const void *)&data[4], (size_t)4);
 
-        	if( (iib_fap.BoardTemperature.f < -10.0) ||
-                (iib_fap.BoardTemperature.f > 150.0) )
-            {
-                IIB_TEMP_BOARD_GLITCH.f = iib_fap.BoardTemperature.f;
-            }
-
-            if( (iib_fap.RelativeHumidity.f < -10.0) ||
-                (iib_fap.RelativeHumidity.f > 100.0) )
-            {
-                IIB_RH_BOARD_GLITCH.f = iib_fap.RelativeHumidity.f;
-            }
-
             break;
         }
         case 17:
@@ -357,24 +256,15 @@ static void handle_can_data(volatile uint8_t *data, volatile unsigned long id)
         	memcpy((void *)iib_fap.InterlocksRegister.u8, (const void *)&data[0], (size_t)4);
         	memcpy((void *)iib_fap.AlarmsRegister.u8, (const void *)&data[4], (size_t)4);
 
-        	if(iib_fap.InterlocksRegister.u32 > 0x000FFFFF)
-            {
-                IIB_ITLK_GLITCH.u32 = iib_fap.InterlocksRegister.u32;
-            }
-
-            else if(iib_fap.InterlocksRegister.u32 > 0)
+            if(iib_fap.InterlocksRegister.u32 > 0)
         	{
         		set_hard_interlock(0, IIB_Itlk);
         	}
-        	else
+
+            else
         	{
         		iib_fap.InterlocksRegister.u32 = 0;
         	}
-
-        	if(iib_fap.AlarmsRegister.u32 > 0x00003FFF)
-            {
-                IIB_ALARM_GLITCH.u32 = iib_fap.AlarmsRegister.u32;
-            }
 
         	break;
         }
