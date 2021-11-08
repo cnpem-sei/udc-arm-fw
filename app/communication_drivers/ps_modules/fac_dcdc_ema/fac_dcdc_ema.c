@@ -22,6 +22,7 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#include <string.h>
 
 #include "inc/hw_memmap.h"
 #include "inc/hw_ipc.h"
@@ -72,11 +73,11 @@ typedef enum
     Load_Feedback_Fault,
 } soft_interlocks_t;
 
-volatile iib_fac_os_t iib_fac_os;
+static volatile iib_fac_os_t iib_fac_os;
 
 static void init_iib_modules();
 
-static void handle_can_data(uint8_t *data, unsigned long id);
+static void handle_can_data(volatile uint8_t *data, volatile unsigned long id);
 
 /**
 * @brief Initialize ADCP Channels.
@@ -160,66 +161,75 @@ static void init_iib_modules()
     init_iib_module_can_data(&g_iib_module_can_data, &handle_can_data);
 }
 
-static void handle_can_data(uint8_t *data, unsigned long id)
+static void handle_can_data(volatile uint8_t *data, volatile unsigned long id)
 {
     switch(id)
     {
         case 10:
         {
-            memcpy(iib_fac_os.VdcLink.u8, &data[0], 4);
-            memcpy(iib_fac_os.DriverVoltage.u8, &data[4], 4);
+            memcpy((void *) iib_fac_os.VdcLink.u8, (const void *) &data[0], (size_t) 4);
+            memcpy((void *) iib_fac_os.DriverVoltage.u8, (const void *) &data[4], (size_t) 4);
             break;
         }
+
         case 11:
         {
-            memcpy(iib_fac_os.Iin.u8, &data[0], 4);
-            memcpy(iib_fac_os.Iout.u8, &data[4], 4);
+            memcpy((void *) iib_fac_os.Iin.u8, (const void *) &data[0], (size_t) 4);
+            memcpy((void *) iib_fac_os.Iout.u8, (const void *) &data[4], (size_t) 4);
             break;
         }
+
         case 12:
         {
-        	memcpy(iib_fac_os.Driver1Current.u8, &data[0], 4);
-        	memcpy(iib_fac_os.Driver2Current.u8, &data[4], 4);
+            memcpy((void *) iib_fac_os.Driver1Current.u8, (const void *) &data[0], (size_t) 4);
+            memcpy((void *) iib_fac_os.Driver2Current.u8, (const void *) &data[4], (size_t) 4);
             break;
         }
+
         case 13:
         {
-            memcpy(iib_fac_os.TempIGBT1.u8, &data[0], 4);
-            memcpy(iib_fac_os.TempIGBT2.u8, &data[4], 4);
+            memcpy((void *) iib_fac_os.TempIGBT1.u8, (const void *) &data[0], (size_t) 4);
+            memcpy((void *) iib_fac_os.TempIGBT2.u8, (const void *) &data[4], (size_t) 4);
             break;
         }
+
         case 14:
         {
-        	memcpy(iib_fac_os.TempL.u8, &data[0], 4);
-        	memcpy(iib_fac_os.TempHeatSink.u8, &data[4], 4);
+            memcpy((void *) iib_fac_os.TempL.u8, (const void *) &data[0], (size_t) 4);
+            memcpy((void *) iib_fac_os.TempHeatSink.u8, (const void *) &data[4], (size_t) 4);
             break;
         }
+
         case 15:
         {
-        	memcpy(iib_fac_os.BoardTemperature.u8, &data[0], 4);
-        	memcpy(iib_fac_os.RelativeHumidity.u8, &data[4], 4);
+            memcpy((void *) iib_fac_os.BoardTemperature.u8, (const void *) &data[0], (size_t) 4);
+            memcpy((void *) iib_fac_os.RelativeHumidity.u8, (const void *) &data[4], (size_t) 4);
             break;
         }
         case 16:
         {
-        	memcpy(iib_fac_os.GroundLeakage.u8, &data[0], 4);
+            memcpy((void *) iib_fac_os.GroundLeakage.u8, (const void *) &data[0], (size_t) 4);
             break;
         }
+
         case 17:
         {
-        	memcpy(iib_fac_os.InterlocksRegister.u8, &data[0], 4);
-        	memcpy(iib_fac_os.AlarmsRegister.u8, &data[4], 4);
+            memcpy((void *) iib_fac_os.InterlocksRegister.u8, (const void *) &data[0], (size_t) 4);
+            memcpy((void *) iib_fac_os.AlarmsRegister.u8, (const void *) &data[4], (size_t) 4);
 
-        	if(iib_fac_os.InterlocksRegister.u32 > 0)
-        	{
-        		set_hard_interlock(0, IIB_Itlk);
-        	}
-        	else
-        	{
-        		iib_fac_os.InterlocksRegister.u32 = 0;
-        	}
-        	break;
+            if(iib_fac_os.InterlocksRegister.u32 > 0)
+            {
+                set_hard_interlock(0, IIB_Itlk);
+            }
+
+            else
+            {
+                iib_fac_os.InterlocksRegister.u32 = 0;
+            }
+
+            break;
         }
+
         default:
         {
             break;
