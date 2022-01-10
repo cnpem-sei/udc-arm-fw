@@ -84,7 +84,7 @@
  * GPIO for the debug pin CON9 GPIO0
  *****************************************************************************/
 #define DEBUG_GPIO0_CORE    GPIO_PIN_M_CORE_SELECT // GPIO_PIN_C_CORE_SELECT
-#define DEBUG_GPIO1_CORE    GPIO_PIN_M_CORE_SELECT // GPIO_PIN_C_CORE_SELECT
+#define DEBUG_GPIO1_CORE    GPIO_PIN_C_CORE_SELECT // GPIO_PIN_M_CORE_SELECT
 
 #define DEBUG_GPIO0_BASE    GPIO_PORTG_BASE
 #define DEBUG_GPIO0_PIN     GPIO_PIN_6
