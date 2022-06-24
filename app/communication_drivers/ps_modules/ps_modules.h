@@ -131,6 +131,11 @@ typedef struct
         volatile uint8_t    u8[4];
     } ps_soft_interlock;
 
+    union {
+            volatile uint32_t   u32;
+            volatile uint8_t    u8[4];
+    } ps_alarms;
+
     void            (*turn_on)(void);
     void            (*turn_off)(void);
     void            (*isr_soft_interlock)(void);
