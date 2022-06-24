@@ -2411,7 +2411,7 @@ void bsmp_init(uint8_t server)
     create_bsmp_var(25, server, 4, false, g_ipc_ctom.scope[server].timeslicer.freq_sampling.u8);
     create_bsmp_var(26, server, 4, false, g_ipc_ctom.scope[server].duration.u8);
     create_bsmp_var(27, server, 4, false, g_ipc_ctom.scope[server].p_source.u8);
-    create_bsmp_var(28, server, 1, false, &dummy_u8);   // Reserved common variable
+    create_bsmp_var(28, server, 4, false, g_ipc_ctom.period_sync_pulse.u8);
     create_bsmp_var(29, server, 1, false, &dummy_u8);   // Reserved common variable
     create_bsmp_var(30, server, 1, false, &dummy_u8);   // Reserved common variable
 

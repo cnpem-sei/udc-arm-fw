@@ -138,7 +138,7 @@ typedef volatile struct
     {
         uint8_t     u8[4];
         uint32_t    u32;
-    } counter_sync_period;
+    } period_sync_pulse;
     ps_module_t     ps_module[NUM_MAX_PS_MODULES];
     siggen_t        siggen[NUM_MAX_PS_MODULES];
     wfmref_t        wfmref[NUM_MAX_PS_MODULES];

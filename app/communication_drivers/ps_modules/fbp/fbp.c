@@ -220,6 +220,11 @@ static void bsmp_init_server(void)
         create_bsmp_var(67, server, 4, false, PS2_LOAD_CURRENT.u8);
         create_bsmp_var(68, server, 4, false, PS3_LOAD_CURRENT.u8);
         create_bsmp_var(69, server, 4, false, PS4_LOAD_CURRENT.u8);
+
+        create_bsmp_var(70, server, 4, false, g_ipc_ctom.ps_module[PS1_ID].ps_alarms.u8);
+        create_bsmp_var(71, server, 4, false, g_ipc_ctom.ps_module[PS2_ID].ps_alarms.u8);
+        create_bsmp_var(72, server, 4, false, g_ipc_ctom.ps_module[PS3_ID].ps_alarms.u8);
+        create_bsmp_var(73, server, 4, false, g_ipc_ctom.ps_module[PS4_ID].ps_alarms.u8);
     }
 
 }
