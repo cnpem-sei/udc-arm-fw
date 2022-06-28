@@ -83,6 +83,11 @@ typedef enum
     Heatsink_Overtemperature
 } soft_interlocks_t;
 
+typedef enum
+{
+    High_Sync_Input_Frequency = 0x00000001
+} alarms_t;
+
 /**
 * @brief Initialize ADCP Channels.
 *

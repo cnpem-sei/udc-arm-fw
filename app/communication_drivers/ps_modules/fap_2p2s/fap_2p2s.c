@@ -146,6 +146,11 @@ typedef enum
     Complementary_PS_Itlk,
 } soft_interlocks_t;
 
+typedef enum
+{
+    High_Sync_Input_Frequency = 0x00000001
+} alarms_t;
+
 static volatile iib_fap_module_t iib_fap_2p2s[4];
 
 static void init_iib();

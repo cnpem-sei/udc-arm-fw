@@ -150,6 +150,11 @@ typedef enum
     IGBTs_Current_High_Difference
 } soft_interlocks_t;
 
+typedef enum
+{
+    High_Sync_Input_Frequency = 0x00000001
+} alarms_t;
+
 static volatile iib_fap_module_t iib_fap_4p[4];
 
 static void init_iib();
@@ -314,6 +319,9 @@ static void bsmp_init_server(void)
     create_bsmp_var(119, 0, 4, false, iib_fap_4p[3].RelativeHumidity.u8);
     create_bsmp_var(120, 0, 4, false, iib_fap_4p[3].InterlocksRegister.u8);
     create_bsmp_var(121, 0, 4, false, iib_fap_4p[3].AlarmsRegister.u8);
+
+    create_bsmp_var(122, 0, 4, false, g_ipc_ctom.ps_module[0].ps_alarms.u8);
+
 }
 
 /**
