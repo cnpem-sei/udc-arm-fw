@@ -282,7 +282,10 @@ static void bsmp_init_server(void)
     create_bsmp_var(88, 0, 4, false, iib_fap_2p2s[1].Driver2Current.u8);
     create_bsmp_var(89, 0, 4, false, iib_fap_2p2s[1].TempL.u8);
     create_bsmp_var(90, 0, 4, false, iib_fap_2p2s[1].TempHeatSink.u8);
-    create_bsmp_var(91, 0, 4, false, iib_fap_2p2s[1].GroundLeakage.u8);
+
+    //create_bsmp_var(91, 0, 4, false, iib_fap_2p2s[1].GroundLeakage.u8);
+    create_bsmp_var(91, 0, 4, false, g_ipc_ctom.ps_module[0].ps_alarms.u8);
+
     create_bsmp_var(92, 0, 4, false, iib_fap_2p2s[1].BoardTemperature.u8);
     create_bsmp_var(93, 0, 4, false, iib_fap_2p2s[1].RelativeHumidity.u8);
     create_bsmp_var(94, 0, 4, false, iib_fap_2p2s[1].InterlocksRegister.u8);
