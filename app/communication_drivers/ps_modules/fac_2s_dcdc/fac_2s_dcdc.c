@@ -89,6 +89,11 @@ typedef enum
     Load_Feedback_2_Fault
 } soft_interlocks_t;
 
+typedef enum
+{
+    High_Sync_Input_Frequency = 0x00000001
+} alarms_t;
+
 static volatile iib_fac_os_t iib_fac_2s_dcdc[2];
 
 static void init_iib_modules();
@@ -164,6 +169,8 @@ static void bsmp_init_server(void)
     create_bsmp_var(65, 0, 4, false, iib_fac_2s_dcdc[1].RelativeHumidity.u8);
     create_bsmp_var(66, 0, 4, false, iib_fac_2s_dcdc[1].InterlocksRegister.u8);
     create_bsmp_var(67, 0, 4, false, iib_fac_2s_dcdc[1].AlarmsRegister.u8);
+
+    create_bsmp_var(68, 0, 4, false, g_ipc_ctom.ps_module[0].ps_alarms.u8);
 }
 
 /**

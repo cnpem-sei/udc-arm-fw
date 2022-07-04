@@ -141,6 +141,11 @@ typedef enum
     Complementary_PS_Itlk
 } soft_interlocks_t;
 
+typedef enum
+{
+    High_Sync_Input_Frequency = 0x00000001
+} alarms_t;
+
 static volatile iib_fac_os_t iib_fac_2p4s_dcdc[8];
 
 static void init_iib_modules();
@@ -281,6 +286,8 @@ static void bsmp_init_server(void)
         create_bsmp_var(79, server, 4, false, iib_fac_2p4s_dcdc[server*2+1].RelativeHumidity.u8);
         create_bsmp_var(80, server, 4, false, iib_fac_2p4s_dcdc[server*2+1].InterlocksRegister.u8);
         create_bsmp_var(81, server, 4, false, iib_fac_2p4s_dcdc[server*2+1].AlarmsRegister.u8);
+
+        create_bsmp_var(82, server, 4, false, g_ipc_ctom.ps_module[0].ps_alarms.u8);
     }
 }
 
