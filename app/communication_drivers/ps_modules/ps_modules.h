@@ -84,6 +84,7 @@ typedef enum
     FAP_IMAS,
     FAC_2P_ACDC_IMAS,
     FAC_2P_DCDC_IMAS,
+    RESONANT_SWLS,
     Uninitialized = 0x1F      // Empty EEPROM
 } ps_model_t;
 
