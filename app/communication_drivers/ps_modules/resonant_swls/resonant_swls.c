@@ -94,10 +94,12 @@ static void bsmp_init_server(void)
 {
     create_bsmp_var(31, 0, 4, false, g_ipc_ctom.ps_module[0].ps_soft_interlock.u8);
     create_bsmp_var(32, 0, 4, false, g_ipc_ctom.ps_module[0].ps_hard_interlock.u8);
-    create_bsmp_var(33, 0, 4, false, g_ipc_ctom.ps_module[0].ps_alarms.u8);
+    //create_bsmp_var(33, 0, 4, false, g_ipc_ctom.ps_module[0].ps_alarms.u8);
 
-    create_bsmp_var(34, 0, 4, false, I_LOAD.u8);
-    create_bsmp_var(35, 0, 4, false, FREQ_MODULATED.u8);
+    create_bsmp_var(33, 0, 4, false, I_LOAD.u8);
+    create_bsmp_var(34, 0, 4, false, FREQ_MODULATED.u8);
+
+    create_bsmp_var(35, 0, 4, false, g_ipc_ctom.ps_module[0].ps_alarms.u8);
 
 }
 
