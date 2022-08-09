@@ -102,19 +102,17 @@ void init_system(void)
         pwm_eletr_ctrl(true);
     }
 
-	hradc_rst_ctrl(1);
-
 	init_i2c_offboard_isolated();
 
-    init_i2c_offboard_external_devices();
-
 	init_parameters_bank();
+
+	hradc_rst_ctrl(1);
 
 	init_ipc();
 
 	init_control_framework(&g_controller_mtoc);
 
-	//load_dsp_modules_eeprom(Onboard_EEPROM);
+	init_i2c_offboard_external_devices();
 
 	flash_mem_init();
 
