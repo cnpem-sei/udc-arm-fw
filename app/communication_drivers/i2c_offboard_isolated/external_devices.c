@@ -25,7 +25,7 @@
 
 void init_i2c_offboard_external_devices(void)
 {
-    switch (g_ipc_mtoc.ps_module[g_current_ps_id].ps_status.bit.model)
+    switch (g_ipc_mtoc.ps_module[0].ps_status.bit.model)
 	{
 		case FBP:
             power_supply_1_temp_init();
