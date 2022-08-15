@@ -112,7 +112,7 @@ void init_system(void)
 
 	init_control_framework(&g_controller_mtoc);
 
-	init_i2c_offboard_external_devices();
+	//init_i2c_offboard_external_devices();
 
 	flash_mem_init();
 
