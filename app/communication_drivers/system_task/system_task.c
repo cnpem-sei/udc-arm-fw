@@ -253,7 +253,7 @@ void TaskCheck(void)
 
 		// TODO: Fix it
 		//switch(g_ipc_mtoc[0].PSModule.Model.u16)
-		switch(g_ipc_mtoc.ps_module[g_current_ps_id].ps_status.bit.model)
+		switch(g_ipc_mtoc.ps_module[0].ps_status.bit.model)
 		{
 			case FBP:
 			    power_supply_1_temp_read();
