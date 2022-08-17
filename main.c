@@ -215,6 +215,12 @@ int main(void) {
             break;
         }
 
+        case FBP_UFJF:
+        {
+            fbp_ufjf_system_config();
+            break;
+        }
+
         case Uninitialized:
         {
             break;

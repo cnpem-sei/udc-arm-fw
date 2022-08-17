@@ -1,5 +1,5 @@
 /******************************************************************************
- * Copyright (C) 2018 by LNLS - Brazilian Synchrotron Light Laboratory
+ * Copyright (C) 2022 by LNLS - Brazilian Synchrotron Light Laboratory
  *
  * Redistribution, modification or use of this software in source or binary
  * forms is permitted as long as the files maintain this copyright. LNLS and
@@ -9,18 +9,20 @@
  *****************************************************************************/
 
 /**
- * @file version.c
- * @brief Firmware version module
- * 
- * This module contains information about current build version of UDC ARM core.
+ * @file fbp_ufjf.h
+ * @brief FBP for UFJF controllers
+ *
+ * Module for control of FBP crate adapted for usage on tests of controllers
+ * developed in CNPEM-UFJF partnership
  *
  * @author gabriel.brunheira
- * @date 08/02/2018
+ * @date 16/08/2022
  *
  */
 
-#include "version.h"
+#ifndef FBP_UFJF_H_
+#define FBP_UFJF_H_
 
-volatile firmwares_version_t firmwares_version;
+void fbp_ufjf_system_config(void);
 
-const char * udc_arm_version = "0.44.01 jf 08/22";
+#endif /* FBP_UFJF_H_ */
