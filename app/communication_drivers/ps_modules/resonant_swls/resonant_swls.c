@@ -47,9 +47,11 @@
  */
 
 /// DSP Net Signals
-#define I_LOAD                  g_controller_ctom.net_signals[0]    // HRADC0
+#define I_LOAD                  g_controller_ctom.net_signals[0]  // HRADC0
+#define V_DCLINK                g_controller_ctom.net_signals[1]  // HRADC1
 #define I_LOAD_ERROR            g_controller_ctom.net_signals[2]
-#define FREQ_MODULATED          g_controller_ctom.output_signals[0]
+#define FREQ_MODULATED          g_controller_ctom.net_signals[3]
+#define FREQ_MODULATED_FF       g_controller_ctom.output_signals[0]
 
 /// ARM Net Signals
 
@@ -58,7 +60,9 @@
  */
 typedef enum
 {
-    Load_Overcurrent
+    Load_Overcurrent,
+    DCLink_Overvoltage,
+    DCLink_Undervoltage
 } hard_interlocks_t;
 
 typedef enum
@@ -75,7 +79,7 @@ typedef enum
 static void adcp_channel_config(void)
 {
     g_analog_ch_0.Enable = 0;
-    g_analog_ch_0.Enable = 0;
+    g_analog_ch_1.Enable = 0;
     g_analog_ch_2.Enable = 0;
     g_analog_ch_3.Enable = 0;
     g_analog_ch_4.Enable = 0;
@@ -94,13 +98,13 @@ static void bsmp_init_server(void)
 {
     create_bsmp_var(31, 0, 4, false, g_ipc_ctom.ps_module[0].ps_soft_interlock.u8);
     create_bsmp_var(32, 0, 4, false, g_ipc_ctom.ps_module[0].ps_hard_interlock.u8);
-    //create_bsmp_var(33, 0, 4, false, g_ipc_ctom.ps_module[0].ps_alarms.u8);
+    create_bsmp_var(33, 0, 4, false, g_ipc_ctom.ps_module[0].ps_alarms.u8);
 
-    create_bsmp_var(33, 0, 4, false, I_LOAD.u8);
-    create_bsmp_var(34, 0, 4, false, FREQ_MODULATED.u8);
-
-    create_bsmp_var(35, 0, 4, false, g_ipc_ctom.ps_module[0].ps_alarms.u8);
-
+    create_bsmp_var(34, 0, 4, false, I_LOAD.u8);
+    create_bsmp_var(35, 0, 4, false, V_DCLINK.u8);
+    create_bsmp_var(36, 0, 4, false, I_LOAD_ERROR.u8);
+    create_bsmp_var(37, 0, 4, false, FREQ_MODULATED.u8);
+    create_bsmp_var(38, 0, 4, false, FREQ_MODULATED_FF.u8);
 }
 
 /**
