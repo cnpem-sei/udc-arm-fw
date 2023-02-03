@@ -254,18 +254,19 @@ static void bsmp_init_server(void)
     create_bsmp_var(62, 0, 4, false, DUTY_CYCLE_IGBT_1_MOD_4.u8);
     create_bsmp_var(63, 0, 4, false, DUTY_CYCLE_IGBT_2_MOD_4.u8);
 
-    create_bsmp_var(64, 0, 4, false, iib_fap_2p2s[0].Vin.u8);
-    create_bsmp_var(65, 0, 4, false, iib_fap_2p2s[0].Vout.u8);
-    create_bsmp_var(66, 0, 4, false, iib_fap_2p2s[0].IoutA1.u8);
-    create_bsmp_var(67, 0, 4, false, iib_fap_2p2s[0].IoutA2.u8);
-    create_bsmp_var(68, 0, 4, false, iib_fap_2p2s[0].TempIGBT1.u8);
-    create_bsmp_var(69, 0, 4, false, iib_fap_2p2s[0].TempIGBT2.u8);
-    create_bsmp_var(70, 0, 4, false, iib_fap_2p2s[0].DriverVoltage.u8);
-    create_bsmp_var(71, 0, 4, false, iib_fap_2p2s[0].Driver1Current.u8);
-    create_bsmp_var(72, 0, 4, false, iib_fap_2p2s[0].Driver2Current.u8);
-    create_bsmp_var(73, 0, 4, false, iib_fap_2p2s[0].TempL.u8);
-    create_bsmp_var(74, 0, 4, false, iib_fap_2p2s[0].TempHeatSink.u8);
-    create_bsmp_var(75, 0, 4, false, iib_fap_2p2s[0].GroundLeakage.u8);
+    create_bsmp_var(64, 0, 4, false, iib_fap_2p2s[0].GroundLeakage.u8);
+
+    create_bsmp_var(65, 0, 4, false, iib_fap_2p2s[0].Vin.u8);
+    create_bsmp_var(66, 0, 4, false, iib_fap_2p2s[0].Vout.u8);
+    create_bsmp_var(67, 0, 4, false, iib_fap_2p2s[0].IoutA1.u8);
+    create_bsmp_var(68, 0, 4, false, iib_fap_2p2s[0].IoutA2.u8);
+    create_bsmp_var(69, 0, 4, false, iib_fap_2p2s[0].TempIGBT1.u8);
+    create_bsmp_var(70, 0, 4, false, iib_fap_2p2s[0].TempIGBT2.u8);
+    create_bsmp_var(71, 0, 4, false, iib_fap_2p2s[0].DriverVoltage.u8);
+    create_bsmp_var(72, 0, 4, false, iib_fap_2p2s[0].Driver1Current.u8);
+    create_bsmp_var(73, 0, 4, false, iib_fap_2p2s[0].Driver2Current.u8);
+    create_bsmp_var(74, 0, 4, false, iib_fap_2p2s[0].TempL.u8);
+    create_bsmp_var(75, 0, 4, false, iib_fap_2p2s[0].TempHeatSink.u8);
     create_bsmp_var(76, 0, 4, false, iib_fap_2p2s[0].BoardTemperature.u8);
     create_bsmp_var(77, 0, 4, false, iib_fap_2p2s[0].RelativeHumidity.u8);
     create_bsmp_var(78, 0, 4, false, iib_fap_2p2s[0].InterlocksRegister.u8);
@@ -282,48 +283,44 @@ static void bsmp_init_server(void)
     create_bsmp_var(88, 0, 4, false, iib_fap_2p2s[1].Driver2Current.u8);
     create_bsmp_var(89, 0, 4, false, iib_fap_2p2s[1].TempL.u8);
     create_bsmp_var(90, 0, 4, false, iib_fap_2p2s[1].TempHeatSink.u8);
+    create_bsmp_var(91, 0, 4, false, iib_fap_2p2s[1].BoardTemperature.u8);
+    create_bsmp_var(92, 0, 4, false, iib_fap_2p2s[1].RelativeHumidity.u8);
+    create_bsmp_var(93, 0, 4, false, iib_fap_2p2s[1].InterlocksRegister.u8);
+    create_bsmp_var(94, 0, 4, false, iib_fap_2p2s[1].AlarmsRegister.u8);
 
-    //create_bsmp_var(91, 0, 4, false, iib_fap_2p2s[1].GroundLeakage.u8);
-    create_bsmp_var(91, 0, 4, false, g_ipc_ctom.ps_module[0].ps_alarms.u8);
+    create_bsmp_var(95, 0, 4, false, iib_fap_2p2s[2].Vin.u8);
+    create_bsmp_var(96, 0, 4, false, iib_fap_2p2s[2].Vout.u8);
+    create_bsmp_var(97, 0, 4, false, iib_fap_2p2s[2].IoutA1.u8);
+    create_bsmp_var(98, 0, 4, false, iib_fap_2p2s[2].IoutA2.u8);
+    create_bsmp_var(99, 0, 4, false, iib_fap_2p2s[2].TempIGBT1.u8);
+    create_bsmp_var(100, 0, 4, false, iib_fap_2p2s[2].TempIGBT2.u8);
+    create_bsmp_var(101, 0, 4, false, iib_fap_2p2s[2].DriverVoltage.u8);
+    create_bsmp_var(102, 0, 4, false, iib_fap_2p2s[2].Driver1Current.u8);
+    create_bsmp_var(103, 0, 4, false, iib_fap_2p2s[2].Driver2Current.u8);
+    create_bsmp_var(104, 0, 4, false, iib_fap_2p2s[2].TempL.u8);
+    create_bsmp_var(105, 0, 4, false, iib_fap_2p2s[2].TempHeatSink.u8);
+    create_bsmp_var(106, 0, 4, false, iib_fap_2p2s[2].BoardTemperature.u8);
+    create_bsmp_var(107, 0, 4, false, iib_fap_2p2s[2].RelativeHumidity.u8);
+    create_bsmp_var(108, 0, 4, false, iib_fap_2p2s[2].InterlocksRegister.u8);
+    create_bsmp_var(109, 0, 4, false, iib_fap_2p2s[2].AlarmsRegister.u8);
 
-    create_bsmp_var(92, 0, 4, false, iib_fap_2p2s[1].BoardTemperature.u8);
-    create_bsmp_var(93, 0, 4, false, iib_fap_2p2s[1].RelativeHumidity.u8);
-    create_bsmp_var(94, 0, 4, false, iib_fap_2p2s[1].InterlocksRegister.u8);
-    create_bsmp_var(95, 0, 4, false, iib_fap_2p2s[1].AlarmsRegister.u8);
+    create_bsmp_var(110, 0, 4, false, iib_fap_2p2s[3].Vin.u8);
+    create_bsmp_var(111, 0, 4, false, iib_fap_2p2s[3].Vout.u8);
+    create_bsmp_var(112, 0, 4, false, iib_fap_2p2s[3].IoutA1.u8);
+    create_bsmp_var(113, 0, 4, false, iib_fap_2p2s[3].IoutA2.u8);
+    create_bsmp_var(114, 0, 4, false, iib_fap_2p2s[3].TempIGBT1.u8);
+    create_bsmp_var(115, 0, 4, false, iib_fap_2p2s[3].TempIGBT2.u8);
+    create_bsmp_var(116, 0, 4, false, iib_fap_2p2s[3].DriverVoltage.u8);
+    create_bsmp_var(117, 0, 4, false, iib_fap_2p2s[3].Driver1Current.u8);
+    create_bsmp_var(118, 0, 4, false, iib_fap_2p2s[3].Driver2Current.u8);
+    create_bsmp_var(119, 0, 4, false, iib_fap_2p2s[3].TempL.u8);
+    create_bsmp_var(120, 0, 4, false, iib_fap_2p2s[3].TempHeatSink.u8);
+    create_bsmp_var(121, 0, 4, false, iib_fap_2p2s[3].BoardTemperature.u8);
+    create_bsmp_var(122, 0, 4, false, iib_fap_2p2s[3].RelativeHumidity.u8);
+    create_bsmp_var(123, 0, 4, false, iib_fap_2p2s[3].InterlocksRegister.u8);
+    create_bsmp_var(124, 0, 4, false, iib_fap_2p2s[3].AlarmsRegister.u8);
 
-    create_bsmp_var(96, 0, 4, false, iib_fap_2p2s[2].Vin.u8);
-    create_bsmp_var(97, 0, 4, false, iib_fap_2p2s[2].Vout.u8);
-    create_bsmp_var(98, 0, 4, false, iib_fap_2p2s[2].IoutA1.u8);
-    create_bsmp_var(99, 0, 4, false, iib_fap_2p2s[2].IoutA2.u8);
-    create_bsmp_var(100, 0, 4, false, iib_fap_2p2s[2].TempIGBT1.u8);
-    create_bsmp_var(101, 0, 4, false, iib_fap_2p2s[2].TempIGBT2.u8);
-    create_bsmp_var(102, 0, 4, false, iib_fap_2p2s[2].DriverVoltage.u8);
-    create_bsmp_var(103, 0, 4, false, iib_fap_2p2s[2].Driver1Current.u8);
-    create_bsmp_var(104, 0, 4, false, iib_fap_2p2s[2].Driver2Current.u8);
-    create_bsmp_var(105, 0, 4, false, iib_fap_2p2s[2].TempL.u8);
-    create_bsmp_var(106, 0, 4, false, iib_fap_2p2s[2].TempHeatSink.u8);
-    create_bsmp_var(107, 0, 4, false, iib_fap_2p2s[2].GroundLeakage.u8);
-    create_bsmp_var(108, 0, 4, false, iib_fap_2p2s[2].BoardTemperature.u8);
-    create_bsmp_var(109, 0, 4, false, iib_fap_2p2s[2].RelativeHumidity.u8);
-    create_bsmp_var(110, 0, 4, false, iib_fap_2p2s[2].InterlocksRegister.u8);
-    create_bsmp_var(111, 0, 4, false, iib_fap_2p2s[2].AlarmsRegister.u8);
-
-    create_bsmp_var(112, 0, 4, false, iib_fap_2p2s[3].Vin.u8);
-    create_bsmp_var(113, 0, 4, false, iib_fap_2p2s[3].Vout.u8);
-    create_bsmp_var(114, 0, 4, false, iib_fap_2p2s[3].IoutA1.u8);
-    create_bsmp_var(115, 0, 4, false, iib_fap_2p2s[3].IoutA2.u8);
-    create_bsmp_var(116, 0, 4, false, iib_fap_2p2s[3].TempIGBT1.u8);
-    create_bsmp_var(117, 0, 4, false, iib_fap_2p2s[3].TempIGBT2.u8);
-    create_bsmp_var(118, 0, 4, false, iib_fap_2p2s[3].DriverVoltage.u8);
-    create_bsmp_var(119, 0, 4, false, iib_fap_2p2s[3].Driver1Current.u8);
-    create_bsmp_var(120, 0, 4, false, iib_fap_2p2s[3].Driver2Current.u8);
-    create_bsmp_var(121, 0, 4, false, iib_fap_2p2s[3].TempL.u8);
-    create_bsmp_var(122, 0, 4, false, iib_fap_2p2s[3].TempHeatSink.u8);
-    create_bsmp_var(123, 0, 4, false, iib_fap_2p2s[3].GroundLeakage.u8);
-    create_bsmp_var(124, 0, 4, false, iib_fap_2p2s[3].BoardTemperature.u8);
-    create_bsmp_var(125, 0, 4, false, iib_fap_2p2s[3].RelativeHumidity.u8);
-    create_bsmp_var(126, 0, 4, false, iib_fap_2p2s[3].InterlocksRegister.u8);
-    create_bsmp_var(127, 0, 4, false, iib_fap_2p2s[3].AlarmsRegister.u8);
+    create_bsmp_var(125, 0, 4, false, g_ipc_ctom.ps_module[0].ps_alarms.u8);
 }
 
 /**

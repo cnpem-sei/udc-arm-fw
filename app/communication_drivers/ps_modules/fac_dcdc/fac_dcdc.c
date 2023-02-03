@@ -137,17 +137,18 @@ static void bsmp_init_server(void)
 
     create_bsmp_var(37, 0, 4, false, DUTY_CYCLE.u8);
 
-    create_bsmp_var(38, 0, 4, false, iib_fac_os.VdcLink.u8);
-    create_bsmp_var(39, 0, 4, false, iib_fac_os.Iin.u8);
-    create_bsmp_var(40, 0, 4, false, iib_fac_os.Iout.u8);
-    create_bsmp_var(41, 0, 4, false, iib_fac_os.TempIGBT1.u8);
-    create_bsmp_var(42, 0, 4, false, iib_fac_os.TempIGBT2.u8);
-    create_bsmp_var(43, 0, 4, false, iib_fac_os.TempL.u8);
-    create_bsmp_var(44, 0, 4, false, iib_fac_os.TempHeatSink.u8);
-    create_bsmp_var(45, 0, 4, false, iib_fac_os.DriverVoltage.u8);
-    create_bsmp_var(46, 0, 4, false, iib_fac_os.Driver1Current.u8);
-    create_bsmp_var(47, 0, 4, false, iib_fac_os.Driver2Current.u8);
-    create_bsmp_var(48, 0, 4, false, I_LEAKAGE.u8);
+    create_bsmp_var(38, 0, 4, false, I_LEAKAGE.u8);
+
+    create_bsmp_var(39, 0, 4, false, iib_fac_os.VdcLink.u8);
+    create_bsmp_var(40, 0, 4, false, iib_fac_os.Iin.u8);
+    create_bsmp_var(41, 0, 4, false, iib_fac_os.Iout.u8);
+    create_bsmp_var(42, 0, 4, false, iib_fac_os.TempIGBT1.u8);
+    create_bsmp_var(43, 0, 4, false, iib_fac_os.TempIGBT2.u8);
+    create_bsmp_var(44, 0, 4, false, iib_fac_os.TempL.u8);
+    create_bsmp_var(45, 0, 4, false, iib_fac_os.TempHeatSink.u8);
+    create_bsmp_var(46, 0, 4, false, iib_fac_os.DriverVoltage.u8);
+    create_bsmp_var(47, 0, 4, false, iib_fac_os.Driver1Current.u8);
+    create_bsmp_var(48, 0, 4, false, iib_fac_os.Driver2Current.u8);
     create_bsmp_var(49, 0, 4, false, iib_fac_os.BoardTemperature.u8);
     create_bsmp_var(50, 0, 4, false, iib_fac_os.RelativeHumidity.u8);
     create_bsmp_var(51, 0, 4, false, iib_fac_os.InterlocksRegister.u8);
@@ -233,12 +234,6 @@ static void handle_can_data(volatile uint8_t *data, volatile unsigned long id)
             break;
         }
         case 16:
-        {
-        //    memcpy((void *) iib_fac_os.GroundLeakage.u8, (const void *) &data[0], (size_t) 4);
-            break;
-        }
-
-        case 17:
         {
             memcpy((void *) iib_fac_os.InterlocksRegister.u8, (const void *) &data[0], (size_t) 4);
             memcpy((void *) iib_fac_os.AlarmsRegister.u8, (const void *) &data[4], (size_t) 4);
