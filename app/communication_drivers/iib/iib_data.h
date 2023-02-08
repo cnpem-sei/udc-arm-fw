@@ -168,11 +168,6 @@ typedef volatile struct {
     union {
     	volatile float       f;
     	volatile uint8_t     u8[4];
-    } GroundLeakage;
-
-    union {
-    	volatile float       f;
-    	volatile uint8_t     u8[4];
     } BoardTemperature;
 
     union {
