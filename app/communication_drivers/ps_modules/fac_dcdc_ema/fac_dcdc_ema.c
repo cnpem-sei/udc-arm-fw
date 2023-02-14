@@ -40,6 +40,11 @@
 #include "communication_drivers/ps_modules/fac_dcdc_ema/fac_dcdc_ema.h"
 #include "communication_drivers/ps_modules/ps_modules.h"
 
+/**
+ * Controller defines
+ */
+
+/// DSP Net Signals
 #define I_LOAD                      g_controller_ctom.net_signals[0]  // HRADC0
 #define V_DCLINK                    g_controller_ctom.net_signals[1]  // HRADC1
 
@@ -53,6 +58,13 @@
 
 #define DUTY_CYCLE                  g_controller_ctom.output_signals[0]
 
+/// ARM Net Signals
+#define I_LEAKAGE                   g_controller_mtoc.net_signals[0]
+
+/// Constants
+#define GAIN_LDC_TRANSDUCTER    4.0     //Gain Transducer CTSR 0.3-P
+#define GAIN_LDC_AMPLIFIER      4.99
+
 /**
  * Interlocks defines
  */
@@ -65,6 +77,7 @@ typedef enum
     Load_Waterflow,
     Load_Overtemperature,
     IIB_Itlk,
+    Leakage_Overcurrent
 } hard_interlocks_t;
 
 typedef enum
@@ -92,7 +105,11 @@ static void handle_can_data(volatile uint8_t *data, volatile unsigned long id);
 */
 static void adcp_channel_config(void)
 {
-    g_analog_ch_0.Enable = 0;
+    // Leakage current: 10 V = 500 mA
+    g_analog_ch_0.Enable = 1;
+    g_analog_ch_0.Gain = (10.0 /(GAIN_LDC_TRANSDUCTER * GAIN_LDC_AMPLIFIER))/2048.0;
+    g_analog_ch_0.Value = &(I_LEAKAGE.f);
+
     g_analog_ch_1.Enable = 0;
     g_analog_ch_2.Enable = 0;
     g_analog_ch_3.Enable = 0;
@@ -118,17 +135,18 @@ static void bsmp_init_server(void)
 
     create_bsmp_var(35, 0, 4, false, DUTY_CYCLE.u8);
 
-    create_bsmp_var(36, 0, 4, false, iib_fac_os.VdcLink.u8);
-    create_bsmp_var(37, 0, 4, false, iib_fac_os.Iin.u8);
-    create_bsmp_var(38, 0, 4, false, iib_fac_os.Iout.u8);
-    create_bsmp_var(39, 0, 4, false, iib_fac_os.TempIGBT1.u8);
-    create_bsmp_var(40, 0, 4, false, iib_fac_os.TempIGBT2.u8);
-    create_bsmp_var(41, 0, 4, false, iib_fac_os.TempL.u8);
-    create_bsmp_var(42, 0, 4, false, iib_fac_os.TempHeatSink.u8);
-    create_bsmp_var(43, 0, 4, false, iib_fac_os.DriverVoltage.u8);
-    create_bsmp_var(44, 0, 4, false, iib_fac_os.Driver1Current.u8);
-    create_bsmp_var(45, 0, 4, false, iib_fac_os.Driver2Current.u8);
-    create_bsmp_var(46, 0, 4, false, iib_fac_os.GroundLeakage.u8);
+    create_bsmp_var(36, 0, 4, false, I_LEAKAGE.u8);
+
+    create_bsmp_var(37, 0, 4, false, iib_fac_os.VdcLink.u8);
+    create_bsmp_var(38, 0, 4, false, iib_fac_os.Iin.u8);
+    create_bsmp_var(39, 0, 4, false, iib_fac_os.Iout.u8);
+    create_bsmp_var(40, 0, 4, false, iib_fac_os.TempIGBT1.u8);
+    create_bsmp_var(41, 0, 4, false, iib_fac_os.TempIGBT2.u8);
+    create_bsmp_var(42, 0, 4, false, iib_fac_os.TempL.u8);
+    create_bsmp_var(43, 0, 4, false, iib_fac_os.TempHeatSink.u8);
+    create_bsmp_var(44, 0, 4, false, iib_fac_os.DriverVoltage.u8);
+    create_bsmp_var(45, 0, 4, false, iib_fac_os.Driver1Current.u8);
+    create_bsmp_var(46, 0, 4, false, iib_fac_os.Driver2Current.u8);
     create_bsmp_var(47, 0, 4, false, iib_fac_os.BoardTemperature.u8);
     create_bsmp_var(48, 0, 4, false, iib_fac_os.RelativeHumidity.u8);
     create_bsmp_var(49, 0, 4, false, iib_fac_os.InterlocksRegister.u8);
@@ -214,12 +232,6 @@ static void handle_can_data(volatile uint8_t *data, volatile unsigned long id)
             break;
         }
         case 16:
-        {
-            memcpy((void *) iib_fac_os.GroundLeakage.u8, (const void *) &data[0], (size_t) 4);
-            break;
-        }
-
-        case 17:
         {
             memcpy((void *) iib_fac_os.InterlocksRegister.u8, (const void *) &data[0], (size_t) 4);
             memcpy((void *) iib_fac_os.AlarmsRegister.u8, (const void *) &data[4], (size_t) 4);

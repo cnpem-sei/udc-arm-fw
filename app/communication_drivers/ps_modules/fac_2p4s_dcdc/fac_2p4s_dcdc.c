@@ -342,7 +342,6 @@ static void handle_can_data(volatile uint8_t *data, volatile unsigned long id)
     	case 14:
     	case 15:
     	case 16:
-    	case 17:
     	{
     		module = 0;
     		id_var = (id - 10);
@@ -355,7 +354,6 @@ static void handle_can_data(volatile uint8_t *data, volatile unsigned long id)
     	case 24:
     	case 25:
     	case 26:
-    	case 27:
     	{
     		module = 1;
     		id_var = (id - 20);
@@ -368,7 +366,6 @@ static void handle_can_data(volatile uint8_t *data, volatile unsigned long id)
     	case 34:
     	case 35:
     	case 36:
-    	case 37:
     	{
     		module = 2;
     		id_var = (id - 30);
@@ -381,7 +378,6 @@ static void handle_can_data(volatile uint8_t *data, volatile unsigned long id)
     	case 44:
     	case 45:
     	case 46:
-    	case 47:
     	{
     		module = 3;
     		id_var = (id - 40);
@@ -394,7 +390,6 @@ static void handle_can_data(volatile uint8_t *data, volatile unsigned long id)
     	case 54:
     	case 55:
     	case 56:
-    	case 57:
     	{
     		module = 4;
     		id_var = (id - 50);
@@ -407,7 +402,6 @@ static void handle_can_data(volatile uint8_t *data, volatile unsigned long id)
     	case 64:
     	case 65:
     	case 66:
-    	case 67:
     	{
     		module = 5;
     		id_var = (id - 60);
@@ -420,7 +414,6 @@ static void handle_can_data(volatile uint8_t *data, volatile unsigned long id)
     	case 74:
     	case 75:
     	case 76:
-    	case 77:
     	{
     		module = 6;
     		id_var = (id - 70);
@@ -433,7 +426,6 @@ static void handle_can_data(volatile uint8_t *data, volatile unsigned long id)
     	case 84:
     	case 85:
     	case 86:
-    	case 87:
     	{
     		module = 7;
     		id_var = (id - 80);
@@ -491,12 +483,6 @@ static void handle_can_data(volatile uint8_t *data, volatile unsigned long id)
             break;
         }
         case 6:
-        {
-        	memcpy((void *)iib_fac_2p4s_dcdc[module].GroundLeakage.u8, (const void *)&data[0], (size_t)4);
-
-            break;
-        }
-        case 7:
         {
         	memcpy((void *)iib_fac_2p4s_dcdc[module].InterlocksRegister.u8, (const void *)&data[0], (size_t)4);
         	memcpy((void *)iib_fac_2p4s_dcdc[module].AlarmsRegister.u8, (const void *)&data[4], (size_t)4);

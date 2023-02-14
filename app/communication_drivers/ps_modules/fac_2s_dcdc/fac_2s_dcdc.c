@@ -221,7 +221,6 @@ static void handle_can_data(volatile uint8_t *data, volatile unsigned long id)
     	case 14:
     	case 15:
     	case 16:
-    	case 17:
     	{
     		module = 0;
     		id_var = (id - 10);
@@ -234,7 +233,6 @@ static void handle_can_data(volatile uint8_t *data, volatile unsigned long id)
     	case 24:
     	case 25:
     	case 26:
-    	case 27:
     	{
     		module = 1;
     		id_var = (id - 20);
@@ -292,12 +290,6 @@ static void handle_can_data(volatile uint8_t *data, volatile unsigned long id)
             break;
         }
         case 6:
-        {
-        	memcpy((void *)iib_fac_2s_dcdc[module].GroundLeakage.u8, (const void *)&data[0], (size_t)4);
-
-            break;
-        }
-        case 7:
         {
         	memcpy((void *)iib_fac_2s_dcdc[module].InterlocksRegister.u8, (const void *)&data[0], (size_t)4);
         	memcpy((void *)iib_fac_2s_dcdc[module].AlarmsRegister.u8, (const void *)&data[4], (size_t)4);
