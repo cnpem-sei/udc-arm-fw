@@ -422,6 +422,87 @@ typedef volatile struct {
 
 } iib_fap_module_t;
 
+typedef volatile struct {
+
+	union {
+		volatile float       f;
+		volatile uint8_t     u8[4];
+	} Vin;
+
+	union {
+		volatile float       f;
+		volatile uint8_t     u8[4];
+	} Vout;
+
+	union {
+		volatile float       f;
+		volatile uint8_t     u8[4];
+	} Iin;
+
+	union {
+		volatile float       f;
+		volatile uint8_t     u8[4];
+	} Iout;
+
+	union {
+		volatile float       f;
+		volatile uint8_t     u8[4];
+	} GroundLeakage;
+
+	union {
+		volatile float       f;
+		volatile uint8_t     u8[4];
+	} TempInputInductor;
+
+	union {
+		volatile float       f;
+		volatile uint8_t     u8[4];
+	} TempOutputInductor;
+
+	union {
+		volatile float       f;
+		volatile uint8_t     u8[4];
+	} TempHeatSinkMosfets;
+
+	union {
+		volatile float       f;
+		volatile uint8_t     u8[4];
+	} TempHeatSinkDiodes;
+
+	union {
+		volatile float       f;
+		volatile uint8_t     u8[4];
+	} DriverVoltage;
+
+	union {
+		volatile float       f;
+		volatile uint8_t     u8[4];
+	} Driver1Current;
+
+	union {
+		volatile float       f;
+		volatile uint8_t     u8[4];
+	} BoardTemperature;
+
+	union {
+		volatile float       f;
+		volatile uint8_t     u8[4];
+	} RelativeHumidity;
+
+	union {
+		volatile uint8_t     u8[4];
+		volatile uint32_t    u32;
+	} InterlocksRegister;
+
+	union {
+		volatile uint8_t     u8[4];
+		volatile uint32_t    u32;
+	} AlarmsRegister;
+
+	volatile uint8_t CanAddress;
+
+} iib_resonant_swls_module_t;
+
 typedef union {
     float       f;
     uint8_t     u8[4];

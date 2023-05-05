@@ -47,28 +47,47 @@
  */
 
 /// DSP Net Signals
-#define I_LOAD                  g_controller_ctom.net_signals[0]  // HRADC0
-#define V_DCLINK                g_controller_ctom.net_signals[1]  // HRADC1
-#define I_LOAD_ERROR            g_controller_ctom.net_signals[2]
-#define FREQ_MODULATED          g_controller_ctom.net_signals[3]
+#define I_LOAD_1                g_controller_ctom.net_signals[0]  // HRADC0
+#define I_LOAD_2                g_controller_ctom.net_signals[1]  // HRADC1
+#define I_LOAD_MEAN             g_controller_ctom.net_signals[2]
+#define I_LOAD_ERROR            g_controller_ctom.net_signals[3]
+#define FREQ_MODULATED          g_controller_ctom.net_signals[4]
 #define FREQ_MODULATED_FF       g_controller_ctom.output_signals[0]
 
 /// ARM Net Signals
+#define V_DCLINK                g_controller_mtoc.net_signals[0]
 
 /**
  * Interlocks defines
  */
 typedef enum
 {
-    Load_Overcurrent,
-    DCLink_Overvoltage,
-    DCLink_Undervoltage
+	Load_Overcurrent,
+	DCLink_Overvoltage,
+	DCLink_Undervoltage,
+	Welded_Contactor_Fault,
+	Opened_Contactor_Fault,
+	External_Itlk,
+	IIB_Itlk
 } hard_interlocks_t;
+
+typedef enum
+{
+    DCCT_1_Fault,
+    DCCT_2_Fault,
+    DCCT_High_Difference
+} soft_interlocks_t;
 
 typedef enum
 {
     High_Sync_Input_Frequency = 0x00000001
 } alarms_t;
+
+static volatile iib_resonant_swls_module_t iib_resonant_swls
+
+static void init_iib();
+
+static void handle_can_data(volatile uint8_t *data, volatile unsigned long id);
 
 /**
 * @brief Initialize ADCP Channels.
@@ -100,11 +119,27 @@ static void bsmp_init_server(void)
     create_bsmp_var(32, 0, 4, false, g_ipc_ctom.ps_module[0].ps_hard_interlock.u8);
     create_bsmp_var(33, 0, 4, false, g_ipc_ctom.ps_module[0].ps_alarms.u8);
 
-    create_bsmp_var(34, 0, 4, false, I_LOAD.u8);
-    create_bsmp_var(35, 0, 4, false, V_DCLINK.u8);
-    create_bsmp_var(36, 0, 4, false, I_LOAD_ERROR.u8);
-    create_bsmp_var(37, 0, 4, false, FREQ_MODULATED.u8);
-    create_bsmp_var(38, 0, 4, false, FREQ_MODULATED_FF.u8);
+    create_bsmp_var(34, 0, 4, false, I_LOAD_MEAN.u8);
+    create_bsmp_var(35, 0, 4, false, I_LOAD_1.u8);
+    create_bsmp_var(36, 0, 4, false, I_LOAD_2.u8);
+    create_bsmp_var(37, 0, 4, false, I_LOAD_ERROR.u8);
+    create_bsmp_var(38, 0, 4, false, FREQ_MODULATED.u8);
+
+    create_bsmp_var(39, 0, 4, false, iib_resonant_swls.Vin.u8);
+    create_bsmp_var(40, 0, 4, false, iib_resonant_swls.Vout.u8);
+    create_bsmp_var(41, 0, 4, false, iib_resonant_swls.Iin.u8);
+    create_bsmp_var(42, 0, 4, false, iib_resonant_swls.Iout.u8);
+    create_bsmp_var(43, 0, 4, false, iib_resonant_swls.TempInputInductor.u8);
+    create_bsmp_var(44, 0, 4, false, iib_resonant_swls.TempOutputInductor.u8);
+    create_bsmp_var(45, 0, 4, false, iib_resonant_swls.TempHeatSinkMosfets.u8);
+    create_bsmp_var(46, 0, 4, false, iib_resonant_swls.TempHeatSinkDiodes.u8);
+    create_bsmp_var(47, 0, 4, false, iib_resonant_swls.DriverVoltage.u8);
+    create_bsmp_var(48, 0, 4, false, iib_resonant_swls.Driver1Current.u8);
+    create_bsmp_var(49, 0, 4, false, iib_resonant_swls.GroundLeakage.u8);
+    create_bsmp_var(50, 0, 4, false, iib_resonant_swls.BoardTemperature.u8);
+    create_bsmp_var(51, 0, 4, false, iib_resonant_swls.RelativeHumidity.u8);
+    create_bsmp_var(52, 0, 4, false, iib_resonant_swls.InterlocksRegister.u8);
+    create_bsmp_var(53, 0, 4, false, iib_resonant_swls.AlarmsRegister.u8);
 }
 
 /**
@@ -117,6 +152,7 @@ void resonant_swls_system_config()
 {
     adcp_channel_config();
     bsmp_init_server();
+    init_iib();
 
     init_wfmref(&WFMREF[0], WFMREF_SELECTED_PARAM[0].u16,
                 WFMREF_SYNC_MODE_PARAM[0].u16, ISR_CONTROL_FREQ.f,
@@ -128,4 +164,88 @@ void resonant_swls_system_config()
                SCOPE_FREQ_SAMPLING_PARAM[0].f, &(g_buf_samples_ctom[0].f),
                SIZE_BUF_SAMPLES_CTOM, SCOPE_SOURCE_PARAM[0].p_f,
                (void *) 0);
+}
+
+static void init_iib()
+{
+    iib_resonant_swls.CanAddress = 1;
+
+    init_iib_module_can_data(&g_iib_module_can_data, &handle_can_data);
+}
+
+static void handle_can_data(volatile uint8_t *data, volatile unsigned long id)
+{
+    switch(id)
+    {
+        case 10:
+        {
+            memcpy((void *)iib_resonant_swls.Vin.u8, (const void *)&data[0], (size_t)4);
+            memcpy((void *)iib_resonant_swls.Vout.u8, (const void *)&data[4], (size_t)4);
+            V_DCLINK.f = iib_resonant_swls.Vin.f;
+
+            break;
+        }
+        case 11:
+        {
+            memcpy((void *)iib_resonant_swls.Iin.u8, (const void *)&data[0], (size_t)4);
+            memcpy((void *)iib_resonant_swls.Iout.u8, (const void *)&data[4], (size_t)4);
+
+            break;
+        }
+        case 12:
+        {
+        	memcpy((void *)iib_resonant_swls.TempInputInductor.u8, (const void *)&data[0], (size_t)4);
+        	memcpy((void *)iib_resonant_swls.TempOutputInductor.u8, (const void *)&data[4], (size_t)4);
+
+            break;
+        }
+        case 13:
+        {
+        	memcpy((void *)iib_resonant_swls.TempHeatSinkMosfets.u8, (const void *)&data[0], (size_t)4);
+        	memcpy((void *)iib_resonant_swls.TempHeatSinkDiodes.u8, (const void *)&data[4], (size_t)4);
+
+            break;
+        }
+        case 14:
+        {
+            memcpy((void *)iib_resonant_swls.DriverVoltage.u8, (const void *)&data[0], (size_t)4);
+            memcpy((void *)iib_resonant_swls.Driver1Current.u8, (const void *)&data[4], (size_t)4);
+
+            break;
+        }
+        case 15:
+        {
+        	memcpy((void *)iib_resonant_swls.GroundLeakage.u8, (const void *)&data[0], (size_t)4);
+
+            break;
+        }
+        case 16:
+        {
+        	memcpy((void *)iib_resonant_swls.BoardTemperature.u8, (const void *)&data[0], (size_t)4);
+        	memcpy((void *)iib_resonant_swls.RelativeHumidity.u8, (const void *)&data[4], (size_t)4);
+
+            break;
+        }
+        case 17:
+        {
+        	memcpy((void *)iib_resonant_swls.InterlocksRegister.u8, (const void *)&data[0], (size_t)4);
+        	memcpy((void *)iib_resonant_swls.AlarmsRegister.u8, (const void *)&data[4], (size_t)4);
+
+            if(iib_resonant_swls.InterlocksRegister.u32 > 0)
+        	{
+        		set_hard_interlock(0, IIB_Itlk);
+        	}
+
+            else
+        	{
+        		iib_resonant_swls.InterlocksRegister.u32 = 0;
+        	}
+
+        	break;
+        }
+        default:
+        {
+            break;
+        }
+    }
 }
