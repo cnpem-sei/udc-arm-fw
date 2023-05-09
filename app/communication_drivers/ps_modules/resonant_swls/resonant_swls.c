@@ -52,6 +52,7 @@
 #define I_LOAD_MEAN             g_controller_ctom.net_signals[2]
 #define I_LOAD_ERROR            g_controller_ctom.net_signals[3]
 #define FREQ_MODULATED          g_controller_ctom.net_signals[4]
+#define FREQ_MODULATED_FF       g_controller_ctom.output_signals[0]
 
 /// ARM Net Signals
 #define V_DCLINK                g_controller_mtoc.net_signals[0]
@@ -66,8 +67,8 @@ typedef enum
 	DCLink_Undervoltage,
 	Welded_Contactor_Fault,
 	Opened_Contactor_Fault,
-	IIB_Itlk,
-	External_Itlk
+	External_Itlk,
+	IIB_Itlk
 } hard_interlocks_t;
 
 typedef enum
