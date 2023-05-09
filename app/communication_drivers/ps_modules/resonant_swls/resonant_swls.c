@@ -66,8 +66,8 @@ typedef enum
 	DCLink_Undervoltage,
 	Welded_Contactor_Fault,
 	Opened_Contactor_Fault,
-	External_Itlk,
-	IIB_Itlk
+	IIB_Itlk,
+	External_Itlk
 } hard_interlocks_t;
 
 typedef enum
