@@ -53,6 +53,8 @@
 #define I_LOAD_ERROR            g_controller_ctom.net_signals[3]
 #define FREQ_MODULATED          g_controller_ctom.net_signals[4]
 
+#define FREQ_MODULATED_COMPENS  g_controller_ctom.output_signals[0]
+
 /// ARM Net Signals
 #define V_DCLINK                g_controller_mtoc.net_signals[0]
 
