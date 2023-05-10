@@ -87,7 +87,7 @@ typedef enum
     High_Sync_Input_Frequency = 0x00000001
 } alarms_t;
 
-static volatile iib_resonant_swls_module_t iib_resonant_swls
+static volatile iib_resonant_swls_module_t iib_resonant_swls;
 
 static void init_iib();
 
