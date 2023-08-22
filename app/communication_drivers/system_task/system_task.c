@@ -191,6 +191,7 @@ void TaskCheck(void)
             case FAC_DCDC:
             case FAC_DCDC_EMA:
             case FAP:
+            case RESONANT_SWLS:
             {
                 send_reset_iib_message(1);
                 break;
