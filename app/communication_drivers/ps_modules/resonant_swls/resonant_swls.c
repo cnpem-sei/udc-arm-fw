@@ -133,17 +133,18 @@ static void bsmp_init_server(void)
     create_bsmp_var(40, 0, 4, false, iib_resonant_swls.Vout.u8);
     create_bsmp_var(41, 0, 4, false, iib_resonant_swls.Iin.u8);
     create_bsmp_var(42, 0, 4, false, iib_resonant_swls.Iout.u8);
-    create_bsmp_var(43, 0, 4, false, iib_resonant_swls.TempInputInductor.u8);
+    create_bsmp_var(43, 0, 4, false, iib_resonant_swls.TempHeatSinkTransformer.u8);
     create_bsmp_var(44, 0, 4, false, iib_resonant_swls.TempOutputInductor.u8);
-    create_bsmp_var(45, 0, 4, false, iib_resonant_swls.TempHeatSinkMosfets.u8);
-    create_bsmp_var(46, 0, 4, false, iib_resonant_swls.TempHeatSinkDiodes.u8);
-    create_bsmp_var(47, 0, 4, false, iib_resonant_swls.DriverVoltage.u8);
+    create_bsmp_var(45, 0, 4, false, iib_resonant_swls.TempHeatSinkDiodeOne.u8);
+    create_bsmp_var(46, 0, 4, false, iib_resonant_swls.TempHeatSinkDiodeTwo.u8);
+    create_bsmp_var(47, 0, 4, false, iib_resonant_swls.DriverAuxVoltage.u8);
     create_bsmp_var(48, 0, 4, false, iib_resonant_swls.Driver1Current.u8);
-    create_bsmp_var(49, 0, 4, false, iib_resonant_swls.GroundLeakage.u8);
-    create_bsmp_var(50, 0, 4, false, iib_resonant_swls.BoardTemperature.u8);
-    create_bsmp_var(51, 0, 4, false, iib_resonant_swls.RelativeHumidity.u8);
-    create_bsmp_var(52, 0, 4, false, iib_resonant_swls.InterlocksRegister.u8);
-    create_bsmp_var(53, 0, 4, false, iib_resonant_swls.AlarmsRegister.u8);
+    create_bsmp_var(49, 0, 4, false, iib_resonant_swls.AuxCurrent.u8);
+    create_bsmp_var(50, 0, 4, false, iib_resonant_swls.GroundLeakage.u8);
+    create_bsmp_var(51, 0, 4, false, iib_resonant_swls.BoardTemperature.u8);
+    create_bsmp_var(52, 0, 4, false, iib_resonant_swls.RelativeHumidity.u8);
+    create_bsmp_var(53, 0, 4, false, iib_resonant_swls.InterlocksRegister.u8);
+    create_bsmp_var(54, 0, 4, false, iib_resonant_swls.AlarmsRegister.u8);
 }
 
 /**
@@ -198,28 +199,29 @@ static void handle_can_data(volatile uint8_t *data, volatile unsigned long id)
         }
         case 12:
         {
-        	memcpy((void *)iib_resonant_swls.TempInputInductor.u8, (const void *)&data[0], (size_t)4);
+        	memcpy((void *)iib_resonant_swls.TempHeatSinkTransformer.u8, (const void *)&data[0], (size_t)4);
         	memcpy((void *)iib_resonant_swls.TempOutputInductor.u8, (const void *)&data[4], (size_t)4);
 
             break;
         }
         case 13:
         {
-        	memcpy((void *)iib_resonant_swls.TempHeatSinkMosfets.u8, (const void *)&data[0], (size_t)4);
-        	memcpy((void *)iib_resonant_swls.TempHeatSinkDiodes.u8, (const void *)&data[4], (size_t)4);
+        	memcpy((void *)iib_resonant_swls.TempHeatSinkDiodeOne.u8, (const void *)&data[0], (size_t)4);
+        	memcpy((void *)iib_resonant_swls.TempHeatSinkDiodeTwo.u8, (const void *)&data[4], (size_t)4);
 
             break;
         }
         case 14:
         {
-            memcpy((void *)iib_resonant_swls.DriverVoltage.u8, (const void *)&data[0], (size_t)4);
-            memcpy((void *)iib_resonant_swls.Driver1Current.u8, (const void *)&data[4], (size_t)4);
+            memcpy((void *)iib_resonant_swls.DriverAuxVoltage.u8, (const void *)&data[0], (size_t)4);
+            memcpy((void *)iib_resonant_swls.GroundLeakage.u8, (const void *)&data[4], (size_t)4);
 
             break;
         }
         case 15:
         {
-        	memcpy((void *)iib_resonant_swls.GroundLeakage.u8, (const void *)&data[0], (size_t)4);
+        	memcpy((void *)iib_resonant_swls.Driver1Current.u8, (const void *)&data[0], (size_t)4);
+        	memcpy((void *)iib_resonant_swls.AuxCurrent.u8, (const void *)&data[4], (size_t)4);
 
             break;
         }

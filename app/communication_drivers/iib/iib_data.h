@@ -452,7 +452,7 @@ typedef volatile struct {
 	union {
 		volatile float       f;
 		volatile uint8_t     u8[4];
-	} TempInputInductor;
+	} TempHeatSinkTransformer;
 
 	union {
 		volatile float       f;
@@ -462,22 +462,27 @@ typedef volatile struct {
 	union {
 		volatile float       f;
 		volatile uint8_t     u8[4];
-	} TempHeatSinkMosfets;
+	} TempHeatSinkDiodeOne;
 
 	union {
 		volatile float       f;
 		volatile uint8_t     u8[4];
-	} TempHeatSinkDiodes;
+	} TempHeatSinkDiodeTwo;
 
 	union {
 		volatile float       f;
 		volatile uint8_t     u8[4];
-	} DriverVoltage;
+	} DriverAuxVoltage;
 
 	union {
 		volatile float       f;
 		volatile uint8_t     u8[4];
 	} Driver1Current;
+
+	union {
+		volatile float       f;
+		volatile uint8_t     u8[4];
+	} AuxCurrent;
 
 	union {
 		volatile float       f;
