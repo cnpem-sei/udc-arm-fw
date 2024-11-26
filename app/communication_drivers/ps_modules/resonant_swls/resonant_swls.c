@@ -49,6 +49,7 @@
 /// DSP Net Signals
 #define I_LOAD_1                g_controller_ctom.net_signals[0]  // HRADC0
 #define I_LOAD_2                g_controller_ctom.net_signals[1]  // HRADC1
+#define V_DCLINK                g_controller_ctom.net_signals[2]  // HRADC2
 
 #define I_LOAD_MEAN             g_controller_ctom.net_signals[2]
 #define I_LOAD_ERROR            g_controller_ctom.net_signals[3]
@@ -58,9 +59,6 @@
 
 #define FREQ_MODULATED_COMPENS  g_controller_ctom.output_signals[0]
 
-/// ARM Net Signals
-#define V_DCLINK                g_controller_mtoc.net_signals[0]
-
 /**
  * Interlocks defines
  */
@@ -69,8 +67,10 @@ typedef enum
 	Load_Overcurrent,
 	DCLink_Overvoltage,
 	DCLink_Undervoltage,
-	Welded_Contactor_Fault,
-	Opened_Contactor_Fault,
+	Welded_Contactor_K1_Fault,
+	Welded_Contactor_K2_Fault,
+	Opened_Contactor_K1_Fault,
+	Opened_Contactor_K2_Fault,
 	External_Itlk,
 	IIB_Itlk
 } hard_interlocks_t;
@@ -127,24 +127,26 @@ static void bsmp_init_server(void)
     create_bsmp_var(35, 0, 4, false, I_LOAD_1.u8);
     create_bsmp_var(36, 0, 4, false, I_LOAD_2.u8);
     create_bsmp_var(37, 0, 4, false, I_LOAD_ERROR.u8);
-    create_bsmp_var(38, 0, 4, false, FREQ_MODULATED.u8);
+    create_bsmp_var(38, 0, 4, false, V_DCLINK.u8);
+    create_bsmp_var(39, 0, 4, false, FREQ_MODULATED.u8);
+    create_bsmp_var(40, 0, 4, false, FREQ_MODULATED_COMPENS.u8);
 
-    create_bsmp_var(39, 0, 4, false, iib_resonant_swls.Vin.u8);
-    create_bsmp_var(40, 0, 4, false, iib_resonant_swls.Vout.u8);
-    create_bsmp_var(41, 0, 4, false, iib_resonant_swls.Iin.u8);
-    create_bsmp_var(42, 0, 4, false, iib_resonant_swls.Iout.u8);
-    create_bsmp_var(43, 0, 4, false, iib_resonant_swls.TempHeatSinkTransformer.u8);
-    create_bsmp_var(44, 0, 4, false, iib_resonant_swls.TempOutputInductor.u8);
-    create_bsmp_var(45, 0, 4, false, iib_resonant_swls.TempHeatSinkDiodeOne.u8);
-    create_bsmp_var(46, 0, 4, false, iib_resonant_swls.TempHeatSinkDiodeTwo.u8);
-    create_bsmp_var(47, 0, 4, false, iib_resonant_swls.DriverAuxVoltage.u8);
-    create_bsmp_var(48, 0, 4, false, iib_resonant_swls.Driver1Current.u8);
-    create_bsmp_var(49, 0, 4, false, iib_resonant_swls.AuxCurrent.u8);
-    create_bsmp_var(50, 0, 4, false, iib_resonant_swls.GroundLeakage.u8);
-    create_bsmp_var(51, 0, 4, false, iib_resonant_swls.BoardTemperature.u8);
-    create_bsmp_var(52, 0, 4, false, iib_resonant_swls.RelativeHumidity.u8);
-    create_bsmp_var(53, 0, 4, false, iib_resonant_swls.InterlocksRegister.u8);
-    create_bsmp_var(54, 0, 4, false, iib_resonant_swls.AlarmsRegister.u8);
+    create_bsmp_var(41, 0, 4, false, iib_resonant_swls.Vin.u8);
+    create_bsmp_var(42, 0, 4, false, iib_resonant_swls.Vout.u8);
+    create_bsmp_var(43, 0, 4, false, iib_resonant_swls.Iin.u8);
+    create_bsmp_var(44, 0, 4, false, iib_resonant_swls.Iout.u8);
+    create_bsmp_var(45, 0, 4, false, iib_resonant_swls.TempHeatSinkTransformerPfc.u8);
+    create_bsmp_var(46, 0, 4, false, iib_resonant_swls.TempOutputInductor.u8);
+    create_bsmp_var(47, 0, 4, false, iib_resonant_swls.TempHeatSinkDiodes.u8);
+    create_bsmp_var(48, 0, 4, false, iib_resonant_swls.TempHeatSinkClamp.u8);
+    create_bsmp_var(49, 0, 4, false, iib_resonant_swls.DriverAuxVoltage.u8);
+    create_bsmp_var(50, 0, 4, false, iib_resonant_swls.Driver1Current.u8);
+    create_bsmp_var(51, 0, 4, false, iib_resonant_swls.AuxCurrent.u8);
+    create_bsmp_var(52, 0, 4, false, iib_resonant_swls.GroundLeakage.u8);
+    create_bsmp_var(53, 0, 4, false, iib_resonant_swls.BoardTemperature.u8);
+    create_bsmp_var(54, 0, 4, false, iib_resonant_swls.RelativeHumidity.u8);
+    create_bsmp_var(55, 0, 4, false, iib_resonant_swls.InterlocksRegister.u8);
+    create_bsmp_var(56, 0, 4, false, iib_resonant_swls.AlarmsRegister.u8);
 }
 
 /**
@@ -186,7 +188,6 @@ static void handle_can_data(volatile uint8_t *data, volatile unsigned long id)
         {
             memcpy((void *)iib_resonant_swls.Vin.u8, (const void *)&data[0], (size_t)4);
             memcpy((void *)iib_resonant_swls.Vout.u8, (const void *)&data[4], (size_t)4);
-            V_DCLINK.f = iib_resonant_swls.Vin.f;
 
             break;
         }
@@ -199,15 +200,15 @@ static void handle_can_data(volatile uint8_t *data, volatile unsigned long id)
         }
         case 12:
         {
-        	memcpy((void *)iib_resonant_swls.TempHeatSinkTransformer.u8, (const void *)&data[0], (size_t)4);
+        	memcpy((void *)iib_resonant_swls.TempHeatSinkTransformerPfc.u8, (const void *)&data[0], (size_t)4);
         	memcpy((void *)iib_resonant_swls.TempOutputInductor.u8, (const void *)&data[4], (size_t)4);
 
             break;
         }
         case 13:
         {
-        	memcpy((void *)iib_resonant_swls.TempHeatSinkDiodeOne.u8, (const void *)&data[0], (size_t)4);
-        	memcpy((void *)iib_resonant_swls.TempHeatSinkDiodeTwo.u8, (const void *)&data[4], (size_t)4);
+        	memcpy((void *)iib_resonant_swls.TempHeatSinkDiodes.u8, (const void *)&data[0], (size_t)4);
+        	memcpy((void *)iib_resonant_swls.TempHeatSinkClamp.u8, (const void *)&data[4], (size_t)4);
 
             break;
         }
