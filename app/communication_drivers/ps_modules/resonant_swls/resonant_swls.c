@@ -51,11 +51,11 @@
 #define I_LOAD_2                g_controller_ctom.net_signals[1]  // HRADC1
 #define V_DCLINK                g_controller_ctom.net_signals[2]  // HRADC2
 
-#define I_LOAD_MEAN             g_controller_ctom.net_signals[2]
-#define I_LOAD_ERROR            g_controller_ctom.net_signals[3]
-#define I_LOAD_DIFF             g_controller_ctom.net_signals[4]
+#define I_LOAD_MEAN             g_controller_ctom.net_signals[3]
+#define I_LOAD_ERROR            g_controller_ctom.net_signals[4]
+#define I_LOAD_DIFF             g_controller_ctom.net_signals[5]
 
-#define FREQ_MODULATED          g_controller_ctom.net_signals[5]
+#define FREQ_MODULATED          g_controller_ctom.net_signals[6]
 
 #define FREQ_MODULATED_COMPENS  g_controller_ctom.output_signals[0]
 
@@ -79,7 +79,9 @@ typedef enum
 {
     DCCT_1_Fault,
     DCCT_2_Fault,
-    DCCT_High_Difference
+    DCCT_High_Difference,
+    Load_Feedback_1_Fault,
+    Load_Feedback_2_Fault
 } soft_interlocks_t;
 
 typedef enum
